@@ -31,6 +31,8 @@ pub struct Pipeline<'a> {
     pub calibration: Matrix,
     pub curve: Vec<f32>,
     pub gradient: [f32; 2],
+    pub retouch_index: Vec<Vec<usize>>,
+    pub heal_offsets: Vec<[f32; 3]>,
 }
 
 #[derive(Debug)]
@@ -63,14 +65,41 @@ impl<'a> Pipeline<'a> {
             color::multiply(source.metadata.camera_to_working, gain),
         );
         let (s, c) = edits.scene.graduated.angle.to_radians().sin_cos();
-        Ok(Self {
+        let mut retouch_index = vec![Vec::new(); 64 * 64];
+        for (i, brush) in edits.display.retouch.iter().enumerate() {
+            let rx = brush.radius / geometry.crop[2];
+            let ry = brush.radius / (geometry.crop[3] * geometry.aspect);
+            let cell = |x: f32| (x * 64.).floor().clamp(0., 63.) as usize;
+            for y in cell(brush.target[1] - ry)..=cell(brush.target[1] + ry) {
+                for x in cell(brush.target[0] - rx)..=cell(brush.target[0] + rx) {
+                    retouch_index[y * 64 + x].push(i);
+                }
+            }
+        }
+        let mut pipeline = Self {
             source,
             edits,
             geometry,
             calibration,
             curve: color::curve_lut(&edits.display.curve, 4096),
             gradient: [s, c],
-        })
+            retouch_index,
+            heal_offsets: Vec::new(),
+        };
+        pipeline.heal_offsets = edits
+            .display
+            .retouch
+            .iter()
+            .map(|brush| {
+                if brush.mode != RetouchMode::Heal {
+                    return [0.; 3];
+                }
+                let target = pipeline.base(brush.target);
+                let source = pipeline.base(brush.source);
+                std::array::from_fn(|i| target[i] - source[i])
+            })
+            .collect();
+        Ok(pipeline)
     }
 
     fn base(&self, uv: [f32; 2]) -> [f32; 4] {
@@ -116,7 +145,9 @@ impl<'a> Pipeline<'a> {
 
     pub fn sample(&self, uv: [f32; 2]) -> [f32; 4] {
         let mut out = self.base(uv);
-        for brush in &self.edits.display.retouch {
+        let cell = |x: f32| (x * 64.).floor().clamp(0., 63.) as usize;
+        for &index in &self.retouch_index[cell(uv[1]) * 64 + cell(uv[0])] {
+            let brush = &self.edits.display.retouch[index];
             let dx = (uv[0] - brush.target[0]) * self.geometry.crop[2];
             let dy = (uv[1] - brush.target[1]) * self.geometry.crop[3] * self.geometry.aspect;
             let d = (dx * dx + dy * dy).sqrt() / brush.radius;
@@ -138,10 +169,8 @@ impl<'a> Pipeline<'a> {
                 continue;
             }
             if brush.mode == RetouchMode::Heal {
-                let target = self.base(brush.target);
-                let source = self.base(brush.source);
-                for i in 0..3 {
-                    clone[i] += target[i] - source[i];
+                for (i, value) in clone[..3].iter_mut().enumerate() {
+                    *value += self.heal_offsets[index][i];
                 }
             }
             for i in 0..4 {
@@ -173,6 +202,11 @@ impl<'a> Pipeline<'a> {
 
     pub fn render(&self, max_edge: Option<usize>) -> Result<Rendered> {
         let (width, height) = self.dimensions(max_edge);
+        self.render_region([0., 0., 1., 1.], width, height)
+    }
+
+    /// Viewport rendering reads the original at every zoom level, including 1:1.
+    pub fn render_region(&self, region: [f32; 4], width: usize, height: usize) -> Result<Rendered> {
         let count = pixel_count(width, height, 1)?;
         let mut pixels = Vec::new();
         pixels.try_reserve_exact(count)?;
@@ -183,8 +217,8 @@ impl<'a> Pipeline<'a> {
             .for_each(|(y, row)| {
                 for (x, p) in row.iter_mut().enumerate() {
                     *p = self.sample([
-                        (x as f32 + 0.5) / width as f32,
-                        (y as f32 + 0.5) / height as f32,
+                        region[0] + region[2] * (x as f32 + 0.5) / width as f32,
+                        region[1] + region[3] * (y as f32 + 0.5) / height as f32,
                     ]);
                 }
             });

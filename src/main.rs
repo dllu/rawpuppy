@@ -9,13 +9,19 @@ use std::{path::PathBuf, time::Instant};
 #[command(version, about = "A minimal, non-destructive RAW photo editor")]
 struct Cli {
     #[command(subcommand)]
-    command: Command,
+    command: Option<Command>,
     /// Limit workers to share the workstation.
     #[arg(long, global = true, default_value_t = 8)]
     threads: usize,
 }
 #[derive(Subcommand)]
 enum Command {
+    /// Open the native single-photo editor.
+    Edit {
+        input: Option<PathBuf>,
+        #[arg(long)]
+        display_profile: Option<PathBuf>,
+    },
     /// Decode and inspect camera calibration and dimensions.
     Inspect { input: PathBuf },
     /// Apply the fixed pipeline and export without changing the original.
@@ -44,7 +50,14 @@ fn main() -> Result<()> {
     rayon::ThreadPoolBuilder::new()
         .num_threads(cli.threads)
         .build_global()?;
-    match cli.command {
+    match cli.command.unwrap_or(Command::Edit {
+        input: None,
+        display_profile: None,
+    }) {
+        Command::Edit {
+            input,
+            display_profile,
+        } => rawpuppy::gui::run(input, display_profile)?,
         Command::Inspect { input } => {
             let start = Instant::now();
             let image = SensorImage::open(&input)?;

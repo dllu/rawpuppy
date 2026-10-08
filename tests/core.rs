@@ -125,6 +125,33 @@ fn exposure_preserves_unbounded_scene_highlights() {
 }
 
 #[test]
+fn viewport_actual_pixels_matches_full_resolution_without_an_intermediate() {
+    let source = SensorImage::from_rgb(
+        16,
+        12,
+        (0..192).flat_map(|i| [i as f32 / 192.; 3]).collect(),
+    )
+    .unwrap();
+    let e = linear_edits();
+    let p = Pipeline::compile(&source, &e).unwrap();
+    let full = p.render(None).unwrap();
+    let view = p
+        .render_region([4. / 16., 3. / 12., 8. / 16., 6. / 12.], 8, 6)
+        .unwrap();
+    for y in 0..6 {
+        for x in 0..8 {
+            for c in 0..4 {
+                close(
+                    view.pixels[y * 8 + x][c],
+                    full.pixels[(y + 3) * 16 + x + 4][c],
+                    1e-6,
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn agx_is_finite_neutral_and_compresses_extreme_intensities() {
     let mut prev = 0.;
     for i in -30..=30 {
