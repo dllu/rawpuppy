@@ -22,6 +22,8 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --locked
+      - name: Optional neural inference builds
+        run: cargo check --features neural --locked
       - name: Vulkan compute parity on software GPU
         if: runner.os == 'Linux'
         env:

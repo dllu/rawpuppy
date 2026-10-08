@@ -14,7 +14,7 @@ from verification; the project is not complete merely because core tests pass.
 | Vignetting, graduated ND, exposure, calibration | Composed scalar gain and calibration matrix; tests and real preview; oracle comparisons pending |
 | AgX | Analytic approximation with numeric invariants; comparison against oracle pending |
 | Clone/heal, curve, split toning | Core and GUI implemented; retouch spatial index; clone and monotone-curve tests; more interaction checks pending |
-| Neural synthesis | Model research only; actual inference and saved non-destructive result integration pending |
+| Neural synthesis | Rust ONNX reference backend exercised; recent Moebius checkpoint benchmarked on GB10; Moebius is the integration candidate, Qwen 2.1 under research-only terms; modern Rust inference, GUI, and saved-result integration pending |
 | Fixed order / minimal rasterization | Explicit order, compiled geometry/color, direct sparse previews, fused GPU output kernel, cached sensor preparation and bounded output tiles |
 | Display profiles and X11/Wayland/macOS | Explicit ICC preview transform exists; automatic profile discovery and platform validation pending |
 | Output spaces and HDR | Matching ICC integer exports and floating-point EXR; native HDR display integration pending |

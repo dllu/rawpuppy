@@ -49,6 +49,29 @@ enum Command {
     },
     /// Print a default JSON recipe for scripting.
     Recipe,
+    /// Download and verify the Apache-2.0 local LaMa inpainting model.
+    FetchLama,
+    /// Download and verify the recent Moebius scene inpainting checkpoint and VAE.
+    FetchMoebius,
+    /// Experimental LaMa reference backend for comparing newer inpainting models.
+    #[cfg(feature = "neural")]
+    InpaintLama {
+        input: PathBuf,
+        output: PathBuf,
+        /// Grayscale mask matching output dimensions: white replaces, black preserves.
+        #[arg(long)]
+        mask: Option<PathBuf>,
+        #[arg(long)]
+        fill_gaps: bool,
+        #[arg(long)]
+        model: Option<PathBuf>,
+        #[arg(long)]
+        max_edge: Option<usize>,
+        #[arg(long, value_enum, default_value = "srgb")]
+        color_space: OutputSpace,
+        #[arg(long)]
+        overwrite: bool,
+    },
     /// Save a JSON recipe into a Rawpuppy XMP sidecar.
     Save { recipe: PathBuf, output: PathBuf },
 }
@@ -124,6 +147,70 @@ fn main() -> Result<()> {
             );
         }
         Command::Recipe => println!("{}", serde_json::to_string_pretty(&Edits::default())?),
+        Command::FetchLama => println!("{}", rawpuppy::models::fetch_lama()?.display()),
+        Command::FetchMoebius => println!("{}", rawpuppy::models::fetch_moebius()?.display()),
+        #[cfg(feature = "neural")]
+        Command::InpaintLama {
+            input,
+            output,
+            mask,
+            fill_gaps,
+            model,
+            max_edge,
+            color_space,
+            overwrite,
+        } => {
+            ensure!(mask.is_some() || fill_gaps, "Supply --mask or --fill-gaps");
+            ensure!(max_edge != Some(0), "Maximum edge must be positive");
+            ensure!(
+                output.canonicalize().ok().as_ref() != Some(&input.canonicalize()?),
+                "Inpainting cannot overwrite the original"
+            );
+            let source = std::sync::Arc::new(SensorImage::open(&input)?);
+            let edits = sidecar::load_for(&input)?;
+            let mut rendered = Renderer::new(cli.backend).render(source, &edits, max_edge)?;
+            let mut values = vec![0f32; rendered.pixels.len()];
+            if let Some(mask) = mask {
+                ensure!(
+                    output.canonicalize().ok().as_ref() != Some(&mask.canonicalize()?),
+                    "Output cannot overwrite the input mask"
+                );
+                let mut reader = image::ImageReader::open(mask)?;
+                reader.no_limits();
+                let mask = reader.decode()?.to_luma32f();
+                ensure!(
+                    mask.width() as usize == rendered.width
+                        && mask.height() as usize == rendered.height,
+                    "Mask must match the developed output dimensions"
+                );
+                values = mask.into_raw();
+                // Float luma conversion can put nominal white one ULP above one.
+                ensure!(
+                    values.iter().all(|v| v.is_finite()),
+                    "Mask contains nonfinite samples"
+                );
+                values.iter_mut().for_each(|v| *v = v.clamp(0., 1.));
+            }
+            if fill_gaps {
+                for (v, p) in values.iter_mut().zip(&rendered.pixels) {
+                    *v = v.max(1. - p[3]);
+                }
+            }
+            let model = if let Some(path) = model {
+                path
+            } else {
+                rawpuppy::models::fetch_lama()?
+            };
+            let mut lama = rawpuppy::neural::Lama::open(&model)?;
+            let start = Instant::now();
+            let tiles = lama.inpaint(&mut rendered, &values)?;
+            export::write(&output, &rendered, color_space, overwrite)?;
+            eprintln!(
+                "Synthesized {tiles} local tiles in {:.2}s → {}",
+                start.elapsed().as_secs_f64(),
+                output.display()
+            );
+        }
         Command::Save { recipe, output } => {
             let edits: Edits = serde_json::from_slice(&std::fs::read(recipe)?)?;
             sidecar::save(&output, &edits)?;

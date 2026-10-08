@@ -35,3 +35,7 @@ In the editor: drop a photo to open it, scroll to zoom, drag to pan, `F` to fit,
 `1` for actual pixels, and `B` to compare. Save with `Ctrl/Cmd S`; undo with
 `Ctrl/Cmd Z`. Clone/heal uses Alt-click to choose a source. A custom monitor ICC
 can be selected in the editor or passed with `edit --display-profile monitor.icc`.
+
+Modern inpainting integration is underway; see [model evaluation](docs/inpainting-research.md).
+`fetch-moebius` caches verified checkpoints. The optional `neural` feature exposes
+`inpaint-lama` as an experimental comparison backend; it is not the editor's default.

@@ -19,11 +19,15 @@ tiff = "0.11"
 eframe = { version = "0.36.1", default-features = false, features = ["default_fonts", "wgpu", "x11", "wayland"] }
 rfd = "0.17"
 cubecl = { version = "0.10", optional = true, default-features = false, features = ["std", "wgpu"] }
+ort = { version = "=2.0.0-rc.13", optional = true, default-features = false, features = ["std", "download-binaries", "tls-rustls", "copy-dylibs", "api-27"] }
+sha2 = "0.10"
+ureq = { version = "3", default-features = false, features = ["rustls"] }
 
 [features]
 default = ["gpu"]
 gpu = ["dep:cubecl"]
 cuda = ["gpu", "cubecl/cuda"]
+neural = ["dep:ort"]
 
 [profile.release]
 lto = "thin"

@@ -49,4 +49,7 @@ memory and latency costs even on this workstation. Smaller dedicated inpainting
 models, such as [LaMa](https://github.com/advimman/lama), are alternatives for
 gap filling and object removal. Any adopted model needs its own license record,
 deterministic saved results, and inference over bounded regions rather than an
-entire 100 MP image. No model is integrated in the current core milestone.
+entire 100 MP image. These were initial candidates; the current selection work is
+recorded in [inpainting-research.md](inpainting-research.md). The user requested
+newer models. Moebius is now the integration candidate, and Qwen Image 2.1 is a
+research comparison candidate under its different, restrictive license.
