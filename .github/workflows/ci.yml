@@ -14,7 +14,7 @@ jobs:
           components: rustfmt, clippy
       - name: Linux dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libwayland-dev
+        run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libwayland-dev mesa-vulkan-drivers
       - name: macOS dependencies
         if: runner.os == 'macOS'
         run: brew install little-cms2
@@ -22,3 +22,8 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --locked
+      - name: Vulkan compute parity on software GPU
+        if: runner.os == 'Linux'
+        env:
+          RUST_MIN_STACK: '33554432'
+        run: cargo test --test gpu -- --ignored

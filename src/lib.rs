@@ -2,7 +2,10 @@ pub mod color;
 pub mod edits;
 pub mod export;
 pub mod geometry;
+#[cfg(feature = "gpu")]
+pub mod gpu;
 pub mod gui;
 pub mod input;
 pub mod pipeline;
+pub mod render;
 pub mod sidecar;

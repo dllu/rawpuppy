@@ -1,7 +1,12 @@
 use anyhow::{Result, ensure};
 use clap::{Parser, Subcommand};
 use rawpuppy::{
-    color::OutputSpace, edits::Edits, export, input::SensorImage, pipeline::Pipeline, sidecar,
+    color::OutputSpace,
+    edits::Edits,
+    export,
+    input::SensorImage,
+    render::{Backend, Renderer},
+    sidecar,
 };
 use std::{path::PathBuf, time::Instant};
 
@@ -13,6 +18,9 @@ struct Cli {
     /// Limit workers to share the workstation.
     #[arg(long, global = true, default_value_t = 8)]
     threads: usize,
+    /// Photo compute backend. Auto falls back to CPU when a device cannot handle the source.
+    #[arg(long, global = true, value_enum, default_value = "auto")]
+    backend: Backend,
 }
 #[derive(Subcommand)]
 enum Command {
@@ -45,6 +53,14 @@ enum Command {
     Save { recipe: PathBuf, output: PathBuf },
 }
 fn main() -> Result<()> {
+    #[cfg(feature = "cuda")]
+    if std::env::var_os("RUST_MIN_STACK").is_none() {
+        // SAFETY: this is process startup, before parsing, initializing any runtime,
+        // or spawning threads. CubeCL's CUDA compiler needs a larger worker stack.
+        unsafe {
+            std::env::set_var("RUST_MIN_STACK", "33554432");
+        }
+    }
     let cli = Cli::parse();
     ensure!(cli.threads > 0, "Thread count must be nonzero");
     rayon::ThreadPoolBuilder::new()
@@ -57,10 +73,10 @@ fn main() -> Result<()> {
         Command::Edit {
             input,
             display_profile,
-        } => rawpuppy::gui::run(input, display_profile)?,
+        } => rawpuppy::gui::run(input, display_profile, cli.backend)?,
         Command::Inspect { input } => {
             let start = Instant::now();
-            let image = SensorImage::open(&input)?;
+            let image = std::sync::Arc::new(SensorImage::open(&input)?);
             println!("{}", serde_json::to_string_pretty(&image.metadata)?);
             eprintln!(
                 "Decoded in {:.2}s; {:.1} MiB sensor allocation",
@@ -84,7 +100,7 @@ fn main() -> Result<()> {
             );
             ensure!(max_edge != Some(0), "Maximum edge must be positive");
             let start = Instant::now();
-            let image = SensorImage::open(&input)?;
+            let image = std::sync::Arc::new(SensorImage::open(&input)?);
             let decoded = start.elapsed();
             let mut edits = if let Some(path) = explicit {
                 sidecar::load(&path)?
@@ -92,9 +108,11 @@ fn main() -> Result<()> {
                 sidecar::load_for(&input)?
             };
             edits.scene.exposure += exposure;
-            let rendered = Pipeline::compile(&image, &edits)?.render(max_edge)?;
+            let mut renderer = Renderer::new(cli.backend);
+            let rendered = renderer.render(image, &edits, max_edge)?;
             let processed = start.elapsed();
             export::write(&output, &rendered, color_space, overwrite)?;
+            eprintln!("Compute: {}", renderer.label());
             eprintln!(
                 "{} × {} → {} · decode {:.2}s · render {:.2}s · export {:.2}s",
                 rendered.width,

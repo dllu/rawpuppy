@@ -10,6 +10,8 @@ Requires a recent stable Rust toolchain and Little CMS 2 development libraries
 
 ```sh
 cargo build --release
+# NVIDIA CUDA (the default build uses Vulkan / Metal)
+cargo build --release --features cuda
 cargo run --release
 cargo run --release -- edit photo.raf
 cargo run --release -- inspect photo.raf
@@ -25,6 +27,9 @@ Display P3, Adobe RGB, Rec.2020, or linear sRGB, with embedded ICC profiles.
 EXR stores floating-point linear sRGB (`--color-space linear-srgb`).
 Use `--overwrite` to replace an existing export. Originals are never overwritten
 by export; the CLI defaults to eight CPU workers to share the workstation.
+`--backend auto|cpu|cuda|vulkan|metal` selects photo compute. Auto falls back to
+CPU for unsupported sources or device limits; GPU sources stay resident between
+edits. `cargo build --no-default-features` omits photo compute acceleration.
 
 In the editor: drop a photo to open it, scroll to zoom, drag to pan, `F` to fit,
 `1` for actual pixels, and `B` to compare. Save with `Ctrl/Cmd S`; undo with

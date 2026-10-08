@@ -42,3 +42,18 @@ format constraints. Export never replaces the original path, including aliases.
 
 No Darktable source has been copied. Its local checkout can be used to generate
 comparison outputs as an independent oracle.
+
+The GPU path uses a composed CubeCL Rust kernel with persistent sensor residency
+and output tiles bounded to 64 MiB. CUDA is an optional build feature; Vulkan and
+Metal use the wgpu runtime. Sensor cleanup is a cached preparation kernel because
+it has a spatial neighborhood; geometry, reconstruction, intensity, calibration,
+AgX, retouch, curve and split toning run in the output kernel. GPU retouch uses the
+same spatial index and precomputed heal offsets as CPU. Source/device addressing
+and binding limits select CPU fallback in auto mode and never limit the core image
+representation. GPU X-Trans currently selects CPU.
+
+The CUDA compiler worker requires a 32 MiB stack for the composed Bayer kernel.
+The executable sets `RUST_MIN_STACK` at process startup before threads exist;
+library callers and GPU test commands must configure it themselves. Normal edit
+changes update parameters and LUTs without compiling another shader. The first
+GPU preview includes device setup and compilation; warm previews avoid both.

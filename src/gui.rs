@@ -4,7 +4,7 @@ use crate::{
     edits::{Edits, Retouch, RetouchMode, ToneMapper},
     export,
     input::SensorImage,
-    pipeline::Pipeline,
+    render::{Backend, Renderer},
     sidecar,
 };
 use anyhow::{Result, ensure};
@@ -55,6 +55,7 @@ enum Reply {
         rgba: Vec<u8>,
         histogram: Vec<f32>,
         elapsed: f64,
+        backend: String,
     },
     Saved {
         path: PathBuf,
@@ -64,7 +65,8 @@ enum Reply {
     Error(String),
 }
 
-fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context) {
+fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context, backend: Backend) {
+    let mut renderer = Renderer::new(backend);
     while let Ok(mut work) = rx.recv() {
         // Coalesce only preview requests; durable save/export operations are always executed.
         while matches!(work, Work::Render { .. }) {
@@ -93,8 +95,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context)
                 profile,
             } => {
                 let start = Instant::now();
-                let rendered =
-                    Pipeline::compile(&image, &edits)?.render_region(region, size[0], size[1])?;
+                let rendered = renderer.render_region(image, &edits, region, size[0], size[1])?;
                 let mut histogram = vec![0f32; 128];
                 for p in &rendered.pixels {
                     if p[3] < 0.5 {
@@ -114,6 +115,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context)
                     rgba,
                     histogram,
                     elapsed: start.elapsed().as_secs_f64(),
+                    backend: renderer.label().into(),
                 })
             }
             Work::Save { path, edits } => {
@@ -131,7 +133,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context)
                     path.canonicalize().ok().as_ref() != Some(&original.canonicalize()?),
                     "Export cannot overwrite the original"
                 );
-                let rendered = Pipeline::compile(&image, &edits)?.render(None)?;
+                let rendered = renderer.render(image, &edits, None)?;
                 export::write(&path, &rendered, space, true)?;
                 Ok(Reply::Exported(path))
             }
@@ -155,7 +157,7 @@ enum Pending {
     Open(PathBuf),
 }
 
-pub fn run(input: Option<PathBuf>, profile: Option<PathBuf>) -> Result<()> {
+pub fn run(input: Option<PathBuf>, profile: Option<PathBuf>, backend: Backend) -> Result<()> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1440., 960.])
@@ -166,7 +168,7 @@ pub fn run(input: Option<PathBuf>, profile: Option<PathBuf>) -> Result<()> {
     eframe::run_native(
         "Rawpuppy",
         options,
-        Box::new(move |cc| Ok(Box::new(Editor::new(cc, input, profile)))),
+        Box::new(move |cc| Ok(Box::new(Editor::new(cc, input, profile, backend)))),
     )
     .map_err(|e| anyhow::anyhow!("Opening native editor: {e}"))
 }
@@ -213,6 +215,7 @@ impl Editor {
         cc: &eframe::CreationContext<'_>,
         input: Option<PathBuf>,
         profile: Option<PathBuf>,
+        backend: Backend,
     ) -> Self {
         let mut visuals = egui::Visuals::dark();
         visuals.panel_fill = Color32::from_rgb(29, 31, 34);
@@ -230,7 +233,7 @@ impl Editor {
         let ctx = cc.egui_ctx.clone();
         std::thread::Builder::new()
             .name("photo-worker".into())
-            .spawn(move || worker(work_rx, reply_tx, ctx))
+            .spawn(move || worker(work_rx, reply_tx, ctx, backend))
             .expect("Starting photo worker");
         let mut app = Self {
             tx,
@@ -414,6 +417,7 @@ impl Editor {
                     rgba,
                     histogram,
                     elapsed,
+                    backend,
                 } if id == self.generation => {
                     let image = egui::ColorImage::from_rgba_unmultiplied(size, &rgba);
                     if let Some(texture) = &mut self.texture {
@@ -427,7 +431,7 @@ impl Editor {
                     }
                     self.histogram = histogram;
                     if !self.busy {
-                        self.status = format!("Preview {:.0} ms", elapsed * 1000.);
+                        self.status = format!("Preview {:.0} ms · {backend}", elapsed * 1000.);
                     }
                 }
                 Reply::Saved { path, edits }
