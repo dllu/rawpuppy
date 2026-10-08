@@ -1,0 +1,84 @@
+# rawpuppy
+
+Rawpuppy is a clean, opinionated, fast raw editor.
+
+- Implemented in Rust.
+  - Super fast
+  - Cross platform
+  - Elegant and minimalistic egui user interface
+  - GPU acceleration
+    - CUDA on Rust: https://developer.nvidia.com/blog/introducing-cuda-rust-two-tracks-for-writing-gpu-kernels/
+    - Vulkan for non-NVIDIA GPUs
+    - Metal on macOS
+- Modular design with modules such as:
+  - Raw input
+    - Raw decoding
+    - Demosaicing and denoising
+    - Chromatic aberration correction
+    - Hot pixel correction
+  - Geometric modules:
+    - Barrel and pincushion distortion from embedded lens parameters in raw or manually adjusted values
+    - Perspective correction
+    - Crop and rotate
+  - Scene-referred intensity editing:
+    - Vignetting correction (either embedded lens parameters or manually adjusted)
+    - Graduated neutral density filter
+    - Exposure bias
+    - Color calibration
+  - AgX tone mapping
+  - Display-referred editing:
+    - Clone and retouch
+    - Manual tone curve
+    - Split toning
+    - Image synthesis with neural networks, to fill in gaps in corners with perspective correction, removing distracting elements, etc.
+      - The recently released qwen-image 2.1 is quite good. But you can do your own research about what would be license-compatible, performant, and reasonable.
+- Opinionated module ordering and fast, non-destructive composition
+  - As much as possible, modules should be composable with minimal overhead without repeatedly rasterizing the whole image
+    - For example, global color adjustments such as exposure bias, color calibration, tone mapping, and tone curve can be combined into a single function or LUT from raw values to adjusted values.
+    - All geometric modules can be composed into a function that takes the input x, y coordinate and maps it to the output x, y coordinate (or vice versa in practice), both as floating points. Repeated rasterization can lead to generation loss.
+    - Likewise, pixel position-dependent intensity adjustments can be composed
+    - A GPU kernel will allow the final image to be generated in one pass from the composed modules
+    - Composable kernels also allow fast UI preview updates by sampling more sparsely from the original image
+  - Module ordering needs to be fixed and opinionated
+    - Darktable doesn't enforce module ordering and can get really weird bugs as a result
+    - Use your best judgment reasoning from first principles to determine the optimal ordering. The ordering of the modules I mentioned above should be approximately reasonable
+  - As a rule of thumb, each task should be performed by only one module
+    - We do not want multiple modules that overlap in purpose, like the legacy "white balance" and "color calibration" modules in Darktable
+- We have a checkout of Darktable in ~/proj/darktable.
+  - You can test input/outputs against some of darktable's modules to use it as an oracle. Good modules include:
+    - AgX
+    - color calibration
+  - Do not plagiarize the darktable source code
+  - Darktable's perspective correction is sussy and slow. It also computes an excessive amount of sines and cosines. We should implement our own using the pinhole camera model.
+- Do some research for the best demosaicing and denoising algorithms
+  - The Intel one https://www.openimagedenoise.org/ may be okay as a first pass attempt
+  - Likewise, classical demosaicing like AMAZE are okay as a first pass attempt
+  - We eventually want superior joint demosaicing and denoising with a state-of-the-art ML method
+- Find and use high quality crates as you please. Suggestions:
+  - candle for ML inference
+  - wgpu
+- Pay extreme attention to color theory and correctness:
+  - Display profiles (this monitor uses sRGB but others may not)
+  - Needs to work on X11, Wayland, and macOS
+  - Working color spaces and output color spaces (most of my photos are exported as sRGB, but we need to correctly support others as well)
+  - Although most of our images are meant for SDR output, we should consider HDR displays and HDR images
+- We need to ensure that it works smoothly with my 100 megapixel Fujifilm GFX 100S images. Some examples are in ~/pictures/raw (do not modify the contents there)
+  - There must be no limit to file sizes beyond core file format limits and system memory limits
+  - If contiguous memory is a problem, we can use tiled representations
+  - Do not use ridiculously small types to limit file sizes, such as rawspeed's 16 bit indices for dead pixels that limits the file size to 65536 px (https://github.com/darktable-org/rawspeed/issues/981)
+  - We may need to process files in excess of 100,000 px wide
+- This machine is equipped with an NVIDIA GB10 with 128GB of unified memory
+  - You can embrace the unified memory to reduce memory usage, e.g. by avoiding having copies of the same data for the "gpu" and "cpu" and repeatedly shunt data between the two, when both are in fact drawn from the same physical memory
+  - Generally follow best practices on https://docs.nvidia.com/dgx/dgx-spark-porting-guide/optimization.html
+  - Other agents may be working on other projects on the same machine.
+    - When profiling, be aware that sometimes other agents may be consuming CPU
+    - Do not kill other processes that may be consuming the system
+    - Be mindful to avoid causing OOMs
+- The app should simply edit a single photo
+  - There doesn't need to be a "gallery" or "light table" view for now
+  - No need for global database
+  - Can add headless CLI mode
+  - Store edits as an XMP sidecar. Figure out some way to avoid the sidecar from colliding with darktable sidecars, though.
+- Maintain a concise README describing the project and build/run instructions. Do not put detailed documentation in the README.
+- Maintain a docs directory with a journal of concrete progress you have made as markdown files. For readability you can prefix each file with the datetime and then add a concise title in the filename.
+- Commit and push whenever you make concrete progress.
