@@ -126,7 +126,9 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                 );
                 let rgba = rgba8(image, space);
                 let rgb: Vec<u8> = rgba
-                    .as_chunks::<4>().0.iter()
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
                     .flat_map(|p| p[..3].iter().copied())
                     .collect();
                 let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(writer, 95);
