@@ -31,6 +31,10 @@ def main():
         raise ValueError("Published checkpoint identity mismatch")
     oracle = args.output / "oracle"
     subprocess.run(["git", "init", str(oracle)], check=True)
+    # Windows Git commonly enables CRLF conversion. Preserve the exact pinned
+    # source bytes required by the external-oracle identity check.
+    subprocess.run(["git", "-C", str(oracle), "config", "core.autocrlf", "false"], check=True)
+    subprocess.run(["git", "-C", str(oracle), "config", "core.eol", "lf"], check=True)
     subprocess.run(["git", "-C", str(oracle), "remote", "add", "origin",
                     "https://github.com/trougnouf/rawnind_jddc.git"], check=True)
     subprocess.run(["git", "-C", str(oracle), "fetch", "--depth", "1", "origin",

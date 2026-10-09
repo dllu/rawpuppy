@@ -64,7 +64,8 @@ determines the standard U-Net pooling/concatenation order by numerical compariso
 then checks multiple sizes and signed/above-white probes. Prepared graphs include
 their hashes, attribution, source identities and maximum numerical differences.
 The loader requires manifest version 2 and verifies the graph checksum.
-`--device cpu` also ran successfully. Native Metal/MPS inference is unverified.
+`--device cpu` also ran successfully. The real graph's native MPS checks passed
+on Apple Silicon macOS CI, including CPU parity and tiled/renderer integration.
 
 The native-learning CI matrix now covers Linux, macOS and Windows with matching
 PyTorch/LibTorch 2.13. `tools/prepare_ci_raw_model.py` downloads the published
@@ -75,9 +76,14 @@ including all Bayer phases, wide inputs, tiles, cancellation and renderer reuse.
 The device comparison includes signed/above-white inputs and compares against
 CPU output. macOS explicitly requires MPS, with CPU operator fallback disabled.
 Only graph provenance and attribution are uploaded, not the weights or photos.
-CI execution results still need to be observed before claiming those platforms
-verified. Local Linux CPU checks pass; the new GB10 CUDA comparison differs from
-CPU by at most `1.55e-6` camera-linear units in its four-phase synthetic probe.
+Linux CPU and macOS MPS passed all seven real-model checks in CI run
+`37965948083`. The macOS probe explicitly selected `Mps` and differed from CPU
+by at most `1.55e-6` camera-linear units on the four-phase signed/above-white
+probe. The local GB10 CUDA comparison observed the same maximum difference.
+Windows preparation exposed Git's CRLF conversion; the owned oracle checkout
+now disables conversion rather than relaxing the byte-identity check. Its rerun
+remains pending. These checks establish execution/integrity, not photographic
+restoration quality across all cameras or native inference latency guarantees.
 
 Regions use **unrotated sensor coordinates**, including sensor margins. The model
 receives packed RGGB `[R,G top-right,G bottom-left,B]`, without white balance.
@@ -192,8 +198,8 @@ address space; this does not exhaust shared system RAM or establish CUDA/MPS
 device-allocation recovery. [The record](data/reconstruction-memory-2026-10-09.json)
 retains the exact limit and failure. No partial reconstructed image is returned.
 
-More device/memory-pressure coverage, wider camera/illuminant quality and native MPS
-validation remain outstanding. Full-frame execution does not establish HDR
+More device/memory-pressure coverage, wider camera/illuminant quality and Windows
+runtime verification remain outstanding. Full-frame execution does not establish HDR
 restoration quality.
 
 Tests cover all four Bayer phases, unchanged originals, observed-sample photometry,
