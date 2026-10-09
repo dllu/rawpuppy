@@ -3977,6 +3977,7 @@ dependencies = [
  "cudarc",
  "eframe",
  "exr",
+ "half",
  "image",
  "lcms2",
  "libc",
@@ -3986,6 +3987,7 @@ dependencies = [
  "objc2-core-graphics",
  "objc2-quartz-core 0.3.2",
  "ort",
+ "pollster 0.4.0",
  "quick-xml",
  "raw-window-handle",
  "rawler",
@@ -4002,6 +4004,7 @@ dependencies = [
  "wayland-client",
  "wayland-protocols",
  "windows-sys 0.61.2",
+ "winit",
  "x11rb",
  "zbus",
 ]

@@ -5,6 +5,7 @@ use lcms2::{ColorSpaceSignature, Flags, Intent, PixelFormat, Profile, Transform}
 use sha2::{Digest, Sha256};
 use std::{path::PathBuf, sync::Arc};
 
+pub mod hdr;
 mod platform;
 #[cfg(target_os = "linux")]
 mod wayland_surface;

@@ -29,3 +29,7 @@ GPU parity includes CA-only/no-manual-fringe cases, combined corrections and all
 eight orientations for RGB and Bayer inputs. Native Metal CA coverage awaits CI.
 All photographs and generated validation artifacts stay outside the repository.
 The full PROMPT.md goal remains active.
+
+Follow-up: [CI run 37933420194](https://github.com/dllu/rawpuppy/actions/runs/37933420194)
+passed Linux, Windows, macOS and native learning. The native Metal parity step
+itself passed, including the CA-only and combined-camera cases.

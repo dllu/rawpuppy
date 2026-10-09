@@ -70,8 +70,8 @@ coverage for every channel, actual GFX curve samples and invalid data, historica
 saved-fill hashes and legacy embedded-recipe hashes. CUDA and Vulkan parity explicitly include camera correction alongside
 manual geometry, scene and local edits, all EXIF orientations and the
 100,003-pixel-wide case.
-Earlier macOS CI verified embedded distortion/vignetting on native Metal.
-The CA-inclusive native Metal cases await the next CI run.
+The CA-inclusive native Metal cases passed in macOS
+[CI run 37933420194](https://github.com/dllu/rawpuppy/actions/runs/37933420194).
 
 An isolated Darktable session supplied separate distortion, vignetting and CA
 presets through its UI. No Darktable source was read for the correction algorithm.

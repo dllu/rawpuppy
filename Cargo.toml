@@ -16,6 +16,7 @@ serde_json = "1.0"
 lcms2 = "6.1"
 tempfile = "3"
 bytemuck = "1.25"
+half = { version = "2.7", features = ["bytemuck"] }
 raw-window-handle = "0.6"
 tiff = "0.11"
 eframe = { version = "0.36.1", default-features = false, features = ["default_fonts", "wgpu", "x11", "wayland"] }
@@ -27,6 +28,10 @@ libloading = { version = "0.8", optional = true }
 cudarc = { version = "0.19.10", optional = true, default-features = false, features = ["std", "driver", "nvrtc", "fallback-dynamic-loading", "cuda-version-from-build-system", "fallback-latest"] }
 sha2 = "0.10"
 ureq = { version = "3", default-features = false, features = ["rustls"] }
+
+[dev-dependencies]
+pollster = "0.4"
+winit = { version = "0.30.13", default-features = false, features = ["x11", "wayland", "rwh_06"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libc = { version = "0.2", optional = true }

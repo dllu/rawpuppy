@@ -1,0 +1,163 @@
+{
+  "scope": "FP16 texture and native extended-linear signal validation; editor integration and physical HDR colorimetry not complete",
+  "hardware": "NVIDIA GB10",
+  "x11": {
+    "adapter": "AdapterInfo { name: \"NVIDIA GB10\", vendor: 4318, device: 11794, device_type: IntegratedGpu, device_pci_bus_id: \"000f:01:00.0\", driver: \"NVIDIA\", driver_info: \"610.57.04\", backend: Vulkan, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: Some(false), limit_bucket: None }",
+    "display_hdr_info": "DisplayHdrInfo { luminance: None, headroom: None, chromaticity: None, coarse: None, bits_per_color: None }",
+    "extended_linear_surface_available": false,
+    "format_capabilities": [
+      {
+        "color_spaces": "SurfaceColorSpaces(SRGB)",
+        "format": "Bgra8UnormSrgb"
+      },
+      {
+        "color_spaces": "SurfaceColorSpaces(SRGB)",
+        "format": "Bgra8Unorm"
+      }
+    ],
+    "native_frames_presented": 0,
+    "scope": "surface capability and signal presentation, not physical-monitor colorimetry or editor integration",
+    "tone_map_headroom": null
+  },
+  "managed_wayland": {
+    "adapter": "AdapterInfo { name: \"NVIDIA GB10\", vendor: 4318, device: 11794, device_type: IntegratedGpu, device_pci_bus_id: \"000f:01:00.0\", driver: \"NVIDIA\", driver_info: \"610.57.04\", backend: Vulkan, subgroup_min_size: 32, subgroup_max_size: 32, transient_saves_memory: Some(false), limit_bucket: None }",
+    "display_hdr_info": "DisplayHdrInfo { luminance: None, headroom: None, chromaticity: None, coarse: None, bits_per_color: None }",
+    "extended_linear_surface_available": true,
+    "format_capabilities": [
+      {
+        "color_spaces": "SurfaceColorSpaces(SRGB)",
+        "format": "Rgba8UnormSrgb"
+      },
+      {
+        "color_spaces": "SurfaceColorSpaces(SRGB)",
+        "format": "Bgra8UnormSrgb"
+      },
+      {
+        "color_spaces": "SurfaceColorSpaces(SRGB)",
+        "format": "Rgba8Unorm"
+      },
+      {
+        "color_spaces": "SurfaceColorSpaces(SRGB | EXTENDED_SRGB_LINEAR)",
+        "format": "Rgba16Float"
+      },
+      {
+        "color_spaces": "SurfaceColorSpaces(SRGB)",
+        "format": "Bgra8Unorm"
+      },
+      {
+        "color_spaces": "SurfaceColorSpaces(SRGB | BT2100_PQ)",
+        "format": "Rgb10a2Unorm"
+      }
+    ],
+    "native_frames_presented": 3,
+    "scope": "surface capability and signal presentation, not physical-monitor colorimetry or editor integration",
+    "selected": {
+      "color_space": "ExtendedSrgbLinear",
+      "format": "Rgba16Float",
+      "source_pixels": [
+        [
+          -0.125,
+          0.5,
+          2.0,
+          1.0
+        ],
+        [
+          4.0,
+          2.0,
+          1.0,
+          1.0
+        ],
+        [
+          0.18000000715255737,
+          0.18000000715255737,
+          0.18000000715255737,
+          1.0
+        ],
+        [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ]
+      ]
+    },
+    "tone_map_headroom": null
+  },
+  "wayland_protocol": {
+    "control_owner": "Vulkan WSI",
+    "primaries_named": 1,
+    "transfer_named": 5,
+    "luminances": [
+      0,
+      80,
+      203
+    ],
+    "description_ready_before_use": true,
+    "owned_control_destroyed": true,
+    "compositor_output": "default SDR sRGB, gamma 2.2; ABGR16161616F shadow"
+  },
+  "offscreen_gpu_readback": {
+    "format": "Rgba16Float",
+    "source_white_signal_scale": 1,
+    "source_pixels": [
+      [
+        -0.125,
+        0.5,
+        2,
+        1
+      ],
+      [
+        4,
+        2,
+        1,
+        1
+      ],
+      [
+        2,
+        4,
+        8,
+        0.5
+      ],
+      [
+        1,
+        1,
+        1,
+        0
+      ]
+    ],
+    "background_linear_rgba": [
+      0.25,
+      0.25,
+      0.25,
+      1
+    ],
+    "expected_pixels": [
+      [
+        -0.125,
+        0.5,
+        2,
+        1
+      ],
+      [
+        4,
+        2,
+        1,
+        1
+      ],
+      [
+        1.125,
+        2.125,
+        4.125,
+        1
+      ],
+      [
+        0.25,
+        0.25,
+        0.25,
+        1
+      ]
+    ],
+    "max_per_channel_tolerance": 0.002,
+    "passed": true
+  }
+}
