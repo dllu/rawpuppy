@@ -7,6 +7,7 @@ requirements are recorded in [docs](docs).
 
 Requires a recent stable Rust toolchain and Little CMS 2 development libraries
 (`liblcms2-dev` on Debian/Ubuntu; `brew install little-cms2` on macOS).
+Linux X11 windows also require `libxkbcommon-x11-0` at runtime.
 
 ```sh
 cargo build --release

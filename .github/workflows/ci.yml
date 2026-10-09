@@ -19,7 +19,7 @@ jobs:
           components: rustfmt, clippy
       - name: Linux dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libwayland-dev mesa-vulkan-drivers xvfb xauth
+        run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libxkbcommon-x11-0 libwayland-dev mesa-vulkan-drivers xvfb xauth
       - name: macOS dependencies
         if: runner.os == 'macOS'
         run: brew install little-cms2
@@ -42,7 +42,15 @@ jobs:
             target/debug/examples/editor_signal_probe --editor target/debug/rawpuppy --output "$RUNNER_TEMP/rawpuppy-editor-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           fi
       - name: Optional neural inference builds
+        # Probe artifacts use only generated fixtures, not user photographs.
         run: cargo check --features neural --locked
+      - name: Retain native editor diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-editor-${{ runner.os }}
+          path: ${{ runner.temp }}/rawpuppy-editor-*
+          if-no-files-found: ignore
       - name: CUDA adapter compilation without requiring a GPU
         if: runner.os == 'Linux'
         run: cargo check --features cuda --all-targets --locked

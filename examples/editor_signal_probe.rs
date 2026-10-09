@@ -64,14 +64,18 @@ fn main() -> Result<()> {
         if hdr {
             command.arg("--hdr");
         }
+        let status = command.status()?;
         ensure!(
-            command.status()?.success(),
-            "Native editor failed; inspect {}",
-            log_path.display()
+            status.success(),
+            "Native editor exited {status}:\n{}",
+            std::fs::read_to_string(&log_path).unwrap_or_default()
         );
         let report: serde_json::Value =
             serde_json::from_slice(&std::fs::read(&report_path).with_context(|| {
-                format!("No editor frame report; inspect {}", log_path.display())
+                format!(
+                    "No editor frame report:\n{}",
+                    std::fs::read_to_string(&log_path).unwrap_or_default()
+                )
             })?)?;
         let active = report["hdr_active"]
             .as_bool()
