@@ -37,7 +37,9 @@ pub struct Renderer {
     #[cfg(feature = "moebius")]
     moebius: Option<crate::moebius::Moebius>,
     #[cfg(feature = "raw-ml")]
-    raw_model: Option<crate::raw_ml::BayerModel>,
+    raw_service: Option<crate::raw_background::Service>,
+    #[cfg(feature = "raw-ml")]
+    raw_job: Option<crate::raw_background::Job>,
     #[cfg(feature = "raw-ml")]
     reconstructed: Option<(Arc<SensorImage>, bool, Arc<SensorImage>)>,
 }
@@ -60,7 +62,9 @@ impl Renderer {
             #[cfg(feature = "moebius")]
             moebius: None,
             #[cfg(feature = "raw-ml")]
-            raw_model: None,
+            raw_service: None,
+            #[cfg(feature = "raw-ml")]
+            raw_job: None,
             #[cfg(feature = "raw-ml")]
             reconstructed: None,
         }
@@ -89,6 +93,10 @@ impl Renderer {
             self.reconstructed = None;
         }
         if edits.raw.reconstruction == Reconstruction::Mhc {
+            #[cfg(feature = "raw-ml")]
+            {
+                self.raw_job = None;
+            }
             return Ok(image);
         }
         #[cfg(feature = "raw-ml")]
@@ -97,22 +105,114 @@ impl Renderer {
                 && Arc::ptr_eq(original, &image)
                 && *hot == edits.raw.hot_pixels
             {
+                self.raw_job = None;
                 return Ok(prepared.clone());
             }
-            if self.raw_model.is_none() {
-                self.raw_model = Some(crate::raw_ml::BayerModel::open(
-                    &crate::models::raw_model_path()?,
-                    crate::ml_runtime::InferenceDevice::Auto,
-                )?);
-            }
-            let prepared = Arc::new(self.raw_model.as_ref().unwrap().reconstruct_image(
-                &image,
-                edits.raw.hot_pixels,
-                1024,
-                |_, _| {},
-            )?);
+            self.request_raw_job(image.clone(), edits.raw.hot_pixels)?;
+            let job = self.raw_job.take().unwrap();
+            let prepared = job.wait()?;
             self.reconstructed = Some((image, edits.raw.hot_pixels, prepared.clone()));
             Ok(prepared)
+        }
+        #[cfg(not(feature = "raw-ml"))]
+        anyhow::bail!("This recipe uses joint AI reconstruction; build with the raw-ml feature")
+    }
+    #[cfg(feature = "raw-ml")]
+    fn request_raw_job(&mut self, image: Arc<SensorImage>, hot: bool) -> Result<()> {
+        if self
+            .raw_job
+            .as_ref()
+            .is_some_and(|job| job.matches(&image, hot))
+        {
+            return Ok(());
+        }
+        self.raw_job = None;
+        if self.raw_service.is_none() {
+            self.raw_service = Some(crate::raw_background::Service::open(
+                crate::models::raw_model_path()?,
+            )?);
+        }
+        self.raw_job = Some(self.raw_service.as_ref().unwrap().request(image, hot)?);
+        Ok(())
+    }
+    pub fn cancel_reconstruction(&mut self) {
+        #[cfg(feature = "raw-ml")]
+        {
+            self.raw_job = None;
+        }
+    }
+    pub fn reconstruction_pending(&self) -> bool {
+        #[cfg(feature = "raw-ml")]
+        {
+            self.raw_job.is_some()
+        }
+        #[cfg(not(feature = "raw-ml"))]
+        {
+            false
+        }
+    }
+
+    /// Standard preview while joint preparation runs; saved output never uses
+    /// this temporary path, and neural synthesis layers are withheld until ready.
+    pub fn render_preview_region(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        region: [f32; 4],
+        width: usize,
+        height: usize,
+    ) -> Result<(Rendered, Option<[usize; 2]>)> {
+        if image.reconstruction == Reconstruction::RawNindV1 {
+            self.cancel_reconstruction();
+            return Ok((
+                self.render_region(image, edits, region, width, height)?,
+                None,
+            ));
+        }
+        if edits.raw.reconstruction == Reconstruction::Mhc {
+            self.cancel_reconstruction();
+            return Ok((
+                self.render_region(image, edits, region, width, height)?,
+                None,
+            ));
+        }
+        #[cfg(feature = "raw-ml")]
+        {
+            if let Some((original, hot, prepared)) = &self.reconstructed
+                && Arc::ptr_eq(original, &image)
+                && *hot == edits.raw.hot_pixels
+            {
+                self.raw_job = None;
+                return Ok((
+                    self.render_region(prepared.clone(), edits, region, width, height)?,
+                    None,
+                ));
+            }
+            self.request_raw_job(image.clone(), edits.raw.hot_pixels)?;
+            let polled = self.raw_job.as_ref().unwrap().poll();
+            let prepared = match polled {
+                Ok(value) => value,
+                Err(error) => {
+                    self.raw_job = None;
+                    return Err(error);
+                }
+            };
+            if let Some(prepared) = prepared {
+                self.raw_job = None;
+                self.reconstructed = Some((image, edits.raw.hot_pixels, prepared.clone()));
+                return Ok((
+                    self.render_region(prepared, edits, region, width, height)?,
+                    None,
+                ));
+            }
+            let progress = self.raw_job.as_ref().unwrap().progress();
+            let mut temporary = edits.clone();
+            temporary.raw.reconstruction = Reconstruction::Mhc;
+            temporary.raw.denoise = 0.;
+            temporary.display.synthesis.clear();
+            let rendered =
+                self.render_prepared_before_synthesis(image, &temporary, region, width, height)?;
+            Ok((rendered, Some(progress)))
         }
         #[cfg(not(feature = "raw-ml"))]
         anyhow::bail!("This recipe uses joint AI reconstruction; build with the raw-ml feature")
@@ -198,6 +298,16 @@ impl Renderer {
         height: usize,
     ) -> Result<Rendered> {
         let image = self.prepare_source(image, edits)?;
+        self.render_prepared_before_synthesis(image, edits, region, width, height)
+    }
+    fn render_prepared_before_synthesis(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        region: [f32; 4],
+        width: usize,
+        height: usize,
+    ) -> Result<Rendered> {
         if let Err(e) = self.initialize() {
             if self.backend != Backend::Auto {
                 return Err(e);

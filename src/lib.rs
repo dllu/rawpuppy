@@ -18,6 +18,8 @@ pub mod moebius;
 pub mod neural;
 pub mod pipeline;
 #[cfg(feature = "raw-ml")]
+mod raw_background;
+#[cfg(feature = "raw-ml")]
 pub mod raw_ml;
 pub mod render;
 pub mod sidecar;

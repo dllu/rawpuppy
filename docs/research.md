@@ -27,7 +27,9 @@ improve over the tested bilateral/MHC baseline, with fine-detail losses still
 visible. [Learned reconstruction](learned-reconstruction.md) records full-float32
 precision, CFA packing, photometric matching, timing and limits. The editor,
 exporter and synthesis now share a tiled, globally gain-matched camera RGB cache.
-Broad camera/detail quality, progressive preparation and HDR validation remain
+Background preparation now supplies tile progress, permits ordinary previews,
+cancels superseded work and activates only the matching completed source.
+Broad camera/detail quality, memory-pressure coverage and HDR validation remain
 required before treating this as a final reconstruction choice.
 
 ## Tone and color

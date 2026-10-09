@@ -19,6 +19,7 @@ use std::{
 
 const ACCENT: Color32 = Color32::from_rgb(225, 150, 100);
 
+#[derive(Clone)]
 enum Work {
     Open {
         id: u64,
@@ -71,6 +72,7 @@ enum Reply {
         elapsed: f64,
         backend: String,
         managed_display: bool,
+        reconstruction_progress: Option<[usize; 2]>,
     },
     Saved {
         path: PathBuf,
@@ -90,7 +92,25 @@ enum Reply {
 fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context, backend: Backend) {
     let mut renderer = Renderer::new(backend);
     let mut display_encoder = display::Encoder::default();
-    while let Ok(mut work) = rx.recv() {
+    let mut last_preview = None;
+    loop {
+        let mut work = if renderer.reconstruction_pending() {
+            match rx.recv_timeout(std::time::Duration::from_millis(100)) {
+                Ok(work) => work,
+                Err(mpsc::RecvTimeoutError::Timeout) => {
+                    let Some(work) = last_preview.clone() else {
+                        continue;
+                    };
+                    work
+                }
+                Err(mpsc::RecvTimeoutError::Disconnected) => break,
+            }
+        } else {
+            match rx.recv() {
+                Ok(work) => work,
+                Err(_) => break,
+            }
+        };
         // Coalesce only preview requests; durable save/export operations are always executed.
         while matches!(work, Work::Render { .. }) {
             match rx.try_recv() {
@@ -98,8 +118,13 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 Err(_) => break,
             }
         }
+        if matches!(work, Work::Render { .. }) {
+            last_preview = Some(work.clone());
+        }
         let result: Result<Reply> = (|| match work {
             Work::Open { id, path } => {
+                renderer.cancel_reconstruction();
+                last_preview = None;
                 let image = Arc::new(SensorImage::open(&path)?);
                 let edits = sidecar::load_for_default(&path, Edits::for_image(&image))?;
                 renderer.set_document(path.clone());
@@ -125,8 +150,13 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                     fill.recipe_sha256 == hash
                         && fill.source_color_revision == image.metadata.color_revision
                 });
-                let rendered =
-                    renderer.render_region(image, &preview_edits, region, size[0], size[1])?;
+                let (rendered, reconstruction_progress) = renderer.render_preview_region(
+                    image,
+                    &preview_edits,
+                    region,
+                    size[0],
+                    size[1],
+                )?;
                 let mut histogram = vec![0f32; 128];
                 for p in &rendered.pixels {
                     if p[3] < 0.5 {
@@ -148,6 +178,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                     elapsed: start.elapsed().as_secs_f64(),
                     backend: renderer.label().into(),
                     managed_display: profile.is_none(),
+                    reconstruction_progress,
                 })
             }
             Work::Save { path, edits } => {
@@ -638,6 +669,7 @@ impl Editor {
                     elapsed,
                     backend,
                     managed_display,
+                    reconstruction_progress,
                 } if id == self.generation => {
                     #[cfg(target_os = "macos")]
                     {
@@ -657,7 +689,15 @@ impl Editor {
                     }
                     self.histogram = histogram;
                     if !self.busy {
-                        self.status = format!("Preview {:.0} ms · {backend}", elapsed * 1000.);
+                        self.status = if let Some([done, total]) = reconstruction_progress {
+                            if total == 0 {
+                                "Preparing Joint AI · Standard preview".into()
+                            } else {
+                                format!("Preparing Joint AI {done}/{total} · Standard preview")
+                            }
+                        } else {
+                            format!("Preview {:.0} ms · {backend}", elapsed * 1000.)
+                        };
                     }
                 }
                 Reply::Saved { path, edits }

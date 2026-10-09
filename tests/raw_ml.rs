@@ -199,3 +199,76 @@ fn renderer_composes_learned_camera_rgb_and_releases_retired_sources() {
     renderer.render(next, &Edits::default(), None).unwrap();
     assert!(retired.upgrade().is_none());
 }
+
+#[test]
+#[ignore = "requires the verified external RawNIND graph"]
+fn joint_preparation_cancels_at_a_tile_boundary_without_altering_the_source() {
+    let model = model();
+    let source = sensor(96, 98, "RGGB");
+    let original = source.data.clone();
+    let mut completed = 0;
+    let error = model
+        .reconstruct_image_controlled(&source, false, 32, |done, _| {
+            completed = done;
+            done < 1
+        })
+        .err()
+        .expect("Cancelled job must not return a partial image");
+    assert!(error.to_string().contains("cancelled"));
+    assert_eq!(completed, 1);
+    assert_eq!(source.data, original);
+}
+
+#[test]
+#[ignore = "requires the verified RawNIND graph installed in the standard model cache"]
+fn preview_preparation_is_nonblocking_and_never_commits_superseded_results() {
+    use rawpuppy::{
+        edits::{Edits, Reconstruction},
+        render::{Backend, Renderer},
+    };
+    use std::{
+        sync::Arc,
+        time::{Duration, Instant},
+    };
+    let source = Arc::new(sensor(192, 194, "GBRG"));
+    let mut edits = Edits::default();
+    edits.raw.reconstruction = Reconstruction::RawNindV1;
+    let mut renderer = Renderer::new(Backend::Cpu);
+    let (_, preparing) = renderer
+        .render_preview_region(source.clone(), &edits, [0., 0., 1., 1.], 32, 32)
+        .unwrap();
+    assert!(preparing.is_some());
+    assert!(renderer.reconstruction_pending());
+    let replacement = Arc::new(sensor(96, 98, "BGGR"));
+    let standard = Edits::default();
+    let (_, preparing) = renderer
+        .render_preview_region(replacement.clone(), &standard, [0., 0., 1., 1.], 32, 32)
+        .unwrap();
+    assert!(preparing.is_none());
+    assert!(!renderer.reconstruction_pending());
+    let start = Instant::now();
+    loop {
+        let (_, preparing) = renderer
+            .render_preview_region(replacement.clone(), &edits, [0., 0., 1., 1.], 32, 32)
+            .unwrap();
+        if preparing.is_none() {
+            break;
+        }
+        assert!(start.elapsed() < Duration::from_secs(30));
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    let expected = renderer
+        .render(replacement.clone(), &edits, Some(32))
+        .unwrap();
+    let (actual, progress) = renderer
+        .render_preview_region(
+            replacement,
+            &edits,
+            [0., 0., 1., 1.],
+            expected.width,
+            expected.height,
+        )
+        .unwrap();
+    assert!(progress.is_none());
+    assert_eq!(actual.pixels, expected.pixels);
+}

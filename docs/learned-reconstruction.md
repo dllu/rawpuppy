@@ -149,9 +149,23 @@ learned base source.
 The cache is in RAM, with a single camera-RGB allocation (~1.24 GB for this sensor)
 in addition to the original sensor. Eligible coherent CUDA devices share that
 allocation with the fused renderer. No processed photo database is written. The
-initial pass still occupies the photo worker; controls/UI stay responsive, but
-preview requests queue until it completes. Progressive preparation, cancellation,
-more memory-pressure coverage, wider camera/illuminant quality and native MPS
+initial pass runs on one owned reconstruction worker. The editor shows an explicit
+**Standard preview** with tile progress while Joint AI prepares; exposure and other
+ordinary preview edits continue on the photo worker. A successful matching result
+automatically replaces the temporary preview. Neural synthesis layers are withheld
+from the temporary Standard image. Export and generation wait for the requested
+learned source and never commit this temporary preview.
+
+Changing reconstruction, hot-pixel correction or the document cancels superseded
+work at a tile boundary. Requests coalesce on the single model worker, bounding
+in-progress allocations. Reverting to an already cached configuration cancels a
+different job still running. Cancelled results cannot activate on a newer source.
+An isolated GFX session changed exposure from 1 to 2 EV while a hot-pixel rebuild
+advanced from tile 1/108 to 3/108, switched to Standard, restarted and automatically
+finished the learned preview. Tests cover cancellation, stale-job isolation,
+source retirement and latest-request coalescing.
+
+More memory-pressure coverage, wider camera/illuminant quality and native MPS
 validation remain outstanding. Full-frame execution does not establish HDR
 restoration quality.
 

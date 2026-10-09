@@ -269,6 +269,19 @@ impl BayerModel {
         tile_edge: usize,
         mut progress: impl FnMut(usize, usize),
     ) -> Result<SensorImage> {
+        self.reconstruct_image_controlled(source, hot_pixels, tile_edge, |done, total| {
+            progress(done, total);
+            true
+        })
+    }
+
+    pub fn reconstruct_image_controlled(
+        &self,
+        source: &SensorImage,
+        hot_pixels: bool,
+        tile_edge: usize,
+        mut control: impl FnMut(usize, usize) -> bool,
+    ) -> Result<SensorImage> {
         ensure!(
             tile_edge > 0 && source.active.iter().all(|v| *v >= 2),
             "Invalid reconstruction tile or active image dimensions"
@@ -299,14 +312,15 @@ impl BayerModel {
         let width = source.metadata.sensor_width;
         let height = source.metadata.sensor_height;
         let count = pixel_count(width, height, 3)?;
+        let columns = source.active[0].div_ceil(tile_edge);
+        let rows = source.active[1].div_ceil(tile_edge);
+        let total = columns.checked_mul(rows).context("Tile count overflow")?;
+        ensure!(control(0, total), "Reconstruction cancelled");
         let mut data = Vec::new();
         data.try_reserve_exact(count)?;
         #[cfg(feature = "cuda")]
         crate::gpu::advise_sensor_allocation(data.spare_capacity_mut());
         data.resize(count, 0.);
-        let columns = source.active[0].div_ceil(tile_edge);
-        let rows = source.active[1].div_ceil(tile_edge);
-        let total = columns.checked_mul(rows).context("Tile count overflow")?;
         let mut input_sum = 0f64;
         let mut generated_sum = 0f64;
         let cleanup = RawEdits {
@@ -315,6 +329,10 @@ impl BayerModel {
         };
         for row in 0..rows {
             for column in 0..columns {
+                ensure!(
+                    control(row * columns + column, total),
+                    "Reconstruction cancelled"
+                );
                 let origin = [
                     source.origin[0] + column * tile_edge,
                     source.origin[1] + row * tile_edge,
@@ -342,7 +360,10 @@ impl BayerModel {
                         generated_sum += pixel[cfa.color_at(origin[1] + y, origin[0] + x)] as f64;
                     }
                 }
-                progress(row * columns + column + 1, total);
+                ensure!(
+                    control(row * columns + column + 1, total),
+                    "Reconstruction cancelled"
+                );
             }
         }
         ensure!(

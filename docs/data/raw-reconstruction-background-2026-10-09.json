@@ -1,0 +1,42 @@
+{
+  "scope": "Responsive background preparation on one GFX100S source; not general latency or quality guarantees",
+  "architecture": "One owned model worker, coalesced requests, tile-boundary cancellation; photo previews continue separately",
+  "gui_observations": {
+    "environment": "Owned Xvfb and CUDA photo compute",
+    "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "preparation": "Standard preview and tile counter explicitly shown",
+    "during_hot_rebuild": "Exposure 1 EV at tile 1/108, 2 EV at tile 3/108",
+    "cancelled_hot_rebuild": "Standard selected; normal preview observed at 48 ms in screenshot",
+    "automatic_handoff": "Matching Joint AI result appeared automatically; final preview observed at 14 ms",
+    "saved": "raw_nind_v1, hot_pixels=true, exposure=2.0",
+    "closed": "Normal WM_DELETE_WINDOW; editor process missing afterwards; owned Xvfb stopped after command/logfile ownership checks"
+  },
+  "saved_export": {
+    "log": "Compute: cuda (system memory)\n512 \u00d7 341 \u2192 /tmp/rawpuppy-validation/reconstruction-async/synthesis-reloaded.png \u00b7 decode 0.17s \u00b7 render 2.64s \u00b7 export 0.02s\n",
+    "decoded_parity_to_prior_sync_export": {
+      "shape": [
+        341,
+        512,
+        4
+      ],
+      "dtype": "uint16",
+      "different_channel_samples": 0,
+      "max_absolute_channel_difference": 0
+    }
+  },
+  "tests": {
+    "default": "33 nonignored passed",
+    "native_optional": "36 nonignored passed, including latest-request/source-release unit test",
+    "external_model": "6 actual-model tests passed, including cancellation and nonblocking preview readiness/stale-source isolation",
+    "strict_clippy": "Default and moebius,raw-ml,cuda all-targets passed on Rust 1.99"
+  },
+  "previous_commit_ci": "d18fadd: Linux/macOS/Windows and native learning jobs all succeeded",
+  "artifact_note": "Screenshots, sidecars and exports remain under /tmp/rawpuppy-validation, not bundled",
+  "limits": [
+    "Cancellation occurs between tiles, not during an executing GPU kernel",
+    "Export/generation remain durable operations and wait for correct preparation",
+    "Full RGB cache memory cost and initialization compute remain",
+    "Standard temporary preview intentionally differs from final neural reconstruction",
+    "Fine-detail losses, broad camera/HDR/MPS quality and memory-pressure coverage remain pending"
+  ]
+}
