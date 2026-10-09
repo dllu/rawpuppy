@@ -15,5 +15,9 @@ base runtime. CI now installs `libxkbcommon-x11-0` explicitly; README records th
 runtime requirement. The original CI child log was not retained, so its precise
 cause remains an inference pending the corrected run.
 
+Follow-up: [corrected run 37945480744](https://github.com/dllu/rawpuppy/actions/runs/37945480744)
+passed every job, including the Linux native editor step. The explicit runtime
+dependency resolves the previously failing test environment.
+
 No system libraries or other projects were changed. This milestone fixes the
 native-test environment and diagnostics; the full PROMPT.md goal remains active.

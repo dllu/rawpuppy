@@ -99,12 +99,9 @@ fn hdr_egui_white_and_coverage_match_the_linear_photo_signal() {
             height: 1,
             pixels: vec![[1.; 4], [4., 4., 4., 1.]],
         };
-        let texture = Texture::upload(
-            &device,
-            &queue,
-            &Frame::from_rendered(&photo, scale).unwrap(),
-        )
-        .unwrap();
+        let texture =
+            Texture::upload(&device, &queue, &Frame::from_rendered(&photo, 1.).unwrap()).unwrap();
+        texture.set_white_scale(&queue, scale).unwrap();
         let ctx = egui::Context::default();
         let mut output = ctx.run_ui(
             egui::RawInput {
@@ -289,64 +286,68 @@ fn hdr_texture_paint_preserves_superwhite_negative_channels_and_linear_alpha() {
             usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
             mapped_at_creation: false,
         });
-        let mut encoder = device.create_command_encoder(&Default::default());
-        {
-            let mut pass = encoder
-                .begin_render_pass(&wgpu::RenderPassDescriptor {
-                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                        view: &view,
-                        depth_slice: None,
-                        resolve_target: None,
-                        ops: wgpu::Operations {
-                            load: wgpu::LoadOp::Clear(wgpu::Color {
-                                r: 0.25,
-                                g: 0.25,
-                                b: 0.25,
-                                a: 1.,
-                            }),
-                            store: wgpu::StoreOp::Store,
-                        },
-                    })],
-                    ..Default::default()
-                })
-                .forget_lifetime();
-            photo.paint(&mut pass);
-        }
-        encoder.copy_texture_to_buffer(
-            target.as_image_copy(),
-            wgpu::TexelCopyBufferInfo {
-                buffer: &buffer,
-                layout: wgpu::TexelCopyBufferLayout {
-                    offset: 0,
-                    bytes_per_row: Some(256),
-                    rows_per_image: Some(1),
-                },
-            },
-            target.size(),
-        );
-        queue.submit([encoder.finish()]);
-        let (send, receive) = std::sync::mpsc::channel();
-        buffer
-            .slice(..)
-            .map_async(wgpu::MapMode::Read, move |result| {
-                send.send(result).unwrap()
-            });
-        device.poll(wgpu::PollType::wait_indefinitely()).unwrap();
-        receive.recv().unwrap().unwrap();
-        let mapped = buffer.slice(..).get_mapped_range().unwrap();
-        let pixels: &[[half::f16; 4]] = bytemuck::cast_slice(&mapped[..32]);
-        let expected = [
-            [-0.125, 0.5, 2., 1.],
-            [4., 2., 1., 1.],
-            [1.125, 2.125, 4.125, 1.],
-            [0.25, 0.25, 0.25, 1.],
-        ];
-        for (actual, expected) in pixels.iter().zip(expected) {
-            for (a, e) in actual.iter().zip(expected) {
-                assert!((a.to_f32() - e).abs() < 0.002, "{actual:?} != {expected:?}");
+        assert!(photo.set_white_scale(&queue, f32::NAN).is_err());
+        for scale in [1., 2., 0.5, 1.] {
+            photo.set_white_scale(&queue, scale).unwrap();
+            let mut encoder = device.create_command_encoder(&Default::default());
+            {
+                let mut pass = encoder
+                    .begin_render_pass(&wgpu::RenderPassDescriptor {
+                        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                            view: &view,
+                            depth_slice: None,
+                            resolve_target: None,
+                            ops: wgpu::Operations {
+                                load: wgpu::LoadOp::Clear(wgpu::Color {
+                                    r: 0.25,
+                                    g: 0.25,
+                                    b: 0.25,
+                                    a: 1.,
+                                }),
+                                store: wgpu::StoreOp::Store,
+                            },
+                        })],
+                        ..Default::default()
+                    })
+                    .forget_lifetime();
+                photo.paint(&mut pass);
             }
+            encoder.copy_texture_to_buffer(
+                target.as_image_copy(),
+                wgpu::TexelCopyBufferInfo {
+                    buffer: &buffer,
+                    layout: wgpu::TexelCopyBufferLayout {
+                        offset: 0,
+                        bytes_per_row: Some(256),
+                        rows_per_image: Some(1),
+                    },
+                },
+                target.size(),
+            );
+            queue.submit([encoder.finish()]);
+            let (send, receive) = std::sync::mpsc::channel();
+            buffer
+                .slice(..)
+                .map_async(wgpu::MapMode::Read, move |result| {
+                    send.send(result).unwrap()
+                });
+            device.poll(wgpu::PollType::wait_indefinitely()).unwrap();
+            receive.recv().unwrap().unwrap();
+            let mapped = buffer.slice(..).get_mapped_range().unwrap();
+            let pixels: &[[half::f16; 4]] = bytemuck::cast_slice(&mapped[..32]);
+            let expected = [
+                [-0.125 * scale, 0.5 * scale, 2. * scale, 1.],
+                [4. * scale, 2. * scale, scale, 1.],
+                [scale + 0.125, 2. * scale + 0.125, 4. * scale + 0.125, 1.],
+                [0.25, 0.25, 0.25, 1.],
+            ];
+            for (actual, expected) in pixels.iter().zip(expected) {
+                for (a, e) in actual.iter().zip(expected) {
+                    assert!((a.to_f32() - e).abs() < 0.002, "{actual:?} != {expected:?}");
+                }
+            }
+            drop(mapped);
+            buffer.unmap();
         }
-        drop(mapped);
-        buffer.unmap();
     });
 }

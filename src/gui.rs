@@ -35,7 +35,7 @@ enum Work {
         region: [f32; 4],
         size: [usize; 2],
         profile: Option<display::Icc>,
-        hdr_white_scale: Option<f32>,
+        hdr: bool,
     },
     Save {
         path: PathBuf,
@@ -151,7 +151,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 region,
                 size,
                 profile,
-                hdr_white_scale,
+                hdr,
             } => {
                 let start = Instant::now();
                 let mut preview_edits = edits.clone();
@@ -179,12 +179,12 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 for v in &mut histogram {
                     *v = (*v / peak).sqrt();
                 }
-                let pixels = if let Some(scale) = hdr_white_scale {
+                let pixels = if hdr {
                     ensure!(
                         profile.is_none(),
                         "HDR previews require automatic compositor color management"
                     );
-                    PreviewPixels::Hdr(display::hdr::Frame::from_rendered(&rendered, scale)?)
+                    PreviewPixels::Hdr(display::hdr::Frame::from_rendered(&rendered, 1.)?)
                 } else {
                     PreviewPixels::Sdr(display_encoder.encode(&rendered, profile.as_ref())?)
                 };
@@ -527,9 +527,14 @@ impl Editor {
             let scale =
                 display::hdr::reference_white_scale(desktop, &state.display_hdr_info.read());
             state.renderer.write().set_hdr_white_scale(scale);
+            if let Some(texture) = &self.hdr_texture
+                && let Err(error) = texture.set_white_scale(&state.queue, scale)
+            {
+                self.error = Some(error.to_string());
+            }
             if self.hdr_white_scale != Some(scale) {
                 self.hdr_white_scale = Some(scale);
-                self.changed();
+                ctx.request_repaint();
             }
             self.display_resolved = display::Resolved {
                 icc: None,
@@ -1688,7 +1693,7 @@ impl Editor {
                         region: self.viewport,
                         size: self.preview_size,
                         profile: self.display_resolved.icc.clone(),
-                        hdr_white_scale: self.hdr_white_scale,
+                        hdr: self.hdr_white_scale.is_some(),
                     });
                     self.preview_pending = false;
                 }

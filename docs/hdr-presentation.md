@@ -15,7 +15,10 @@ to an RGBA16F target. GPU readback verifies negative values, 2×/4× white and
 translucent highlights over a known background. The renderer also exposes an egui
 paint callback used by the native HDR editor.
 
-Converting a preview requires an explicit reference-white signal scale. This is
+HDR editor textures store relative-white photo pixels. A shader uniform applies
+the current reference-white signal scale when drawing, so changing display-white
+values does not re-render or re-upload the photograph. GUI and photo scale update
+together. This is
 display policy, separate from the photograph's edits and EXR values. It must be
 chosen alongside the desktop's surface luminance convention. The tested Vulkan
 Wayland path uses 203/80 signal units per relative white. Apple EDR uses system
@@ -87,8 +90,10 @@ uses its prior format and shader path.
 and requested-HDR modes, checks source values when HDR is available, and verifies
 that both source and recipe hashes remain unchanged. It uses an explicitly enabled
 debug-build report hook; release builds omit that hook. Desktop CI now runs these
-native windows on Linux, macOS and Windows. The current milestone awaits those
-new CI results. [The editor record](data/hdr-editor-gb10-2026-10-09.json) retains
+native windows on Linux, macOS and Windows. [Run 37945480744](https://github.com/dllu/rawpuppy/actions/runs/37945480744)
+passed all four jobs after the X11 runtime dependency fix. GPU readback checks
+1×, 2×, 0.5× and restored 1× signal white using the same uploaded texture.
+[The editor record](data/hdr-editor-gb10-2026-10-09.json) retains
 the locally observed native frames.
 
 Physical HDR colorimetry, additional Wayland WSI implementations, live surface

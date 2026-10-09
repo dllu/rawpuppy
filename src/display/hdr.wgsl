@@ -4,6 +4,7 @@ struct Vertex {
 }
 @group(0) @binding(0) var photo: texture_2d<f32>;
 @group(0) @binding(1) var filtering: sampler;
+@group(0) @binding(2) var<uniform> display_white: vec4<f32>;
 
 @vertex
 fn vertex(@builtin(vertex_index) index: u32) -> Vertex {
@@ -16,5 +17,7 @@ fn vertex(@builtin(vertex_index) index: u32) -> Vertex {
 
 @fragment
 fn fragment(in: Vertex) -> @location(0) vec4<f32> {
-    return textureSample(photo, filtering, in.uv);
+    let pixel = textureSample(photo, filtering, in.uv);
+    let rgb = clamp(pixel.rgb * display_white.x, vec3<f32>(-65504.0), vec3<f32>(65504.0));
+    return vec4<f32>(rgb, pixel.a);
 }

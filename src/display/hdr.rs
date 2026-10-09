@@ -3,7 +3,8 @@ use crate::{input::pixel_count, pipeline::Rendered};
 use anyhow::{Context, Result, ensure};
 use eframe::{egui, egui_wgpu, wgpu};
 use half::f16;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+use wgpu::util::DeviceExt;
 
 /// Map relative display white to the explicitly selected extended-linear signal.
 /// Windows scRGB uses 80-nit units; Apple EDR is relative to system SDR white.
@@ -96,6 +97,8 @@ pub struct Texture {
     pipeline: wgpu::RenderPipeline,
     binding: wgpu::BindGroup,
     _texture: wgpu::Texture,
+    white_buffer: wgpu::Buffer,
+    white_scale: Mutex<f32>,
     pub size: [u32; 2],
 }
 impl Texture {
@@ -153,12 +156,27 @@ impl Texture {
                     ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
                     count: None,
                 },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
             ],
         });
         let sampler = device.create_sampler(&wgpu::SamplerDescriptor {
             mag_filter: wgpu::FilterMode::Linear,
             min_filter: wgpu::FilterMode::Linear,
             ..Default::default()
+        });
+        let white_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("HDR display white"),
+            contents: bytemuck::cast_slice(&[1f32, 0., 0., 0.]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
         let binding = device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("HDR preview pixels"),
@@ -173,6 +191,10 @@ impl Texture {
                 wgpu::BindGroupEntry {
                     binding: 1,
                     resource: wgpu::BindingResource::Sampler(&sampler),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: white_buffer.as_entire_binding(),
                 },
             ],
         });
@@ -211,8 +233,27 @@ impl Texture {
             pipeline,
             binding,
             _texture: texture,
+            white_buffer,
+            white_scale: Mutex::new(1.),
             size: [frame.width, frame.height],
         }))
+    }
+    /// Change display reference white without rebuilding or re-uploading photo pixels.
+    pub fn set_white_scale(&self, queue: &wgpu::Queue, scale: f32) -> Result<()> {
+        ensure!(scale.is_finite() && scale > 0., "Invalid HDR display white");
+        let mut current = self
+            .white_scale
+            .lock()
+            .map_err(|_| anyhow::anyhow!("HDR white state poisoned"))?;
+        if *current != scale {
+            queue.write_buffer(
+                &self.white_buffer,
+                0,
+                bytemuck::cast_slice(&[scale, 0., 0., 0.]),
+            );
+            *current = scale;
+        }
+        Ok(())
     }
     /// The attachment must be Rgba16Float carrying extended-linear sRGB.
     pub fn paint(&self, pass: &mut wgpu::RenderPass<'static>) {
