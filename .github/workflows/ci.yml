@@ -27,6 +27,20 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --locked
+      - name: Build native editor signal probe
+        run: cargo build --bin rawpuppy --example editor_signal_probe --locked
+      - name: Native editor signal verification on X11
+        if: runner.os == 'Linux'
+        run: xvfb-run -a -s "-screen 0 1440x960x24" target/debug/examples/editor_signal_probe --editor target/debug/rawpuppy --output "$RUNNER_TEMP/rawpuppy-editor-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+      - name: Native editor signal verification
+        if: runner.os != 'Linux'
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            target/debug/examples/editor_signal_probe.exe --editor target/debug/rawpuppy.exe --output "$RUNNER_TEMP/rawpuppy-editor-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          else
+            target/debug/examples/editor_signal_probe --editor target/debug/rawpuppy --output "$RUNNER_TEMP/rawpuppy-editor-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          fi
       - name: Optional neural inference builds
         run: cargo check --features neural --locked
       - name: CUDA adapter compilation without requiring a GPU

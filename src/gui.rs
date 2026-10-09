@@ -19,6 +19,9 @@ use std::{
 
 const ACCENT: Color32 = Color32::from_rgb(225, 150, 100);
 
+#[cfg(debug_assertions)]
+mod probe;
+
 #[derive(Clone)]
 enum Work {
     Open {
@@ -32,6 +35,7 @@ enum Work {
         region: [f32; 4],
         size: [usize; 2],
         profile: Option<display::Icc>,
+        hdr_white_scale: Option<f32>,
     },
     Save {
         path: PathBuf,
@@ -67,7 +71,7 @@ enum Reply {
     Preview {
         id: u64,
         size: [usize; 2],
-        rgba: Vec<u8>,
+        pixels: PreviewPixels,
         histogram: Vec<f32>,
         elapsed: f64,
         backend: String,
@@ -87,6 +91,11 @@ enum Reply {
     },
     Exported(PathBuf),
     Error(String),
+}
+
+enum PreviewPixels {
+    Sdr(Vec<u8>),
+    Hdr(display::hdr::Frame),
 }
 
 fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context, backend: Backend) {
@@ -142,6 +151,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 region,
                 size,
                 profile,
+                hdr_white_scale,
             } => {
                 let start = Instant::now();
                 let mut preview_edits = edits.clone();
@@ -169,11 +179,19 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 for v in &mut histogram {
                     *v = (*v / peak).sqrt();
                 }
-                let rgba = display_encoder.encode(&rendered, profile.as_ref())?;
+                let pixels = if let Some(scale) = hdr_white_scale {
+                    ensure!(
+                        profile.is_none(),
+                        "HDR previews require automatic compositor color management"
+                    );
+                    PreviewPixels::Hdr(display::hdr::Frame::from_rendered(&rendered, scale)?)
+                } else {
+                    PreviewPixels::Sdr(display_encoder.encode(&rendered, profile.as_ref())?)
+                };
                 Ok(Reply::Preview {
                     id,
                     size,
-                    rgba,
+                    pixels,
                     histogram,
                     elapsed: start.elapsed().as_secs_f64(),
                     backend: renderer.label().into(),
@@ -289,23 +307,40 @@ enum Pending {
     Open(PathBuf),
 }
 
-pub fn run(input: Option<PathBuf>, profile: Option<PathBuf>, backend: Backend) -> Result<()> {
+pub fn run(
+    input: Option<PathBuf>,
+    profile: Option<PathBuf>,
+    backend: Backend,
+    hdr: bool,
+) -> Result<()> {
+    ensure!(
+        !hdr || profile.is_none(),
+        "HDR preview uses Automatic display colour; remove --display-profile"
+    );
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1440., 960.])
             .with_min_inner_size([800., 550.]),
         renderer: eframe::Renderer::Wgpu,
+        wgpu_options: eframe::WgpuConfiguration {
+            prefer_extended_linear_hdr: hdr,
+            ..Default::default()
+        },
         ..Default::default()
     };
     eframe::run_native(
         "Rawpuppy",
         options,
-        Box::new(move |cc| Ok(Box::new(Editor::new(cc, input, profile, backend)))),
+        Box::new(move |cc| Ok(Box::new(Editor::new(cc, input, profile, backend, hdr)))),
     )
     .map_err(|e| anyhow::anyhow!("Opening native editor: {e}"))
 }
 
 struct Editor {
+    #[cfg(debug_assertions)]
+    probe: Option<probe::Probe>,
+    #[cfg(debug_assertions)]
+    probe_photo_rect: Option<Rect>,
     tx: mpsc::Sender<Work>,
     rx: mpsc::Receiver<Reply>,
     image: Option<Arc<SensorImage>>,
@@ -315,6 +350,10 @@ struct Editor {
     undo: Vec<Edits>,
     redo: Vec<Edits>,
     texture: Option<egui::TextureHandle>,
+    hdr_texture: Option<Arc<display::hdr::Texture>>,
+    presentation: Option<eframe::egui_wgpu::RenderState>,
+    hdr_requested: bool,
+    hdr_white_scale: Option<f32>,
     histogram: Vec<f32>,
     generation: u64,
     load_generation: u64,
@@ -364,6 +403,7 @@ impl Editor {
         input: Option<PathBuf>,
         profile: Option<PathBuf>,
         backend: Backend,
+        hdr_requested: bool,
     ) -> Self {
         let mut visuals = egui::Visuals::dark();
         visuals.panel_fill = Color32::from_rgb(29, 31, 34);
@@ -402,6 +442,10 @@ impl Editor {
             .spawn(move || worker(work_rx, reply_tx, ctx, backend))
             .expect("Starting photo worker");
         let mut app = Self {
+            #[cfg(debug_assertions)]
+            probe: probe::Probe::from_env(),
+            #[cfg(debug_assertions)]
+            probe_photo_rect: None,
             tx,
             rx,
             image: None,
@@ -411,6 +455,18 @@ impl Editor {
             undo: vec![],
             redo: vec![],
             texture: None,
+            hdr_texture: None,
+            presentation: cc.wgpu_render_state.clone(),
+            hdr_requested,
+            hdr_white_scale: cc
+                .wgpu_render_state
+                .as_ref()
+                .filter(|state| {
+                    state.target_format == eframe::wgpu::TextureFormat::Rgba16Float
+                        && state.target_color_space
+                            == eframe::wgpu::SurfaceColorSpace::ExtendedSrgbLinear
+                })
+                .map(|_| 1.),
             histogram: vec![],
             generation: 0,
             load_generation: 0,
@@ -462,6 +518,26 @@ impl Editor {
         self.edits != self.saved
     }
     fn refresh_display(&mut self, frame: &eframe::Frame, ctx: &egui::Context) {
+        if self.hdr_white_scale.is_some() {
+            let desktop = frame
+                .winit_window()
+                .and_then(|w| w.window_handle().ok())
+                .map_or(display::Desktop::Other, |h| display::desktop(h.as_raw()));
+            let state = self.presentation.as_ref().unwrap();
+            let scale =
+                display::hdr::reference_white_scale(desktop, &state.display_hdr_info.read());
+            state.renderer.write().set_hdr_white_scale(scale);
+            if self.hdr_white_scale != Some(scale) {
+                self.hdr_white_scale = Some(scale);
+                self.changed();
+            }
+            self.display_resolved = display::Resolved {
+                icc: None,
+                label: "Automatic: extended-linear HDR surface".into(),
+            };
+            ctx.request_repaint_after(std::time::Duration::from_secs(2));
+            return;
+        }
         let mut request = display::Request {
             custom: self.profile.clone(),
             ..Default::default()
@@ -684,6 +760,7 @@ impl Editor {
                     self.undo.clear();
                     self.redo.clear();
                     self.texture = None;
+                    self.hdr_texture = None;
                     self.histogram.clear();
                     self.zoom = 1.;
                     self.center = [0.5; 2];
@@ -696,7 +773,7 @@ impl Editor {
                 Reply::Preview {
                     id,
                     size,
-                    rgba,
+                    pixels,
                     histogram,
                     elapsed,
                     backend,
@@ -709,15 +786,32 @@ impl Editor {
                     }
                     #[cfg(not(target_os = "macos"))]
                     let _ = managed_display;
-                    let image = egui::ColorImage::from_rgba_unmultiplied(size, &rgba);
-                    if let Some(texture) = &mut self.texture {
-                        texture.set(image, egui::TextureOptions::LINEAR);
-                    } else {
-                        self.texture = Some(ctx.load_texture(
-                            "photograph",
-                            image,
-                            egui::TextureOptions::LINEAR,
-                        ));
+                    match pixels {
+                        PreviewPixels::Sdr(rgba) => {
+                            let image = egui::ColorImage::from_rgba_unmultiplied(size, &rgba);
+                            if let Some(texture) = &mut self.texture {
+                                texture.set(image, egui::TextureOptions::LINEAR);
+                            } else {
+                                self.texture = Some(ctx.load_texture(
+                                    "photograph",
+                                    image,
+                                    egui::TextureOptions::LINEAR,
+                                ));
+                            }
+                            self.hdr_texture = None;
+                        }
+                        PreviewPixels::Hdr(hdr) => {
+                            let state = self.presentation.as_ref().unwrap();
+                            match display::hdr::Texture::upload(&state.device, &state.queue, &hdr) {
+                                Ok(texture) => {
+                                    self.hdr_texture = Some(texture);
+                                    self.texture = None;
+                                }
+                                Err(error) => {
+                                    self.error = Some(error.to_string());
+                                }
+                            }
+                        }
                     }
                     self.histogram = histogram;
                     if !self.busy {
@@ -1303,7 +1397,7 @@ impl Editor {
                                     );
                                 }
                             });
-                        if ui.button("Choose display profile…").clicked()
+                        if ui.add_enabled(self.hdr_white_scale.is_none(), egui::Button::new("Choose display profile…")).clicked()
                             && let Some(path) = rfd::FileDialog::new()
                                 .add_filter("ICC profile", &["icc", "icm"])
                                 .pick_file()
@@ -1313,9 +1407,13 @@ impl Editor {
                         }
                         if self.profile.is_some() && ui.small_button("Use automatic display colour").clicked() {self.profile=None;}
                         let display_label = self.display_resolved.label.as_str();
+                        let display_label = if self.hdr_requested && self.hdr_white_scale.is_none() && self.profile.is_none() {
+                            "Automatic: SDR surface (HDR unavailable)"
+                        } else { display_label };
                         #[cfg(target_os = "linux")]
                         let display_label = if self.wayland_surface.as_ref().is_some_and(|surface| surface.tagged()) {
-                            "Automatic: compositor-managed sRGB surface"
+                            if self.hdr_requested { "Automatic: managed sRGB (HDR unavailable)" }
+                            else { "Automatic: compositor-managed sRGB surface" }
                         } else { display_label };
                         ui.label(
                             egui::RichText::new(display_label)
@@ -1402,6 +1500,10 @@ impl Editor {
                 let visible = Vec2::new(full.x.min(available.x), full.y.min(available.y));
                 let center = ui.available_rect_before_wrap().center();
                 let rect = Rect::from_center_size(center, visible);
+                #[cfg(debug_assertions)]
+                {
+                    self.probe_photo_rect = Some(rect);
+                }
                 let response = ui.allocate_rect(rect, egui::Sense::click_and_drag());
                 let fraction = [visible.x / full.x, visible.y / full.y];
                 for (i, f) in fraction.iter().enumerate() {
@@ -1446,6 +1548,9 @@ impl Editor {
                         Rect::from_min_max(Pos2::ZERO, Pos2::new(1., 1.)),
                         Color32::WHITE,
                     );
+                }
+                if let Some(texture) = &self.hdr_texture {
+                    ui.painter().add(texture.callback(rect));
                 }
                 if self.grid {
                     for i in 1..6 {
@@ -1583,6 +1688,7 @@ impl Editor {
                         region: self.viewport,
                         size: self.preview_size,
                         profile: self.display_resolved.icc.clone(),
+                        hdr_white_scale: self.hdr_white_scale,
                     });
                     self.preview_pending = false;
                 }
@@ -1602,6 +1708,19 @@ impl eframe::App for Editor {
         let ctx = ui.ctx().clone();
         self.poll(&ctx);
         self.refresh_display(frame, &ctx);
+        #[cfg(debug_assertions)]
+        if let Some(probe) = &mut self.probe
+            && let Err(error) = probe.tick(
+                &ctx,
+                self.presentation.as_ref(),
+                self.hdr_white_scale,
+                self.probe_photo_rect,
+                self.texture.is_some() || self.hdr_texture.is_some(),
+            )
+        {
+            self.error = Some(error.to_string());
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        }
         let dropped = ctx.input(|i| {
             i.raw
                 .dropped_files

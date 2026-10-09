@@ -5,6 +5,21 @@ use eframe::{egui, egui_wgpu, wgpu};
 use half::f16;
 use std::sync::Arc;
 
+/// Map relative display white to the explicitly selected extended-linear signal.
+/// Windows scRGB uses 80-nit units; Apple EDR is relative to system SDR white.
+/// The verified Vulkan Wayland WSI convention declares 80-nit units/203-nit white.
+pub fn reference_white_scale(desktop: super::Desktop, info: &wgpu::DisplayHdrInfo) -> f32 {
+    match desktop {
+        super::Desktop::Wayland => 203. / 80.,
+        super::Desktop::Windows(_) => info
+            .luminance
+            .and_then(|v| v.sdr_white_nits)
+            .filter(|v| v.is_finite() && *v > 0.)
+            .map_or(1., |v| v / 80.),
+        _ => 1.,
+    }
+}
+
 /// Texture format alone does not identify an HDR signal or its transfer function.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SurfaceChoice {

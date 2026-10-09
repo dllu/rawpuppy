@@ -1,0 +1,14 @@
+{
+  "package": "egui-wgpu",
+  "version": "0.36.2",
+  "source": "https://github.com/emilk/egui/tree/0.36.2/crates/egui-wgpu",
+  "source_file_sha256": {
+    "src/capture.rs": "c16f0548435842ce212b4aa5d8ec84b9b6ef9868e95c7cf285bf85ac3ab952fb",
+    "src/egui.wgsl": "3f29892e50fa5363a1945d0d969f130ab5b61add4280d9d711d7902499857a9f",
+    "src/lib.rs": "91cdd2d78b4a6b4fd9f6fccd1414a0c1fed8972660a0df2c8ef0bf73077f2b7c",
+    "src/renderer.rs": "f12f5b914c3fe042d025f9ec11e6890607bf774125772b0ae900677cb63465f4",
+    "src/setup.rs": "c438389fc2b4e8a4d5dfe2eef57c76caed3cb2c199f9f15d7f80b105cf4246bf",
+    "src/texture_copy.wgsl": "b5f7873cceca89e13932ce8d32e487feed2124f414e9959fc7dbe4a5d33939c6",
+    "src/winit.rs": "700364b7fe1fe2b8f6b1fc28f1a8cf58b6c78bf63e7849cdfded18461470fe2e"
+  }
+}

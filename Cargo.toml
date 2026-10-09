@@ -61,3 +61,6 @@ raw-ml = ["dep:tch", "dep:libloading"]
 [profile.release]
 lto = "thin"
 codegen-units = 1
+
+[patch.crates-io]
+egui-wgpu = { path = "vendor/egui-wgpu" }

@@ -1,9 +1,11 @@
 # HDR presentation
 
 The photo pipeline and float EXR output preserve signed and above-white values.
-The current editor still encodes previews to RGBA8. A native HDR editor therefore
-needs both float photo presentation and an explicitly configured native surface;
-neither a float working buffer nor the Linear tone choice supplies the latter.
+`rawpuppy edit photo.exr --hdr` requests native HDR preview. The editor selects
+the advertised RGBA16F/ExtendedSrgbLinear pair and uploads a float photo texture.
+Unsupported surfaces retain the SDR path. The default launch remains SDR.
+The Linear tone choice preserves scene values for HDR preview; AgX retains its
+photographic SDR tone rendering on either surface.
 
 The new `display::hdr` module implements the float photo renderer. A bounded
 RGBA16F texture preserves extended RGB within the storage format's finite range
@@ -11,12 +13,19 @@ of ±65,504. Alpha is clamped to its coverage range, and RGB is premultiplied be
 linear filtering. Its quad writes linear values with premultiplied-alpha blending
 to an RGBA16F target. GPU readback verifies negative values, 2×/4× white and
 translucent highlights over a known background. The renderer also exposes an egui
-paint callback for the later native surface integration.
+paint callback used by the native HDR editor.
 
 Converting a preview requires an explicit reference-white signal scale. This is
 display policy, separate from the photograph's edits and EXR values. It must be
-chosen alongside the desktop's surface luminance convention; merely preserving
-the float numbers does not establish matching brightness between SDR and HDR.
+chosen alongside the desktop's surface luminance convention. The tested Vulkan
+Wayland path uses 203/80 signal units per relative white. Apple EDR uses system
+relative white. Windows uses reported SDR-white nits divided by scRGB's 80-nit
+unit; an unavailable or invalid Windows value keeps unit scaling. These are
+display choices and never change the saved recipe or exported scene values.
+GUI and photo white share the same scale, and GUI coverage is blended in linear
+light. Automatic native HDR bypasses physical-monitor ICC conversion and the
+application's SDR surface bridge; the Vulkan WSI owns its HDR color description.
+Custom physical ICC overrides require the SDR launch.
 
 `SurfaceChoice::extended_linear` requires an advertised pair of **RGBA16F and
 ExtendedSrgbLinear**. A float format advertised only with sRGB or encoded extended
@@ -59,13 +68,30 @@ The measured capability reports and protocol assertions are in
 [the validation record](data/hdr-native-gb10-2026-10-09.json).
 The private compositor and Xvfb processes were stopped after each probe.
 
-## Remaining editor integration
+## Editor verification and remaining coverage
 
-The installed egui-wgpu renderer still selects its preferred SDR format and uses
-the default surface color space. The float callback is not yet wired into the
-editor. Native integration must select the advertised pair, render GUI colors in
-the same linear signal with appropriate reference white, bypass physical-monitor
-ICC conversion and the SDR surface bridge on compositor-managed HDR, and retain
-SDR fallback on unsupported surfaces. Display transitions, macOS/Windows native
-runtime, and physical HDR colorimetry still need verification. The full project
-goal remains active.
+The native editor has been run with a signed/above-white linear EXR fixture on
+private X11 and managed Wayland sessions. Its actual float frame retains negative
+RGB and a 4×-white source, with signal extrema −0.317 and 10.148 at 203/80 scaling.
+X11 correctly falls back to an SDR surface. Both paths close normally without
+changing the input or its XMP recipe. GPU tests verify matching GUI/photo white
+and linear GUI alpha. Native HDR screenshots convert to an SDR ColorImage while
+an optional float capture retains the original signal for verification.
+
+The local [egui-wgpu extension](../vendor/egui-wgpu/RAWPUPPY.md) adds explicit
+surface selection, linear GUI output, live advisory HDR information and float
+capture. Its upstream code and license notices are retained. Normal SDR rendering
+uses its prior format and shader path.
+
+`editor_signal_probe` creates its own float fixture, runs the real editor in SDR
+and requested-HDR modes, checks source values when HDR is available, and verifies
+that both source and recipe hashes remain unchanged. It uses an explicitly enabled
+debug-build report hook; release builds omit that hook. Desktop CI now runs these
+native windows on Linux, macOS and Windows. The current milestone awaits those
+new CI results. [The editor record](data/hdr-editor-gb10-2026-10-09.json) retains
+the locally observed native frames.
+
+Physical HDR colorimetry, additional Wayland WSI implementations, live surface
+capability changes, and hardware/platform coverage remain. Headroom is advisory
+and may be unavailable; surface support does not prove physical HDR capability.
+The full project goal remains active.

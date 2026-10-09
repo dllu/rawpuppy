@@ -52,7 +52,14 @@ monitor geometry, and live X11 root-property replacement/removal in an owned
 Xvfb session. The editor's automatic X11 selection and live preview change were
 also visually inspected. Native macOS/Windows code is exercised in desktop CI;
 physical monitor, multi-monitor, and managed Wayland colorimetry checks
-remain in the completion audit. Native HDR presentation is separate work.
+remain in the completion audit.
+
+The optional `edit --hdr` launch selects an advertised extended-linear float
+surface and uses automatic compositor matching. Its photo and GUI pixels share
+the reference-white scale; physical-monitor ICC transforms and the SDR surface
+bridge are bypassed. Unsupported native surfaces retain SDR presentation.
+[HDR presentation](hdr-presentation.md) records native-frame checks and remaining
+display/physical coverage.
 
 An owned headless Mutter session without the color-management global also
 rendered the editor through Vulkan, loaded its saved synthesis layers, and showed

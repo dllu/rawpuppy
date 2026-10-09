@@ -1,0 +1,112 @@
+{
+  "scope": "Actual native editor signal readback and source/recipe invariance, not physical-monitor colorimetry",
+  "hardware": "NVIDIA GB10",
+  "cases": {
+    "helper-x11-sdr": {
+      "frame": {
+        "color_space": "Auto",
+        "format": "Bgra8Unorm",
+        "hdr_active": false,
+        "scope": "actual editor frame, before compositor output mapping; no physical-monitor measurement",
+        "screenshot_size": [
+          1440,
+          960
+        ],
+        "white_scale": null
+      },
+      "normal_exit": true,
+      "source_and_recipe_hashes_unchanged": true
+    },
+    "helper-x11-hdr": {
+      "frame": {
+        "color_space": "Auto",
+        "format": "Bgra8Unorm",
+        "hdr_active": false,
+        "scope": "actual editor frame, before compositor output mapping; no physical-monitor measurement",
+        "screenshot_size": [
+          1440,
+          960
+        ],
+        "white_scale": null
+      },
+      "normal_exit": true,
+      "source_and_recipe_hashes_unchanged": true
+    },
+    "helper-wayland-sdr": {
+      "frame": {
+        "color_space": "Auto",
+        "format": "Rgba8Unorm",
+        "hdr_active": false,
+        "scope": "actual editor frame, before compositor output mapping; no physical-monitor measurement",
+        "screenshot_size": [
+          1440,
+          960
+        ],
+        "white_scale": null
+      },
+      "normal_exit": true,
+      "source_and_recipe_hashes_unchanged": true
+    },
+    "helper-wayland-hdr": {
+      "frame": {
+        "color_space": "ExtendedSrgbLinear",
+        "float_signal": {
+          "maximum_rgb": 10.1484375,
+          "minimum_rgb": -0.317138671875,
+          "photo_samples": [
+            [
+              -0.317138671875,
+              1.2685546875,
+              5.07421875,
+              1.0
+            ],
+            [
+              10.1484375,
+              5.07421875,
+              2.537109375,
+              1.0
+            ],
+            [
+              0.456787109375,
+              0.456787109375,
+              0.456787109375,
+              1.0
+            ],
+            [
+              2.537109375,
+              2.537109375,
+              2.537109375,
+              1.0
+            ]
+          ],
+          "size": [
+            1440,
+            960
+          ]
+        },
+        "format": "Rgba16Float",
+        "hdr_active": true,
+        "scope": "actual editor frame, before compositor output mapping; no physical-monitor measurement",
+        "screenshot_size": [
+          1440,
+          960
+        ],
+        "white_scale": 2.5374999046325684
+      },
+      "normal_exit": true,
+      "source_and_recipe_hashes_unchanged": true
+    }
+  },
+  "gpu_validation": {
+    "gui_and_photo_white_match": true,
+    "linear_gui_alpha_matches": true,
+    "source_hdr_readback_preserves_extended_values": true
+  },
+  "policy": {
+    "default_launch": "SDR",
+    "hdr_launch": "advertised Rgba16Float/ExtendedSrgbLinear with SDR fallback",
+    "wayland_reference_white_scale": 2.5375,
+    "wayland_control_owner": "Vulkan WSI",
+    "application_sdr_bridge_bypassed": true
+  }
+}

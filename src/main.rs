@@ -29,6 +29,9 @@ enum Command {
         input: Option<PathBuf>,
         #[arg(long)]
         display_profile: Option<PathBuf>,
+        /// Prefer native extended-linear HDR presentation, with SDR fallback.
+        #[arg(long)]
+        hdr: bool,
     },
     /// Decode and inspect camera calibration and dimensions.
     Inspect { input: PathBuf },
@@ -120,11 +123,13 @@ fn main() -> Result<()> {
     match cli.command.unwrap_or(Command::Edit {
         input: None,
         display_profile: None,
+        hdr: false,
     }) {
         Command::Edit {
             input,
             display_profile,
-        } => rawpuppy::gui::run(input, display_profile, cli.backend)?,
+            hdr,
+        } => rawpuppy::gui::run(input, display_profile, cli.backend, hdr)?,
         Command::Inspect { input } => {
             let start = Instant::now();
             let image = std::sync::Arc::new(SensorImage::open(&input)?);
