@@ -233,8 +233,8 @@ fn lens_value(p: &Array<f32>, radius2: f32, component: usize) -> f32 {
         bounded(radius2 / crate::lens::MAX_RADIUS2, 0., 1.) * (crate::lens::LUT_SAMPLES - 1) as f32;
     let i = f32::min(u.floor(), (crate::lens::LUT_SAMPLES - 2) as f32) as usize;
     let t = u - i as f32;
-    let a = p[69 + i * 2 + component];
-    let b = p[69 + (i + 1) * 2 + component];
+    let a = p[70 + i * 4 + component];
+    let b = p[70 + (i + 1) * 4 + component];
     a + t * (b - a)
 }
 
@@ -259,7 +259,15 @@ fn geometry(p: &Array<f32>, u: f32, v: f32, channel: u32) -> Pixel {
         }
         let mut camera = 1.;
         if p[67] != 0. {
-            camera = lens_value(p, r2, 0);
+            let mut component = 0;
+            if p[69] != 0. {
+                if channel == 0 {
+                    component = 2;
+                } else if channel == 2 {
+                    component = 3;
+                }
+            }
+            camera = lens_value(p, r2, component);
         }
         let radial = (1. + p[23] * r2 + p[24] * r2 * r2) * (1. + ca) * camera;
         Pixel {
@@ -420,13 +428,13 @@ fn base(
     } else {
         let mut rgb = sensor(input, d, p, map.r, map.g, mosaic, detail);
 
-        if p[25] != 0. {
+        if p[25] != 0. || p[69] != 0. {
             let point = geometry(p, u, v, 0);
             let red = sensor(input, d, p, point.r, point.g, mosaic, detail);
             rgb.a *= red.a;
             rgb.r = red.r;
         }
-        if p[26] != 0. {
+        if p[26] != 0. || p[69] != 0. {
             let point = geometry(p, u, v, 2);
             let blue = sensor(input, d, p, point.r, point.g, mosaic, detail);
             rgb.a *= blue.a;

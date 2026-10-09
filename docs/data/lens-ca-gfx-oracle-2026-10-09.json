@@ -1,0 +1,496 @@
+{
+  "scope": "One GFX100S/GF55mmF1.7 capture; amplified metadata verifies CA units and sign, not identical rendering or universal optical accuracy",
+  "oracle": "darktable 5.5.0+1479~g9e36df0344 CLI; UI-derived lens preset version 10; no source code used",
+  "input_identity": {
+    "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "table_offset": 2436612,
+    "table_bytes": 232,
+    "description": "Regular validation copies only; sensor payload and all other metadata unchanged",
+    "variants": {
+      "positive40": {
+        "factor": 40,
+        "sha256": "e35059fc61e26239324c26f1732af5b5b619246edc2a344bdc7e5a765d6bc218"
+      },
+      "negative40": {
+        "factor": -40,
+        "sha256": "0b53b4e81881eed26d7153dd769050b0fe1aa291b33ed1eeb8fa93ab59759d66"
+      },
+      "zero": {
+        "factor": 0,
+        "sha256": "9d39fcc7c163fd40b36d74e311d8490da65bfb299a7bab4499c2ec41c0fe14b8"
+      }
+    }
+  },
+  "metadata": {
+    "camera": "GFX 100S",
+    "lens": "GF55mmF1.7 R WR",
+    "red_ca": {
+      "radius_pixels": 7280.0,
+      "knots": [
+        [
+          0.3535649,
+          9.1552734e-05
+        ],
+        [
+          0.5001828,
+          0.00012207031
+        ],
+        [
+          0.61243147,
+          0.0001373291
+        ],
+        [
+          0.7071298,
+          0.0001373291
+        ],
+        [
+          0.7904936,
+          0.00012207031
+        ],
+        [
+          0.86617917,
+          0.00012207031
+        ],
+        [
+          0.93528336,
+          9.1552734e-05
+        ],
+        [
+          1.0,
+          1.5258789e-05
+        ],
+        [
+          1.0606947,
+          -1.5258789e-05
+        ]
+      ]
+    },
+    "blue_ca": {
+      "radius_pixels": 7280.0,
+      "knots": [
+        [
+          0.3535649,
+          -6.1035156e-05
+        ],
+        [
+          0.5001828,
+          -7.6293945e-05
+        ],
+        [
+          0.61243147,
+          -6.1035156e-05
+        ],
+        [
+          0.7071298,
+          -4.5776367e-05
+        ],
+        [
+          0.7904936,
+          -3.0517578e-05
+        ],
+        [
+          0.86617917,
+          0.0
+        ],
+        [
+          0.93528336,
+          3.0517578e-05
+        ],
+        [
+          1.0,
+          0.0001373291
+        ],
+        [
+          1.0606947,
+          0.00021362305
+        ]
+      ]
+    },
+    "as_shot": [
+      1.692053,
+      1.0,
+      1.781457
+    ],
+    "camera_to_working_srgb": [
+      [
+        1.0725822,
+        0.17127156,
+        -0.24385379
+      ],
+      [
+        -0.12670612,
+        1.4311134,
+        -0.3044072
+      ],
+      [
+        -0.009693308,
+        -0.29340324,
+        1.3030967
+      ]
+    ]
+  },
+  "export": {
+    "width": 1200,
+    "height": 1600,
+    "format": "float32 OpenEXR",
+    "color_space": "linear Rec.2020",
+    "workflow": "none",
+    "opencl": false,
+    "preset": "CA only"
+  },
+  "fit": {
+    "method": "SIFT ratio-filtered feature matches, iteratively robust linear fitting",
+    "camera_basis": "inverse of Rawpuppy camera calibration and as-shot gains, after Rec.2020 to XYZ to linear-sRGB conversion",
+    "unknowns": [
+      "CA metadata multiplier",
+      "common radial scale",
+      "horizontal translation",
+      "vertical translation"
+    ],
+    "feature_radius_range": [
+      0.12,
+      0.96
+    ],
+    "maximum_feature_displacement_pixels": 12,
+    "fixed_hypotheses": [
+      "factor * coefficient",
+      "factor * coefficient / 100",
+      "-factor * coefficient",
+      "zero CA"
+    ],
+    "fixed_model_selection": "same features retained by the unconstrained model for every hypothesis"
+  },
+  "results": {
+    "positive40-camera-red_ca": {
+      "matched_features": 8304,
+      "fitted_features": 7879,
+      "metadata_multiplier": 38.61890090924173,
+      "common_scale": -0.005312141856453595,
+      "translation": [
+        0.00039075829386669595,
+        -0.0038206642114351035
+      ],
+      "residual_median_pixels": 0.0354689961769301,
+      "fixed_models": {
+        "fractional": {
+          "median_pixels": 0.03690729326971252,
+          "p95_pixels": 0.14260432084243957
+        },
+        "percent": {
+          "median_pixels": 0.18959286352506574,
+          "p95_pixels": 0.5777884104605869
+        },
+        "opposite_fractional": {
+          "median_pixels": 0.40183035999259187,
+          "p95_pixels": 1.1765576257221952
+        },
+        "no_ca": {
+          "median_pixels": 0.19164258937898343,
+          "p95_pixels": 0.5831337947743799
+        }
+      }
+    },
+    "positive40-camera-green": {
+      "matched_features": 7636,
+      "fitted_features": 7221,
+      "metadata_multiplier": 0.0,
+      "common_scale": -0.0054618068866647005,
+      "translation": [
+        0.003561498873942127,
+        0.002371370409273309
+      ],
+      "residual_median_pixels": 0.033641419695091566
+    },
+    "positive40-camera-blue_ca": {
+      "matched_features": 7617,
+      "fitted_features": 7163,
+      "metadata_multiplier": 34.98598604213045,
+      "common_scale": -0.005782357561028316,
+      "translation": [
+        0.004615435887445537,
+        0.0064904019546631365
+      ],
+      "residual_median_pixels": 0.040556816013515316,
+      "fixed_models": {
+        "fractional": {
+          "median_pixels": 0.05005698212581661,
+          "p95_pixels": 0.1997499422099466
+        },
+        "percent": {
+          "median_pixels": 0.2837591169888286,
+          "p95_pixels": 0.7197773457969501
+        },
+        "opposite_fractional": {
+          "median_pixels": 0.5974207139322765,
+          "p95_pixels": 1.5891562556572796
+        },
+        "no_ca": {
+          "median_pixels": 0.2868547336224357,
+          "p95_pixels": 0.7280209259810578
+        }
+      }
+    },
+    "positive40-rec2020-red_ca": {
+      "matched_features": 3224,
+      "fitted_features": 2250,
+      "metadata_multiplier": 26.52455778799005,
+      "common_scale": -0.005198810352215626,
+      "translation": [
+        0.0004647072280137794,
+        -0.0046523594671044255
+      ],
+      "residual_median_pixels": 0.11789105455935807,
+      "fixed_models": {
+        "fractional": {
+          "median_pixels": 0.16030205310270482,
+          "p95_pixels": 0.36343651189173115
+        },
+        "percent": {
+          "median_pixels": 0.2440298483880578,
+          "p95_pixels": 0.48493341428857273
+        },
+        "opposite_fractional": {
+          "median_pixels": 0.5382221692021572,
+          "p95_pixels": 0.9784247405032377
+        },
+        "no_ca": {
+          "median_pixels": 0.24693543290575978,
+          "p95_pixels": 0.4901061144667217
+        }
+      }
+    },
+    "positive40-rec2020-green": {
+      "matched_features": 6446,
+      "fitted_features": 5698,
+      "metadata_multiplier": 0.0,
+      "common_scale": -0.005215642562469287,
+      "translation": [
+        0.0033579566596426426,
+        0.004050313309815642
+      ],
+      "residual_median_pixels": 0.10623050160450379
+    },
+    "positive40-rec2020-blue_ca": {
+      "matched_features": 6978,
+      "fitted_features": 6256,
+      "metadata_multiplier": 37.91220909181538,
+      "common_scale": -0.005849855381712103,
+      "translation": [
+        0.0039560332515682075,
+        -0.0006709340395439083
+      ],
+      "residual_median_pixels": 0.07389159207920816,
+      "fixed_models": {
+        "fractional": {
+          "median_pixels": 0.07908162450898165,
+          "p95_pixels": 0.19629080021605408
+        },
+        "percent": {
+          "median_pixels": 0.31659782622871574,
+          "p95_pixels": 0.8299597482388228
+        },
+        "opposite_fractional": {
+          "median_pixels": 0.641074523055903,
+          "p95_pixels": 1.7752896053450982
+        },
+        "no_ca": {
+          "median_pixels": 0.31973247018199313,
+          "p95_pixels": 0.8392658954966326
+        }
+      }
+    },
+    "negative40-camera-red_ca": {
+      "matched_features": 7650,
+      "fitted_features": 7066,
+      "metadata_multiplier": -38.704355966602776,
+      "common_scale": -0.002694506365529635,
+      "translation": [
+        0.005366203788154343,
+        0.009222004797282893
+      ],
+      "residual_median_pixels": 0.04549824509004868,
+      "fixed_models": {
+        "fractional": {
+          "median_pixels": 0.045543281753022004,
+          "p95_pixels": 0.146481543260435
+        },
+        "percent": {
+          "median_pixels": 0.19839318334922845,
+          "p95_pixels": 0.5800159718412069
+        },
+        "opposite_fractional": {
+          "median_pixels": 0.4179956424592288,
+          "p95_pixels": 1.1658083986561458
+        },
+        "no_ca": {
+          "median_pixels": 0.20047306827788905,
+          "p95_pixels": 0.5855526389625102
+        }
+      }
+    },
+    "negative40-camera-green": {
+      "matched_features": 7670,
+      "fitted_features": 7291,
+      "metadata_multiplier": 0.0,
+      "common_scale": -0.0025303204343101672,
+      "translation": [
+        0.0022517158401471056,
+        9.421744513239021e-05
+      ],
+      "residual_median_pixels": 0.03327771518635721
+    },
+    "negative40-camera-blue_ca": {
+      "matched_features": 8114,
+      "fitted_features": 7845,
+      "metadata_multiplier": -35.54860833009139,
+      "common_scale": -0.0022493138051353796,
+      "translation": [
+        0.0003722241018049703,
+        -0.0007155973483693862
+      ],
+      "residual_median_pixels": 0.033666925075691245,
+      "fixed_models": {
+        "fractional": {
+          "median_pixels": 0.04060948455370584,
+          "p95_pixels": 0.17132170324752047
+        },
+        "percent": {
+          "median_pixels": 0.27928675984928625,
+          "p95_pixels": 0.745392738210837
+        },
+        "opposite_fractional": {
+          "median_pixels": 0.5833711317863536,
+          "p95_pixels": 1.6096073444908758
+        },
+        "no_ca": {
+          "median_pixels": 0.2822183513390362,
+          "p95_pixels": 0.7539616218316448
+        }
+      }
+    },
+    "negative40-rec2020-red_ca": {
+      "matched_features": 3107,
+      "fitted_features": 2211,
+      "metadata_multiplier": -26.535665232120152,
+      "common_scale": -0.002749428999334632,
+      "translation": [
+        0.000971049173708613,
+        0.01657255784456591
+      ],
+      "residual_median_pixels": 0.1281129161570382,
+      "fixed_models": {
+        "fractional": {
+          "median_pixels": 0.17334834674718094,
+          "p95_pixels": 0.3850071140882029
+        },
+        "percent": {
+          "median_pixels": 0.25247963846083965,
+          "p95_pixels": 0.48931014678985724
+        },
+        "opposite_fractional": {
+          "median_pixels": 0.5533809460727654,
+          "p95_pixels": 0.9835828082030513
+        },
+        "no_ca": {
+          "median_pixels": 0.25506659932195647,
+          "p95_pixels": 0.49369772352360436
+        }
+      }
+    },
+    "negative40-rec2020-green": {
+      "matched_features": 6462,
+      "fitted_features": 5704,
+      "metadata_multiplier": 0.0,
+      "common_scale": -0.002767043821332176,
+      "translation": [
+        0.0011914191690439156,
+        0.001297484808177622
+      ],
+      "residual_median_pixels": 0.10678527097425018
+    },
+    "negative40-rec2020-blue_ca": {
+      "matched_features": 7184,
+      "fitted_features": 6584,
+      "metadata_multiplier": -38.42748600579851,
+      "common_scale": -0.002177613710948312,
+      "translation": [
+        2.105435730804306e-05,
+        -0.0006916057982228449
+      ],
+      "residual_median_pixels": 0.07076174387709577,
+      "fixed_models": {
+        "fractional": {
+          "median_pixels": 0.0740687551147034,
+          "p95_pixels": 0.19578682672632158
+        },
+        "percent": {
+          "median_pixels": 0.29899548574259244,
+          "p95_pixels": 0.8128834627693565
+        },
+        "opposite_fractional": {
+          "median_pixels": 0.6054261900467428,
+          "p95_pixels": 1.700676677837753
+        },
+        "no_ca": {
+          "median_pixels": 0.3018484985615254,
+          "p95_pixels": 0.8215992968504763
+        }
+      }
+    }
+  },
+  "native_validation": {
+    "source_unchanged_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "full_srgb_tiff": {
+      "width": 8736,
+      "height": 11648,
+      "channels": 4,
+      "dtype": "uint16",
+      "alpha_min": 65535,
+      "alpha_max": 65535,
+      "icc_bytes": 588,
+      "render_seconds": 0.57,
+      "export_seconds": 0.87
+    },
+    "preview_size_max_edge": 1800,
+    "preview_backend": "CUDA coherent system memory",
+    "preview_runs": {
+      "camera-ca-on": {
+        "milliseconds": [
+          401.26,
+          11.349,
+          10.593,
+          11.484,
+          10.616,
+          10.989,
+          11.256,
+          10.623
+        ],
+        "warm_mean_milliseconds": 10.987142857142858,
+        "excluded_first_call": true
+      },
+      "camera-ca-off": {
+        "milliseconds": [
+          389.883,
+          4.862,
+          4.707,
+          4.671,
+          4.691,
+          4.622,
+          5.485,
+          4.648
+        ],
+        "warm_mean_milliseconds": 4.812285714285713,
+        "excluded_first_call": true
+      }
+    },
+    "editor": {
+      "fresh_document_camera_ca_enabled": true,
+      "on_flag_saved_explicitly": true,
+      "off_flag_omitted_and_reloaded_off": true,
+      "normal_close_exit_codes": [
+        0,
+        0
+      ]
+    }
+  }
+}

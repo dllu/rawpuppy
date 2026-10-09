@@ -39,7 +39,7 @@ In the editor: drop a photo to open it, scroll to zoom, drag to pan, `F` to fit,
 `Ctrl/Cmd Z`. Clone/heal uses Alt-click to choose a source. A custom monitor ICC
 can be selected in the editor or passed with `edit --display-profile monitor.icc`.
 Automatic display selection and platform policies are described in [display color](docs/display-color.md).
-New RAF documents use available camera distortion/vignetting corrections; existing
+New RAF documents use available camera distortion, vignetting and CA corrections; existing
 recipes retain their saved behavior. See [lens correction](docs/lens-correction.md).
 
 The optional `moebius` feature adds native AI removal and corner filling, saved as

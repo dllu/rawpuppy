@@ -43,6 +43,9 @@ pub struct LensEdits {
     pub mode: LensMode,
     pub distortion: bool,
     pub vignette: bool,
+    /// Missing in historical recipes, which retain their original channel maps.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub chromatic_aberration: bool,
     /// Preserve the largest rectangular field without camera-induced gaps.
     pub auto_frame: bool,
 }
@@ -52,6 +55,7 @@ impl Default for LensEdits {
             mode: LensMode::Off,
             distortion: true,
             vignette: true,
+            chromatic_aberration: false,
             auto_frame: true,
         }
     }
@@ -238,12 +242,15 @@ impl Edits {
     pub fn for_image(image: &crate::input::SensorImage) -> Self {
         let mut out = Self::default();
         if let Some(profile) = &image.metadata.lens_profile
-            && (profile.distortion.is_some() || profile.vignette.is_some())
+            && (profile.distortion.is_some()
+                || profile.vignette.is_some()
+                || profile.has_chromatic_aberration())
         {
             out.lens = LensEdits {
                 mode: LensMode::EmbeddedV1,
                 distortion: profile.distortion.is_some(),
                 vignette: profile.vignette.is_some(),
+                chromatic_aberration: profile.has_chromatic_aberration(),
                 auto_frame: true,
             };
         }

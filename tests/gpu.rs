@@ -117,19 +117,39 @@ fn check_backend(backend: Backend, memory: CudaMemoryMode) {
                         radius_pixels,
                         knots: vec![[0.4, 80.], [1.1, 55.]],
                     }),
-                    ..rawpuppy::lens::LensProfile::default()
+                    red_ca: Some(rawpuppy::lens::RadialTable {
+                        radius_pixels,
+                        knots: vec![[0.4, 0.01], [1.1, -0.02]],
+                    }),
+                    blue_ca: Some(rawpuppy::lens::RadialTable {
+                        radius_pixels,
+                        knots: vec![[0.4, -0.015], [1.1, 0.025]],
+                    }),
                 });
+                if orientation % 4 == 0 {
+                    let profile = image.metadata.lens_profile.as_mut().unwrap();
+                    profile.distortion = None;
+                    profile.vignette = None;
+                }
             }
             let image = Arc::new(image);
             let original = image.data.clone();
             let mut edits = Edits::for_image(&image);
+            if orientation == 6 {
+                // Historical recipes still use the common camera map without CA.
+                edits.lens.chromatic_aberration = false;
+            }
             edits.raw.hot_pixels = true;
             edits.raw.denoise = 0.012;
             edits.geometry.pitch = 4.;
             edits.geometry.yaw = -5.;
             edits.geometry.rotation = 6.;
             edits.geometry.distortion = [-0.05, 0.02];
-            edits.geometry.chromatic_aberration = [0.008, -0.006];
+            edits.geometry.chromatic_aberration = if orientation % 4 == 0 {
+                [0.; 2]
+            } else {
+                [0.008, -0.006]
+            };
             edits.geometry.crop = [0.05, 0.02, 0.9, 0.95];
             edits.scene.exposure = 0.8;
             edits.scene.calibration = [1.2, 0.9, 1.1];

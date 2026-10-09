@@ -28,6 +28,10 @@ pub struct LensProfile {
 }
 
 impl LensProfile {
+    pub fn has_chromatic_aberration(&self) -> bool {
+        self.red_ca.is_some() && self.blue_ca.is_some()
+    }
+
     pub fn validate(&self) -> Result<()> {
         for table in [
             &self.distortion,
@@ -52,6 +56,12 @@ impl LensProfile {
                 "Embedded lens transmission must be positive"
             );
         }
+        for table in [&self.red_ca, &self.blue_ca].into_iter().flatten() {
+            ensure!(
+                table.knots.iter().all(|k| k[1] > -1.),
+                "Embedded chromatic aberration must retain positive radial scale"
+            );
+        }
         Ok(())
     }
 }
@@ -60,8 +70,9 @@ impl LensProfile {
 pub struct Correction {
     pub distortion: bool,
     pub vignette: bool,
-    /// Interleaved backward radial scale and scene-linear gain; uniform in r².
-    pub lut: Vec<[f32; 2]>,
+    pub chromatic_aberration: bool,
+    /// Green map, scene-linear gain, red map, blue map; uniform in r².
+    pub lut: Vec<[f32; 4]>,
     pub frame_scale: f32,
 }
 impl Default for Correction {
@@ -69,6 +80,7 @@ impl Default for Correction {
         Self {
             distortion: false,
             vignette: false,
+            chromatic_aberration: false,
             lut: Vec::new(),
             frame_scale: 1.,
         }
@@ -144,7 +156,25 @@ impl Correction {
         } else {
             None
         };
-        for table in [distortion, vignette].into_iter().flatten() {
+        let (red, blue) = if e.chromatic_aberration {
+            (
+                Some(
+                    profile
+                        .red_ca
+                        .as_ref()
+                        .context("No embedded red CA table")?,
+                ),
+                Some(
+                    profile
+                        .blue_ca
+                        .as_ref()
+                        .context("No embedded blue CA table")?,
+                ),
+            )
+        } else {
+            (None, None)
+        };
+        for table in [distortion, vignette, red, blue].into_iter().flatten() {
             table.validate()?;
         }
         if let Some(t) = distortion {
@@ -159,10 +189,17 @@ impl Correction {
                 "Embedded lens transmission must be positive"
             );
         }
+        for table in [red, blue].into_iter().flatten() {
+            ensure!(
+                table.knots.iter().all(|k| k[1] > -1.),
+                "Embedded chromatic aberration must retain positive radial scale"
+            );
+        }
         let diagonal = (width as f64).hypot(height as f64) * 0.5;
         let mut out = Self {
             distortion: distortion.is_some(),
             vignette: vignette.is_some(),
+            chromatic_aberration: red.is_some(),
             lut: Vec::with_capacity(LUT_SAMPLES),
             frame_scale: 1.,
         };
@@ -174,27 +211,41 @@ impl Correction {
             let gain = vignette.map_or(1., |t| {
                 100. / t.interpolate(radius * (diagonal / t.radius_pixels as f64) as f32, 100.)
             });
+            let channel_scale = |table: Option<&RadialTable>| {
+                table.map_or(1., |t| {
+                    1. + t.interpolate(radius * (diagonal / t.radius_pixels as f64) as f32, 0.)
+                })
+            };
+            let red = geometric * channel_scale(red);
+            let blue = geometric * channel_scale(blue);
             ensure!(
-                geometric.is_finite() && gain.is_finite(),
+                [geometric, gain, red, blue].iter().all(|v| v.is_finite()),
                 "Lens correction exceeds numeric range"
             );
-            out.lut.push([geometric, gain]);
+            out.lut.push([geometric, gain, red, blue]);
         }
-        if e.auto_frame && out.distortion {
+        if e.auto_frame && (out.distortion || out.chromatic_aberration) {
             // Every rectangle-boundary radius lies between the short-side midpoint
             // and the corner. Maxima of our piecewise-linear LUT occur at its nodes.
             let edge = width.min(height) as f64 / (2. * diagonal);
             let edge2 = (edge * edge) as f32;
-            let mut maximum = out.lookup(edge2, 0).max(out.lookup(1., 0));
+            let mut maximum = 0f32;
+            for component in [0, 2, 3] {
+                maximum = maximum
+                    .max(out.lookup(edge2, component))
+                    .max(out.lookup(1., component));
+            }
             for (i, node) in out.lut.iter().enumerate() {
                 let r2 = i as f32 / (LUT_SAMPLES - 1) as f32 * MAX_RADIUS2;
                 if r2 >= edge2 && r2 <= 1. {
-                    maximum = maximum.max(node[0]);
+                    maximum = maximum.max(node[0]).max(node[2]).max(node[3]);
                 }
             }
             out.frame_scale = 1. / (maximum * (1. + 1e-6));
             for node in &mut out.lut {
-                node[0] *= out.frame_scale;
+                for component in [0, 2, 3] {
+                    node[component] *= out.frame_scale;
+                }
             }
         }
         Ok(out)

@@ -1020,11 +1020,11 @@ impl Editor {
                                 ui.label(egui::RichText::new(name).small().color(Color32::GRAY));
                             }
                             let profile = source_image.as_ref().and_then(|i| i.metadata.lens_profile.as_ref());
-                            let available = profile.is_some_and(|p| p.distortion.is_some() || p.vignette.is_some());
+                            let available = profile.is_some_and(|p| p.distortion.is_some() || p.vignette.is_some() || p.has_chromatic_aberration());
                             let mut enabled = self.edits.lens.mode != LensMode::Off;
                             if ui.add_enabled(available, egui::Checkbox::new(&mut enabled, "Camera lens corrections")).changed() {
                                 self.edits.lens = if enabled {
-                                    LensEdits { mode: LensMode::EmbeddedV1, distortion: profile.is_some_and(|p| p.distortion.is_some()), vignette: profile.is_some_and(|p| p.vignette.is_some()), auto_frame: true }
+                                    LensEdits { mode: LensMode::EmbeddedV1, distortion: profile.is_some_and(|p| p.distortion.is_some()), vignette: profile.is_some_and(|p| p.vignette.is_some()), chromatic_aberration: profile.is_some_and(|p| p.has_chromatic_aberration()), auto_frame: true }
                                 } else { LensEdits::default() };
                             }
                             if enabled {
@@ -1032,6 +1032,7 @@ impl Editor {
                                     ui.add_enabled(profile.is_some_and(|p| p.distortion.is_some()), egui::Checkbox::new(&mut self.edits.lens.distortion, "Distortion"));
                                     ui.add_enabled(profile.is_some_and(|p| p.vignette.is_some()), egui::Checkbox::new(&mut self.edits.lens.vignette, "Vignetting"));
                                 });
+                                ui.add_enabled(profile.is_some_and(|p| p.has_chromatic_aberration()), egui::Checkbox::new(&mut self.edits.lens.chromatic_aberration, "Chromatic aberration"));
                                 ui.checkbox(&mut self.edits.lens.auto_frame, "Avoid camera correction gaps");
                             }
                             if let Some(error) = source_image.as_ref().and_then(|i| i.metadata.lens_profile_error.as_ref()) {

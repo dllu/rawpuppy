@@ -64,8 +64,17 @@ impl Geometry {
             2 => self.ca[1],
             _ => 0.,
         };
-        let camera = if self.lens.distortion {
-            self.lens.lookup(r2, 0)
+        let camera = if self.lens.distortion || self.lens.chromatic_aberration {
+            let component = if self.lens.chromatic_aberration {
+                match channel {
+                    0 => 2,
+                    2 => 3,
+                    _ => 0,
+                }
+            } else {
+                0
+            };
+            self.lens.lookup(r2, component)
         } else {
             1.
         };

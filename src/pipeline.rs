@@ -119,7 +119,7 @@ impl<'a> Pipeline<'a> {
         let Some(mut rgb) = self.source.sample(p, &self.edits.raw) else {
             return [0.; 4];
         };
-        if self.geometry.ca != [0.; 2] {
+        if self.geometry.ca != [0.; 2] || self.geometry.lens.chromatic_aberration {
             for channel in [0, 2] {
                 let Some(p) = self.geometry.map(uv, channel) else {
                     return [0.; 4];

@@ -175,7 +175,11 @@ impl ShaderArguments {
         params.extend(crate::agx::TO_REC2020.into_iter().flatten());
         params.extend(crate::agx::TO_SRGB.into_iter().flatten());
         assert_eq!(params.len(), 67);
-        params.extend([g.lens.distortion as u8 as f32, g.lens.vignette as u8 as f32]);
+        params.extend([
+            (g.lens.distortion || g.lens.chromatic_aberration) as u8 as f32,
+            g.lens.vignette as u8 as f32,
+            g.lens.chromatic_aberration as u8 as f32,
+        ]);
         params.extend(g.lens.lut.iter().flatten().copied());
         let (transpose, fx, fy) = image.orientation.to_flips();
         let mut dims = vec![

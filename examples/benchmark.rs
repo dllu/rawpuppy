@@ -19,6 +19,9 @@ struct Args {
     iterations: usize,
     #[arg(long)]
     no_camera_corrections: bool,
+    /// Disable only embedded CA when comparing camera-correction throughput.
+    #[arg(long)]
+    no_camera_ca: bool,
     #[arg(long, value_enum, default_value = "auto")]
     cuda_memory: CudaMemoryMode,
     #[arg(long, value_enum, default_value = "mhc")]
@@ -47,6 +50,9 @@ fn main() -> Result<()> {
     };
     let mut times = Vec::new();
     edits.raw.reconstruction = args.reconstruction;
+    if args.no_camera_ca {
+        edits.lens.chromatic_aberration = false;
+    }
     for i in 0..args.iterations {
         edits.scene.exposure = i as f32 * 0.1;
         let start = Instant::now();
