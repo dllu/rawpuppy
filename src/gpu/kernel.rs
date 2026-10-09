@@ -228,6 +228,17 @@ fn sensor(
 }
 
 #[cube]
+fn lens_value(p: &Array<f32>, radius2: f32, component: usize) -> f32 {
+    let u =
+        bounded(radius2 / crate::lens::MAX_RADIUS2, 0., 1.) * (crate::lens::LUT_SAMPLES - 1) as f32;
+    let i = f32::min(u.floor(), (crate::lens::LUT_SAMPLES - 2) as f32) as usize;
+    let t = u - i as f32;
+    let a = p[69 + i * 2 + component];
+    let b = p[69 + (i + 1) * 2 + component];
+    a + t * (b - a)
+}
+
+#[cube]
 fn geometry(p: &Array<f32>, u: f32, v: f32, channel: u32) -> Pixel {
     let cx = p[18] + u * p[20];
     let cy = p[19] + v * p[21];
@@ -246,7 +257,11 @@ fn geometry(p: &Array<f32>, u: f32, v: f32, channel: u32) -> Pixel {
         } else if channel == 2 {
             ca = p[26];
         }
-        let radial = (1. + p[23] * r2 + p[24] * r2 * r2) * (1. + ca);
+        let mut camera = 1.;
+        if p[67] != 0. {
+            camera = lens_value(p, r2, 0);
+        }
+        let radial = (1. + p[23] * r2 + p[24] * r2 * r2) * (1. + ca) * camera;
         Pixel {
             r: x * radial + 0.5,
             g: y * radial / p[22] + 0.5,
@@ -426,9 +441,14 @@ fn base(
             let dist = (u - p[33]) * p[31] + (v - p[34]) * p[32];
             let t = bounded(0.5 + dist / p[35], 0., 1.);
             let t = t * t * (3. - 2. * t);
+            let mut camera_gain = 1.;
+            if p[68] != 0. {
+                camera_gain = lens_value(p, r2, 1);
+            }
             let gain = ((p[27] + p[28] * r2 + p[29] * r2 * r2 + p[30] * t)
                 * core::f32::consts::LN_2)
-                .exp();
+                .exp()
+                * camera_gain;
             let mut calibrated = Pixel {
                 r: (p[9] * rgb.r + p[10] * rgb.g + p[11] * rgb.b) * gain,
                 g: (p[12] * rgb.r + p[13] * rgb.g + p[14] * rgb.b) * gain,

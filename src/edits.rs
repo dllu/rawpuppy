@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 pub struct Edits {
     pub version: u32,
     pub raw: RawEdits,
+    #[serde(skip_serializing_if = "LensEdits::is_default")]
+    pub lens: LensEdits,
     pub geometry: GeometryEdits,
     pub scene: SceneEdits,
     pub tone: ToneEdits,
@@ -18,11 +20,45 @@ impl Default for Edits {
         Self {
             version: 1,
             raw: RawEdits::default(),
+            lens: LensEdits::default(),
             geometry: GeometryEdits::default(),
             scene: SceneEdits::default(),
             tone: ToneEdits::default(),
             display: DisplayEdits::default(),
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum LensMode {
+    #[default]
+    Off,
+    EmbeddedV1,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(default, deny_unknown_fields)]
+pub struct LensEdits {
+    pub mode: LensMode,
+    pub distortion: bool,
+    pub vignette: bool,
+    /// Preserve the largest rectangular field without camera-induced gaps.
+    pub auto_frame: bool,
+}
+impl Default for LensEdits {
+    fn default() -> Self {
+        Self {
+            mode: LensMode::Off,
+            distortion: true,
+            vignette: true,
+            auto_frame: true,
+        }
+    }
+}
+impl LensEdits {
+    pub fn is_default(&self) -> bool {
+        self == &Self::default()
     }
 }
 
@@ -182,6 +218,23 @@ pub struct Retouch {
 }
 
 impl Edits {
+    /// New documents use available camera corrections. Deserialized recipes keep
+    /// their explicit/default-off state so historical rendering and hashes survive.
+    pub fn for_image(image: &crate::input::SensorImage) -> Self {
+        let mut out = Self::default();
+        if let Some(profile) = &image.metadata.lens_profile
+            && (profile.distortion.is_some() || profile.vignette.is_some())
+        {
+            out.lens = LensEdits {
+                mode: LensMode::EmbeddedV1,
+                distortion: profile.distortion.is_some(),
+                vignette: profile.vignette.is_some(),
+                auto_frame: true,
+            };
+        }
+        out
+    }
+
     pub fn validate(&self) -> Result<()> {
         ensure!(
             self.version == 1,

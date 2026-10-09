@@ -46,8 +46,22 @@ fn composed_gpu_matches_cpu_for_rgb_bayer_orientation_and_local_edits() {
                 image.metadata.width = height;
                 image.metadata.height = width;
             }
+            if orientation % 2 == 0 {
+                let radius_pixels = (width as f32).hypot(height as f32) * 0.5;
+                image.metadata.lens_profile = Some(rawpuppy::lens::LensProfile {
+                    distortion: Some(rawpuppy::lens::RadialTable {
+                        radius_pixels,
+                        knots: vec![[0.4, -2.], [1.1, -5.]],
+                    }),
+                    vignette: Some(rawpuppy::lens::RadialTable {
+                        radius_pixels,
+                        knots: vec![[0.4, 80.], [1.1, 55.]],
+                    }),
+                    ..rawpuppy::lens::LensProfile::default()
+                });
+            }
             let image = Arc::new(image);
-            let mut edits = Edits::default();
+            let mut edits = Edits::for_image(&image);
             edits.raw.hot_pixels = true;
             edits.raw.denoise = 0.012;
             edits.geometry.pitch = 4.;

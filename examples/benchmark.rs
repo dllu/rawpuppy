@@ -17,6 +17,8 @@ struct Args {
     max_edge: usize,
     #[arg(long, default_value_t = 6)]
     iterations: usize,
+    #[arg(long)]
+    no_camera_corrections: bool,
 }
 fn main() -> Result<()> {
     #[cfg(feature = "cuda")]
@@ -34,7 +36,11 @@ fn main() -> Result<()> {
     let source = Arc::new(SensorImage::open(&args.input)?);
     println!("decode_ms={:.2}", start.elapsed().as_secs_f64() * 1000.);
     let mut renderer = Renderer::new(args.backend);
-    let mut edits = Edits::default();
+    let mut edits = if args.no_camera_corrections {
+        Edits::default()
+    } else {
+        Edits::for_image(&source)
+    };
     let mut times = Vec::new();
     for i in 0..args.iterations {
         edits.scene.exposure = i as f32 * 0.1;

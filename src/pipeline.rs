@@ -46,8 +46,14 @@ pub struct Rendered {
 impl<'a> Pipeline<'a> {
     pub fn compile(source: &'a SensorImage, edits: &'a Edits) -> Result<Self> {
         edits.validate()?;
-        let geometry = Geometry::compile(
+        let mut geometry = Geometry::compile(
             &edits.geometry,
+            source.metadata.width,
+            source.metadata.height,
+        )?;
+        geometry.lens = crate::lens::Correction::compile(
+            source.metadata.lens_profile.as_ref(),
+            &edits.lens,
             source.metadata.width,
             source.metadata.height,
         )?;
@@ -129,11 +135,17 @@ impl<'a> Pipeline<'a> {
             + (uv[1] - grad.center[1]) * self.gradient[1];
         let transition = (0.5 + dist / grad.width).clamp(0., 1.);
         let transition = transition * transition * (3. - 2. * transition);
+        let camera_gain = if self.geometry.lens.vignette {
+            self.geometry.lens.lookup(r2, 1)
+        } else {
+            1.
+        };
         let gain = (scene.exposure
             + scene.vignette[0] * r2
             + scene.vignette[1] * r2 * r2
             + grad.exposure * transition)
-            .exp2();
+            .exp2()
+            * camera_gain;
         rgb = color::apply(self.calibration, rgb).map(|x| x * gain);
         rgb = match self.edits.tone.mapper {
             ToneMapper::Agx => color::agx_legacy(rgb),

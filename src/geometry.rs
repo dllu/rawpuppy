@@ -14,6 +14,7 @@ pub struct Geometry {
     pub aspect: f32,
     pub width: usize,
     pub height: usize,
+    pub lens: crate::lens::Correction,
 }
 
 impl Geometry {
@@ -40,6 +41,7 @@ impl Geometry {
             aspect,
             width: ((width as f64 * e.crop[2] as f64).round() as usize).max(1),
             height: ((height as f64 * e.crop[3] as f64).round() as usize).max(1),
+            lens: crate::lens::Correction::default(),
         })
     }
 
@@ -62,7 +64,13 @@ impl Geometry {
             2 => self.ca[1],
             _ => 0.,
         };
-        let radial = (1. + self.distortion[0] * r2 + self.distortion[1] * r2 * r2) * (1. + ca);
+        let camera = if self.lens.distortion {
+            self.lens.lookup(r2, 0)
+        } else {
+            1.
+        };
+        let radial =
+            (1. + self.distortion[0] * r2 + self.distortion[1] * r2 * r2) * (1. + ca) * camera;
         Some([x * radial + 0.5, y * radial / self.aspect + 0.5])
     }
 }

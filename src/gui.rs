@@ -2,7 +2,7 @@
 use crate::{
     color::{self, OutputSpace},
     display,
-    edits::{Edits, Retouch, RetouchMode, ToneMapper},
+    edits::{Edits, LensEdits, LensMode, Retouch, RetouchMode, ToneMapper},
     export,
     input::SensorImage,
     render::{Backend, Renderer},
@@ -101,7 +101,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
         let result: Result<Reply> = (|| match work {
             Work::Open { id, path } => {
                 let image = Arc::new(SensorImage::open(&path)?);
-                let edits = sidecar::load_for(&path)?;
+                let edits = sidecar::load_for_default(&path, Edits::for_image(&image))?;
                 renderer.set_document(path.clone());
                 Ok(Reply::Opened {
                     id,
@@ -797,6 +797,7 @@ impl Editor {
     }
 
     fn controls(&mut self, ui: &mut egui::Ui) {
+        let source_image = self.image.clone();
         egui::Panel::right("edits")
             .exact_size(310.)
             .resizable(false)
@@ -943,6 +944,27 @@ impl Editor {
                                 });
                             });
                         egui::CollapsingHeader::new("Geometry & lens").show(ui, |ui| {
+                            if let Some(name) = source_image.as_ref().and_then(|i| i.metadata.lens_model.as_ref()) {
+                                ui.label(egui::RichText::new(name).small().color(Color32::GRAY));
+                            }
+                            let profile = source_image.as_ref().and_then(|i| i.metadata.lens_profile.as_ref());
+                            let available = profile.is_some_and(|p| p.distortion.is_some() || p.vignette.is_some());
+                            let mut enabled = self.edits.lens.mode != LensMode::Off;
+                            if ui.add_enabled(available, egui::Checkbox::new(&mut enabled, "Camera lens corrections")).changed() {
+                                self.edits.lens = if enabled {
+                                    LensEdits { mode: LensMode::EmbeddedV1, distortion: profile.is_some_and(|p| p.distortion.is_some()), vignette: profile.is_some_and(|p| p.vignette.is_some()), auto_frame: true }
+                                } else { LensEdits::default() };
+                            }
+                            if enabled {
+                                ui.horizontal(|ui| {
+                                    ui.add_enabled(profile.is_some_and(|p| p.distortion.is_some()), egui::Checkbox::new(&mut self.edits.lens.distortion, "Distortion"));
+                                    ui.add_enabled(profile.is_some_and(|p| p.vignette.is_some()), egui::Checkbox::new(&mut self.edits.lens.vignette, "Vignetting"));
+                                });
+                                ui.checkbox(&mut self.edits.lens.auto_frame, "Avoid camera correction gaps");
+                            }
+                            if let Some(error) = source_image.as_ref().and_then(|i| i.metadata.lens_profile_error.as_ref()) {
+                                ui.label(egui::RichText::new("Camera correction data unavailable").small()).on_hover_text(error);
+                            }
                             slider(
                                 ui,
                                 &mut self.edits.geometry.rotation,
@@ -1202,7 +1224,7 @@ impl Editor {
                             .color(Color32::GRAY),
                         );
                         if ui.small_button("Reset all edits").clicked() {
-                            self.edits = Edits::default();
+                            self.edits = source_image.as_ref().map_or_else(Edits::default, |i| Edits::for_image(i));
                         }
                     });
                 });
@@ -1449,6 +1471,7 @@ impl Editor {
                     let edits = if self.compare {
                         Edits {
                             geometry: self.edits.geometry.clone(),
+                            lens: self.edits.lens.clone(),
                             ..Edits::default()
                         }
                     } else {

@@ -55,10 +55,14 @@ pub fn load(path: &Path) -> Result<Edits> {
 }
 
 pub fn load_for(original: &Path) -> Result<Edits> {
+    load_for_default(original, Edits::default())
+}
+
+pub fn load_for_default(original: &Path, default: Edits) -> Result<Edits> {
     let path = path_for(original);
     match fs::metadata(&path) {
         Ok(_) => load(&path),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(Edits::default()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(default),
         Err(e) => Err(e.into()),
     }
 }

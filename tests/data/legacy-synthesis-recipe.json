@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "raw": {
+    "hot_pixels": false,
+    "denoise": 0.0
+  },
+  "geometry": {
+    "distortion": [
+      0.0,
+      0.0
+    ],
+    "chromatic_aberration": [
+      0.0,
+      0.0
+    ],
+    "yaw": 0.0,
+    "pitch": 0.0,
+    "rotation": 0.0,
+    "field_of_view": 50.0,
+    "crop": [
+      0.0,
+      0.0,
+      1.0,
+      1.0
+    ],
+    "scale": 1.0
+  },
+  "scene": {
+    "exposure": 0.5,
+    "calibration": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "mixer": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "vignette": [
+      0.0,
+      0.0
+    ],
+    "graduated": {
+      "exposure": 0.0,
+      "angle": 0.0,
+      "center": [
+        0.5,
+        0.5
+      ],
+      "width": 0.3
+    }
+  },
+  "tone": {
+    "mapper": "linear",
+    "saturation": 1.0
+  },
+  "display": {
+    "curve": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "shadows": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "highlights": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "split_strength": 0.0,
+    "retouch": [],
+    "synthesis": [
+      {
+        "region": [
+          -0.061752535,
+          0.0651414,
+          1.1550708,
+          1.1550708
+        ],
+        "dabs": [
+          {
+            "center": [
+              0.50631315,
+              0.42171717
+            ],
+            "radius": 0.14
+          },
+          {
+            "center": [
+              0.50631315,
+              0.53535354
+            ],
+            "radius": 0.14
+          },
+          {
+            "center": [
+              0.5126263,
+              0.6489899
+            ],
+            "radius": 0.14
+          },
+          {
+            "center": [
+              0.5189394,
+              0.7626263
+            ],
+            "radius": 0.14
+          },
+          {
+            "center": [
+              0.5252525,
+              0.8636364
+            ],
+            "radius": 0.14
+          }
+        ],
+        "fill_gaps": false,
+        "steps": 10,
+        "seed": 0,
+        "asset": "9a7976a267db1239d154c673b78373ac89ecba7977c87f781c9443bb5046420d.exr",
+        "sha256": "9a7976a267db1239d154c673b78373ac89ecba7977c87f781c9443bb5046420d",
+        "source_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+        "recipe_sha256": "a8ea9cb37c3af38d20d3d063dc59f2b53fb4129d548f4f3bee40cee44d97b67d",
+        "model": "moebius-scene-2026-v1"
+      },
+      {
+        "region": [
+          0.079670325,
+          0.11401099,
+          0.25,
+          0.25
+        ],
+        "dabs": [
+          {
+            "center": [
+              0.20467032,
+              0.23901099
+            ],
+            "radius": 0.025
+          }
+        ],
+        "fill_gaps": false,
+        "steps": 20,
+        "seed": 0,
+        "asset": "2df24c5983f63cda89449febbdc4b525fcbb64e5592833e9b488bc6466d8259b.exr",
+        "sha256": "2df24c5983f63cda89449febbdc4b525fcbb64e5592833e9b488bc6466d8259b",
+        "source_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+        "recipe_sha256": "a8ea9cb37c3af38d20d3d063dc59f2b53fb4129d548f4f3bee40cee44d97b67d",
+        "model": "moebius-scene-2026-v1"
+      }
+    ]
+  }
+}

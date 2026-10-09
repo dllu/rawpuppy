@@ -1,0 +1,71 @@
+{
+  "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+  "source_camera": "Fujifilm GFX100S",
+  "lens": "GF55mmF1.7 R WR",
+  "aperture": 1.7,
+  "reference_radius_pixels": 7280,
+  "oracle": "Darktable 5.5.0+1479~g9e36df0344",
+  "oracle_binary_sha256": "62b33b4e8fe9ca7906a0ca103cf1c2c984079964f8ed481dd6b2b3e96a2fd549",
+  "preset_sha256": {
+    "none": "2aa1a26f31cb6e33277d56c3b0a860bf39b5b341b1fe890a56fe4c901aef4d9b",
+    "distortion": "3531724a5cc141b03735c6413b7fed8f06cc5cc3e7218b4c71883e1743278aa1",
+    "vignette": "5299dc9f4328d05f026223952c6efa49ff7bd43b77910f64b772da01265cdec9",
+    "ca": "67bcd2416889003f486d8e00b052d7013e77fd888eec9e655baa73f0353194b4"
+  },
+  "geometry": {
+    "matches": 4482,
+    "output_shape": [
+      1600,
+      1200
+    ],
+    "hypotheses": {
+      "-1": {
+        "scale": 0.9873018423169153,
+        "translation": [
+          -0.11360215146704236,
+          0.6344231835609526
+        ],
+        "median_error_pixels": 3.7855236774705823,
+        "p90_error_pixels": 6.889298794301128,
+        "inliers_under_2_pixels": 1084
+      },
+      "0": {
+        "scale": 0.9982830488364719,
+        "translation": [
+          -0.06376681655055796,
+          0.327342027040092
+        ],
+        "median_error_pixels": 1.892586939410927,
+        "p90_error_pixels": 3.4796323078284104,
+        "inliers_under_2_pixels": 2414
+      },
+      "1": {
+        "scale": 1.009528031692614,
+        "translation": [
+          0.00412381005725042,
+          -0.0034605785422590907
+        ],
+        "median_error_pixels": 0.06824008165029682,
+        "p90_error_pixels": 0.1891237788429224,
+        "inliers_under_2_pixels": 4476
+      }
+    }
+  },
+  "vignetting": {
+    "comparison": "Rawpuppy/neutral gain vs Darktable/neutral gain; independent RAW decoders; same output grid",
+    "shape": [
+      1600,
+      1200
+    ],
+    "absolute_gain_difference": {
+      "mean": 0.00036804942646995187,
+      "p99": 0.000985860824584961,
+      "max": 0.008988738059997559
+    }
+  },
+  "benchmarks": {
+    "cuda": "decode_ms=390.71\niteration=0 render_ms=891.138 checksum=163.623367 backend=cuda\niteration=1 render_ms=13.527 checksum=178.640109 backend=cuda\niteration=2 render_ms=12.664 checksum=194.758829 backend=cuda\niteration=3 render_ms=12.195 checksum=211.950749 backend=cuda\niteration=4 render_ms=12.750 checksum=230.314528 backend=cuda\niteration=5 render_ms=12.770 checksum=249.854985 backend=cuda\nwarm_mean_ms=12.781\n",
+    "vulkan": "decode_ms=399.84\niteration=0 render_ms=1911.164 checksum=163.623270 backend=wgpu<wgsl>\niteration=1 render_ms=12.154 checksum=178.639979 backend=wgpu<wgsl>\niteration=2 render_ms=11.837 checksum=194.758709 backend=wgpu<wgsl>\niteration=3 render_ms=12.495 checksum=211.950576 backend=wgpu<wgsl>\niteration=4 render_ms=11.836 checksum=230.314367 backend=wgpu<wgsl>\niteration=5 render_ms=11.853 checksum=249.854769 backend=wgpu<wgsl>\nwarm_mean_ms=12.035\n"
+  },
+  "scope": "One photograph/lens/aperture, not general accuracy or latency guarantees; geometric hypotheses fit a free uniform frame scale and translation."
+}

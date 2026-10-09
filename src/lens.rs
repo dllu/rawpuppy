@@ -1,4 +1,5 @@
 //! Embedded lens metadata, read independently of immutable sensor pixels.
+use crate::edits::{LensEdits, LensMode};
 use anyhow::{Context, Result, bail, ensure};
 use rawler::{
     decoders::raf::FujiIFD,
@@ -6,6 +7,9 @@ use rawler::{
     rawsource::RawSource,
 };
 use serde::{Deserialize, Serialize};
+
+pub const LUT_SAMPLES: usize = 4097;
+pub const MAX_RADIUS2: f32 = 1.25;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct RadialTable {
@@ -21,6 +25,190 @@ pub struct LensProfile {
     pub red_ca: Option<RadialTable>,
     pub blue_ca: Option<RadialTable>,
     pub vignette: Option<RadialTable>,
+}
+
+impl LensProfile {
+    pub fn validate(&self) -> Result<()> {
+        for table in [
+            &self.distortion,
+            &self.red_ca,
+            &self.blue_ca,
+            &self.vignette,
+        ]
+        .into_iter()
+        .flatten()
+        {
+            table.validate()?;
+        }
+        if let Some(table) = &self.distortion {
+            ensure!(
+                table.knots.iter().all(|k| k[1] > -100.),
+                "Embedded distortion must retain positive radial scale"
+            );
+        }
+        if let Some(table) = &self.vignette {
+            ensure!(
+                table.knots.iter().all(|k| k[1] > 0.),
+                "Embedded lens transmission must be positive"
+            );
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Correction {
+    pub distortion: bool,
+    pub vignette: bool,
+    /// Interleaved backward radial scale and scene-linear gain; uniform in r².
+    pub lut: Vec<[f32; 2]>,
+    pub frame_scale: f32,
+}
+impl Default for Correction {
+    fn default() -> Self {
+        Self {
+            distortion: false,
+            vignette: false,
+            lut: Vec::new(),
+            frame_scale: 1.,
+        }
+    }
+}
+
+impl RadialTable {
+    pub fn validate(&self) -> Result<()> {
+        ensure!(
+            self.radius_pixels.is_finite() && self.radius_pixels > 0.,
+            "Invalid lens reference radius"
+        );
+        ensure!(
+            !self.knots.is_empty() && self.knots[0][0] >= 0.,
+            "Missing lens radius samples"
+        );
+        ensure!(
+            self.knots.iter().flatten().all(|v| v.is_finite())
+                && self.knots.windows(2).all(|k| k[1][0] > k[0][0]),
+            "Invalid lens samples"
+        );
+        Ok(())
+    }
+    fn interpolate(&self, radius: f32, center: f32) -> f32 {
+        let mut previous = [0., center];
+        for &next in &self.knots {
+            if next[0] == 0. {
+                previous = next;
+                continue;
+            }
+            if radius <= next[0] {
+                let t = (radius - previous[0]) / (next[0] - previous[0]);
+                return previous[1] + t * (next[1] - previous[1]);
+            }
+            previous = next;
+        }
+        previous[1]
+    }
+}
+
+impl Correction {
+    pub fn compile(
+        profile: Option<&LensProfile>,
+        e: &LensEdits,
+        width: usize,
+        height: usize,
+    ) -> Result<Self> {
+        if e.mode == LensMode::Off {
+            return Ok(Self::default());
+        }
+        ensure!(
+            width > 0 && height > 0,
+            "Lens correction needs nonzero image dimensions"
+        );
+        let profile = profile.context("This image has no usable embedded lens profile")?;
+        let distortion = if e.distortion {
+            Some(
+                profile
+                    .distortion
+                    .as_ref()
+                    .context("No embedded distortion table")?,
+            )
+        } else {
+            None
+        };
+        let vignette = if e.vignette {
+            Some(
+                profile
+                    .vignette
+                    .as_ref()
+                    .context("No embedded vignetting table")?,
+            )
+        } else {
+            None
+        };
+        for table in [distortion, vignette].into_iter().flatten() {
+            table.validate()?;
+        }
+        if let Some(t) = distortion {
+            ensure!(
+                t.knots.iter().all(|k| k[1] > -100.),
+                "Embedded distortion must retain positive radial scale"
+            );
+        }
+        if let Some(t) = vignette {
+            ensure!(
+                t.knots.iter().all(|k| k[1] > 0.),
+                "Embedded lens transmission must be positive"
+            );
+        }
+        let diagonal = (width as f64).hypot(height as f64) * 0.5;
+        let mut out = Self {
+            distortion: distortion.is_some(),
+            vignette: vignette.is_some(),
+            lut: Vec::with_capacity(LUT_SAMPLES),
+            frame_scale: 1.,
+        };
+        for i in 0..LUT_SAMPLES {
+            let radius = ((i as f32 / (LUT_SAMPLES - 1) as f32) * MAX_RADIUS2).sqrt();
+            let geometric = distortion.map_or(1., |t| {
+                1. + t.interpolate(radius * (diagonal / t.radius_pixels as f64) as f32, 0.) * 0.01
+            });
+            let gain = vignette.map_or(1., |t| {
+                100. / t.interpolate(radius * (diagonal / t.radius_pixels as f64) as f32, 100.)
+            });
+            ensure!(
+                geometric.is_finite() && gain.is_finite(),
+                "Lens correction exceeds numeric range"
+            );
+            out.lut.push([geometric, gain]);
+        }
+        if e.auto_frame && out.distortion {
+            // Every rectangle-boundary radius lies between the short-side midpoint
+            // and the corner. Maxima of our piecewise-linear LUT occur at its nodes.
+            let edge = width.min(height) as f64 / (2. * diagonal);
+            let edge2 = (edge * edge) as f32;
+            let mut maximum = out.lookup(edge2, 0).max(out.lookup(1., 0));
+            for (i, node) in out.lut.iter().enumerate() {
+                let r2 = i as f32 / (LUT_SAMPLES - 1) as f32 * MAX_RADIUS2;
+                if r2 >= edge2 && r2 <= 1. {
+                    maximum = maximum.max(node[0]);
+                }
+            }
+            out.frame_scale = 1. / (maximum * (1. + 1e-6));
+            for node in &mut out.lut {
+                node[0] *= out.frame_scale;
+            }
+        }
+        Ok(out)
+    }
+
+    pub fn lookup(&self, radius2: f32, component: usize) -> f32 {
+        if self.lut.is_empty() {
+            return 1.;
+        }
+        let u = (radius2 / MAX_RADIUS2).clamp(0., 1.) * (LUT_SAMPLES - 1) as f32;
+        let i = (u.floor() as usize).min(LUT_SAMPLES - 2);
+        let t = u - i as f32;
+        self.lut[i][component] + t * (self.lut[i + 1][component] - self.lut[i][component])
+    }
 }
 
 fn rational(value: SRational) -> Result<f32> {
@@ -60,8 +248,8 @@ fn tables(value: &Value, channels: usize) -> Result<Vec<RadialTable>> {
         .map(rational)
         .collect::<Result<_>>()?;
     ensure!(
-        radii.first().is_some_and(|r| *r > 0.) && radii.windows(2).all(|r| r[1] > r[0]),
-        "Embedded lens radii must be positive and strictly increasing"
+        radii.first().is_some_and(|r| *r >= 0.) && radii.windows(2).all(|r| r[1] > r[0]),
+        "Embedded lens radii must be nonnegative and strictly increasing"
     );
     (0..channels)
         .map(|channel| {
@@ -127,6 +315,7 @@ pub fn read_raf(source: &RawSource) -> Result<Option<LensProfile>> {
             _ => unreachable!(),
         }
     }
+    profile.validate()?;
     Ok((profile != LensProfile::default()).then_some(profile))
 }
 

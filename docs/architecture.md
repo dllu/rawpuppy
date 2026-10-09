@@ -13,6 +13,9 @@ aberration, EXIF orientation, and sensor crop. Trigonometric operations and matr
 composition occur when the recipe changes, never per pixel. Sampling reconstructs
 sensor RGB on demand. A preview samples directly from the original at its output
 resolution; it does not require a 100 MP intermediate RGB image.
+Versioned embedded RAF distortion and vignetting use one shared radial lookup;
+[lens-correction.md](lens-correction.md) describes conventions, framing and legacy
+recipe preservation. Manual coefficients remain part of the same map and gain.
 
 Vignetting, graduated density, and exposure combine into one scalar gain.
 As-shot sensor gains, camera calibration, user gains, and the RGB mixer combine

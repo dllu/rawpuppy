@@ -151,7 +151,7 @@ fn main() -> Result<()> {
             let mut edits = if let Some(path) = explicit {
                 sidecar::load(&path)?
             } else {
-                sidecar::load_for(&input)?
+                sidecar::load_for_default(&input, Edits::for_image(&image))?
             };
             edits.scene.exposure += exposure;
             let mut renderer = Renderer::new(cli.backend);
@@ -196,7 +196,7 @@ fn main() -> Result<()> {
                 "Inpainting cannot overwrite the original"
             );
             let image = std::sync::Arc::new(SensorImage::open(&input)?);
-            let mut edits = sidecar::load_for(&input)?;
+            let mut edits = sidecar::load_for_default(&input, Edits::for_image(&image))?;
             let mut renderer = Renderer::new(cli.backend);
             renderer.set_document(input.clone());
             let (w, h) = rawpuppy::pipeline::Pipeline::compile(&image, &edits)?.dimensions(None);
@@ -265,7 +265,7 @@ fn main() -> Result<()> {
                 "Inpainting cannot overwrite the original"
             );
             let source = std::sync::Arc::new(SensorImage::open(&input)?);
-            let edits = sidecar::load_for(&input)?;
+            let edits = sidecar::load_for_default(&input, Edits::for_image(&source))?;
             let mut renderer = Renderer::new(cli.backend);
             renderer.set_document(input.clone());
             let mut rendered = renderer.render(source, &edits, max_edge)?;
