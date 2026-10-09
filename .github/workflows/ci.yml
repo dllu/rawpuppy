@@ -96,6 +96,14 @@ jobs:
       - name: Install native Apple Silicon LibTorch
         if: runner.os == 'macOS'
         run: python -m pip install torch==2.13.0
+      - name: Install matching CPU vision library
+        if: runner.os != 'macOS'
+        run: python -m pip install torchvision==0.28.0 --index-url https://download.pytorch.org/whl/cpu
+      - name: Install matching Apple Silicon vision library
+        if: runner.os == 'macOS'
+        run: python -m pip install torchvision==0.28.0
+      - name: Install pinned graph preparation dependencies
+        run: python -m pip install diffusers==0.41.0 transformers==5.17.0 accelerate==1.15.0 timm==1.0.26 omegaconf==2.4.0 einops==0.8.2 pyyaml==6.0.3
       - name: Configure native library loader
         shell: python
         run: |
@@ -113,6 +121,7 @@ jobs:
               root = pathlib.Path(os.environ['RUNNER_TEMP']) / ('rawpuppy-native-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
               handle.write('RAWPUPPY_CI_MODEL_ROOT=' + str(root) + '\n')
               handle.write('RAWPUPPY_TEST_RAWNIND_GRAPH=' + str(root / 'graph') + '\n')
+              handle.write('RAWPUPPY_TEST_MOEBIUS_GRAPH=' + str(root / 'moebius' / 'graph') + '\n')
               handle.write('XDG_CACHE_HOME=' + str(root / 'cache') + '\n')
       - name: Linux neural build dependencies
         if: runner.os == 'Linux'
@@ -132,12 +141,18 @@ jobs:
         run: cargo run --features moebius,raw-ml -j 2 --locked -- install-raw-model "$RAWPUPPY_TEST_RAWNIND_GRAPH"
       - name: Real native RAW inference and CPU parity
         run: cargo test --features moebius,raw-ml --test raw_ml -j 2 --locked -- --ignored --test-threads=1 --nocapture
+      - name: Prepare verified real inpainting graphs
+        shell: bash
+        run: python tools/prepare_ci_moebius.py "$RAWPUPPY_CI_MODEL_ROOT/moebius"
+      - name: Real native inpainting on the selected device and CPU
+        run: cargo test --features moebius,raw-ml --test moebius -j 2 --locked -- --ignored --test-threads=1 --nocapture
       - name: Retain native graph provenance
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: native-raw-${{ runner.os }}
+          name: native-learning-${{ runner.os }}
           path: |
             ${{ env.RAWPUPPY_TEST_RAWNIND_GRAPH }}/manifest.json
             ${{ env.RAWPUPPY_TEST_RAWNIND_GRAPH }}/NOTICE.txt
+            ${{ env.RAWPUPPY_TEST_MOEBIUS_GRAPH }}/manifest.json
           if-no-files-found: ignore

@@ -5,7 +5,10 @@ does not modify the checkout, photographs, or an existing Python environment.
 """
 import argparse
 import hashlib
+import importlib.metadata
 import json
+import math
+import subprocess
 import sys
 import types
 from pathlib import Path
@@ -13,6 +16,8 @@ from pathlib import Path
 import torch
 import yaml
 from diffusers import AutoencoderKL
+
+UPSTREAM_REVISION = "b88d462bacb9af6e7128a3b4cc4a07418bedfd61"
 
 
 def digest(path):
@@ -36,6 +41,12 @@ def inference_imports(repo):
     package.UNet2DLambdaDWConvMixFFNConditionModel_prune_down_mid_up_block_8x8 = (
         UNet2DLambdaDWConvMixFFNConditionModel_prune_down_mid_up_block_8x8
     )
+    # Its removal initializer imports the full Python image pipeline (OpenCV,
+    # teacher helpers), which the native graph preparation does not execute.
+    for name, directory in [("removal", repo / "removal"), ("removal.v1_2", repo / "removal/v1_2")]:
+        namespace = types.ModuleType(name)
+        namespace.__path__ = [str(directory)]
+        sys.modules[name] = namespace
     from removal.v1_2.removal_model import build_removal_model
     return build_removal_model
 
@@ -95,8 +106,17 @@ def main():
     parser.add_argument("--models", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--threads", type=int, default=8)
     args = parser.parse_args()
-    torch.set_num_threads(8)
+    if args.output.exists():
+        parser.error("Choose a fresh graph output directory")
+    if args.threads <= 0:
+        parser.error("Threads must be positive")
+    revision = subprocess.check_output(["git", "-C", str(args.repo), "rev-parse", "HEAD"], text=True).strip()
+    changed = subprocess.check_output(["git", "-C", str(args.repo), "diff", "--name-only", "HEAD"], text=True).strip()
+    if revision != UPSTREAM_REVISION or changed:
+        parser.error("Use the unchanged pinned Moebius checkout at " + UPSTREAM_REVISION)
+    torch.set_num_threads(args.threads)
     torch.manual_seed(0)
     hashes = {
         "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
@@ -121,7 +141,11 @@ def main():
     timestep = torch.tensor([950], dtype=torch.int64, device=args.device)
     ids = torch.tensor([list(range(10, 20)), list(range(10))], dtype=torch.int64, device=args.device)
     manifest = {"version": 1, "size": 512, "scaling_factor": float(vae.config.scaling_factor),
-                "source_hashes": hashes, "torch_version": torch.__version__, "modules": {}}
+                "source_hashes": hashes, "source_revision": revision,
+                "torch_version": torch.__version__, "cpu_threads": args.threads,
+                "preparation_versions": {name: importlib.metadata.version(name) for name in
+                                         ("torch", "torchvision", "diffusers", "transformers", "accelerate", "timm", "einops", "pyyaml")},
+                "modules": {}}
     with torch.inference_mode():
         for name, module, inputs in [
             ("encoder", Encoder(vae), (image,)),
@@ -137,13 +161,14 @@ def main():
             actual = frozen(*inputs)
             error = (expected - actual).abs().max().item()
             print(f"Numerical checks: trace={trace_error}, freeze={error}",flush=True)
-            if error > 0.0001:
+            if not all(math.isfinite(value) and value <= 0.0001 for value in (trace_error, error)):
                 raise ValueError(f"{name} export discrepancy: {error}")
             path = args.output / f"{name}.pt"
             temporary = path.with_suffix(".pt.part")
             frozen.save(str(temporary))
             temporary.replace(path)
-            manifest["modules"][name] = {"file": path.name, "sha256": digest(path), "max_abs_error": error}
+            manifest["modules"][name] = {"file": path.name, "sha256": digest(path), "max_abs_error": error,
+                                        "max_trace_error": trace_error}
             print(f"Verified {name}: max absolute error {error}", flush=True)
     path = args.output / "manifest.json"
     temporary = path.with_suffix(".json.part")

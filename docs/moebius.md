@@ -39,6 +39,17 @@ Prepared device literals use the input tensor's device. CPU/CUDA/MPS selection
 is performed in Rust. The same CUDA-prepared graphs have been executed on both
 CUDA and CPU; MPS and Windows runtime validation remain outstanding.
 
+The native-learning CI matrix now prepares real 512-pixel graphs independently
+on Linux, macOS and Windows, using matching PyTorch 2.13 and pinned preparation
+dependencies. It verifies the upstream source revision and checkpoint hashes,
+records trace/freeze errors and package versions, and rejects non-finite checks
+or an existing output directory. Preparation loads student/factory modules
+without importing the unused teacher or Python image-pipeline aggregators.
+Tests use `RAWPUPPY_TEST_MOEBIUS_GRAPH` to select these scratch graphs; macOS must
+actually sample on MPS with CPU operator fallback disabled. An explicit CPU
+case also runs on every platform. Only graph provenance is retained in CI.
+Execution results must still be observed before marking Windows/MPS verified.
+
 ## Editor and CLI
 
 Open “AI removal & corner fill,” paint the selected area, then generate. Context

@@ -13,18 +13,31 @@ fn native_moebius_generates_masked_pixels_and_preserves_original_samples() {
 
 #[test]
 #[ignore = "requires prepared, pinned Moebius graphs and LibTorch runtime"]
-fn prepared_graphs_run_on_cpu_after_cuda_preparation() {
+fn prepared_graphs_run_with_an_explicit_cpu_device() {
     check_generation(InferenceDevice::Cpu);
 }
 
 fn check_generation(device: InferenceDevice) {
-    let directory = models::cache_dir()
-        .unwrap()
-        .join("models/moebius/torchscript");
+    let directory = std::env::var_os("RAWPUPPY_TEST_MOEBIUS_GRAPH")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| {
+            models::cache_dir()
+                .unwrap()
+                .join("models/moebius/torchscript")
+        });
     let start = std::time::Instant::now();
     let model = Moebius::open(&directory, device).unwrap();
     eprintln!("model load: {:?}", start.elapsed());
     eprintln!("native device: {:?}", model.device());
+    if matches!(device, InferenceDevice::Auto)
+        && std::env::var("RAWPUPPY_TEST_REQUIRE_MPS").as_deref() == Ok("1")
+    {
+        assert_eq!(
+            model.device(),
+            tch::Device::Mps,
+            "MPS must execute native sampling"
+        );
+    }
     let mut pixels = vec![[0.18, 0.18, 0.18, 1.]; 512 * 512];
     let mut mask = vec![0.; 512 * 512];
     for y in 224..288 {
