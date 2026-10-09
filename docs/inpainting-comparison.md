@@ -3,9 +3,12 @@
 These are research evaluations of current models, not a final selection or a
 production quality claim. The initial Moebius/Qwen comparison uses the same
 512×512 original and mask. The FLUX extension below uses those same inputs too.
-Moebius is a dedicated masked inpainting model. Qwen Image 2.1 receives the original
+Moebius is a dedicated masked inpainting model. The initial base-model Qwen
+Image 2.1 test receives the original
 and white-on-black mask as two reference images, plus an explicit removal prompt.
-Its current official Diffusers pipeline has no separate `mask_image` parameter.
+The evaluated official Diffusers base pipeline has no separate `mask_image` parameter.
+The later [PAI adapter follow-up](#qwen-21-explicit-mask-adapter--2026-10-09)
+uses a dedicated mask-conditioning branch and is a separate Qwen inference path.
 
 ## Settings and measurements
 
@@ -162,7 +165,8 @@ commits only selected pixels. The raw result also changes some surrounding conte
 it wholesale would violate exact preservation. This experiment establishes that
 mask preprocessing matters; it does not prove a particular cause of the original
 artifact or an overall quality ranking. The Moebius follow-up below tests the same
-16-pixel growth. Qwen has not been retested with it, and FLUX's texture test below
+16-pixel growth. The base-model Qwen reference-mask path has not been retested
+with it, and FLUX's texture test below
 uses zero inference padding.
 
 ### Actual-pixel GFX100S texture repair
@@ -194,8 +198,10 @@ prompt or model configuration.
 
 The errors compare the 9,216 withheld pixels with their known intact values.
 They describe reconstruction fidelity for this example, not general perceptual
-quality: a plausible generated texture can differ from the original. Qwen has not
-been tested on this texture context. No overall model winner has been established.
+quality: a plausible generated texture can differ from the original. The later
+[Qwen adapter follow-up](#qwen-21-explicit-mask-adapter--2026-10-09) evaluates this
+same withheld texture using explicit mask conditioning. No overall model winner
+has been established.
 The private photographic crop and generated images remain under
 `/tmp/rawpuppy-validation`; they are not bundled with Rawpuppy.
 
@@ -281,3 +287,107 @@ Reproduce with `benchmark_moebius --mask-padding 0` and `--mask-padding 16`, kee
 the input, original mask and sampling options fixed and choosing fresh output
 directories. The private input and output images remain under
 `/tmp/rawpuppy-validation` and are not bundled with Rawpuppy.
+
+## Qwen 2.1 explicit-mask adapter — 2026-10-09
+
+Alibaba PAI's [ControlNet Union checkpoint](https://huggingface.co/alibaba-pai/Qwen-Image-2.1-Fun-Controlnet-Union)
+provides a dedicated inpainting path on top of Qwen Image 2.1. It conditions on a
+mask and masked-image latents through a separate control branch. This differs
+from the earlier base-model experiment that supplied a mask as a reference image.
+Neither experiment establishes the quality of all Qwen editing configurations.
+
+The [benchmark](../tools/benchmark_qwen_image_21_controlnet.py) evaluates the
+publisher's unchanged Qwen model, attention and pipeline modules at VideoX-Fun
+revision `4b7b6402a1e0f0406bd6801fb66c0a00bd922621`. Its process imports those
+modules through namespace packages to avoid unrelated video-model aggregator
+imports; no computation module is patched. The existing isolated Qwen environment
+is reused, without installing into another project's environment. The base
+checkpoint is the same checksum-verified revision as the earlier comparison.
+
+The adapter revision is `8a4702014d4dabb5f896fcba917e2ee0a961465f`, SHA-256
+`65d6b66d734da9e7ff5ef04e7db3a133553a52a3f29a7fcb3e9cce8fa21dcfcd`.
+It contains 7,550,979,904 bytes. Before inference, the benchmark requires every
+base checkpoint key and shape to match the instantiated transformer and every
+control parameter to be covered exactly by the adapter. This catches silent
+skipping of incompatible weights in the upstream loader.
+
+Both 512×512 cases use BF16, 40 steps, seed 42, guidance 1.0, control scale 1.0
+and prefix KV caching, without quantization, compilation or per-step offload.
+The input images and original masks are identical to the earlier removal and
+withheld-fabric comparisons. Prompts describe the whole desired scene, as the
+adapter publisher recommends; they differ from the base-model reference prompt.
+The control pipeline zeroes the selected source before VAE encoding and does not
+feed the original image through the base editor's visual-reference path. The
+fabric target was also blacked out before either model received it; the intact
+original is used only for assessment.
+
+Separate runs grow only the grayscale inference mask by zero or 16 pixels with
+Pillow's MaxFilter; the publisher pipeline thresholds it at 0.5. Final RGB
+composition always uses the original fractional mask, through Pillow as in the
+other Python benchmarks. The native Moebius adapter uses positive mask support
+and display-linear composition, so matching nominal growth does not imply
+identical internal masks or edge blending across adapters.
+
+| Case / inference growth | First sample | Warm sample | Peak GPU allocation |
+| --- | ---: | ---: | ---: |
+| Removal / 0 pixels | 19.89 s | 18.23 s | 38.94 GiB |
+| Removal / 16 pixels | 19.82 s | 18.46 s | 38.94 GiB |
+| Fabric / 0 pixels | 18.30 s | 18.27 s | 38.94 GiB |
+| Fabric / 16 pixels | 18.38 s | 18.50 s | 38.94 GiB |
+
+The two process loads took 201.04 and 185.81 seconds, excluding checkpoint
+hashing and imports. Peak allocator reservation was about 39.68 GiB. GPU
+allocation and allocator reservation are not total GB10 system memory. Fabric
+first samples follow removal samples in the same process and therefore already
+benefit from runtime warming. These are observed timings with other work on the
+machine, not guaranteed latency or an isolated architectural speed comparison.
+
+In the inspected tight-mask removal, Qwen replaces the person with an invented
+concrete structure rather than continuing the empty background. With 16-pixel
+growth, the raw output instead contains an invented vertical slab; exact-mask
+composition leaves its person-shaped portion and original shadows. Thus growth
+does not fix this tested removal. This is a failure of these prompts, masks,
+seed and 512-pixel configuration, not evidence that the model cannot remove
+objects. Native-resolution photographic contexts, sufficient shadow selection
+and other prompts/seeds remain untested for this adapter.
+
+Both inspected fabric repairs continue the soft diagonal pattern with a faint
+square boundary and some local detail changes. Their selected-region errors
+against the withheld original are:
+
+| Fabric adapter / inference growth | Mean absolute error / 8-bit channel | RMS error / 8-bit channel |
+| --- | ---: | ---: |
+| Qwen PAI / 0 pixels | 3.389 | 4.612 |
+| Qwen PAI / 16 pixels | 3.221 | 4.431 |
+| Native Moebius / 0 pixels | 4.634 | 5.556 |
+| Native Moebius / 16 pixels | 4.645 | 5.557 |
+
+Qwen has lower error on this single 96×96 withheld square; it does not establish
+general perceptual superiority. The tested FLUX fabric result has a mismatched
+sharper stitch pattern, as described above. All fabric contexts use original
+photographic pixels, but only 512 model pixels, below the Qwen publisher's larger
+native-resolution examples. Broader detail, shadow/reflection and corner-filling
+comparisons remain necessary before selecting a final backend.
+
+All four Qwen configurations produced byte-identical native, raw RGB and final
+RGB PNGs across their two same-seed runs. An independent check of each saved
+composition found exactly zero changes outside the original mask. Raw removal
+output changes outside that mask average 2.59 levels without growth and 3.79
+with growth (p95 6 and 9). Native output is RGBA, with minimum alpha 253 for
+removal and 254 for fabric; no selected pixels are fully transparent. These
+integrity checks do not make the failed removal a successful edit.
+
+Reproduce with an unchanged pinned VideoX-Fun checkout, the local base model and
+adapter, and a JSON cases file containing `name`, `image`, `mask` and `prompt` for
+each case. Use dimensions divisible by 32, as required by this pipeline's output
+rounding. Run `python tools/benchmark_qwen_image_21_controlnet.py --help`; use
+`--mask-padding 0` and `--mask-padding 16` with identical cases and fresh output
+directories. Complete prompts, hashes, settings, timings and independent
+validation are in [the data record](data/qwen-controlnet-gb10-2026-10-09.json).
+Images and weights stay outside the repository, and original RAW photographs
+were not modified.
+
+The adapter's weights use the same [Qwen research license](https://huggingface.co/alibaba-pai/Qwen-Image-2.1-Fun-Controlnet-Union/blob/main/LICENSE)
+as the base model. This remains a research evaluation rather than a generally
+distributable application backend. Native Moebius remains the provisional
+compact option; LaMa remains a historical reference.

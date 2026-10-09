@@ -1,0 +1,299 @@
+{
+  "purpose": "research/evaluation only; explicit-mask Qwen 2.1 adapter follow-up",
+  "measurements": [
+    {
+      "purpose": "research/evaluation only; Qwen research license",
+      "upstream_revision": "4b7b6402a1e0f0406bd6801fb66c0a00bd922621",
+      "import_scope": "unchanged Qwen modules; unrelated aggregator imports omitted",
+      "base_model_sha256": {
+        "text_encoder/model-00001-of-00004.safetensors": "dde00291b5f7fb92013895310a3da0ddba78674df9f10d505d375243dc01fc6f",
+        "text_encoder/model-00002-of-00004.safetensors": "9047faccc0a6d98496a52d55f27be1c94a9c259d1e283fbea0128d054a948d42",
+        "text_encoder/model-00003-of-00004.safetensors": "8c54187654c0176b73ae73785bf791dc9a14c9df7fb4310083a09d42048cb57e",
+        "text_encoder/model-00004-of-00004.safetensors": "5311532aaaeae3259eb6a7b2c600636be1159adf7ded35f53579f7d0e7d43cdd",
+        "transformer/diffusion_pytorch_model-00001-of-00002.safetensors": "9e6bc2d641e67bf277895ea8777141044a38f3edb7101bc469b2961dd7c36b4b",
+        "transformer/diffusion_pytorch_model-00002-of-00002.safetensors": "3aaf234dcbe128530479735854a346b5e3e66283b7c11db56f836bbd1c13ebaa",
+        "vae/diffusion_pytorch_model.safetensors": "a07a1b7c4ee2966a1b3bdc37de9b4f983d56937e46619f709a80b6e490675417"
+      },
+      "adapter_revision": "8a4702014d4dabb5f896fcba917e2ee0a961465f",
+      "adapter_sha256": "65d6b66d734da9e7ff5ef04e7db3a133553a52a3f29a7fcb3e9cce8fa21dcfcd",
+      "versions": {
+        "torch": "2.14.0+cu130",
+        "diffusers": "0.41.0.dev0",
+        "transformers": "5.17.0",
+        "accelerate": "1.15.0"
+      },
+      "device": "NVIDIA GB10",
+      "dtype": "bfloat16",
+      "steps": 40,
+      "seed": 42,
+      "mask_padding": 0,
+      "control_context_scale": 1.0,
+      "true_cfg_scale": 1.0,
+      "use_kv_cache": true,
+      "loader": "CPU load followed by to(cuda); no offload/quantization/compile",
+      "cases": [
+        {
+          "name": "removal",
+          "image": "/tmp/rawpuppy-validation/comparison-input-512.png",
+          "mask": "/tmp/rawpuppy-validation/comparison-mask-512.png",
+          "prompt": "An opaque photograph of an empty circular concrete opening framing distant vegetation and buildings, with a straight concrete wall and an empty concrete foreground. Natural daylight, consistent geometry, realistic surface texture, no people, no graffiti.",
+          "size": [
+            512,
+            512
+          ],
+          "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+          "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+          "runs": [
+            {
+              "iteration": 0,
+              "seconds": 19.894999130046926,
+              "peak_gpu_allocated_bytes": 41816150016,
+              "peak_gpu_reserved_bytes": 42601545728,
+              "native_mode": "RGBA",
+              "native_min_alpha": 253,
+              "native_target_zero_alpha_pixels": 0,
+              "outside_raw_mean_absolute_8bit_channel_change": 2.5900120371392776,
+              "outside_raw_p95_absolute_8bit_channel_change": 6.0,
+              "outside_composed_max_absolute_8bit_channel_change": 0,
+              "native_sha256": "f266c5a6669e035cf77d93d00d80cd7f3c2d88f0930648c643c1caf6a85d6562",
+              "raw_sha256": "bd29c031593ccd90fa4b0788b86b78c2c9b82286340ef6615a99bb622846765d",
+              "composed_sha256": "935c78652005017defbf5aca0e25d316130eddd429552830c7a9d9a77b143fcc"
+            },
+            {
+              "iteration": 1,
+              "seconds": 18.22543857700657,
+              "peak_gpu_allocated_bytes": 41816150016,
+              "peak_gpu_reserved_bytes": 42603642880,
+              "native_mode": "RGBA",
+              "native_min_alpha": 253,
+              "native_target_zero_alpha_pixels": 0,
+              "outside_raw_mean_absolute_8bit_channel_change": 2.5900120371392776,
+              "outside_raw_p95_absolute_8bit_channel_change": 6.0,
+              "outside_composed_max_absolute_8bit_channel_change": 0,
+              "native_sha256": "f266c5a6669e035cf77d93d00d80cd7f3c2d88f0930648c643c1caf6a85d6562",
+              "raw_sha256": "bd29c031593ccd90fa4b0788b86b78c2c9b82286340ef6615a99bb622846765d",
+              "composed_sha256": "935c78652005017defbf5aca0e25d316130eddd429552830c7a9d9a77b143fcc"
+            }
+          ]
+        },
+        {
+          "name": "fabric",
+          "image": "/tmp/rawpuppy-validation/inpainting-texture/withheld.png",
+          "mask": "/tmp/rawpuppy-validation/inpainting-texture/mask.png",
+          "prompt": "An opaque close-up photograph of soft blue knitted fabric. Continuous soft diagonal knitted texture with consistent stitch size, color, lighting and focus across the whole image.",
+          "size": [
+            512,
+            512
+          ],
+          "image_sha256": "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+          "mask_sha256": "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810",
+          "runs": [
+            {
+              "iteration": 0,
+              "seconds": 18.29918364295736,
+              "peak_gpu_allocated_bytes": 41816075264,
+              "peak_gpu_reserved_bytes": 42603642880,
+              "native_mode": "RGBA",
+              "native_min_alpha": 254,
+              "native_target_zero_alpha_pixels": 0,
+              "outside_raw_mean_absolute_8bit_channel_change": 1.6035538440452093,
+              "outside_raw_p95_absolute_8bit_channel_change": 5.0,
+              "outside_composed_max_absolute_8bit_channel_change": 0,
+              "native_sha256": "c90a287a17165ea116f607777b215192ca56b16e0e130cf0e9ac60ab2f343965",
+              "raw_sha256": "06ceb9687cb6104cadee91ddfe6a4812fdd9b4d931188fd5b719ff54d497a46d",
+              "composed_sha256": "8722d129726910b2e744b0ef5cfdd1d4199c26fb7cdfd275e0450f9e64c6c87a"
+            },
+            {
+              "iteration": 1,
+              "seconds": 18.26763337594457,
+              "peak_gpu_allocated_bytes": 41816075264,
+              "peak_gpu_reserved_bytes": 42603642880,
+              "native_mode": "RGBA",
+              "native_min_alpha": 254,
+              "native_target_zero_alpha_pixels": 0,
+              "outside_raw_mean_absolute_8bit_channel_change": 1.6035538440452093,
+              "outside_raw_p95_absolute_8bit_channel_change": 5.0,
+              "outside_composed_max_absolute_8bit_channel_change": 0,
+              "native_sha256": "c90a287a17165ea116f607777b215192ca56b16e0e130cf0e9ac60ab2f343965",
+              "raw_sha256": "06ceb9687cb6104cadee91ddfe6a4812fdd9b4d931188fd5b719ff54d497a46d",
+              "composed_sha256": "8722d129726910b2e744b0ef5cfdd1d4199c26fb7cdfd275e0450f9e64c6c87a"
+            }
+          ]
+        }
+      ],
+      "load_seconds": 201.03933599300217
+    },
+    {
+      "purpose": "research/evaluation only; Qwen research license",
+      "benchmark_sha256": "f09cb1ceda32fdd430e9750484a65773ac05f082ea1ed78ebd5e7f5479c5f490",
+      "upstream_revision": "4b7b6402a1e0f0406bd6801fb66c0a00bd922621",
+      "import_scope": "unchanged Qwen modules; unrelated aggregator imports omitted",
+      "base_model_revision_from_download_metadata": "d26bb61231c349cf6b7896fa83353113880e1ba3",
+      "base_model_sha256": {
+        "text_encoder/model-00001-of-00004.safetensors": "dde00291b5f7fb92013895310a3da0ddba78674df9f10d505d375243dc01fc6f",
+        "text_encoder/model-00002-of-00004.safetensors": "9047faccc0a6d98496a52d55f27be1c94a9c259d1e283fbea0128d054a948d42",
+        "text_encoder/model-00003-of-00004.safetensors": "8c54187654c0176b73ae73785bf791dc9a14c9df7fb4310083a09d42048cb57e",
+        "text_encoder/model-00004-of-00004.safetensors": "5311532aaaeae3259eb6a7b2c600636be1159adf7ded35f53579f7d0e7d43cdd",
+        "transformer/diffusion_pytorch_model-00001-of-00002.safetensors": "9e6bc2d641e67bf277895ea8777141044a38f3edb7101bc469b2961dd7c36b4b",
+        "transformer/diffusion_pytorch_model-00002-of-00002.safetensors": "3aaf234dcbe128530479735854a346b5e3e66283b7c11db56f836bbd1c13ebaa",
+        "vae/diffusion_pytorch_model.safetensors": "a07a1b7c4ee2966a1b3bdc37de9b4f983d56937e46619f709a80b6e490675417"
+      },
+      "adapter_revision": "8a4702014d4dabb5f896fcba917e2ee0a961465f",
+      "adapter_sha256": "65d6b66d734da9e7ff5ef04e7db3a133553a52a3f29a7fcb3e9cce8fa21dcfcd",
+      "versions": {
+        "torch": "2.14.0+cu130",
+        "diffusers": "0.41.0.dev0",
+        "transformers": "5.17.0",
+        "accelerate": "1.15.0"
+      },
+      "pipeline_direct_url": {
+        "url": "https://github.com/huggingface/diffusers",
+        "vcs_info": {
+          "vcs": "git",
+          "commit_id": "d961a388fd02e4db38d17350c8dd9b8abe642e05",
+          "requested_revision": "d961a388fd02e4db38d17350c8dd9b8abe642e05"
+        }
+      },
+      "device": "NVIDIA GB10",
+      "dtype": "bfloat16",
+      "steps": 40,
+      "seed": 42,
+      "mask_padding": 16,
+      "control_context_scale": 1.0,
+      "true_cfg_scale": 1.0,
+      "use_kv_cache": true,
+      "loader": "CPU load followed by to(cuda); no offload/quantization/compile",
+      "cases": [
+        {
+          "name": "removal",
+          "image": "/tmp/rawpuppy-validation/comparison-input-512.png",
+          "mask": "/tmp/rawpuppy-validation/comparison-mask-512.png",
+          "prompt": "An opaque photograph of an empty circular concrete opening framing distant vegetation and buildings, with a straight concrete wall and an empty concrete foreground. Natural daylight, consistent geometry, realistic surface texture, no people, no graffiti.",
+          "size": [
+            512,
+            512
+          ],
+          "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+          "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+          "inference_mask_sha256": "1b55d191bc4b83c29edfa8efc6852288e818f0db255541a0f371f56a4c42ac9a",
+          "runs": [
+            {
+              "iteration": 0,
+              "seconds": 19.820797301945277,
+              "peak_gpu_allocated_bytes": 41816150016,
+              "peak_gpu_reserved_bytes": 42601545728,
+              "native_mode": "RGBA",
+              "native_min_alpha": 253,
+              "native_target_zero_alpha_pixels": 0,
+              "outside_raw_mean_absolute_8bit_channel_change": 3.788224051649279,
+              "outside_raw_p95_absolute_8bit_channel_change": 9.0,
+              "outside_composed_max_absolute_8bit_channel_change": 0,
+              "native_sha256": "4d844849c382e1564655f54f9fe29134c3382088a7e6c858c9d49a7bb4321aac",
+              "raw_sha256": "c610a32e13979f9638176887318683577c27057b415327fb22a05b5d3056044b",
+              "composed_sha256": "3def115123424c0a9862dcca9567751ae3ff8bb95d8b00c3b80538343f675300"
+            },
+            {
+              "iteration": 1,
+              "seconds": 18.455279838992283,
+              "peak_gpu_allocated_bytes": 41816150016,
+              "peak_gpu_reserved_bytes": 42603642880,
+              "native_mode": "RGBA",
+              "native_min_alpha": 253,
+              "native_target_zero_alpha_pixels": 0,
+              "outside_raw_mean_absolute_8bit_channel_change": 3.788224051649279,
+              "outside_raw_p95_absolute_8bit_channel_change": 9.0,
+              "outside_composed_max_absolute_8bit_channel_change": 0,
+              "native_sha256": "4d844849c382e1564655f54f9fe29134c3382088a7e6c858c9d49a7bb4321aac",
+              "raw_sha256": "c610a32e13979f9638176887318683577c27057b415327fb22a05b5d3056044b",
+              "composed_sha256": "3def115123424c0a9862dcca9567751ae3ff8bb95d8b00c3b80538343f675300"
+            }
+          ]
+        },
+        {
+          "name": "fabric",
+          "image": "/tmp/rawpuppy-validation/inpainting-texture/withheld.png",
+          "mask": "/tmp/rawpuppy-validation/inpainting-texture/mask.png",
+          "prompt": "An opaque close-up photograph of soft blue knitted fabric. Continuous soft diagonal knitted texture with consistent stitch size, color, lighting and focus across the whole image.",
+          "size": [
+            512,
+            512
+          ],
+          "image_sha256": "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+          "mask_sha256": "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810",
+          "inference_mask_sha256": "597f13873a8e04e6e7f6c9a093ae473454be5e21f5e76305e5e90821734d38f2",
+          "runs": [
+            {
+              "iteration": 0,
+              "seconds": 18.38041811599396,
+              "peak_gpu_allocated_bytes": 41816075264,
+              "peak_gpu_reserved_bytes": 42603642880,
+              "native_mode": "RGBA",
+              "native_min_alpha": 254,
+              "native_target_zero_alpha_pixels": 0,
+              "outside_raw_mean_absolute_8bit_channel_change": 1.5754496668353577,
+              "outside_raw_p95_absolute_8bit_channel_change": 4.0,
+              "outside_composed_max_absolute_8bit_channel_change": 0,
+              "native_sha256": "5499618fa7ad933f80b04dda79ce15962b6faf8a24d6353b12816236f2932ab8",
+              "raw_sha256": "aef2eb2a33467502b129e53a8cefafd732d3998dad1ee6ba3d9319467d401743",
+              "composed_sha256": "3a9b2620e40204b7f31a9f625c56ea189b5a131e20dff84c0cd16e1b60564891"
+            },
+            {
+              "iteration": 1,
+              "seconds": 18.49756625201553,
+              "peak_gpu_allocated_bytes": 41816075264,
+              "peak_gpu_reserved_bytes": 42603642880,
+              "native_mode": "RGBA",
+              "native_min_alpha": 254,
+              "native_target_zero_alpha_pixels": 0,
+              "outside_raw_mean_absolute_8bit_channel_change": 1.5754496668353577,
+              "outside_raw_p95_absolute_8bit_channel_change": 4.0,
+              "outside_composed_max_absolute_8bit_channel_change": 0,
+              "native_sha256": "5499618fa7ad933f80b04dda79ce15962b6faf8a24d6353b12816236f2932ab8",
+              "raw_sha256": "aef2eb2a33467502b129e53a8cefafd732d3998dad1ee6ba3d9319467d401743",
+              "composed_sha256": "3a9b2620e40204b7f31a9f625c56ea189b5a131e20dff84c0cd16e1b60564891"
+            }
+          ]
+        }
+      ],
+      "load_seconds": 185.8144448440289
+    }
+  ],
+  "independent_validation": [
+    {
+      "directory": "qwen-controlnet-512",
+      "case": "removal",
+      "outside_max_absolute_rgb_change": 0,
+      "same_seed_identical_native_raw_composed": true
+    },
+    {
+      "directory": "qwen-controlnet-512",
+      "case": "fabric",
+      "outside_max_absolute_rgb_change": 0,
+      "same_seed_identical_native_raw_composed": true,
+      "ground_truth_sha256": "9cb510f8e2ff4df2b046e83fe46dfda7343660625e87f951aeb1b868b6c5a326",
+      "selected_mean_absolute_8bit_channel_error": 3.389142071759259,
+      "selected_rms_8bit_channel_error": 4.611588255517391
+    },
+    {
+      "directory": "qwen-controlnet-512-halo16",
+      "case": "removal",
+      "outside_max_absolute_rgb_change": 0,
+      "same_seed_identical_native_raw_composed": true
+    },
+    {
+      "directory": "qwen-controlnet-512-halo16",
+      "case": "fabric",
+      "outside_max_absolute_rgb_change": 0,
+      "same_seed_identical_native_raw_composed": true,
+      "ground_truth_sha256": "9cb510f8e2ff4df2b046e83fe46dfda7343660625e87f951aeb1b868b6c5a326",
+      "selected_mean_absolute_8bit_channel_error": 3.2205222800925926,
+      "selected_rms_8bit_channel_error": 4.43082358341142
+    }
+  ],
+  "limitations": [
+    "Only two 512-pixel contexts, below the publisher native-resolution examples; no general quality ranking.",
+    "Different model/prompt/sampler/precision configurations from other families.",
+    "Pillow RGB exact-mask composition; application composition uses display-linear samples.",
+    "Peak PyTorch GPU allocation is not total system memory or allocator reservation."
+  ]
+}
