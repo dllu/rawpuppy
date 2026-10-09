@@ -1,7 +1,8 @@
 # Controlled image/mask comparison on GB10
 
-This is a research evaluation of current models, not a final selection or a
-production quality claim. Both models receive the same 512×512 original and mask.
+These are research evaluations of current models, not a final selection or a
+production quality claim. The initial Moebius/Qwen comparison uses the same
+512×512 original and mask. The FLUX extension below uses those same inputs too.
 Moebius is a dedicated masked inpainting model. Qwen Image 2.1 receives the original
 and white-on-black mask as two reference images, plus an explicit removal prompt.
 Its current official Diffusers pipeline has no separate `mask_image` parameter.
@@ -97,6 +98,135 @@ The source example is from the [LaMa ONNX publisher](https://huggingface.co/Carv
 fitted and edge-padded to a square without stretching.
 
 Moebius remains a compact native pilot, with LaMa as a historical reference.
-Recent permissive candidates such as LLaDA-Image/Turbo and FLUX.2 klein still need
-the same local comparison. Selection must include textured surfaces, fine detail,
-associated shadows/reflections and geometric gaps, at actual photographic pixels.
+LLaDA-Image/Turbo still needs local comparison. Selection must include textured
+surfaces, fine detail, associated shadows/reflections and geometric gaps, at actual
+photographic pixels.
+
+## FLUX.2 klein extension — 2026-10-09
+
+The Apache-2.0 [FLUX.2 klein 4B checkpoint](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B)
+is evaluated with the official `Flux2KleinInpaintPipeline`, using its native
+`mask_image` input. Its original-image latent reference conditioning and per-step
+mask reinsertion differ from both the Moebius specialist and Qwen's two-reference
+editing interface. The 4B distilled model uses BF16, four executed steps,
+strength 1.0, guidance 1.0 and seed 42. These configurations do not isolate an
+architectural speed difference. No compilation, quantization, or per-step CPU
+offloading is used.
+
+On the same 512-pixel removal input, inference took 3.17 seconds first and
+1.83 seconds warm, with 15.56 GiB peak GPU allocation and 15.82 GiB allocator
+reservation. Loading on CPU followed by `.to("cuda")` took 95.30 seconds,
+excluding imports and checkpoint verification. Two same-seed outputs were
+byte-identical in this setup. Outside the mask, the raw output changed by
+1.81 levels on average and 5 levels at the 95th percentile on the 8-bit scale;
+mask composition preserved those original pixels exactly.
+
+The 1024-pixel run explicitly upsamples that same 512-pixel context and mask;
+it does not add original photographic detail. Inference took 7.32 seconds first
+and 6.56 seconds warm, with 17.35 GiB peak allocation and 18.52 GiB reservation.
+It returned opaque RGB without the transparency failure of the earlier Qwen
+trial, but the inspected composition still has a head-shaped remnant, seams and
+retained shadows. Qwen received 512-pixel references with a requested 1024-pixel
+output, whereas this FLUX pipeline requires the reference itself to be enlarged;
+these high-resolution paths are not identical experiments. Two same-seed FLUX
+outputs were again byte-identical. Qwen's published native sizes are larger than
+either comparison, so these results do not establish its native-resolution quality.
+
+The inspected result has conspicuous remnants around the person's head and legs,
+a mismatched wall patch, and retained shadows. Tight selection boundaries can
+preserve remnants in the original, and a latent mask does not guarantee a clean
+pixel boundary. This result does not justify selecting FLUX on speed alone.
+Moebius and Qwen's compositions also retain seams or original shadow remnants;
+none of the tested tight-mask removals is a finished photographic edit.
+
+Replacing the selected source pixels with black before the 512-pixel FLUX run,
+with the prompt and sampler otherwise unchanged, did not remove the artifact.
+Its inspected result has stronger dark outlines and mismatched patches. Inference
+took 2.57 seconds first and 1.80 seconds warm with the same peak allocation.
+This trial changes reference preprocessing; it is not evidence that withholding
+is always harmful, nor does it diagnose the artifact's cause.
+
+A further run dilates only the inference mask by 16 model pixels, keeping the
+original image, prompt, sampler and final composition mask unchanged. This
+substantially improves the inspected **raw** removal: the head-shaped remnant
+disappears, and the wall and background continue plausibly through the removed
+person. Inference took 2.58 seconds first and 1.80 seconds warm with the same
+peak allocation. Two same-seed outputs were byte-identical.
+
+Composition through the original tight selection still leaves original fringe
+pixels, some tone mismatch and untouched associated shadows. These are reasons to
+choose a sufficient user selection and distinguish the inference mask from the
+final edit mask. A model may generate a larger region for context while the editor
+commits only selected pixels. The raw result also changes some surrounding content
+(2.70 levels mean and 9 levels p95 outside the original selection), so accepting
+it wholesale would violate exact preservation. This experiment establishes that
+mask preprocessing matters; it does not prove a particular cause of the original
+artifact or an overall quality ranking. Moebius and Qwen have not been retested
+with the same halo, and FLUX's texture test below uses zero inference padding.
+
+### Actual-pixel GFX100S texture repair
+
+A separate 512×512 crop contains blue knitted fabric at original image pixels,
+without resizing the 101.8 MP photograph to create the context. A central 96×96
+square is replaced with black **before** either model receives it. Both receive
+that same withheld input and binary mask; the intact crop is retained only for
+assessment. Thus the original target detail cannot leak through an image reference
+or a partial-strength initialization.
+
+Native Moebius uses the scene checkpoint, FP32, 20 steps, strength 1.0, CFG 2.0,
+noise offset 0.0357 and seed 42. Inference took 3.45 seconds first and 2.98 seconds
+warm. FLUX uses the four-step configuration above and took 2.60 seconds first and
+1.80 seconds warm, again allocating 15.56 GiB. Native Moebius memory was not
+measured in this run. Two same-seed runs of each model were byte-identical, and
+both preserved every unmasked RGB byte after composition.
+
+Moebius continued the soft diagonal structure and overall color, with a faint
+square boundary and some changed local detail. FLUX invented a much sharper,
+differently oriented stitch pattern with a conspicuous square seam. These are
+inspected results for this context and prompt, not a claim about every possible
+prompt or model configuration.
+
+| Model | Selected-region mean absolute error / 8-bit channel | Selected-region RMS error / 8-bit channel |
+| --- | ---: | ---: |
+| Native Moebius | 4.63 | 5.56 |
+| FLUX.2 klein 4B | 31.16 | 43.01 |
+
+The errors compare the 9,216 withheld pixels with their known intact values.
+They describe reconstruction fidelity for this example, not general perceptual
+quality: a plausible generated texture can differ from the original. Qwen has not
+been tested on this texture context. No overall model winner has been established.
+The private photographic crop and generated images remain under
+`/tmp/rawpuppy-validation`; they are not bundled with Rawpuppy.
+
+### Reproduction and constraints
+
+[benchmark_flux2_klein.py](../tools/benchmark_flux2_klein.py) verifies all four
+Diffusers-layout safetensors files against download checksums at checkpoint
+revision `e7b7dc27f91deacad38e78976d1f2b499d76a294`. It records the pipeline revision,
+input hashes, prompt, executed steps, timings, allocations and output hashes,
+retains native and mask-composed results, and refuses an existing output directory.
+`--mask-padding 16` grows the inference mask without growing the final edit mask;
+the default is zero, matching the first removal and texture comparisons.
+It uses the same isolated environment and Diffusers commit as the Qwen comparison.
+Run the script with `--help` for arguments. The snapshot download should omit
+the redundant root-level `flux-2-klein-4b.safetensors` single-file export.
+
+[benchmark_moebius.rs](../examples/benchmark_moebius.rs) exercises the production
+native sampler directly on 512-pixel sRGB PNG/mask pairs. Build it with matching
+LibTorch 2.13 and `cargo build --release --features moebius,cuda --example benchmark_moebius`.
+It checks graph identities through `Moebius::open`, records the graph manifest and
+input/output hashes, and rejects any changed unmasked pixel. `--models` selects
+the prepared graph directory; `--image`, `--mask`, and `--output` select the local
+fixture and a fresh result directory. Timings include native preprocessing,
+sampling, VAE decoding and output transfer, but exclude PNG encoding.
+
+The current upstream FLUX pipeline adopts input dimensions, rounds them to
+multiples of 16 and caps their area at one megapixel. The benchmark explicitly
+resizes the input when a different output grid is requested, preserves aspect
+ratio, and checks the actual returned dimensions. This library limit is another
+reason to infer bounded contexts; it is not a new Rawpuppy photo-size limit.
+Peak GPU allocation, reservation, and process RSS must not be added into a GB10
+system total. Other projects shared the workstation, and a local compiler was
+also active during part of the texture run; these observations are not latency
+guarantees. Full settings and provenance are in
+[the extension data record](data/inpainting-gb10-2026-10-09.json).

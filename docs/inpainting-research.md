@@ -1,4 +1,4 @@
-# Inpainting selection — 2026-10-08
+# Inpainting selection — 2026-10-09
 
 The user requested recent models, specifically Moebius and Qwen Image 2.1.
 LaMa is retained as an explicitly experimental reference backend, not the
@@ -13,7 +13,7 @@ until broader photography and alternative-model comparisons are complete.
 | --- | --- | --- |
 | [Moebius](https://github.com/hustvl/Moebius) | June 2026; authors explicitly license code and pretrained weights Apache-2.0. Hugging Face metadata says MIT; both notices should be retained when integrating. | Native compact pilot with verified scene checkpoint and VAE. Tested removal invents detail; broader photography and corner-fill comparisons needed before final selection. |
 | [Qwen Image 2.1](https://qwen.ai/blog?id=qwen-image-2.1) | September 20, 2026; [research license](https://huggingface.co/Qwen/Qwen-Image-2.1/blob/main/LICENSE) limits use to research/evaluation without separate commercial permission. | Pinned and checksum-verified all seven checkpoints; actual GB10 comparison on identical image/mask. Promising 512-pixel removal, 13.72 s warm and 32.98 GiB allocation; unmasked changes and a failed 1024-pixel RGBA trial need further diagnosis. See [measurements](inpainting-comparison.md). |
-| [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) | January 2026; Apache-2.0 4B model. | Additional modern editing candidate; not benchmarked yet. |
+| [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) | January 2026; Apache-2.0 4B model. | Pinned, checksum-verified mask-based Diffusers comparison: about 1.8 s warm at 512 pixels, 15.56 GiB allocation. A 16-pixel inference halo improves raw removal; exact composition through the original tight mask retains fringe/shadows. A withheld actual-pixel fabric repair invents a mismatched stitch pattern; native Moebius better preserves this example's soft diagonal structure. [Local measurements](inpainting-comparison.md). |
 | [LLaDA-Image / Turbo](https://github.com/inclusionAI/LLaDA-Image) | September 4, 2026; [model card](https://huggingface.co/inclusionAI/LLaDA-Image) identifies Apache-2.0. | Recent 6B image generation/editing family; Turbo uses four sampling steps. Publisher evidence only; local inpainting, detail and runtime comparisons pending. |
 | [OSOR](https://github.com/Zhouqm-Git/osor) | June 2026; MIT code, but FLUX-Fill checkpoints are non-commercial and SDXL checkpoints use CreativeML Open RAIL++-M. | One-step object removal with learned shadow/reflection masks. Not benchmarked. Its mask expansion would need explicit handling alongside Rawpuppy's exact unpainted-pixel preservation. |
 | [LaMa ONNX](https://huggingface.co/Carve/LaMa-ONNX) | 2022 architecture; published Apache-2.0 export. | Native Rust inference, finite output, missing-pixel reconstruction and exact unmasked-sample preservation verified. Public object-removal example shows visible artifacts; insufficient to establish final quality. |
@@ -21,8 +21,8 @@ until broader photography and alternative-model comparisons are complete.
 Publisher benchmark claims are not Rawpuppy benchmarks. The Moebius paper compares
 the specialist to larger general models, but it does not prove this is the best
 model for the user's photographs or compare directly with September's Qwen 2.1.
-Our own same-input comparison is one removal example and also does not establish
-a general winner.
+Our own comparisons include one public removal example and one withheld texture
+patch at actual GFX100S pixels. They do not establish a general winner.
 
 ## Moebius measurements
 
@@ -71,8 +71,9 @@ controlled attribution of the improvement. Opaque output is an integrity check,
 not a quality metric. This example is not evidence of production-quality
 large-gap extrapolation or full-resolution detail.
 
-The first same-input Qwen/Moebius comparison is recorded in
-[inpainting-comparison.md](inpainting-comparison.md). Extend it with identical original context and masks
+The same-input Qwen/Moebius comparison and subsequent FLUX and actual-pixel
+texture extension are recorded in
+[inpainting-comparison.md](inpainting-comparison.md). Extend them with identical original context and masks
 for small distraction removal, associated shadows/reflections, textured surfaces,
 fine structures and geometric gaps. Record visual artifacts at actual pixels,
 boundary consistency, sampling settings, elapsed time and peak memory. Native

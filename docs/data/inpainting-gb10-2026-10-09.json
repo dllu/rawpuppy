@@ -1,0 +1,633 @@
+{
+  "hardware": "NVIDIA GB10 shared workstation",
+  "scope": "One public removal example and one withheld private fabric patch; not a general quality ranking",
+  "license_sources": {
+    "flux2_klein_4b": "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B",
+    "moebius": "https://github.com/hustvl/Moebius",
+    "qwen21": "https://huggingface.co/Qwen/Qwen-Image-2.1/blob/main/LICENSE"
+  },
+  "cases": {
+    "flux-klein-512": {
+      "purpose": "local masked-editing comparison; no application integration",
+      "model_repository": "black-forest-labs/FLUX.2-klein-4B",
+      "model_revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+      "model_license": "Apache-2.0",
+      "model_file_sha256": {
+        "text_encoder/model-00001-of-00002.safetensors": "8c0506e7f4936fa7e26183a4fd8da4e2bdbc5990ba64ae441f965d51228f36ea",
+        "text_encoder/model-00002-of-00002.safetensors": "82f2bd839378541b0557bfabaf37c7d3d637071fdcb73302dedd7cf61162ce07",
+        "transformer/diffusion_pytorch_model.safetensors": "9f29f9edcfdae452a653ffb51a534ca4decd389952c225724ff3b94042612a6e",
+        "vae/diffusion_pytorch_model.safetensors": "ca70d2202afe6415bdbcb8793ba8cd99fd159cfe6192381504d6c4d3036e0f04"
+      },
+      "pipeline_class": "Flux2KleinInpaintPipeline",
+      "pipeline_direct_url": {
+        "url": "https://github.com/huggingface/diffusers",
+        "vcs_info": {
+          "vcs": "git",
+          "commit_id": "d961a388fd02e4db38d17350c8dd9b8abe642e05",
+          "requested_revision": "d961a388fd02e4db38d17350c8dd9b8abe642e05"
+        }
+      },
+      "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+      "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+      "input_size": [
+        512,
+        512
+      ],
+      "requested_output_size": [
+        512,
+        512
+      ],
+      "model_input_size": [
+        512,
+        512
+      ],
+      "input_resize": "aspect-preserving Lanczos RGB and nearest-neighbour mask",
+      "prompt": "Remove the seated man from the selected area and reconstruct the background behind him. Continue the circular opening, distant trees and buildings, and the straight concrete wall naturally through the removed area. Keep the framing, geometry, colors, lighting and all unmasked content unchanged. Return an opaque photograph without a mask or annotations.",
+      "versions": {
+        "torch": "2.14.0+cu130",
+        "diffusers": "0.41.0.dev0",
+        "transformers": "5.17.0",
+        "accelerate": "1.15.0"
+      },
+      "device": "NVIDIA GB10",
+      "dtype": "bfloat16",
+      "mask_input": "native mask_image; white repaints, black preserves",
+      "reference_input": "pipeline conditions on original image latents",
+      "requested_steps": 4,
+      "strength": 1.0,
+      "seed": 42,
+      "guidance_scale": 1.0,
+      "loader": "CPU load followed by to(cuda); no compilation or offload",
+      "runs": [
+        {
+          "iteration": 0,
+          "seconds": 3.166378663969226,
+          "peak_gpu_allocated_bytes": 16711558656,
+          "peak_gpu_reserved_bytes": 16989028352,
+          "process_peak_rss_bytes": 8891432960,
+          "executed_steps": 4,
+          "output_size": [
+            512,
+            512
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 1.8107360921965803,
+          "outside_raw_p95_absolute_8bit_channel_change": 5.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "0-native.png": "85c17e4330da434b8beda9e6693fc4b23721335260ae05e7825df59adea7b5cc",
+            "0-raw.png": "85c17e4330da434b8beda9e6693fc4b23721335260ae05e7825df59adea7b5cc",
+            "0-composed.png": "2464555cd8870538378dae8cacded6c899e0dd86e35850ab963809f10c25fc44"
+          }
+        },
+        {
+          "iteration": 1,
+          "seconds": 1.8342496659606695,
+          "peak_gpu_allocated_bytes": 16711558656,
+          "peak_gpu_reserved_bytes": 16989028352,
+          "process_peak_rss_bytes": 8891432960,
+          "executed_steps": 4,
+          "output_size": [
+            512,
+            512
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 1.8107360921965803,
+          "outside_raw_p95_absolute_8bit_channel_change": 5.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "1-native.png": "85c17e4330da434b8beda9e6693fc4b23721335260ae05e7825df59adea7b5cc",
+            "1-raw.png": "85c17e4330da434b8beda9e6693fc4b23721335260ae05e7825df59adea7b5cc",
+            "1-composed.png": "2464555cd8870538378dae8cacded6c899e0dd86e35850ab963809f10c25fc44"
+          }
+        }
+      ],
+      "load_seconds": 95.29650434304494
+    },
+    "flux-klein-1024": {
+      "purpose": "local masked-editing comparison; no application integration",
+      "model_repository": "black-forest-labs/FLUX.2-klein-4B",
+      "model_revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+      "model_license": "Apache-2.0",
+      "model_file_sha256": {
+        "text_encoder/model-00001-of-00002.safetensors": "8c0506e7f4936fa7e26183a4fd8da4e2bdbc5990ba64ae441f965d51228f36ea",
+        "text_encoder/model-00002-of-00002.safetensors": "82f2bd839378541b0557bfabaf37c7d3d637071fdcb73302dedd7cf61162ce07",
+        "transformer/diffusion_pytorch_model.safetensors": "9f29f9edcfdae452a653ffb51a534ca4decd389952c225724ff3b94042612a6e",
+        "vae/diffusion_pytorch_model.safetensors": "ca70d2202afe6415bdbcb8793ba8cd99fd159cfe6192381504d6c4d3036e0f04"
+      },
+      "pipeline_class": "Flux2KleinInpaintPipeline",
+      "pipeline_direct_url": {
+        "url": "https://github.com/huggingface/diffusers",
+        "vcs_info": {
+          "vcs": "git",
+          "commit_id": "d961a388fd02e4db38d17350c8dd9b8abe642e05",
+          "requested_revision": "d961a388fd02e4db38d17350c8dd9b8abe642e05"
+        }
+      },
+      "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+      "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+      "input_size": [
+        512,
+        512
+      ],
+      "requested_output_size": [
+        1024,
+        1024
+      ],
+      "model_input_size": [
+        1024,
+        1024
+      ],
+      "input_resize": "aspect-preserving Lanczos RGB and nearest-neighbour mask",
+      "prompt": "Remove the seated man from the selected area and reconstruct the background behind him. Continue the circular opening, distant trees and buildings, and the straight concrete wall naturally through the removed area. Keep the framing, geometry, colors, lighting and all unmasked content unchanged. Return an opaque photograph without a mask or annotations.",
+      "versions": {
+        "torch": "2.14.0+cu130",
+        "diffusers": "0.41.0.dev0",
+        "transformers": "5.17.0",
+        "accelerate": "1.15.0"
+      },
+      "device": "NVIDIA GB10",
+      "dtype": "bfloat16",
+      "mask_input": "native mask_image; white repaints, black preserves",
+      "reference_input": "pipeline conditions on original image latents",
+      "requested_steps": 4,
+      "strength": 1.0,
+      "seed": 42,
+      "guidance_scale": 1.0,
+      "loader": "CPU load followed by to(cuda); no compilation or offload",
+      "runs": [
+        {
+          "iteration": 0,
+          "seconds": 7.324096293072216,
+          "peak_gpu_allocated_bytes": 18631638528,
+          "peak_gpu_reserved_bytes": 19889389568,
+          "process_peak_rss_bytes": 8897208320,
+          "executed_steps": 4,
+          "output_size": [
+            1024,
+            1024
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 1.4802082438727144,
+          "outside_raw_p95_absolute_8bit_channel_change": 4.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "0-native.png": "84c6b4633af6f0a8692f5b3bc52509ac248e79c082295ae512791821aca086e9",
+            "0-raw.png": "84c6b4633af6f0a8692f5b3bc52509ac248e79c082295ae512791821aca086e9",
+            "0-composed.png": "cb9cfe95170117c368e27cc469e4ead6be11d53c50993fbcedd0da7c83a427e8"
+          }
+        },
+        {
+          "iteration": 1,
+          "seconds": 6.562558182049543,
+          "peak_gpu_allocated_bytes": 18631638528,
+          "peak_gpu_reserved_bytes": 19889389568,
+          "process_peak_rss_bytes": 8897208320,
+          "executed_steps": 4,
+          "output_size": [
+            1024,
+            1024
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 1.4802082438727144,
+          "outside_raw_p95_absolute_8bit_channel_change": 4.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "1-native.png": "84c6b4633af6f0a8692f5b3bc52509ac248e79c082295ae512791821aca086e9",
+            "1-raw.png": "84c6b4633af6f0a8692f5b3bc52509ac248e79c082295ae512791821aca086e9",
+            "1-composed.png": "cb9cfe95170117c368e27cc469e4ead6be11d53c50993fbcedd0da7c83a427e8"
+          }
+        }
+      ],
+      "load_seconds": 99.91141494293697
+    },
+    "flux-klein-512-withheld": {
+      "purpose": "local masked-editing comparison; no application integration",
+      "model_repository": "black-forest-labs/FLUX.2-klein-4B",
+      "model_revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+      "model_license": "Apache-2.0",
+      "model_file_sha256": {
+        "text_encoder/model-00001-of-00002.safetensors": "8c0506e7f4936fa7e26183a4fd8da4e2bdbc5990ba64ae441f965d51228f36ea",
+        "text_encoder/model-00002-of-00002.safetensors": "82f2bd839378541b0557bfabaf37c7d3d637071fdcb73302dedd7cf61162ce07",
+        "transformer/diffusion_pytorch_model.safetensors": "9f29f9edcfdae452a653ffb51a534ca4decd389952c225724ff3b94042612a6e",
+        "vae/diffusion_pytorch_model.safetensors": "ca70d2202afe6415bdbcb8793ba8cd99fd159cfe6192381504d6c4d3036e0f04"
+      },
+      "pipeline_class": "Flux2KleinInpaintPipeline",
+      "pipeline_direct_url": {
+        "url": "https://github.com/huggingface/diffusers",
+        "vcs_info": {
+          "vcs": "git",
+          "commit_id": "d961a388fd02e4db38d17350c8dd9b8abe642e05",
+          "requested_revision": "d961a388fd02e4db38d17350c8dd9b8abe642e05"
+        }
+      },
+      "image_sha256": "f100f270b9e81f9581122551a88e317960064894ac94615f09dd104c208436f5",
+      "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+      "input_size": [
+        512,
+        512
+      ],
+      "requested_output_size": [
+        512,
+        512
+      ],
+      "model_input_size": [
+        512,
+        512
+      ],
+      "input_resize": "aspect-preserving Lanczos RGB and nearest-neighbour mask",
+      "prompt": "Remove the seated man from the selected area and reconstruct the background behind him. Continue the circular opening, distant trees and buildings, and the straight concrete wall naturally through the removed area. Keep the framing, geometry, colors, lighting and all unmasked content unchanged. Return an opaque photograph without a mask or annotations.",
+      "versions": {
+        "torch": "2.14.0+cu130",
+        "diffusers": "0.41.0.dev0",
+        "transformers": "5.17.0",
+        "accelerate": "1.15.0"
+      },
+      "device": "NVIDIA GB10",
+      "dtype": "bfloat16",
+      "mask_input": "native mask_image; white repaints, black preserves",
+      "reference_input": "pipeline conditions on original image latents",
+      "requested_steps": 4,
+      "strength": 1.0,
+      "seed": 42,
+      "guidance_scale": 1.0,
+      "loader": "CPU load followed by to(cuda); no compilation or offload",
+      "runs": [
+        {
+          "iteration": 0,
+          "seconds": 2.5666789549868554,
+          "peak_gpu_allocated_bytes": 16711558656,
+          "peak_gpu_reserved_bytes": 16989028352,
+          "process_peak_rss_bytes": 8894324736,
+          "executed_steps": 4,
+          "output_size": [
+            512,
+            512
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 3.259525085098349,
+          "outside_raw_p95_absolute_8bit_channel_change": 11.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "0-native.png": "35e0e6656ce35132c459de2b17917f61347059b30c6e05ffe9be0f491d267115",
+            "0-raw.png": "35e0e6656ce35132c459de2b17917f61347059b30c6e05ffe9be0f491d267115",
+            "0-composed.png": "ec48abb8d22e9c4480fec9a9503352d31898066e9e35a5bee4ae59100153ec12"
+          }
+        },
+        {
+          "iteration": 1,
+          "seconds": 1.8041411220328882,
+          "peak_gpu_allocated_bytes": 16711558656,
+          "peak_gpu_reserved_bytes": 16989028352,
+          "process_peak_rss_bytes": 8894324736,
+          "executed_steps": 4,
+          "output_size": [
+            512,
+            512
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 3.259525085098349,
+          "outside_raw_p95_absolute_8bit_channel_change": 11.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "1-native.png": "35e0e6656ce35132c459de2b17917f61347059b30c6e05ffe9be0f491d267115",
+            "1-raw.png": "35e0e6656ce35132c459de2b17917f61347059b30c6e05ffe9be0f491d267115",
+            "1-composed.png": "ec48abb8d22e9c4480fec9a9503352d31898066e9e35a5bee4ae59100153ec12"
+          }
+        }
+      ],
+      "load_seconds": 95.94290341902524
+    },
+    "flux-klein-texture": {
+      "purpose": "local masked-editing comparison; no application integration",
+      "model_repository": "black-forest-labs/FLUX.2-klein-4B",
+      "model_revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+      "model_license": "Apache-2.0",
+      "model_file_sha256": {
+        "text_encoder/model-00001-of-00002.safetensors": "8c0506e7f4936fa7e26183a4fd8da4e2bdbc5990ba64ae441f965d51228f36ea",
+        "text_encoder/model-00002-of-00002.safetensors": "82f2bd839378541b0557bfabaf37c7d3d637071fdcb73302dedd7cf61162ce07",
+        "transformer/diffusion_pytorch_model.safetensors": "9f29f9edcfdae452a653ffb51a534ca4decd389952c225724ff3b94042612a6e",
+        "vae/diffusion_pytorch_model.safetensors": "ca70d2202afe6415bdbcb8793ba8cd99fd159cfe6192381504d6c4d3036e0f04"
+      },
+      "pipeline_class": "Flux2KleinInpaintPipeline",
+      "pipeline_direct_url": {
+        "url": "https://github.com/huggingface/diffusers",
+        "vcs_info": {
+          "vcs": "git",
+          "commit_id": "d961a388fd02e4db38d17350c8dd9b8abe642e05",
+          "requested_revision": "d961a388fd02e4db38d17350c8dd9b8abe642e05"
+        }
+      },
+      "image_sha256": "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+      "mask_sha256": "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810",
+      "input_size": [
+        512,
+        512
+      ],
+      "requested_output_size": [
+        512,
+        512
+      ],
+      "model_input_size": [
+        512,
+        512
+      ],
+      "input_resize": "aspect-preserving Lanczos RGB and nearest-neighbour mask",
+      "prompt": "Repair the missing square area of blue knitted fabric. Continue the same fine diagonal knit stitches, color, focus and shading smoothly through the missing area. Keep the surrounding fabric unchanged. Return an opaque close-up photograph.",
+      "versions": {
+        "torch": "2.14.0+cu130",
+        "diffusers": "0.41.0.dev0",
+        "transformers": "5.17.0",
+        "accelerate": "1.15.0"
+      },
+      "device": "NVIDIA GB10",
+      "dtype": "bfloat16",
+      "mask_input": "native mask_image; white repaints, black preserves",
+      "reference_input": "pipeline conditions on original image latents",
+      "requested_steps": 4,
+      "strength": 1.0,
+      "seed": 42,
+      "guidance_scale": 1.0,
+      "loader": "CPU load followed by to(cuda); no compilation or offload",
+      "runs": [
+        {
+          "iteration": 0,
+          "seconds": 2.596547278924845,
+          "peak_gpu_allocated_bytes": 16711558656,
+          "peak_gpu_reserved_bytes": 16989028352,
+          "process_peak_rss_bytes": 8894750720,
+          "executed_steps": 4,
+          "output_size": [
+            512,
+            512
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 3.227880398110661,
+          "outside_raw_p95_absolute_8bit_channel_change": 7.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "0-native.png": "8896af15e4927ec42401258f09adee7b2413427a2bbdb4a241834997464ae069",
+            "0-raw.png": "8896af15e4927ec42401258f09adee7b2413427a2bbdb4a241834997464ae069",
+            "0-composed.png": "88a50f69deac14feb72a534a9d0e4bc6780b910bc586324f6451365a565c0612"
+          }
+        },
+        {
+          "iteration": 1,
+          "seconds": 1.8008587780641392,
+          "peak_gpu_allocated_bytes": 16711558656,
+          "peak_gpu_reserved_bytes": 16989028352,
+          "process_peak_rss_bytes": 8894750720,
+          "executed_steps": 4,
+          "output_size": [
+            512,
+            512
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 3.227880398110661,
+          "outside_raw_p95_absolute_8bit_channel_change": 7.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "1-native.png": "8896af15e4927ec42401258f09adee7b2413427a2bbdb4a241834997464ae069",
+            "1-raw.png": "8896af15e4927ec42401258f09adee7b2413427a2bbdb4a241834997464ae069",
+            "1-composed.png": "88a50f69deac14feb72a534a9d0e4bc6780b910bc586324f6451365a565c0612"
+          }
+        }
+      ],
+      "load_seconds": 101.4088512629969
+    },
+    "moebius-texture": {
+      "device": "Cuda(0)",
+      "dtype": "float32",
+      "image_sha256": "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+      "input_color": "sRGB encoded PNG, decoded to display-linear sRGB",
+      "input_size": [
+        512,
+        512
+      ],
+      "load_seconds": 3.816686713,
+      "mask_sha256": "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810",
+      "model": "Moebius scene checkpoint",
+      "model_manifest": {
+        "modules": {
+          "decoder": {
+            "file": "decoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "71d59b35a6505694a484c975c83849f9b556a63e1450ae99e4e986520f7d3d6a"
+          },
+          "denoiser": {
+            "file": "denoiser.pt",
+            "max_abs_error": 0.0,
+            "sha256": "0786ea80a3e69193ee171d52328ce6a87a2b36b40ca53669e36303d23db9fb1b"
+          },
+          "encoder": {
+            "file": "encoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "326c921d601b746390c1436f63f2d3f36543774ee1055c221373aae682764770"
+          }
+        },
+        "scaling_factor": 0.13025,
+        "size": 512,
+        "source_hashes": {
+          "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+          "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+          "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+        },
+        "torch_version": "2.14.0+cu130",
+        "version": 1
+      },
+      "purpose": "native bounded-context image/mask comparison",
+      "runs": [
+        {
+          "iteration": 0,
+          "output_sha256": "bfa95982634d18fb1b7876dea1fc62a3f55b3ab1bab2e6a61590a543b6e93896",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 3.451372281
+        },
+        {
+          "iteration": 1,
+          "output_sha256": "bfa95982634d18fb1b7876dea1fc62a3f55b3ab1bab2e6a61590a543b6e93896",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 2.979287182
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "settings": {
+        "guidance": 2.0,
+        "noise_offset": 0.0357,
+        "seed": 42,
+        "steps": 20,
+        "strength": 1.0
+      }
+    },
+    "flux-klein-512-padding16": {
+      "purpose": "local masked-editing comparison; no application integration",
+      "model_repository": "black-forest-labs/FLUX.2-klein-4B",
+      "model_revision": "e7b7dc27f91deacad38e78976d1f2b499d76a294",
+      "model_license": "Apache-2.0",
+      "model_file_sha256": {
+        "text_encoder/model-00001-of-00002.safetensors": "8c0506e7f4936fa7e26183a4fd8da4e2bdbc5990ba64ae441f965d51228f36ea",
+        "text_encoder/model-00002-of-00002.safetensors": "82f2bd839378541b0557bfabaf37c7d3d637071fdcb73302dedd7cf61162ce07",
+        "transformer/diffusion_pytorch_model.safetensors": "9f29f9edcfdae452a653ffb51a534ca4decd389952c225724ff3b94042612a6e",
+        "vae/diffusion_pytorch_model.safetensors": "ca70d2202afe6415bdbcb8793ba8cd99fd159cfe6192381504d6c4d3036e0f04"
+      },
+      "pipeline_class": "Flux2KleinInpaintPipeline",
+      "pipeline_direct_url": {
+        "url": "https://github.com/huggingface/diffusers",
+        "vcs_info": {
+          "vcs": "git",
+          "commit_id": "d961a388fd02e4db38d17350c8dd9b8abe642e05",
+          "requested_revision": "d961a388fd02e4db38d17350c8dd9b8abe642e05"
+        }
+      },
+      "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+      "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+      "input_size": [
+        512,
+        512
+      ],
+      "requested_output_size": [
+        512,
+        512
+      ],
+      "model_input_size": [
+        512,
+        512
+      ],
+      "input_resize": "aspect-preserving Lanczos RGB and nearest-neighbour mask",
+      "prompt": "Remove the seated man from the selected area and reconstruct the background behind him. Continue the circular opening, distant trees and buildings, and the straight concrete wall naturally through the removed area. Keep the framing, geometry, colors, lighting and all unmasked content unchanged. Return an opaque photograph without a mask or annotations.",
+      "versions": {
+        "torch": "2.14.0+cu130",
+        "diffusers": "0.41.0.dev0",
+        "transformers": "5.17.0",
+        "accelerate": "1.15.0"
+      },
+      "device": "NVIDIA GB10",
+      "dtype": "bfloat16",
+      "mask_input": "native mask_image; white repaints, black preserves",
+      "model_mask_padding_pixels": 16,
+      "composition_mask": "original mask, without inference padding",
+      "reference_input": "pipeline conditions on original image latents",
+      "requested_steps": 4,
+      "strength": 1.0,
+      "seed": 42,
+      "guidance_scale": 1.0,
+      "loader": "CPU load followed by to(cuda); no compilation or offload",
+      "runs": [
+        {
+          "iteration": 0,
+          "seconds": 2.582577441004105,
+          "peak_gpu_allocated_bytes": 16711558656,
+          "peak_gpu_reserved_bytes": 16989028352,
+          "process_peak_rss_bytes": 8895004672,
+          "executed_steps": 4,
+          "output_size": [
+            512,
+            512
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 2.69799458260572,
+          "outside_raw_p95_absolute_8bit_channel_change": 9.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "0-native.png": "fd8a478a4c8c6f1d4b2af3921b648834808fa17a18970dafd02968e173a47667",
+            "0-raw.png": "fd8a478a4c8c6f1d4b2af3921b648834808fa17a18970dafd02968e173a47667",
+            "0-composed.png": "414f6d1d2e626930733b00d6640f235263bf9293a7a06c26986a846fa3e55553"
+          }
+        },
+        {
+          "iteration": 1,
+          "seconds": 1.8033625460229814,
+          "peak_gpu_allocated_bytes": 16711558656,
+          "peak_gpu_reserved_bytes": 16989028352,
+          "process_peak_rss_bytes": 8895004672,
+          "executed_steps": 4,
+          "output_size": [
+            512,
+            512
+          ],
+          "native_mode": "RGB",
+          "outside_raw_mean_absolute_8bit_channel_change": 2.69799458260572,
+          "outside_raw_p95_absolute_8bit_channel_change": 9.0,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "output_sha256": {
+            "1-native.png": "fd8a478a4c8c6f1d4b2af3921b648834808fa17a18970dafd02968e173a47667",
+            "1-raw.png": "fd8a478a4c8c6f1d4b2af3921b648834808fa17a18970dafd02968e173a47667",
+            "1-composed.png": "414f6d1d2e626930733b00d6640f235263bf9293a7a06c26986a846fa3e55553"
+          }
+        }
+      ],
+      "load_seconds": 90.82737299602013
+    }
+  },
+  "texture_fixture": {
+    "source": "Copied GFX100S photo rendered as full-size corrected sRGB RGBA16 TIFF; original photo unmodified",
+    "source_raster_size": [
+      8736,
+      11648
+    ],
+    "source_raw_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "crop_xywh": [
+      5344,
+      2160,
+      512,
+      512
+    ],
+    "conversion": "Integer division of uint16 RGB by 257, then uint8 PNG; no spatial resizing",
+    "selected_rectangle_xywh": [
+      208,
+      208,
+      96,
+      96
+    ],
+    "withholding": "Selected RGB replaced with black before either model; intact crop used for assessment only",
+    "intact_crop_sha256": "9cb510f8e2ff4df2b046e83fe46dfda7343660625e87f951aeb1b868b6c5a326",
+    "withheld_input_sha256": "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+    "mask_sha256": "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810",
+    "model_target_error": {
+      "moebius-texture": {
+        "selected_pixels": 9216,
+        "target_mae_8bit_channel": 4.634078414351852,
+        "target_rmse_8bit_channel": 5.556381232046028,
+        "outside_max_8bit_channel_change": 0.0
+      },
+      "flux-klein-texture": {
+        "selected_pixels": 9216,
+        "target_mae_8bit_channel": 31.15943287037037,
+        "target_rmse_8bit_channel": 43.007208798997354,
+        "outside_max_8bit_channel_change": 0.0
+      }
+    },
+    "source_raster_sha256": "ff0934908a50a35b7ecc0706f4e1c26649924ac5a4945f7bc86faadc76774c8f"
+  },
+  "comparison_input_preprocessing": {
+    "original_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+    "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+    "withheld_sha256": "f100f270b9e81f9581122551a88e317960064894ac94615f09dd104c208436f5",
+    "withheld_method": "PIL.Image.composite(black_RGB, original_RGB, original_mask)",
+    "flux_1024": "Lanczos upsampled RGB, nearest-neighbour upsampled mask; adds no original photographic detail"
+  },
+  "validation": {
+    "native_moebius_release_example_build": "passed",
+    "native_moebius_example_strict_clippy_1_99": "passed with moebius,cuda and default configurations",
+    "python_compile": "passed",
+    "existing_output_directory_guards": "Both evaluation tools rejected existing directories without replacing results",
+    "same_seed_outputs": "Two identical-seed outputs for every completed case were byte-identical",
+    "unmasked_preservation": "Zero changed outside-mask RGB bytes in every composed output"
+  },
+  "limitations": [
+    "Sampling steps, precision, reference conditioning and frameworks differ; timings do not isolate architecture speed",
+    "Native Moebius peak memory not measured on the texture run",
+    "GPU allocation, reservation and process RSS must not be added into total GB10 memory",
+    "Other projects shared the workstation; a local compiler was active during part of the texture run",
+    "Qwen was not tested on the actual-pixel texture crop",
+    "Generated texture error to ground truth is reconstruction fidelity, not general perceptual quality",
+    "Photos and generated images are retained locally, not bundled"
+  ],
+  "inference_mask_experiment": {
+    "input": "Original 512-pixel RGB and mask",
+    "padding": "16-pixel max-filter dilation in model grid; final original mask unchanged",
+    "controlled_settings": "Same prompt, seed, precision, steps, strength and guidance as zero-padding comparison",
+    "inspected_result": "Raw output removes head-shaped remnant and plausibly continues background and wall; exact tight-mask composition retains original fringe and associated shadows",
+    "attribution_limit": "Preprocessing changes result, but does not establish the cause of the original artifact; Moebius and Qwen not retested with the same halo"
+  }
+}

@@ -1,4 +1,4 @@
-# Implementation research — 2026-10-08
+# Implementation research — 2026-10-09
 
 ## Reconstruction and denoising
 
@@ -56,4 +56,10 @@ recorded in [inpainting-research.md](inpainting-research.md). The user requested
 newer models. Moebius now has an optional native inference backend and editor
 integration, with quality selection still provisional. Qwen Image 2.1 is a
 research comparison candidate under its different, restrictive license; the
-current shortlist also includes September's LLaDA-Image/Turbo.
+current shortlist also includes September's LLaDA-Image/Turbo. A subsequent
+native-mask FLUX.2 klein 4B comparison ran locally, including a withheld fabric
+patch at actual GFX100S pixels. It was fast but invented a sharply mismatched
+texture; native Moebius better continued that example's soft diagonal structure.
+These observations support retaining the compact pilot provisionally, not claiming
+a final quality winner. Settings and limits are in
+[inpainting-comparison.md](inpainting-comparison.md).
