@@ -62,6 +62,7 @@ coverage, actual GFX curve samples and invalid data, and historical saved-fill
 hashes. CUDA and Vulkan parity explicitly include camera correction alongside
 manual geometry, scene and local edits, all EXIF orientations and the
 100,003-pixel-wide case.
+Native Metal parity also passed on macOS CI with the same camera-correction cases.
 
 An isolated Darktable session supplied separate distortion, vignetting and CA
 presets through its UI. No Darktable source was read for the correction algorithm.

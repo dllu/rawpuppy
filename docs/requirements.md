@@ -10,7 +10,7 @@ from verification; the project is not complete merely because core tests pass.
 | Real RAW decoding including GFX100S | Rawler integration; actual 103 MP sensor decoded; more real files to verify |
 | Demosaicing, denoise, hot pixels | MHC and sensor bilateral baseline, tests; quality comparison and ML upgrade research ongoing |
 | Chromatic aberration | Composed radial red/blue resampling implemented; real lens validation pending |
-| Distortion, perspective, crop, rotation | Composed pinhole/manual/embedded RAF map; GFX distortion direction verified by independent output matching; camera framing and CPU/CUDA/Vulkan composition tested; more cameras/crops/lenses pending |
+| Distortion, perspective, crop, rotation | Composed pinhole/manual/embedded RAF map; GFX distortion direction verified by independent output matching; camera framing and CPU/CUDA/Vulkan/Metal composition tested; more cameras/crops/lenses pending |
 | Vignetting, graduated ND, exposure, calibration | Composed camera/manual scalar gain and calibration matrix; GFX vignetting ratios verified against independent linear exports; one GFX100S calibration comparison has mean RGB ratios within 0.04%; additional cameras/illuminants pending |
 | AgX | Versioned photographic lattice from independent oracle observations; 1,677 golden samples, gray preservation and legacy recipe compatibility; CPU/CUDA/Vulkan parity; 1800-pixel GFX previews ~12–14 ms; desktop CI passes |
 | Clone/heal, curve, split toning | Core and GUI implemented; retouch spatial index; clone and monotone-curve tests; more interaction checks pending |

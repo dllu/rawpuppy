@@ -31,3 +31,8 @@ exported in 0.94 seconds. Inspection confirmed 16-bit RGBA and an sRGB ICC profi
 All photographs, sidecars, exports, oracle databases and temporary displays were
 kept under `/tmp/rawpuppy-validation`. Owned UI/oracle/display processes were
 closed or stopped after inspection. No contents of `~/pictures/raw` changed.
+
+[Implementation CI](https://github.com/dllu/rawpuppy/actions/runs/37889692722)
+passed Linux, macOS, Windows and native Moebius jobs. The optional native Metal
+parity step itself passed with the new camera LUT, independently of the overall
+macOS job result. All owned oracle, editor and display PIDs were verified exited.
