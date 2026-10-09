@@ -90,7 +90,37 @@ enum Reply {
         replace: bool,
     },
     Exported(PathBuf),
-    Error(String),
+    Error {
+        scope: ErrorScope,
+        message: String,
+    },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ErrorScope {
+    Load(u64),
+    Preview(u64),
+    CurrentOperation,
+}
+impl ErrorScope {
+    fn applies(self, load: u64, preview: u64) -> bool {
+        match self {
+            Self::Load(id) => id == load,
+            Self::Preview(id) => id == preview,
+            Self::CurrentOperation => true,
+        }
+    }
+}
+impl Work {
+    fn error_scope(&self) -> ErrorScope {
+        match self {
+            Self::Open { id, .. } => ErrorScope::Load(*id),
+            Self::Render { id, .. } => ErrorScope::Preview(*id),
+            #[cfg(feature = "moebius")]
+            Self::Generate { load_id, .. } => ErrorScope::Load(*load_id),
+            _ => ErrorScope::CurrentOperation,
+        }
+    }
 }
 
 enum PreviewPixels {
@@ -130,6 +160,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
         if matches!(work, Work::Render { .. }) {
             last_preview = Some(work.clone());
         }
+        let scope = work.error_scope();
         let result: Result<Reply> = (|| match work {
             Work::Open { id, path } => {
                 renderer.cancel_reconstruction();
@@ -287,7 +318,10 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 Ok(Reply::Exported(path))
             }
         })();
-        let reply = result.unwrap_or_else(|e| Reply::Error(format!("{e:#}")));
+        let reply = result.unwrap_or_else(|e| Reply::Error {
+            scope,
+            message: format!("{e:#}"),
+        });
         if tx.send(reply).is_err() {
             break;
         }
@@ -873,7 +907,9 @@ impl Editor {
                         path.file_name().unwrap_or_default().to_string_lossy()
                     );
                 }
-                Reply::Error(message) => {
+                Reply::Error { scope, message }
+                    if scope.applies(self.load_generation, self.generation) =>
+                {
                     self.error = Some(message);
                     self.busy = false;
                     self.close_after_save = false;
@@ -1891,5 +1927,112 @@ fn curve_editor(ui: &mut egui::Ui, points: &mut Vec<[f32; 2]>) {
     );
     if ui.small_button("Reset curve").clicked() {
         *points = vec![[0., 0.], [1., 1.]];
+    }
+}
+
+#[cfg(test)]
+mod error_scope_tests {
+    use super::*;
+    #[test]
+    fn failed_old_preview_is_scoped_and_the_worker_still_renders_the_new_request() {
+        let (send, requests) = mpsc::channel();
+        let (responses, receive) = mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            super::worker(requests, responses, egui::Context::default(), Backend::Cpu)
+        });
+        let image = Arc::new(SensorImage::from_rgb(2, 2, vec![0.2; 12]).unwrap());
+        let invalid = Edits {
+            version: 999,
+            ..Edits::default()
+        };
+        send.send(Work::Render {
+            id: 3,
+            image: image.clone(),
+            edits: invalid,
+            region: [0., 0., 1., 1.],
+            size: [2, 2],
+            profile: None,
+            hdr: false,
+        })
+        .unwrap();
+        let Reply::Error { scope, .. } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Invalid recipe should produce a scoped failure");
+        };
+        assert!(
+            !scope.applies(4, 5),
+            "Superseded preview failure would alter the new request"
+        );
+        let mut valid = Edits::default();
+        valid.tone.mapper = ToneMapper::Linear;
+        send.send(Work::Render {
+            id: 5,
+            image,
+            edits: valid,
+            region: [0., 0., 1., 1.],
+            size: [2, 2],
+            profile: None,
+            hdr: false,
+        })
+        .unwrap();
+        let Reply::Preview {
+            id,
+            pixels: PreviewPixels::Sdr(rgba),
+            ..
+        } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Worker did not recover for the current preview");
+        };
+        assert_eq!(id, 5);
+        assert_eq!(rgba.len(), 16);
+        assert!(rgba.as_chunks::<4>().0.iter().all(|p| p[3] == 255));
+        drop(send);
+        worker.join().unwrap();
+    }
+    #[test]
+    fn failed_old_load_is_identified_before_a_new_document_completes() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("photo.png");
+        image::RgbImage::from_pixel(2, 2, image::Rgb([40, 50, 60]))
+            .save(&path)
+            .unwrap();
+        let (send, requests) = mpsc::channel();
+        let (responses, receive) = mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            super::worker(requests, responses, egui::Context::default(), Backend::Cpu)
+        });
+        send.send(Work::Open {
+            id: 1,
+            path: directory.path().join("missing.raf"),
+        })
+        .unwrap();
+        let Reply::Error { scope, .. } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Missing original should fail")
+        };
+        assert!(!scope.applies(2, 3));
+        send.send(Work::Open {
+            id: 2,
+            path: path.clone(),
+        })
+        .unwrap();
+        let Reply::Opened {
+            id, path: opened, ..
+        } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Next document did not open")
+        };
+        assert_eq!(id, 2);
+        assert_eq!(opened, path);
+        drop(send);
+        worker.join().unwrap();
     }
 }
