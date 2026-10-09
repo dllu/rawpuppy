@@ -84,6 +84,14 @@ pub fn fetch_moebius() -> Result<PathBuf> {
     ] {
         fetch_pinned(&root.join(name), url, hash)?;
     }
+    std::fs::write(
+        root.join("LICENSE.Apache-2.0.txt"),
+        include_str!("../docs/licenses/Moebius-Apache-2.0.txt"),
+    )?;
+    std::fs::write(
+        root.join("NOTICE.txt"),
+        "Moebius: 0.2B Lightweight Image Inpainting Framework with 10B-Level Performance.\nKangsheng Duan, Ziyang Xu, Wenyu Liu, Xiaohu Ruan, Xiaoxin Chen, Xinggang Wang (ECCV 2026).\nCode and pretrained weights published under Apache-2.0: https://github.com/hustvl/Moebius\nHugging Face checkpoint metadata additionally identifies MIT: https://huggingface.co/hustvl/Moebius\nVAE checkpoint: https://huggingface.co/hustvl/PixelHacker\n",
+    )?;
     Ok(root)
 }
 fn fetch_pinned(path: &Path, url: &str, hash: &str) -> Result<()> {

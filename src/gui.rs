@@ -34,6 +34,18 @@ enum Work {
         path: PathBuf,
         edits: Edits,
     },
+    #[cfg(feature = "moebius")]
+    Generate {
+        load_id: u64,
+        path: PathBuf,
+        image: Arc<SensorImage>,
+        edits: Edits,
+        dabs: Vec<crate::synthesis::MaskDab>,
+        gaps: bool,
+        steps: usize,
+        seed: i64,
+        regenerate: bool,
+    },
     Export {
         original: PathBuf,
         path: PathBuf,
@@ -61,6 +73,13 @@ enum Reply {
         path: PathBuf,
         edits: Edits,
     },
+    #[cfg(feature = "moebius")]
+    Generated {
+        load_id: u64,
+        recipe_hash: String,
+        fills: Vec<crate::synthesis::GeneratedFill>,
+        replace: bool,
+    },
     Exported(PathBuf),
     Error(String),
 }
@@ -79,6 +98,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
             Work::Open { id, path } => {
                 let image = Arc::new(SensorImage::open(&path)?);
                 let edits = sidecar::load_for(&path)?;
+                renderer.set_document(path.clone());
                 Ok(Reply::Opened {
                     id,
                     path,
@@ -95,7 +115,14 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 profile,
             } => {
                 let start = Instant::now();
-                let rendered = renderer.render_region(image, &edits, region, size[0], size[1])?;
+                let mut preview_edits = edits.clone();
+                let hash = crate::synthesis::recipe_hash(&edits)?;
+                preview_edits
+                    .display
+                    .synthesis
+                    .retain(|fill| fill.recipe_sha256 == hash);
+                let rendered =
+                    renderer.render_region(image, &preview_edits, region, size[0], size[1])?;
                 let mut histogram = vec![0f32; 128];
                 for p in &rendered.pixels {
                     if p[3] < 0.5 {
@@ -121,6 +148,74 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
             Work::Save { path, edits } => {
                 sidecar::save(&path, &edits)?;
                 Ok(Reply::Saved { path, edits })
+            }
+            #[cfg(feature = "moebius")]
+            Work::Generate {
+                load_id,
+                path,
+                image,
+                edits,
+                dabs,
+                gaps,
+                steps,
+                seed,
+                regenerate,
+            } => {
+                renderer.set_document(path);
+                let hash = crate::synthesis::recipe_hash(&edits)?;
+                let (w, h) = crate::pipeline::Pipeline::compile(&image, &edits)?.dimensions(None);
+                let mut jobs = Vec::new();
+                if regenerate {
+                    for fill in &edits.display.synthesis {
+                        jobs.push((fill.region, fill.dabs.clone(), fill.fill_gaps, steps, seed));
+                    }
+                } else if gaps {
+                    let mut base = edits.clone();
+                    base.display.synthesis.clear();
+                    let probe =
+                        renderer.render_region(image.clone(), &base, [0., 0., 1., 1.], 128, 128)?;
+                    for region in crate::synthesis::gap_contexts(&probe, w, h) {
+                        jobs.push((region, vec![], true, steps, seed));
+                    }
+                } else {
+                    jobs.push((
+                        crate::synthesis::brush_context(&dabs, w, h)?,
+                        dabs,
+                        false,
+                        steps,
+                        seed,
+                    ));
+                }
+                ensure!(!jobs.is_empty(), "No geometric gaps to fill");
+                let mut fills = Vec::new();
+                let mut current = edits.clone();
+                if regenerate {
+                    current.display.synthesis.clear();
+                }
+                for (region, dabs, gaps, steps, seed) in jobs {
+                    let settings = crate::moebius::Sampling {
+                        steps,
+                        seed,
+                        ..Default::default()
+                    };
+                    let fill = renderer.generate_fill(
+                        image.clone(),
+                        &current,
+                        region,
+                        dabs,
+                        gaps,
+                        &settings,
+                    )?;
+                    current.display.synthesis.push(fill.clone());
+                    fills.push(fill);
+                    ctx.request_repaint();
+                }
+                Ok(Reply::Generated {
+                    load_id,
+                    recipe_hash: hash,
+                    fills,
+                    replace: regenerate,
+                })
             }
             Work::Export {
                 original,
@@ -151,6 +246,7 @@ enum Tool {
     View,
     Clone,
     Heal,
+    Mask,
 }
 enum Pending {
     Close,
@@ -208,6 +304,9 @@ struct Editor {
     brush_offset: [f32; 2],
     edit_gesture: Option<Edits>,
     fit_scale: f32,
+    mask: Vec<crate::synthesis::MaskDab>,
+    ai_steps: usize,
+    ai_seed: i64,
 }
 
 impl Editor {
@@ -270,6 +369,9 @@ impl Editor {
             brush_offset: [0.; 2],
             edit_gesture: None,
             fit_scale: 1.,
+            mask: vec![],
+            ai_steps: 20,
+            ai_seed: 0,
         };
         if let Some(path) = input {
             app.open(path);
@@ -353,6 +455,27 @@ impl Editor {
             });
         }
     }
+    fn generate(&mut self, gaps: bool, regenerate: bool) {
+        #[cfg(feature = "moebius")]
+        if let (Some(image), Some(path)) = (&self.image, &self.path) {
+            let work = Work::Generate {
+                load_id: self.load_generation,
+                path: path.clone(),
+                image: image.clone(),
+                edits: self.edits.clone(),
+                dabs: self.mask.clone(),
+                gaps,
+                steps: self.ai_steps,
+                seed: self.ai_seed,
+                regenerate,
+            };
+            self.busy = true;
+            self.status = "Generating local fill…".into();
+            self.send(work);
+        }
+        #[cfg(not(feature = "moebius"))]
+        let _ = (gaps, regenerate);
+    }
     fn export(&mut self) {
         let (Some(image), Some(original)) = (&self.image, &self.path) else {
             return;
@@ -407,6 +530,7 @@ impl Editor {
                     self.zoom = 1.;
                     self.center = [0.5; 2];
                     self.clone_source = None;
+                    self.mask.clear();
                     self.busy = false;
                     self.changed();
                     self.status = "Ready".into();
@@ -445,6 +569,28 @@ impl Editor {
                     if self.close_after_save && !self.dirty() {
                         self.close_after_save = false;
                         self.perform_pending(ctx);
+                    }
+                }
+                #[cfg(feature = "moebius")]
+                Reply::Generated {
+                    load_id,
+                    recipe_hash,
+                    fills,
+                    replace,
+                } if load_id == self.load_generation => {
+                    self.busy = false;
+                    if crate::synthesis::recipe_hash(&self.edits).ok().as_ref()
+                        == Some(&recipe_hash)
+                    {
+                        let previous = self.edits.clone();
+                        if replace {
+                            self.edits.display.synthesis.clear();
+                        }
+                        self.edits.display.synthesis.extend(fills);
+                        self.remember(previous);
+                        self.mask.clear();
+                        self.tool = Tool::View;
+                        self.status = "Generated fill ready; save edits to keep it".into();
                     }
                 }
                 Reply::Exported(path) => {
@@ -850,6 +996,74 @@ impl Editor {
                                 self.edits.display.retouch.clear();
                             }
                         });
+                        egui::CollapsingHeader::new("AI removal & corner fill").show(ui, |ui| {
+                            let stale = crate::synthesis::recipe_hash(&self.edits).is_ok_and(|h| {
+                                self.edits
+                                    .display
+                                    .synthesis
+                                    .iter()
+                                    .any(|f| f.recipe_sha256 != h)
+                            });
+                            ui.add_enabled_ui(cfg!(feature = "moebius"), |ui| {
+                                ui.horizontal(|ui| {
+                                    ui.selectable_value(&mut self.tool, Tool::Mask, "Paint area");
+                                    ui.selectable_value(&mut self.tool, Tool::View, "Pan");
+                                });
+                                slider(ui, &mut self.radius, 0.002..=0.15, "Brush size", "");
+                                ui.add(
+                                    egui::Slider::new(&mut self.ai_steps, 2..=50)
+                                        .text("Sampling steps"),
+                                );
+                                ui.horizontal(|ui| {
+                                    ui.label("Seed");
+                                    ui.add(egui::DragValue::new(&mut self.ai_seed));
+                                });
+                                if ui
+                                    .add_enabled(
+                                        !self.mask.is_empty(),
+                                        egui::Button::new("Generate painted area"),
+                                    )
+                                    .clicked()
+                                {
+                                    self.generate(false, false);
+                                }
+                                if ui.button("Fill geometric corners").clicked() {
+                                    self.generate(true, false);
+                                }
+                                if stale {
+                                    ui.label("Preceding edits changed; update the fills.");
+                                }
+                                if !self.edits.display.synthesis.is_empty()
+                                    && ui
+                                        .button(if stale {
+                                            "Update generated fills"
+                                        } else {
+                                            "Regenerate fills"
+                                        })
+                                        .clicked()
+                                {
+                                    self.generate(false, true);
+                                }
+                            });
+                            if !cfg!(feature = "moebius") {
+                                ui.label(
+                                    egui::RichText::new(
+                                        "AI generation is unavailable in this build.",
+                                    )
+                                    .small(),
+                                );
+                            }
+                            ui.label(format!(
+                                "{} generated layers",
+                                self.edits.display.synthesis.len()
+                            ));
+                            if ui.small_button("Clear selection").clicked() {
+                                self.mask.clear();
+                            }
+                            if ui.small_button("Clear generated fills").clicked() {
+                                self.edits.display.synthesis.clear();
+                            }
+                        });
                         ui.separator();
                         egui::ComboBox::from_label("Export color")
                             .selected_text(format!("{:?}", self.space))
@@ -948,7 +1162,7 @@ impl Editor {
                         self.changed();
                     }
                     ui.add_space(12.);
-                    if self.tool != Tool::View {
+                    if matches!(self.tool, Tool::Clone | Tool::Heal) {
                         ui.label(
                             egui::RichText::new("Alt-click source · paint to retouch")
                                 .color(ACCENT),
@@ -1058,8 +1272,42 @@ impl Editor {
                     self.center[1] -= delta.y / full.y;
                     self.changed();
                 }
-                if self.tool != Tool::View
+                for dab in &self.mask {
+                    let pos = Pos2::new(
+                        rect.left() + (dab.center[0] - region[0]) / region[2] * rect.width(),
+                        rect.top() + (dab.center[1] - region[1]) / region[3] * rect.height(),
+                    );
+                    if rect.contains(pos) {
+                        ui.painter().circle_filled(
+                            pos,
+                            dab.radius * full.x,
+                            Color32::from_rgba_unmultiplied(225, 150, 100, 75),
+                        );
+                    }
+                }
+                if self.tool == Tool::Mask
                     && !self.compare
+                    && !self.busy
+                    && (response.clicked() || response.dragged())
+                    && let Some(pos) = response.interact_pointer_pos()
+                {
+                    let uv = [
+                        region[0] + (pos.x - rect.left()) / rect.width() * region[2],
+                        region[1] + (pos.y - rect.top()) / rect.height() * region[3],
+                    ];
+                    if self.mask.last().is_none_or(|dab| {
+                        ((dab.center[0] - uv[0]).powi(2) + (dab.center[1] - uv[1]).powi(2)).sqrt()
+                            > self.radius * 0.2
+                    }) {
+                        self.mask.push(crate::synthesis::MaskDab {
+                            center: uv,
+                            radius: self.radius,
+                        });
+                    }
+                }
+                if matches!(self.tool, Tool::Clone | Tool::Heal)
+                    && !self.compare
+                    && !self.busy
                     && let Some(pos) = response.interact_pointer_pos()
                 {
                     let uv = [

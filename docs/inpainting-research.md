@@ -2,8 +2,10 @@
 
 The user requested recent models, specifically Moebius and Qwen Image 2.1.
 LaMa is retained as an explicitly experimental reference backend, not the
-application's quality target or default. No generative backend is yet wired into
-the editor or persisted as a complete non-destructive synthesis module.
+application's quality target or default. Moebius now has native Rust inference,
+editor mask painting/corner filling, and persisted non-destructive layers. See
+[runtime setup and layer behavior](moebius.md). Selection remains provisional
+until broader photography and alternative-model comparisons are complete.
 
 ## Candidates and evidence
 
@@ -12,6 +14,8 @@ the editor or persisted as a complete non-destructive synthesis module.
 | [Moebius](https://github.com/hustvl/Moebius) | June 2026; authors explicitly license code and pretrained weights Apache-2.0. Hugging Face metadata says MIT; both notices should be retained when integrating. | Downloaded scene checkpoint and VAE, verified hashes, ran actual GPU inference. Leading integration candidate; more photography and corner-fill comparisons needed. |
 | [Qwen Image 2.1](https://qwen.ai/blog?id=qwen-image-2.1) | September 20, 2026; [research license](https://huggingface.co/Qwen/Qwen-Image-2.1/blob/main/LICENSE) limits use to research/evaluation without separate commercial permission. | Verified architecture and file inventory: about 33.1 GB of model artifacts. No local quality benchmark yet. Suitable comparison reference; do not assume earlier Qwen Apache terms apply. |
 | [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) | January 2026; Apache-2.0 4B model. | Additional modern editing candidate; not benchmarked yet. |
+| [LLaDA-Image / Turbo](https://github.com/inclusionAI/LLaDA-Image) | September 4, 2026; [model card](https://huggingface.co/inclusionAI/LLaDA-Image) identifies Apache-2.0. | Recent 6B image generation/editing family; Turbo uses four sampling steps. Publisher evidence only; local inpainting, detail and runtime comparisons pending. |
+| [OSOR](https://github.com/Zhouqm-Git/osor) | June 2026; MIT code, but FLUX-Fill checkpoints are non-commercial and SDXL checkpoints use CreativeML Open RAIL++-M. | One-step object removal with learned shadow/reflection masks. Not benchmarked. Its mask expansion would need explicit handling alongside Rawpuppy's exact unpainted-pixel preservation. |
 | [LaMa ONNX](https://huggingface.co/Carve/LaMa-ONNX) | 2022 architecture; published Apache-2.0 export. | Native Rust inference, finite output, missing-pixel reconstruction and exact unmasked-sample preservation verified. Public object-removal example shows visible artifacts; insufficient to establish final quality. |
 
 Publisher benchmark claims are not Rawpuppy benchmarks. The Moebius paper compares
@@ -44,8 +48,32 @@ context, not a resized or repeatedly regenerated entire image.
 
 The inference-only evaluation omitted an unused teacher-model import, avoiding an
 unnecessary Flash Linear Attention dependency. Python/PyTorch is used for this
-external evaluation; the application implementation remains Rust. Native modern
-model inference and a responsive GUI synthesis workflow are still to be built.
+external evaluation; application inference and seeded DDIM sampling run in Rust
+through prepared, numerically checked TorchScript graphs and LibTorch 2.13.
+Native CUDA sampling took approximately 2.1 seconds for the 10-step test. This
+measurement uses a different input from the upstream comparison above and must
+not be interpreted as a controlled runtime comparison. Editor generation,
+save/reload, regeneration after exposure changes, and four-corner filling on a
+GFX100S photo have been exercised. Prepared contexts contain 512×512 model detail;
+large gaps and boundary/detail quality still need further evaluation. The same
+prepared graphs ran natively on CPU, taking 27.3 seconds for the 10-step synthetic
+test with eight OpenMP workers. MPS/Windows inference has not been exercised.
+
+An initial 18-degree GFX100S rotation exposed weak outpainting: corner-centered
+context put most pixels outside the photograph and produced dark wedges despite
+valid opaque output. Moving square context into the corrected canvas increased
+known content and improved the inspected 20-step result, but one corner still
+contained a dark wedge. A subsequent 50-step, seed-42 run filled all four visible
+wedges in 36.4 seconds total. Steps and seed changed together, so this is not a
+controlled attribution of the improvement. Opaque output is an integrity check,
+not a quality metric. This example is not evidence of production-quality
+large-gap extrapolation or full-resolution detail.
+
+The next controlled comparison should use identical original context and masks
+for small distraction removal, associated shadows/reflections, textured surfaces,
+fine structures and geometric gaps. Record visual artifacts at actual pixels,
+boundary consistency, sampling settings, elapsed time and peak memory. Native
+runtime integration alone does not resolve that comparison.
 
 ## Reproducibility and model identity
 
@@ -57,6 +85,6 @@ model inference and a responsive GUI synthesis workflow are still to be built.
 - Qwen 2.1 inspected revision: `d26bb61231c349cf6b7896fa83353113880e1ba3`.
 
 Models are cached outside photograph directories. `rawpuppy fetch-moebius`
-downloads pinned artifacts and verifies them; it does not claim that modern
-inference is integrated. `--features neural` enables the native LaMa reference
+downloads pinned artifacts and verifies them; `--features moebius` enables modern
+native generation after graph preparation. `--features neural` enables the LaMa reference
 command `inpaint-lama`. The original photos under `~/pictures/raw` were not modified.

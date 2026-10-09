@@ -29,3 +29,25 @@ jobs:
         env:
           RUST_MIN_STACK: '33554432'
         run: cargo test --test gpu -- --ignored
+  native-moebius:
+    runs-on: ubuntu-latest
+    env:
+      LIBTORCH_USE_PYTORCH: '1'
+      CXX: clang++
+      CXXFLAGS: '-g0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
+      - run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libwayland-dev
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --features moebius --all-targets -j 2 -- -D warnings
+      - name: Native scheduler and layer tests
+        run: |
+          export LD_LIBRARY_PATH="$(python -c 'import torch,pathlib;print(pathlib.Path(torch.__file__).parent / "lib")'):${LD_LIBRARY_PATH:-}"
+          cargo test --features moebius -j 2

@@ -7,8 +7,11 @@ pub mod gpu;
 pub mod gui;
 pub mod input;
 pub mod models;
+#[cfg(feature = "moebius")]
+pub mod moebius;
 #[cfg(feature = "neural")]
 pub mod neural;
 pub mod pipeline;
 pub mod render;
 pub mod sidecar;
+pub mod synthesis;

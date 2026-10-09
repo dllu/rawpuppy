@@ -53,6 +53,29 @@ enum Command {
     FetchLama,
     /// Download and verify the recent Moebius scene inpainting checkpoint and VAE.
     FetchMoebius,
+    /// Generate non-destructive Moebius layers for painted regions or geometric corners.
+    #[cfg(feature = "moebius")]
+    Inpaint {
+        input: PathBuf,
+        output: PathBuf,
+        /// Normalized x,y,radius of an area to replace; may be repeated.
+        #[arg(long,value_parser=parse_erase)]
+        erase: Vec<[f32; 3]>,
+        #[arg(long)]
+        fill_gaps: bool,
+        #[arg(long, default_value_t = 20)]
+        steps: usize,
+        #[arg(long, default_value_t = 0)]
+        seed: i64,
+        #[arg(long)]
+        max_edge: Option<usize>,
+        #[arg(long)]
+        save_edits: bool,
+        #[arg(long, value_enum, default_value = "srgb")]
+        color_space: OutputSpace,
+        #[arg(long)]
+        overwrite: bool,
+    },
     /// Experimental LaMa reference backend for comparing newer inpainting models.
     #[cfg(feature = "neural")]
     InpaintLama {
@@ -132,6 +155,7 @@ fn main() -> Result<()> {
             };
             edits.scene.exposure += exposure;
             let mut renderer = Renderer::new(cli.backend);
+            renderer.set_document(input.clone());
             let rendered = renderer.render(image, &edits, max_edge)?;
             let processed = start.elapsed();
             export::write(&output, &rendered, color_space, overwrite)?;
@@ -149,6 +173,80 @@ fn main() -> Result<()> {
         Command::Recipe => println!("{}", serde_json::to_string_pretty(&Edits::default())?),
         Command::FetchLama => println!("{}", rawpuppy::models::fetch_lama()?.display()),
         Command::FetchMoebius => println!("{}", rawpuppy::models::fetch_moebius()?.display()),
+        #[cfg(feature = "moebius")]
+        Command::Inpaint {
+            input,
+            output,
+            erase,
+            fill_gaps,
+            steps,
+            seed,
+            max_edge,
+            save_edits,
+            color_space,
+            overwrite,
+        } => {
+            ensure!(
+                !erase.is_empty() || fill_gaps,
+                "Supply --erase x,y,radius or --fill-gaps"
+            );
+            ensure!(max_edge != Some(0), "Maximum edge must be positive");
+            ensure!(
+                output.canonicalize().ok().as_ref() != Some(&input.canonicalize()?),
+                "Inpainting cannot overwrite the original"
+            );
+            let image = std::sync::Arc::new(SensorImage::open(&input)?);
+            let mut edits = sidecar::load_for(&input)?;
+            let mut renderer = Renderer::new(cli.backend);
+            renderer.set_document(input.clone());
+            let (w, h) = rawpuppy::pipeline::Pipeline::compile(&image, &edits)?.dimensions(None);
+            let dabs: Vec<_> = erase
+                .into_iter()
+                .map(|p| rawpuppy::synthesis::MaskDab {
+                    center: [p[0], p[1]],
+                    radius: p[2],
+                })
+                .collect();
+            let mut regions = Vec::new();
+            if !dabs.is_empty() {
+                regions.push((
+                    rawpuppy::synthesis::brush_context(&dabs, w, h)?,
+                    dabs,
+                    false,
+                ));
+            }
+            if fill_gaps {
+                let probe =
+                    renderer.render_region(image.clone(), &edits, [0., 0., 1., 1.], 128, 128)?;
+                for region in rawpuppy::synthesis::gap_contexts(&probe, w, h) {
+                    regions.push((region, vec![], true));
+                }
+            }
+            ensure!(!regions.is_empty(), "No geometric gaps to fill");
+            let settings = rawpuppy::moebius::Sampling {
+                steps,
+                seed,
+                ..Default::default()
+            };
+            settings.validate()?;
+            let start = Instant::now();
+            for (region, dabs, gaps) in regions {
+                let fill =
+                    renderer.generate_fill(image.clone(), &edits, region, dabs, gaps, &settings)?;
+                edits.display.synthesis.push(fill);
+            }
+            let rendered = renderer.render(image, &edits, max_edge)?;
+            export::write(&output, &rendered, color_space, overwrite)?;
+            if save_edits {
+                sidecar::save(&sidecar::path_for(&input), &edits)?;
+            }
+            eprintln!(
+                "Generated {} saved layers in {:.2}s → {}",
+                edits.display.synthesis.len(),
+                start.elapsed().as_secs_f64(),
+                output.display()
+            );
+        }
         #[cfg(feature = "neural")]
         Command::InpaintLama {
             input,
@@ -168,7 +266,9 @@ fn main() -> Result<()> {
             );
             let source = std::sync::Arc::new(SensorImage::open(&input)?);
             let edits = sidecar::load_for(&input)?;
-            let mut rendered = Renderer::new(cli.backend).render(source, &edits, max_edge)?;
+            let mut renderer = Renderer::new(cli.backend);
+            renderer.set_document(input.clone());
+            let mut rendered = renderer.render(source, &edits, max_edge)?;
             let mut values = vec![0f32; rendered.pixels.len()];
             if let Some(mask) = mask {
                 ensure!(
@@ -217,4 +317,16 @@ fn main() -> Result<()> {
         }
     }
     Ok(())
+}
+
+#[cfg(feature = "moebius")]
+fn parse_erase(text: &str) -> std::result::Result<[f32; 3], String> {
+    let values: Vec<f32> = text
+        .split(',')
+        .map(|v| v.parse::<f32>().map_err(|e| e.to_string()))
+        .collect::<std::result::Result<_, _>>()?;
+    if values.len() != 3 || values.iter().any(|v| !v.is_finite()) || values[2] <= 0. {
+        return Err("Use x,y,radius with finite values and a positive radius".into());
+    }
+    Ok([values[0], values[1], values[2]])
 }

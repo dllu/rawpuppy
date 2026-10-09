@@ -143,6 +143,7 @@ pub struct DisplayEdits {
     pub highlights: [f32; 3],
     pub split_strength: f32,
     pub retouch: Vec<Retouch>,
+    pub synthesis: Vec<crate::synthesis::GeneratedFill>,
 }
 impl Default for DisplayEdits {
     fn default() -> Self {
@@ -152,6 +153,7 @@ impl Default for DisplayEdits {
             highlights: [1.0; 3],
             split_strength: 0.0,
             retouch: vec![],
+            synthesis: vec![],
         }
     }
 }
@@ -254,6 +256,9 @@ impl Edits {
                     && (0.0..=1.0).contains(&r.opacity),
                 "Invalid retouch brush"
             );
+        }
+        for fill in &self.display.synthesis {
+            fill.validate()?;
         }
         Ok(())
     }
