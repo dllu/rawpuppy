@@ -165,7 +165,21 @@ advanced from tile 1/108 to 3/108, switched to Standard, restarted and automatic
 finished the learned preview. Tests cover cancellation, stale-job isolation,
 source retirement and latest-request coalescing.
 
-More memory-pressure coverage, wider camera/illuminant quality and native MPS
+An isolated Linux CPU process now verifies full-cache allocation rejection using
+the actual prepared graph. After model/thread warmup, a soft RLIMIT_AS allows
+64 MiB of additional virtual address space. The 4096×4096 sensor's 192 MiB RGB
+cache is rejected before its first tile; the returned error identifies the
+allocation size. Restoring the original limit permits identical patch inference
+on the same model, with the source unchanged. A worker test also verifies an
+error does not poison its request queue or retain the failed source.
+
+Build `reconstruction_memory_probe` with `--features raw-ml` and matching LibTorch,
+then pass the prepared graph directory. The limit applies only to that probe's
+address space; this does not exhaust shared system RAM or establish CUDA/MPS
+device-allocation recovery. [The record](data/reconstruction-memory-2026-10-09.json)
+retains the exact limit and failure. No partial reconstructed image is returned.
+
+More device/memory-pressure coverage, wider camera/illuminant quality and native MPS
 validation remain outstanding. Full-frame execution does not establish HDR
 restoration quality.
 

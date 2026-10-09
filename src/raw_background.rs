@@ -139,6 +139,33 @@ mod tests {
         Arc::new(image)
     }
     #[test]
+    fn failed_preparation_does_not_poison_the_worker_or_retain_its_source() {
+        let service = Service::spawn(|request| {
+            if request.source.metadata.model == "fail" {
+                anyhow::bail!("Cannot allocate the requested camera-RGB cache");
+            }
+            Ok(request.source.clone())
+        })
+        .unwrap();
+        let failed_source = image("fail");
+        let retired = Arc::downgrade(&failed_source);
+        let failed = service.request(failed_source.clone(), false).unwrap();
+        assert!(
+            failed
+                .wait()
+                .err()
+                .unwrap()
+                .to_string()
+                .contains("Cannot allocate")
+        );
+        drop(failed);
+        drop(failed_source);
+        let next_source = image("next");
+        let next = service.request(next_source.clone(), true).unwrap();
+        assert!(Arc::ptr_eq(&next.wait().unwrap(), &next_source));
+        assert!(retired.upgrade().is_none());
+    }
+    #[test]
     fn cancelled_and_superseded_requests_release_sources_and_only_latest_runs() {
         let (started, events) = mpsc::channel();
         let service = Service::spawn(move |request| {

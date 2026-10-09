@@ -317,7 +317,12 @@ impl BayerModel {
         let total = columns.checked_mul(rows).context("Tile count overflow")?;
         ensure!(control(0, total), "Reconstruction cancelled");
         let mut data = Vec::new();
-        data.try_reserve_exact(count)?;
+        data.try_reserve_exact(count).with_context(|| {
+            format!(
+                "Cannot allocate {} bytes for the joint camera-RGB cache",
+                count.saturating_mul(std::mem::size_of::<f32>())
+            )
+        })?;
         #[cfg(feature = "cuda")]
         crate::gpu::advise_sensor_allocation(data.spare_capacity_mut());
         data.resize(count, 0.);
