@@ -11,7 +11,7 @@ from verification; the project is not complete merely because core tests pass.
 | Demosaicing, denoise, hot pixels | MHC and sensor bilateral baseline, tests; quality comparison and ML upgrade research ongoing |
 | Chromatic aberration | Composed radial red/blue resampling implemented; real lens validation pending |
 | Distortion, perspective, crop, rotation | Composed manual controls and pinhole homography, known-coordinate tests; embedded lens metadata pending |
-| Vignetting, graduated ND, exposure, calibration | Composed scalar gain and calibration matrix; tests and real preview; oracle comparisons pending |
+| Vignetting, graduated ND, exposure, calibration | Composed scalar gain and calibration matrix; numeric tests and real preview; one GFX100S linear oracle comparison has mean RGB ratios within 0.04%; additional cameras/illuminants and controls pending |
 | AgX | Versioned photographic lattice from independent oracle observations; 1,677 golden samples, gray preservation and legacy recipe compatibility; CPU/CUDA/Vulkan parity; 1800-pixel GFX previews ~12–14 ms; desktop CI being checked |
 | Clone/heal, curve, split toning | Core and GUI implemented; retouch spatial index; clone and monotone-curve tests; more interaction checks pending |
 | Neural synthesis | Native Rust Moebius sampler/graphs, GUI masks/corners/regeneration, EXR assets and XMP identities implemented; native CUDA/CPU, X11/Wayland workflows, reload and opaque corner composition verified; model/platform/quality comparisons pending |
