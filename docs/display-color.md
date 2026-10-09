@@ -44,6 +44,13 @@ also visually inspected. Native macOS/Windows code is exercised in desktop CI;
 physical monitor, multi-monitor, and managed Wayland runtime/colorimetry checks
 remain in the completion audit. Native HDR presentation is separate work.
 
+An owned headless Mutter session without the color-management global also
+rendered the editor through Vulkan, loaded its saved synthesis layers, and showed
+“Automatic: legacy Wayland sRGB fallback.” The editor closed normally without
+changing the recipe. This verifies the legacy policy and UI; it does not measure
+display colorimetry or establish managed Wayland behavior. The private compositor,
+bus, and PipeWire instance were stopped after inspection.
+
 Sources: [ICC profiles in X specification](https://www.freedesktop.org/wiki/Specifications/icc_profiles_in_x_spec/),
 [Wayland color-management protocol](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/staging/color-management/color-management-v1.xml),
 [CAMetalLayer color space](https://developer.apple.com/documentation/quartzcore/cametallayer/colorspace),

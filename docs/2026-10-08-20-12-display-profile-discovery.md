@@ -25,3 +25,17 @@ session and `/tmp/rawpuppy-validation`. No contents of `~/pictures/raw` changed.
 macOS CI passed the native layer test and actual Metal compute parity. Linux
 linking crashed before tests could execute; CI now disables large debug-info
 payloads and limits concurrent compilation/linking while retaining the checks.
+
+The native editor also passed a legacy Wayland smoke test in a separate owned
+headless Mutter session. Vulkan preview and saved-layer rendering worked, the UI
+identified its legacy sRGB fallback, and the editor closed normally without edits.
+All processes launched for that private display were stopped after inspection.
+The screenshot is retained at
+`/tmp/rawpuppy-validation/display-wayland/automatic-legacy-profile.png`.
+
+[CI run 37880423491](https://github.com/dllu/rawpuppy/actions/runs/37880423491)
+passed all four jobs with the reduced debug-info and compilation-concurrency
+settings: Linux, macOS, Windows, and native Moebius. Linux executed both software
+Vulkan parity and isolated X11 profile discovery. The optional macOS Metal probe
+itself passed, independently of the overall job result. Windows native profile
+lookup builds and ordinary tests passed; a physical Windows GUI test remains.
