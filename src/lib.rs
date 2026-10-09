@@ -8,6 +8,7 @@ pub mod geometry;
 pub mod gpu;
 pub mod gui;
 pub mod input;
+pub mod lens;
 pub mod models;
 #[cfg(feature = "moebius")]
 pub mod moebius;

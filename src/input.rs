@@ -24,6 +24,11 @@ pub struct Metadata {
     pub pattern: String,
     pub as_shot: [f32; 3],
     pub camera_to_working: Matrix,
+    pub lens_model: Option<String>,
+    pub focal_length_mm: Option<f32>,
+    pub aperture: Option<f32>,
+    pub lens_profile: Option<crate::lens::LensProfile>,
+    pub lens_profile_error: Option<String>,
 }
 
 pub struct SensorImage {
@@ -76,15 +81,14 @@ impl SensorImage {
         let params = rawler::decoders::RawDecodeParams::default();
         let decoded = rawler::get_decoder(&source).and_then(|decoder| {
             let mut raw = decoder.raw_image(&source, &params, false)?;
-            if let Ok(metadata) = decoder.raw_metadata(&source, &params)
-                && let Some(orientation) = metadata.exif.orientation
-            {
+            let metadata = decoder.raw_metadata(&source, &params).ok();
+            if let Some(orientation) = metadata.as_ref().and_then(|m| m.exif.orientation) {
                 raw.orientation = Orientation::from_u16(orientation);
             }
-            Ok(raw)
+            Ok((raw, metadata))
         });
-        let raw = match decoded {
-            Ok(raw) => raw,
+        let (raw, raw_metadata) = match decoded {
+            Ok(decoded) => decoded,
             Err(_) if matches!(ext.as_str(), "tif" | "tiff") => return Self::open_rgb(path),
             Err(e) => return Err(e).with_context(|| format!("Decoding {}", path.display())),
         };
@@ -241,6 +245,13 @@ impl SensorImage {
                     .collect()
             }
         };
+        let (lens_profile, lens_profile_error) = match crate::lens::read_raf(&source) {
+            Ok(profile) => (profile, None),
+            Err(error) => (None, Some(format!("{error:#}"))),
+        };
+        let positive = |v: rawler::formats::tiff::Rational| {
+            (v.n > 0 && v.d > 0).then(|| v.n as f32 / v.d as f32)
+        };
         let metadata = Metadata {
             make: raw.clean_make.clone(),
             model: raw.clean_model.clone(),
@@ -253,6 +264,19 @@ impl SensorImage {
             pattern: cfa.as_ref().map_or("RGB/mono".into(), |c| c.name.clone()),
             as_shot,
             camera_to_working,
+            lens_model: raw_metadata
+                .as_ref()
+                .and_then(|m| m.exif.lens_model.clone()),
+            focal_length_mm: raw_metadata
+                .as_ref()
+                .and_then(|m| m.exif.focal_length)
+                .and_then(positive),
+            aperture: raw_metadata
+                .as_ref()
+                .and_then(|m| m.exif.fnumber)
+                .and_then(positive),
+            lens_profile,
+            lens_profile_error,
         };
         Ok(Self {
             metadata,
@@ -334,6 +358,11 @@ impl SensorImage {
             pattern: "RGB".into(),
             as_shot: [1.; 3],
             camera_to_working: color::IDENTITY,
+            lens_model: None,
+            focal_length_mm: None,
+            aperture: None,
+            lens_profile: None,
+            lens_profile_error: None,
         };
         Ok(Self {
             metadata,
@@ -439,6 +468,11 @@ impl SensorImage {
                 pattern: "RGB".into(),
                 as_shot: [1.; 3],
                 camera_to_working: color::IDENTITY,
+                lens_model: None,
+                focal_length_mm: None,
+                aperture: None,
+                lens_profile: None,
+                lens_profile_error: None,
             },
             data,
             cfa: None,
