@@ -1,0 +1,339 @@
+{
+  "hardware": "NVIDIA GB10 shared workstation",
+  "scope": "One public removal and one withheld GFX fabric patch; no overall quality ranking",
+  "native_benchmark": "examples/benchmark_moebius.rs",
+  "protocol": {
+    "steps": 20,
+    "seed": 42,
+    "strength": 1.0,
+    "guidance": 2.0,
+    "precision": "float32",
+    "padding_pixels": [
+      0,
+      16
+    ],
+    "expanded_mask": "binary positive support, square dilation",
+    "final_composition": "original fractional mask in display-linear sRGB",
+    "inferred_output": "already composited through expanded mask, not raw VAE output",
+    "timing": "native preprocessing/sampling/VAE/transfer; excludes mask dilation, graph loading and PNG encoding"
+  },
+  "cases": {
+    "removal-halo0": {
+      "composition_mask": "original mask, without inference padding",
+      "device": "Cuda(0)",
+      "dtype": "float32",
+      "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+      "inference_mask_sha256": "0901169e54f5d9b73787d1ef4d95d03541a09b677632f11ca854f9fe0ffa3211",
+      "input_color": "sRGB encoded PNG, decoded to display-linear sRGB",
+      "input_size": [
+        512,
+        512
+      ],
+      "load_seconds": 3.713102473,
+      "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+      "model": "Moebius scene checkpoint",
+      "model_manifest": {
+        "modules": {
+          "decoder": {
+            "file": "decoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "71d59b35a6505694a484c975c83849f9b556a63e1450ae99e4e986520f7d3d6a"
+          },
+          "denoiser": {
+            "file": "denoiser.pt",
+            "max_abs_error": 0.0,
+            "sha256": "0786ea80a3e69193ee171d52328ce6a87a2b36b40ca53669e36303d23db9fb1b"
+          },
+          "encoder": {
+            "file": "encoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "326c921d601b746390c1436f63f2d3f36543774ee1055c221373aae682764770"
+          }
+        },
+        "scaling_factor": 0.13025,
+        "size": 512,
+        "source_hashes": {
+          "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+          "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+          "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+        },
+        "torch_version": "2.14.0+cu130",
+        "version": 1
+      },
+      "model_mask_padding_pixels": 0,
+      "purpose": "native bounded-context image/mask comparison",
+      "runs": [
+        {
+          "inferred_output_sha256": null,
+          "iteration": 0,
+          "output_sha256": "7661a5104975730064275c65fa6fd4031775769c71f75ba1705eae3bd69a15c1",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 3.375503298
+        },
+        {
+          "inferred_output_sha256": null,
+          "iteration": 1,
+          "output_sha256": "7661a5104975730064275c65fa6fd4031775769c71f75ba1705eae3bd69a15c1",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 2.962052376
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "settings": {
+        "guidance": 2.0,
+        "noise_offset": 0.0357,
+        "seed": 42,
+        "steps": 20,
+        "strength": 1.0
+      },
+      "independent_validation": {
+        "same_seed_decoded_outputs_identical": true,
+        "original_selection_pixels": 17623,
+        "original_fractional_mask_pixels": 1937,
+        "inference_mask_pixels": 17623,
+        "final_unselected_rgb_bytes_changed": 0,
+        "original_inference_mask_preserved": true
+      }
+    },
+    "removal-halo16": {
+      "composition_mask": "original mask, without inference padding",
+      "device": "Cuda(0)",
+      "dtype": "float32",
+      "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+      "inference_mask_sha256": "a1cdd4852eb421f962e619749eab1f3843fafbca2f4bfb2922c5b1d87f454e98",
+      "input_color": "sRGB encoded PNG, decoded to display-linear sRGB",
+      "input_size": [
+        512,
+        512
+      ],
+      "load_seconds": 3.745997687,
+      "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+      "model": "Moebius scene checkpoint",
+      "model_manifest": {
+        "modules": {
+          "decoder": {
+            "file": "decoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "71d59b35a6505694a484c975c83849f9b556a63e1450ae99e4e986520f7d3d6a"
+          },
+          "denoiser": {
+            "file": "denoiser.pt",
+            "max_abs_error": 0.0,
+            "sha256": "0786ea80a3e69193ee171d52328ce6a87a2b36b40ca53669e36303d23db9fb1b"
+          },
+          "encoder": {
+            "file": "encoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "326c921d601b746390c1436f63f2d3f36543774ee1055c221373aae682764770"
+          }
+        },
+        "scaling_factor": 0.13025,
+        "size": 512,
+        "source_hashes": {
+          "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+          "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+          "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+        },
+        "torch_version": "2.14.0+cu130",
+        "version": 1
+      },
+      "model_mask_padding_pixels": 16,
+      "purpose": "native bounded-context image/mask comparison",
+      "runs": [
+        {
+          "inferred_output_sha256": "dd036036d5439623d69cd96f7b695db1ff77b46c7a04a0be819962688775f0ce",
+          "iteration": 0,
+          "output_sha256": "f2df0fd17f823440c89aead746c3910d272f796793d9aa18bf2d47625fd3d3e6",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 3.378676322
+        },
+        {
+          "inferred_output_sha256": "dd036036d5439623d69cd96f7b695db1ff77b46c7a04a0be819962688775f0ce",
+          "iteration": 1,
+          "output_sha256": "f2df0fd17f823440c89aead746c3910d272f796793d9aa18bf2d47625fd3d3e6",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 2.965323654
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "settings": {
+        "guidance": 2.0,
+        "noise_offset": 0.0357,
+        "seed": 42,
+        "steps": 20,
+        "strength": 1.0
+      },
+      "independent_validation": {
+        "pillow_binary_square_dilation_matches": true,
+        "same_seed_decoded_outputs_identical": true,
+        "original_selection_pixels": 17623,
+        "original_fractional_mask_pixels": 1937,
+        "inference_mask_pixels": 35885,
+        "final_unselected_rgb_bytes_changed": 0
+      }
+    },
+    "texture-halo0": {
+      "composition_mask": "original mask, without inference padding",
+      "device": "Cuda(0)",
+      "dtype": "float32",
+      "image_sha256": "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+      "inference_mask_sha256": "06f6b6c90671bfc919527c785097d63fb01beb5739799cc0040c74ad4861557f",
+      "input_color": "sRGB encoded PNG, decoded to display-linear sRGB",
+      "input_size": [
+        512,
+        512
+      ],
+      "load_seconds": 3.7013932,
+      "mask_sha256": "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810",
+      "model": "Moebius scene checkpoint",
+      "model_manifest": {
+        "modules": {
+          "decoder": {
+            "file": "decoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "71d59b35a6505694a484c975c83849f9b556a63e1450ae99e4e986520f7d3d6a"
+          },
+          "denoiser": {
+            "file": "denoiser.pt",
+            "max_abs_error": 0.0,
+            "sha256": "0786ea80a3e69193ee171d52328ce6a87a2b36b40ca53669e36303d23db9fb1b"
+          },
+          "encoder": {
+            "file": "encoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "326c921d601b746390c1436f63f2d3f36543774ee1055c221373aae682764770"
+          }
+        },
+        "scaling_factor": 0.13025,
+        "size": 512,
+        "source_hashes": {
+          "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+          "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+          "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+        },
+        "torch_version": "2.14.0+cu130",
+        "version": 1
+      },
+      "model_mask_padding_pixels": 0,
+      "purpose": "native bounded-context image/mask comparison",
+      "runs": [
+        {
+          "inferred_output_sha256": null,
+          "iteration": 0,
+          "output_sha256": "bfa95982634d18fb1b7876dea1fc62a3f55b3ab1bab2e6a61590a543b6e93896",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 3.36697478
+        },
+        {
+          "inferred_output_sha256": null,
+          "iteration": 1,
+          "output_sha256": "bfa95982634d18fb1b7876dea1fc62a3f55b3ab1bab2e6a61590a543b6e93896",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 2.967447827
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "settings": {
+        "guidance": 2.0,
+        "noise_offset": 0.0357,
+        "seed": 42,
+        "steps": 20,
+        "strength": 1.0
+      },
+      "independent_validation": {
+        "same_seed_decoded_outputs_identical": true,
+        "original_selection_pixels": 9216,
+        "original_fractional_mask_pixels": 0,
+        "inference_mask_pixels": 9216,
+        "final_unselected_rgb_bytes_changed": 0,
+        "previous_unpadded_output_hash_matches": true,
+        "original_inference_mask_preserved": true
+      },
+      "selected_region_fidelity": {
+        "mean_absolute_8bit_channel_error": 4.634078414351852,
+        "root_mean_squared_8bit_channel_error": 5.556381232046028
+      }
+    },
+    "texture-halo16": {
+      "composition_mask": "original mask, without inference padding",
+      "device": "Cuda(0)",
+      "dtype": "float32",
+      "image_sha256": "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+      "inference_mask_sha256": "82297d48d136d54624c338073e6dca29b327cc7352b4b994804f5749255181d5",
+      "input_color": "sRGB encoded PNG, decoded to display-linear sRGB",
+      "input_size": [
+        512,
+        512
+      ],
+      "load_seconds": 3.751957289,
+      "mask_sha256": "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810",
+      "model": "Moebius scene checkpoint",
+      "model_manifest": {
+        "modules": {
+          "decoder": {
+            "file": "decoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "71d59b35a6505694a484c975c83849f9b556a63e1450ae99e4e986520f7d3d6a"
+          },
+          "denoiser": {
+            "file": "denoiser.pt",
+            "max_abs_error": 0.0,
+            "sha256": "0786ea80a3e69193ee171d52328ce6a87a2b36b40ca53669e36303d23db9fb1b"
+          },
+          "encoder": {
+            "file": "encoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "326c921d601b746390c1436f63f2d3f36543774ee1055c221373aae682764770"
+          }
+        },
+        "scaling_factor": 0.13025,
+        "size": 512,
+        "source_hashes": {
+          "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+          "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+          "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+        },
+        "torch_version": "2.14.0+cu130",
+        "version": 1
+      },
+      "model_mask_padding_pixels": 16,
+      "purpose": "native bounded-context image/mask comparison",
+      "runs": [
+        {
+          "inferred_output_sha256": "1a14084d22669a2f98f0420d20ccfa80475bbd4252b4390172663f8426038dce",
+          "iteration": 0,
+          "output_sha256": "a15144087ba2aee24480ba57dbcec026c8ee7bb809a238c6a191b63b98af3cb3",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 3.372767936
+        },
+        {
+          "inferred_output_sha256": "1a14084d22669a2f98f0420d20ccfa80475bbd4252b4390172663f8426038dce",
+          "iteration": 1,
+          "output_sha256": "a15144087ba2aee24480ba57dbcec026c8ee7bb809a238c6a191b63b98af3cb3",
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "seconds": 2.964644937
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "settings": {
+        "guidance": 2.0,
+        "noise_offset": 0.0357,
+        "seed": 42,
+        "steps": 20,
+        "strength": 1.0
+      },
+      "independent_validation": {
+        "pillow_binary_square_dilation_matches": true,
+        "same_seed_decoded_outputs_identical": true,
+        "original_selection_pixels": 9216,
+        "original_fractional_mask_pixels": 0,
+        "inference_mask_pixels": 16384,
+        "final_unselected_rgb_bytes_changed": 0
+      },
+      "selected_region_fidelity": {
+        "mean_absolute_8bit_channel_error": 4.644892939814815,
+        "root_mean_squared_8bit_channel_error": 5.556501655551643
+      }
+    }
+  }
+}

@@ -161,8 +161,9 @@ commits only selected pixels. The raw result also changes some surrounding conte
 (2.70 levels mean and 9 levels p95 outside the original selection), so accepting
 it wholesale would violate exact preservation. This experiment establishes that
 mask preprocessing matters; it does not prove a particular cause of the original
-artifact or an overall quality ranking. Moebius and Qwen have not been retested
-with the same halo, and FLUX's texture test below uses zero inference padding.
+artifact or an overall quality ranking. The Moebius follow-up below tests the same
+16-pixel growth. Qwen has not been retested with it, and FLUX's texture test below
+uses zero inference padding.
 
 ### Actual-pixel GFX100S texture repair
 
@@ -230,3 +231,53 @@ system total. Other projects shared the workstation, and a local compiler was
 also active during part of the texture run; these observations are not latency
 guarantees. Full settings and provenance are in
 [the extension data record](data/inpainting-gb10-2026-10-09.json).
+
+## Native Moebius inference-mask follow-up — 2026-10-09
+
+The native benchmark now accepts `--mask-padding`, with zero as its unchanged
+default. A positive value grows the model's binary selection by that many pixels
+in each axis while final composition uses the original fractional selection in
+display-linear sRGB. It retains the expanded mask and the inferred composition
+separately. That inferred image already preserves pixels outside the model mask;
+it is not the raw VAE output. The editor's default generation behavior is unchanged.
+
+Both the public removal and withheld GFX fabric inputs were run with zero and
+16-pixel growth, using FP32, 20 steps, strength 1.0, guidance 2.0 and seed 42.
+This removal baseline differs from the earlier seed-0/strength-0.99 Moebius run;
+only this pair isolates the mask change. Two runs of each case produced identical
+PNG bytes. The unpadded fabric output also matches the earlier native benchmark's
+hash. Warm inference was 2.96–2.97 seconds for all four cases; first calls were
+3.37–3.38 seconds. These timings exclude mask construction, model loading and PNG
+encoding, and do not establish a hardware-independent latency bound.
+
+In the inspected expanded Moebius removal, the wall and distant vegetation continue
+through the person, and the conspicuous dark triangular patch of the unpadded run
+is reduced. Composition through the original selection still has seams, fringe
+pixels and retained shadows. The FLUX halo result has similar selection limitations
+and a visibly brighter wall patch. These are inspected differences on one input,
+not an overall model ranking or proof of an artifact's cause.
+
+The public selection includes 1,937 fractional edge pixels. Moebius treats any
+positive selection as masked for conditioning; its expanded inference mask is
+binary. FLUX's benchmark grows the grayscale mask before pipeline preprocessing.
+Final fractional composition also uses different color representations between
+the two adapters. Thus equal 16-pixel growth is a useful practical comparison,
+not proof that both models receive identical internal mask tensors.
+
+| Native Moebius fabric run | Selected-region mean absolute error / 8-bit channel | Selected-region RMS error / 8-bit channel |
+| --- | ---: | ---: |
+| No inference growth | 4.634 | 5.556 |
+| 16-pixel inference growth | 4.645 | 5.557 |
+
+The fabric results retain the soft diagonal pattern and a faint square boundary;
+growth makes little difference on this particular 96×96 withheld patch. This does
+not measure general perceptual quality, and FLUX has not had the fabric halo trial.
+All four final compositions preserve every unselected RGB byte. An independent
+Pillow binary MaxFilter check matches both expanded masks exactly, including the
+public selection's fractional support. Full settings, hashes, measurements and
+validation are in [the follow-up record](data/moebius-halo-gb10-2026-10-09.json).
+
+Reproduce with `benchmark_moebius --mask-padding 0` and `--mask-padding 16`, keeping
+the input, original mask and sampling options fixed and choosing fresh output
+directories. The private input and output images remain under
+`/tmp/rawpuppy-validation` and are not bundled with Rawpuppy.

@@ -9,3 +9,6 @@ The Xvfb step now names the X11 test explicitly. The managed Wayland test remain
 an opt-in test for its own compositor session; it is not silently skipped. The
 corrected Xvfb invocation was run locally. No application behavior changed, and
 the full PROMPT.md goal remains active.
+
+Follow-up: [CI run 37927781894](https://github.com/dllu/rawpuppy/actions/runs/37927781894)
+for commit `4825686` passed all four jobs: Linux, macOS, Windows and native learning.
