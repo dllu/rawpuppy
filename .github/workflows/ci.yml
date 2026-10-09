@@ -14,7 +14,7 @@ jobs:
           components: rustfmt, clippy
       - name: Linux dependencies
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libwayland-dev mesa-vulkan-drivers
+        run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libwayland-dev mesa-vulkan-drivers xvfb xauth
       - name: macOS dependencies
         if: runner.os == 'macOS'
         run: brew install little-cms2
@@ -29,6 +29,11 @@ jobs:
         env:
           RUST_MIN_STACK: '33554432'
         run: cargo test --test gpu -- --ignored
+      - name: Automatic ICC discovery on isolated X11 display
+        if: runner.os == 'Linux'
+        env:
+          RAWPUPPY_TEST_ISOLATED_DISPLAY: '1'
+        run: xvfb-run -a -s "-screen 0 1440x960x24" cargo test --test display -- --ignored
   native-moebius:
     runs-on: ubuntu-latest
     env:

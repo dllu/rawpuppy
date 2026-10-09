@@ -1,5 +1,6 @@
 pub mod agx;
 pub mod color;
+pub mod display;
 pub mod edits;
 pub mod export;
 pub mod geometry;

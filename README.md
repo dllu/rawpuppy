@@ -36,6 +36,7 @@ In the editor: drop a photo to open it, scroll to zoom, drag to pan, `F` to fit,
 `1` for actual pixels, and `B` to compare. Save with `Ctrl/Cmd S`; undo with
 `Ctrl/Cmd Z`. Clone/heal uses Alt-click to choose a source. A custom monitor ICC
 can be selected in the editor or passed with `edit --display-profile monitor.icc`.
+Automatic display selection and platform policies are described in [display color](docs/display-color.md).
 
 The optional `moebius` feature adds native AI removal and corner filling, saved as
 non-destructive layers. See [runtime setup](docs/moebius.md) and [model evaluation](docs/inpainting-research.md).

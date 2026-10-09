@@ -3,7 +3,7 @@ use crate::{
     color::{self, OutputSpace},
     pipeline::Rendered,
 };
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Result, bail, ensure};
 use image::{ExtendedColorType, ImageEncoder};
 use lcms2::{CIExyY, CIExyYTRIPLE, Profile, ToneCurve};
 use rayon::prelude::*;
@@ -183,24 +183,8 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
 }
 
 pub fn display_rgba8(image: &Rendered, monitor: Option<&Path>) -> Result<Vec<u8>> {
-    let Some(monitor) = monitor else {
-        return Ok(rgba8(image, OutputSpace::Srgb));
-    };
-    let input = profile(OutputSpace::LinearSrgb)?;
-    let output = Profile::new_file(monitor).context("Opening display ICC profile")?;
-    let transform: lcms2::Transform<[f32; 3], [u8; 3]> = lcms2::Transform::new(
-        &input,
-        lcms2::PixelFormat::RGB_FLT,
-        &output,
-        lcms2::PixelFormat::RGB_8,
-        lcms2::Intent::RelativeColorimetric,
-    )?;
-    let rgb: Vec<_> = image.pixels.iter().map(|p| [p[0], p[1], p[2]]).collect();
-    let mut encoded = vec![[0; 3]; rgb.len()];
-    transform.transform_pixels(&rgb, &mut encoded);
-    Ok(encoded
-        .iter()
-        .zip(&image.pixels)
-        .flat_map(|(p, a)| [p[0], p[1], p[2], quantize8(a[3])])
-        .collect())
+    let profile = monitor
+        .map(|path| crate::display::Icc::from_bytes(std::fs::read(path)?))
+        .transpose()?;
+    crate::display::Encoder::default().encode(image, profile.as_ref())
 }

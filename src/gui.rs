@@ -1,6 +1,7 @@
 //! Native single-photo editor. I/O and photo rendering never run on the UI thread.
 use crate::{
     color::{self, OutputSpace},
+    display,
     edits::{Edits, Retouch, RetouchMode, ToneMapper},
     export,
     input::SensorImage,
@@ -9,6 +10,7 @@ use crate::{
 };
 use anyhow::{Result, ensure};
 use eframe::egui::{self, Color32, Pos2, Rect, Vec2};
+use raw_window_handle::HasWindowHandle;
 use std::{
     path::PathBuf,
     sync::{Arc, mpsc},
@@ -28,7 +30,7 @@ enum Work {
         edits: Edits,
         region: [f32; 4],
         size: [usize; 2],
-        profile: Option<PathBuf>,
+        profile: Option<display::Icc>,
     },
     Save {
         path: PathBuf,
@@ -68,6 +70,7 @@ enum Reply {
         histogram: Vec<f32>,
         elapsed: f64,
         backend: String,
+        managed_display: bool,
     },
     Saved {
         path: PathBuf,
@@ -86,6 +89,7 @@ enum Reply {
 
 fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context, backend: Backend) {
     let mut renderer = Renderer::new(backend);
+    let mut display_encoder = display::Encoder::default();
     while let Ok(mut work) = rx.recv() {
         // Coalesce only preview requests; durable save/export operations are always executed.
         while matches!(work, Work::Render { .. }) {
@@ -135,7 +139,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 for v in &mut histogram {
                     *v = (*v / peak).sqrt();
                 }
-                let rgba = export::display_rgba8(&rendered, profile.as_deref())?;
+                let rgba = display_encoder.encode(&rendered, profile.as_ref())?;
                 Ok(Reply::Preview {
                     id,
                     size,
@@ -143,6 +147,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                     histogram,
                     elapsed: start.elapsed().as_secs_f64(),
                     backend: renderer.label().into(),
+                    managed_display: profile.is_none(),
                 })
             }
             Work::Save { path, edits } => {
@@ -287,6 +292,15 @@ struct Editor {
     status: String,
     error: Option<String>,
     profile: Option<PathBuf>,
+    display_tx: mpsc::Sender<display::Request>,
+    display_rx: mpsc::Receiver<(display::Request, Result<display::Resolved, String>)>,
+    display_request: Option<display::Request>,
+    display_polled: Instant,
+    display_resolved: display::Resolved,
+    #[cfg(target_os = "macos")]
+    surface_encoding: Option<bool>,
+    #[cfg(target_os = "macos")]
+    present_managed: bool,
     space: OutputSpace,
     zoom: f32,
     center: [f32; 2],
@@ -329,6 +343,24 @@ impl Editor {
         cc.egui_ctx.set_style_of(egui::Theme::Dark, style);
         let (tx, work_rx) = mpsc::channel();
         let (reply_tx, rx) = mpsc::channel();
+        let (display_tx, display_work_rx) = mpsc::channel::<display::Request>();
+        let (display_reply_tx, display_rx) = mpsc::channel();
+        let display_ctx = cc.egui_ctx.clone();
+        std::thread::Builder::new()
+            .name("display-profile-worker".into())
+            .spawn(move || {
+                while let Ok(mut request) = display_work_rx.recv() {
+                    while let Ok(next) = display_work_rx.try_recv() {
+                        request = next;
+                    }
+                    let result = display::discover(&request).map_err(|e| e.to_string());
+                    if display_reply_tx.send((request, result)).is_err() {
+                        break;
+                    }
+                    display_ctx.request_repaint();
+                }
+            })
+            .expect("Starting display profile worker");
         let ctx = cc.egui_ctx.clone();
         std::thread::Builder::new()
             .name("photo-worker".into())
@@ -352,6 +384,15 @@ impl Editor {
             status: "Open a photograph to begin".into(),
             error: None,
             profile,
+            display_tx,
+            display_rx,
+            display_request: None,
+            display_polled: Instant::now(),
+            display_resolved: display::Resolved::default(),
+            #[cfg(target_os = "macos")]
+            surface_encoding: None,
+            #[cfg(target_os = "macos")]
+            present_managed: true,
             space: OutputSpace::Srgb,
             zoom: 1.,
             center: [0.5; 2],
@@ -380,6 +421,60 @@ impl Editor {
     }
     fn dirty(&self) -> bool {
         self.edits != self.saved
+    }
+    fn refresh_display(&mut self, frame: &eframe::Frame, ctx: &egui::Context) {
+        let mut request = display::Request {
+            custom: self.profile.clone(),
+            ..Default::default()
+        };
+        if let Some(window) = frame.winit_window() {
+            if let Ok(handle) = window.window_handle() {
+                request.desktop = display::desktop(handle.as_raw());
+            }
+            request.monitor = window.current_monitor().map(|monitor| {
+                let p = monitor.position();
+                let s = monitor.size();
+                display::Monitor {
+                    name: monitor.name(),
+                    rect: [p.x, p.y, s.width as i32, s.height as i32],
+                }
+            });
+        }
+        if self.display_request.as_ref() != Some(&request)
+            || self.display_polled.elapsed().as_secs() >= 2
+        {
+            self.display_request = Some(request.clone());
+            self.display_polled = Instant::now();
+            let _ = self.display_tx.send(request);
+        }
+        while let Ok((request, result)) = self.display_rx.try_recv() {
+            if self.display_request.as_ref() != Some(&request) {
+                continue;
+            }
+            let resolved = match result {
+                Ok(resolved) => resolved,
+                Err(error) => {
+                    self.error = Some(error);
+                    display::Resolved::default()
+                }
+            };
+            if resolved != self.display_resolved {
+                self.display_resolved = resolved;
+                self.changed();
+            }
+        }
+        ctx.request_repaint_after(std::time::Duration::from_secs(2));
+        #[cfg(target_os = "macos")]
+        if self.surface_encoding != Some(self.present_managed)
+            && let Some(window) = frame.winit_window()
+            && let Ok(handle) = window.window_handle()
+        {
+            match display::set_surface_encoding(handle.as_raw(), self.present_managed) {
+                Ok(count) if count > 0 => self.surface_encoding = Some(self.present_managed),
+                Err(error) => self.error = Some(error.to_string()),
+                _ => {}
+            }
+        }
     }
     fn send(&mut self, work: Work) {
         if self.tx.send(work).is_err() {
@@ -542,7 +637,14 @@ impl Editor {
                     histogram,
                     elapsed,
                     backend,
+                    managed_display,
                 } if id == self.generation => {
+                    #[cfg(target_os = "macos")]
+                    {
+                        self.present_managed = managed_display;
+                    }
+                    #[cfg(not(target_os = "macos"))]
+                    let _ = managed_display;
                     let image = egui::ColorImage::from_rgba_unmultiplied(size, &rgba);
                     if let Some(texture) = &mut self.texture {
                         texture.set(image, egui::TextureOptions::LINEAR);
@@ -1093,12 +1195,9 @@ impl Editor {
                             self.profile = Some(path);
                             self.changed();
                         }
+                        if self.profile.is_some() && ui.small_button("Use automatic display colour").clicked() {self.profile=None;}
                         ui.label(
-                            egui::RichText::new(if self.profile.is_some() {
-                                "Display: custom ICC"
-                            } else {
-                                "Display: sRGB"
-                            })
+                            egui::RichText::new(&self.display_resolved.label)
                             .small()
                             .color(Color32::GRAY),
                         );
@@ -1361,7 +1460,7 @@ impl Editor {
                         edits,
                         region: self.viewport,
                         size: self.preview_size,
-                        profile: self.profile.clone(),
+                        profile: self.display_resolved.icc.clone(),
                     });
                     self.preview_pending = false;
                 }
@@ -1377,9 +1476,10 @@ impl Editor {
 }
 
 impl eframe::App for Editor {
-    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         self.poll(&ctx);
+        self.refresh_display(frame, &ctx);
         let dropped = ctx.input(|i| {
             i.raw
                 .dropped_files
