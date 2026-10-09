@@ -1,0 +1,28 @@
+{
+  "crate": "torch-sys",
+  "version": "0.26.0",
+  "repository": "https://github.com/LaurentMazare/tch-rs",
+  "revision": "4227b89b72059b0651ff83a38637693574e0a2d6",
+  "original_files_sha256": {
+    "Cargo.toml": "63492d10cee12096eeef0248c6df8a257d983d5a7b6a38fffd2983f25bd867e2",
+    "build.rs": "d520a8ba62620cff8768113ab13e25e909a11adde8058e0d90acb3e7484b7eb9",
+    "Cargo.lock": "f0030335da2628cb47a87830544480dfc76cf1632533b0a9e12ea4e1307b3b5e",
+    "src/cuda.rs": "5041c0ab989d13aa3a800c4b3070c74d7e587b7b884e66f431a83e5dfcbd699e",
+    "src/python.rs": "1f11411d6f1f8664f85a48d10957dfbf79667af2ccb9bd548f749cd597df5f8c",
+    "src/c_generated.rs": "db7b1ab88fd6c57fd79efa42847438e58c6269695358e155b5b63278697a88fe",
+    "src/io.rs": "fcf37f38ce57acddfa4141fd392dcd5a45a106aa4e76344cfd3902909759bcf6",
+    "src/lib.rs": "3b01047fc37f8f8de98fed728f0492286da49ac346c3ea1457d97597f1ca8ecf",
+    "src/traits.rs": "c986a2595e1ee98545579e9b46f14e0059aab4d7c02554c9d53c47d74af15ae0",
+    "libtch/torch_python.h": "da330a4c846a15fddc4ab3142ecaa535273724393bad963aa19cf622c5237e2f",
+    "libtch/CMakeLists.txt": "5cbec8dde02e45be4789454d42d35fe7365785e6ed2fdca6499bd844ef4137a1",
+    "libtch/torch_python.cpp": "fdfd9bb88687fb47e7066a9358af97292a7fdb3c6222c62f6a8b1f554b613b2f",
+    "libtch/stb_image_resize.h": "5ef7cd32cfbd9de3f87606711fdf8543958302cafc95905f9397d4bee3ad67cb",
+    "libtch/stb_image_write.h": "dd0ec918c4cc4477a24a2fd268b8a55c3da6767ba50f4e7a9142b9d8e2592487",
+    "libtch/torch_api.cpp": "3b416a34ff5a6dda9ec6e88ef8e6e8735228e2501ec3c2a01919d93217eaccea",
+    "libtch/torch_api_generated.cpp": "d833ea5381c09ee20e0d156b9ad2429995fbc6f9af4e16674c01c0ab8ed4e72b",
+    "libtch/torch_api.h": "b5120b143c396a0ed0c1ca19f3cad1dbe2b605351e2ab5eba2b536e17131bb97",
+    "libtch/stb_image.h": "599c64066c333d9b125d65f3394de642a42cf4888c3626535dcf62fcfaee1227",
+    "libtch/torch_api_generated.h": "9a4886a9340806b081e7e42c2cd645f11fb94a78a93ea4fb9bb3b3cd00e5bd21",
+    "Cargo.toml.orig": "b61dc0e55457079785d64808a33ce2f76766de6ce51783aced9c1f97f46975e4"
+  }
+}

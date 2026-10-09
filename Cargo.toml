@@ -67,3 +67,4 @@ codegen-units = 1
 
 [patch.crates-io]
 egui-wgpu = { path = "vendor/egui-wgpu" }
+torch-sys = { path = "vendor/torch-sys" }

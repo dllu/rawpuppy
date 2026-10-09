@@ -14,12 +14,12 @@ The `LIBTORCH_USE_PYTORCH=1` alternative is supported by `tch` for matching Pyth
 installations. Do not bypass a runtime-version mismatch: PyTorch 2.14 removed
 symbols used by this binding.
 
-For Windows MSVC builds, set
-`CXXFLAGS=/std:c++20 /Zc:__cplusplus /permissive-` before Cargo. The matching
-2.13 headers use designated initializers and bit-field defaults that MSVC rejects
-in the binding's default C++17 mode. `cc-rs` appends the environment flags after
-that default. Windows runtime libraries must still be on `PATH`; a language-mode
-change does not permit substituting an incompatible LibTorch version.
+The pinned local `torch-sys` patch selects C++20/conforming mode for Windows
+MSVC builds and removes its conflicting `module` type alias. The matching 2.13
+headers use designated initializers and bit-field defaults that MSVC rejects in
+C++17 mode. No extra Windows `CXXFLAGS` are required. Runtime libraries must
+still be on `PATH`; this does not permit an incompatible LibTorch version.
+See [binding patch](../vendor/torch-sys/RAWPUPPY.md) for its exact scope.
 
 ```sh
 cargo build --release --features moebius,cuda
