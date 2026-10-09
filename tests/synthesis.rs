@@ -30,6 +30,7 @@ fn generated_layer_roundtrips_and_preserves_every_unpainted_pixel() {
         asset,
         sha256: hash,
         source_sha256: layers.source_hash().unwrap().into(),
+        source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
         model: "moebius-scene-2026-v1".into(),
     };
@@ -85,6 +86,7 @@ fn stale_or_corrupt_synthesis_is_rejected_without_changing_output() {
         asset: asset.clone(),
         sha256: hash,
         source_sha256: layers.source_hash().unwrap().into(),
+        source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
         model: "moebius-scene-2026-v1".into(),
     });
@@ -147,6 +149,7 @@ fn corner_fill_uses_output_resolution_membership_and_preserves_opaque_pixels() {
         asset,
         sha256: hash,
         source_sha256: layers.source_hash().unwrap().into(),
+        source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
         model: "moebius-scene-2026-v1".into(),
     });

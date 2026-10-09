@@ -1572,6 +1572,7 @@ dependencies = [
  "miniz_oxide 0.8.9",
  "num-complex",
  "pulp",
+ "rayon-core",
  "smallvec",
  "zune-inflate",
 ]
@@ -3784,6 +3785,7 @@ dependencies = [
  "clap",
  "cubecl",
  "eframe",
+ "exr",
  "image",
  "lcms2",
  "libloading 0.8.9",

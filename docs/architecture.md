@@ -20,14 +20,17 @@ into one matrix. XYZ white points are adapted with Bradford where needed.
 The working space is scene-linear sRGB/Rec.709 with D65 white, with unbounded
 highlights. Camera values are not clipped before tone mapping.
 
-AgX provides an analytic compact approximation (inset, logarithmic encoding,
-sixth-order contrast approximation, outset, linearization); it is not the current
-Blender 3D LUT variant. The alternative linear mode preserves scene values for
+Photographic AgX uses an independently sampled, versioned formation lattice with
+Rust tetrahedral lookup in a wide Rec.2020 basis. Existing recipes preserve the
+historical polynomial; [color.md](color.md) describes provenance and verification.
+The alternative linear mode preserves scene values for
 HDR interchange. Clone/heal reads the tone-mapped source, followed by a monotone
 cubic curve in perceptual sRGB coordinates and split toning in display-linear
 RGB. Saved neural synthesis layers are composited after those local edits. Finally, output conversion
 changes primaries and applies the correct transfer function. Little CMS generates
 matching ICC profiles and interprets embedded RGB input profiles.
+EXR input chromaticities and white points also determine color interpretation;
+exports carry explicit linear-sRGB chromaticities.
 
 Sidecars use their own `https://rawpuppy.org/ns/1.0/` XMP namespace and full
 original filenames plus `.rawpuppy.xmp`. They contain a versioned JSON recipe in

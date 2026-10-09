@@ -135,9 +135,11 @@ impl<'a> Pipeline<'a> {
             + grad.exposure * transition)
             .exp2();
         rgb = color::apply(self.calibration, rgb).map(|x| x * gain);
-        if self.edits.tone.mapper == ToneMapper::Agx {
-            rgb = color::agx(rgb);
-        }
+        rgb = match self.edits.tone.mapper {
+            ToneMapper::Agx => color::agx_legacy(rgb),
+            ToneMapper::AgxSdr => color::agx(rgb),
+            ToneMapper::Linear => rgb,
+        };
         let luma = color::luminance(rgb);
         let rgb = rgb.map(|x| luma + (x - luma) * self.edits.tone.saturation);
         [rgb[0], rgb[1], rgb[2], 1.]

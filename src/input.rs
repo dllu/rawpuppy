@@ -19,6 +19,8 @@ pub struct Metadata {
     pub width: usize,
     pub height: usize,
     pub bits: usize,
+    /// Decoding changes that invalidate fills made with older color interpretation.
+    pub color_revision: u32,
     pub pattern: String,
     pub as_shot: [f32; 3],
     pub camera_to_working: Matrix,
@@ -43,6 +45,21 @@ pub fn pixel_count(width: usize, height: usize, channels: usize) -> Result<usize
         .checked_mul(height)
         .and_then(|n| n.checked_mul(channels))
         .context("Image dimensions exceed the addressable memory range")
+}
+
+pub fn color_revision(path: &Path) -> Result<u32> {
+    if !path
+        .extension()
+        .is_some_and(|e| e.eq_ignore_ascii_case("exr"))
+    {
+        return Ok(0);
+    }
+    let metadata = exr::meta::MetaData::read_from_file(path, false)?;
+    Ok(metadata
+        .headers
+        .first()
+        .and_then(|h| h.shared_attributes.chromaticities)
+        .is_some_and(|c| c != crate::export::SRGB_CHROMATICITIES) as u32)
 }
 
 impl SensorImage {
@@ -232,6 +249,7 @@ impl SensorImage {
             width,
             height,
             bits: raw.bps,
+            color_revision: 0,
             pattern: cfa.as_ref().map_or("RGB/mono".into(), |c| c.name.clone()),
             as_shot,
             camera_to_working,
@@ -270,6 +288,7 @@ impl SensorImage {
         let (width, height) = (image.width() as usize, image.height() as usize);
         pixel_count(width, height, 3)?;
         let mut data = image.into_raw();
+        let mut color_revision = 0;
         if let Some(icc) = icc {
             let input = lcms2::Profile::new_icc(&icc).context("Reading input ICC profile")?;
             let output = crate::export::profile(color::OutputSpace::LinearSrgb)?;
@@ -281,7 +300,25 @@ impl SensorImage {
                 lcms2::Intent::RelativeColorimetric,
             )?;
             transform.transform_in_place(bytemuck::cast_slice_mut(&mut data));
-        } else if !linear {
+        } else if linear {
+            let metadata = exr::meta::MetaData::read_from_file(path, false)?;
+            if let Some(chroma) = metadata
+                .headers
+                .first()
+                .and_then(|h| h.shared_attributes.chromaticities)
+            {
+                color_revision = (chroma != crate::export::SRGB_CHROMATICITIES) as u32;
+                let xy = |v: exr::math::Vec2<f32>| [v.x(), v.y()];
+                let m = color::rgb_primaries_to_working(
+                    [xy(chroma.red), xy(chroma.green), xy(chroma.blue)],
+                    xy(chroma.white),
+                )?;
+                data.par_chunks_exact_mut(3).for_each(|p| {
+                    let rgb = color::apply(m, [p[0], p[1], p[2]]);
+                    p.copy_from_slice(&rgb);
+                });
+            }
+        } else {
             data.par_iter_mut()
                 .for_each(|v| *v = color::srgb_decode(*v));
         }
@@ -293,6 +330,7 @@ impl SensorImage {
             width,
             height,
             bits,
+            color_revision,
             pattern: "RGB".into(),
             as_shot: [1.; 3],
             camera_to_working: color::IDENTITY,
@@ -397,6 +435,7 @@ impl SensorImage {
                 width,
                 height,
                 bits: 32,
+                color_revision: 0,
                 pattern: "RGB".into(),
                 as_shot: [1.; 3],
                 camera_to_working: color::IDENTITY,

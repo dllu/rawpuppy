@@ -143,12 +143,12 @@ impl Renderer {
     ) -> Result<crate::synthesis::GeneratedFill> {
         ensure_region(region)?;
         let (w, h) = Pipeline::compile(&image, edits)?.dimensions(None);
+        let color_revision = image.metadata.color_revision;
         let mut context_edits = edits.clone();
         let hash = crate::synthesis::recipe_hash(edits)?;
-        context_edits
-            .display
-            .synthesis
-            .retain(|fill| fill.recipe_sha256 == hash);
+        context_edits.display.synthesis.retain(|fill| {
+            fill.recipe_sha256 == hash && fill.source_color_revision == color_revision
+        });
         let context = self.render_region(image, &context_edits, region, 512, 512)?;
         let mask =
             crate::synthesis::context_mask(&context, region, &dabs, fill_gaps, h as f32 / w as f32);
@@ -189,6 +189,7 @@ impl Renderer {
             asset,
             sha256,
             source_sha256: source,
+            source_color_revision: color_revision,
             recipe_sha256: crate::synthesis::recipe_hash(edits)?,
             model: "moebius-scene-2026-v1".into(),
         })

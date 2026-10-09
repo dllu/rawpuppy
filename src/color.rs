@@ -63,6 +63,40 @@ pub fn luminance(rgb: [f32; 3]) -> f32 {
     apply(SRGB_TO_XYZ, rgb)[1]
 }
 
+/// Normalized primary matrix from CIE xy coordinates, with unit-luminance white.
+pub fn primaries_to_xyz(primaries: [[f32; 2]; 3], white: [f32; 2]) -> Result<Matrix> {
+    ensure!(
+        white[0] > 0. && white[1] > 0. && white[0] + white[1] < 1.,
+        "Invalid color white point"
+    );
+    let xy_to_xyz = |xy: [f32; 2]| -> Result<[f32; 3]> {
+        ensure!(
+            xy.iter().all(|v| v.is_finite()) && xy[1].abs() > 1e-10,
+            "Invalid color chromaticities"
+        );
+        Ok([xy[0] / xy[1], 1., (1. - xy[0] - xy[1]) / xy[1]])
+    };
+    let columns = [
+        xy_to_xyz(primaries[0])?,
+        xy_to_xyz(primaries[1])?,
+        xy_to_xyz(primaries[2])?,
+    ];
+    let base = std::array::from_fn(|i| std::array::from_fn(|j| columns[j][i]));
+    let scales = apply(inverse(base)?, xy_to_xyz(white)?);
+    Ok(std::array::from_fn(|i| {
+        std::array::from_fn(|j| base[i][j] * scales[j])
+    }))
+}
+
+pub fn rgb_primaries_to_working(primaries: [[f32; 2]; 3], white: [f32; 2]) -> Result<Matrix> {
+    let xyz = |xy: [f32; 2]| [xy[0] / xy[1], 1., (1. - xy[0] - xy[1]) / xy[1]];
+    let m = primaries_to_xyz(primaries, white)?;
+    Ok(multiply(
+        inverse(SRGB_TO_XYZ)?,
+        multiply(adapt_white(xyz(white), xyz([0.3127, 0.329]))?, m),
+    ))
+}
+
 /// Bradford chromatic adaptation, mapping XYZ under the source white to target XYZ.
 pub fn adapt_white(source: [f32; 3], target: [f32; 3]) -> Result<Matrix> {
     const B: Matrix = [
@@ -95,9 +129,13 @@ pub fn srgb_decode(x: f32) -> f32 {
     }
 }
 
-/// Analytic AgX: inset, 16.5-stop log encoding, polynomial contrast, inverse inset.
-/// A compact approximation rather than Blender's different 3D-LUT variant.
+/// Photographic AgX, returning display-linear sRGB coordinates with wide-gamut headroom.
 pub fn agx(rgb: [f32; 3]) -> [f32; 3] {
+    crate::agx::map(rgb)
+}
+
+/// Historical approximation retained for previously saved recipes.
+pub fn agx_legacy(rgb: [f32; 3]) -> [f32; 3] {
     const INSET: Matrix = [
         [0.84247905, 0.0784336, 0.079223745],
         [0.042328242, 0.87846863, 0.07916613],

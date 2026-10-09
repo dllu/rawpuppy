@@ -23,6 +23,7 @@ pub struct Session<R: Runtime> {
     input: Option<Handle>,
     prepared: Option<Handle>,
     preparation: RawEdits,
+    agx_lattice: Option<Handle>,
 }
 
 impl GpuRenderer {
@@ -114,6 +115,7 @@ impl<R: Runtime> Session<R> {
             input: None,
             prepared: None,
             preparation: RawEdits::default(),
+            agx_lattice: None,
         }
     }
     fn render(
@@ -197,7 +199,9 @@ impl<R: Runtime> Session<R> {
         params.extend(display.shadows);
         params.extend(display.highlights);
         params.extend(region);
-        assert_eq!(params.len(), 49);
+        params.extend(crate::agx::TO_REC2020.into_iter().flatten());
+        params.extend(crate::agx::TO_SRGB.into_iter().flatten());
+        assert_eq!(params.len(), 67);
         let (transpose, fx, fy) = image.orientation.to_flips();
         let mut dims = vec![
             image.metadata.sensor_width as u32,
@@ -220,7 +224,11 @@ impl<R: Runtime> Session<R> {
         }
         dims.extend([
             edits.raw.hot_pixels as u32,
-            (edits.tone.mapper == ToneMapper::Agx) as u32,
+            match edits.tone.mapper {
+                ToneMapper::Linear => 0,
+                ToneMapper::Agx => 1,
+                ToneMapper::AgxSdr => 2,
+            },
             (display.curve != [[0., 0.], [1., 1.]]) as u32,
             width as u32,
             0,
@@ -276,6 +284,19 @@ impl<R: Runtime> Session<R> {
         let lut = self
             .client
             .create_from_slice(bytemuck::cast_slice(&pipeline.curve));
+        let (agx_lattice, agx_len) = if edits.tone.mapper == ToneMapper::AgxSdr {
+            let data = crate::agx::lattice();
+            ensure!(
+                data.len() * 4 <= page,
+                "AgX lattice exceeds this device's binding size"
+            );
+            let handle = self
+                .agx_lattice
+                .get_or_insert_with(|| self.client.create_from_slice(bytemuck::cast_slice(data)));
+            (handle.clone(), data.len())
+        } else {
+            (self.client.create_from_slice(&[0; 4]), 1)
+        };
         let brush_buffer = self
             .client
             .create_from_slice(bytemuck::cast_slice(&brushes));
@@ -324,6 +345,7 @@ impl<R: Runtime> Session<R> {
                     ArrayArg::from_raw_parts(dimensions.clone(), dims.len()),
                     ArrayArg::from_raw_parts(parameters.clone(), params.len()),
                     ArrayArg::from_raw_parts(lut.clone(), pipeline.curve.len()),
+                    ArrayArg::from_raw_parts(agx_lattice.clone(), agx_len),
                     ArrayArg::from_raw_parts(brush_buffer.clone(), brushes.len()),
                     ArrayArg::from_raw_parts(index_buffer.clone(), index.len()),
                     ArrayArg::from_raw_parts(output.clone(), tile_count * 4),

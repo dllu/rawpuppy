@@ -73,6 +73,34 @@ fn quantize16(x: f32) -> u16 {
     (x.clamp(0., 1.) * 65535. + 0.5) as u16
 }
 
+pub const SRGB_CHROMATICITIES: exr::meta::attribute::Chromaticities =
+    exr::meta::attribute::Chromaticities {
+        red: exr::math::Vec2(0.64, 0.33),
+        green: exr::math::Vec2(0.30, 0.60),
+        blue: exr::math::Vec2(0.15, 0.06),
+        white: exr::math::Vec2(0.3127, 0.329),
+    };
+/// Stream full-precision linear RGBA and explicit primaries, including HDR/negative values.
+pub fn write_linear_exr(
+    image: &Rendered,
+    writer: impl std::io::Write + std::io::Seek,
+    chroma: exr::meta::attribute::Chromaticities,
+) -> Result<()> {
+    use exr::prelude::{Image, SpecificChannels, Vec2, WritableImage};
+    ensure!(
+        image.pixels.len() == crate::input::pixel_count(image.width, image.height, 1)?,
+        "Invalid EXR raster"
+    );
+    let channels = SpecificChannels::rgba(|Vec2(x, y): Vec2<usize>| {
+        let p = image.pixels[y * image.width + x];
+        (p[0], p[1], p[2], p[3])
+    });
+    let mut output = Image::from_channels((image.width, image.height), channels);
+    output.attributes.chromaticities = Some(chroma);
+    output.write().to_buffered(writer)?;
+    Ok(())
+}
+
 pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool) -> Result<()> {
     let extension = path
         .extension()
@@ -140,12 +168,7 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                     space == OutputSpace::LinearSrgb,
                     "EXR stores linear sRGB; select --color-space linear-srgb"
                 );
-                image::codecs::openexr::OpenExrEncoder::new(writer).write_image(
-                    bytemuck::cast_slice(&image.pixels),
-                    width,
-                    height,
-                    ExtendedColorType::Rgba32F,
-                )?;
+                write_linear_exr(image, writer, SRGB_CHROMATICITIES)?;
             }
             _ => bail!("Export extension must be png, jpg, tif, tiff or exr"),
         }

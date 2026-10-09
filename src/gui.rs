@@ -117,10 +117,10 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 let start = Instant::now();
                 let mut preview_edits = edits.clone();
                 let hash = crate::synthesis::recipe_hash(&edits)?;
-                preview_edits
-                    .display
-                    .synthesis
-                    .retain(|fill| fill.recipe_sha256 == hash);
+                preview_edits.display.synthesis.retain(|fill| {
+                    fill.recipe_sha256 == hash
+                        && fill.source_color_revision == image.metadata.color_revision
+                });
                 let rendered =
                     renderer.render_region(image, &preview_edits, region, size[0], size[1])?;
                 let mut histogram = vec![0f32; 128];
@@ -951,7 +951,7 @@ impl Editor {
                             ui.horizontal(|ui| {
                                 ui.selectable_value(
                                     &mut self.edits.tone.mapper,
-                                    ToneMapper::Agx,
+                                    ToneMapper::AgxSdr,
                                     "AgX",
                                 );
                                 ui.selectable_value(
@@ -960,6 +960,9 @@ impl Editor {
                                     "Linear / HDR",
                                 );
                             });
+                            if self.edits.tone.mapper == ToneMapper::Agx {
+                                ui.label("This recipe keeps the older AgX approximation. Select AgX to update its rendering.");
+                            }
                             curve_editor(ui, &mut self.edits.display.curve);
                         });
                         egui::CollapsingHeader::new("Split toning").show(ui, |ui| {
@@ -1002,7 +1005,7 @@ impl Editor {
                                     .display
                                     .synthesis
                                     .iter()
-                                    .any(|f| f.recipe_sha256 != h)
+                                    .any(|f| f.recipe_sha256 != h || f.source_color_revision!=self.image.as_ref().map_or(0,|i|i.metadata.color_revision))
                             });
                             ui.add_enabled_ui(cfg!(feature = "moebius"), |ui| {
                                 ui.horizontal(|ui| {
@@ -1031,7 +1034,7 @@ impl Editor {
                                     self.generate(true, false);
                                 }
                                 if stale {
-                                    ui.label("Preceding edits changed; update the fills.");
+                                    ui.label("Image processing changed; update the fills.");
                                 }
                                 if !self.edits.display.synthesis.is_empty()
                                     && ui

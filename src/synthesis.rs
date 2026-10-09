@@ -27,6 +27,8 @@ pub struct GeneratedFill {
     pub asset: String,
     pub sha256: String,
     pub source_sha256: String,
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub source_color_revision: u32,
     pub recipe_sha256: String,
     pub model: String,
 }
@@ -47,9 +49,16 @@ pub fn valid_hash(hash: &str) -> bool {
             .bytes()
             .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
 }
+fn is_zero(value: &u32) -> bool {
+    *value == 0
+}
 
 impl GeneratedFill {
     pub fn validate(&self) -> Result<()> {
+        ensure!(
+            self.source_color_revision <= 1,
+            "Unsupported source color decoding revision"
+        );
         ensure!(
             self.region.iter().all(|v| v.is_finite()) && self.region[2] > 0. && self.region[3] > 0.,
             "Invalid synthesis region"
@@ -177,11 +186,16 @@ impl Layers {
         }
         let recipe = recipe_hash(edits)?;
         let source = self.source_hash()?.to_owned();
+        let color_revision = crate::input::color_revision(&self.original)?;
         for fill in &edits.display.synthesis {
             fill.validate()?;
             ensure!(
                 fill.source_sha256 == source,
                 "Generated fill belongs to a different original"
+            );
+            ensure!(
+                fill.source_color_revision == color_revision,
+                "Generated fills need regeneration after updated HDR color decoding"
             );
             ensure!(
                 fill.recipe_sha256 == recipe,

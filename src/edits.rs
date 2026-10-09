@@ -114,8 +114,11 @@ impl Default for GraduatedFilter {
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ToneMapper {
-    #[default]
+    /// Historical analytic approximation, preserving old sidecars and saved fills.
     Agx,
+    #[default]
+    #[serde(rename = "agx_sdr_v1")]
+    AgxSdr,
     Linear,
 }
 
@@ -128,7 +131,7 @@ pub struct ToneEdits {
 impl Default for ToneEdits {
     fn default() -> Self {
         Self {
-            mapper: ToneMapper::Agx,
+            mapper: ToneMapper::AgxSdr,
             saturation: 1.0,
         }
     }

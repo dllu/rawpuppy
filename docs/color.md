@@ -1,0 +1,50 @@
+# Color interpretation and photographic AgX
+
+The working representation is linear sRGB/Rec.709 with D65 white. It is a
+coordinate basis, not a clipping boundary: negative RGB and HDR values are valid.
+ICC-tagged raster inputs use Little CMS. EXR inputs use their declared RGB
+chromaticities and white point; normalized primary matrices and Bradford
+adaptation convert them to the working basis. Untagged EXR defaults to linear
+sRGB. EXR export writes explicit sRGB chromaticities and full-precision linear
+RGBA, preserving negative values and highlights.
+
+New recipes select `agx_sdr_v1`. Its photographic formation is a 97³ lattice of
+independent numeric observations of Darktable's `blender-like|base` preset,
+sampled using synthetic linear Rec.2020 probes. No Darktable source or lookup
+table was copied into the application. Rust CPU and GPU implementations perform
+the interpolation; Darktable is only used offline as an oracle.
+
+The input shaper includes zero and puts 18% gray exactly on a lattice node. It
+allocates half the coordinates to shadows and half to 16 stops above gray. Four
+vertices define each tetrahedral interpolation. The GPU retains its lattice
+between edits, and applies formation in the existing composed output kernel.
+Observations are stored in linear Rec.2020, then expressed in the working basis;
+wide-gamut coordinates remain available for output-space conversion. Inputs
+outside Rec.2020 move toward the neutral axis while preserving luminance, a
+deliberate difference from the oracle's handling of extreme out-of-gamut data.
+
+The historical `agx` recipe value retains the earlier polynomial exactly. The
+editor identifies that legacy mode; selecting AgX changes to `agx_sdr_v1` and
+invalidates fills made from the preceding rendering. Tagged HDR sources whose
+colors were interpreted incorrectly by older versions also invalidate those
+fills using a source color revision.
+
+The numeric lattice and its provenance are in `src/data`. Reproduction uses
+`tools/bake_agx.py --darktable /path/to/darktable-cli --preset /path/to/agx-default.xmp
+--output /path/to/result.f32`. This uses an isolated configuration and database,
+eight workers, float EXR and only generated test images. The `color_oracle`
+example generates separate sweeps and deterministic random probes; `--reference`
+compares independent output and `--golden` records regression samples.
+
+The measured fixture contains 11,308 probes. Of these, 11,051 lie in Rec.2020;
+the remaining 257 intentionally exercise the different gamut-boundary policy.
+The 1,677 stored regression samples include random colors between shadows and
+HDR highlights. The largest observed linear-channel error in the in-gamut
+probes is about 0.0079. The sampled sRGB-display Oklab distance ×100 has mean
+0.0206, 99th percentile 0.118 and maximum 0.439. These describe these fixtures,
+not universal perceptual bounds. A 129³ experiment improves most errors but
+requires more than twice the storage; the 97³ lattice is the current choice.
+
+Native HDR display presentation, automatic monitor profile discovery and
+camera-specific calibration comparisons remain outstanding. Float HDR
+interchange and SDR presentation on an HDR desktop are distinct capabilities.

@@ -283,6 +283,107 @@ fn tone(rgb: Pixel) -> Pixel {
 }
 
 #[cube]
+fn agx_shaper(x: f32) -> f32 {
+    let x = f32::max(x, 0.);
+    let u = if x <= 0.18 {
+        0.5 * (1. + x * (1024. / 0.18)).ln() * core::f32::consts::LOG2_E / crate::agx::LOW_LOG
+    } else {
+        0.5 + 0.5 * (x / 0.18).ln() * core::f32::consts::LOG2_E / 16.
+    };
+    bounded(u, 0., 1.) * 96.
+}
+
+#[cube]
+fn agx_roundoff(x: f32) -> f32 {
+    let edge = bounded(x, 0., 1.);
+    if (x - edge).abs() < 0.000002 { edge } else { x }
+}
+
+#[cube]
+fn photographic_tone(rgb: Pixel, p: &Array<f32>, lut: &Array<f32>) -> Pixel {
+    let mut r = p[49] * rgb.r + p[50] * rgb.g + p[51] * rgb.b;
+    let mut g = p[52] * rgb.r + p[53] * rgb.g + p[54] * rgb.b;
+    let mut b = p[55] * rgb.r + p[56] * rgb.g + p[57] * rgb.b;
+    let min = f32::min(r, f32::min(g, b));
+    if min < 0. {
+        let y = 0.2627002 * r + 0.67799807 * g + 0.05930172 * b;
+        if y > 0. {
+            let t = y / (y - min);
+            r = y + t * (r - y);
+            g = y + t * (g - y);
+            b = y + t * (b - y);
+        } else {
+            r = 0.;
+            g = 0.;
+            b = 0.;
+        }
+    }
+    let ur = agx_shaper(r);
+    let ug = agx_shaper(g);
+    let ub = agx_shaper(b);
+    let ir = f32::min(ur.floor(), 95.) as usize;
+    let ig = f32::min(ug.floor(), 95.) as usize;
+    let ib = f32::min(ub.floor(), 95.) as usize;
+    let fr = ur - ir as f32;
+    let fg = ug - ig as f32;
+    let fb = ub - ib as f32;
+    let mut o1 = 1usize;
+    let mut o2 = 98usize;
+    let mut a = fr;
+    let mut m = fg;
+    let mut c = fb;
+    if fr >= fg {
+        if fg < fb {
+            if fr >= fb {
+                o2 = 9410;
+                m = fb;
+                c = fg;
+            } else {
+                o1 = 9409;
+                o2 = 9410;
+                a = fb;
+                m = fr;
+                c = fg;
+            }
+        }
+    } else if fr >= fb {
+        o1 = 97;
+        o2 = 98;
+        a = fg;
+        m = fr;
+        c = fb;
+    } else if fg >= fb {
+        o1 = 97;
+        o2 = 9506;
+        a = fg;
+        m = fb;
+        c = fr;
+    } else {
+        o1 = 9409;
+        o2 = 9506;
+        a = fb;
+        m = fg;
+        c = fr;
+    }
+    let node = ir + 97 * ig + 9409 * ib;
+    let i0 = node * 3;
+    let i1 = (node + o1) * 3;
+    let i2 = (node + o2) * 3;
+    let i3 = (node + 9507) * 3;
+    let x = (1. - a) * lut[i0] + (a - m) * lut[i1] + (m - c) * lut[i2] + c * lut[i3];
+    let y =
+        (1. - a) * lut[i0 + 1] + (a - m) * lut[i1 + 1] + (m - c) * lut[i2 + 1] + c * lut[i3 + 1];
+    let z =
+        (1. - a) * lut[i0 + 2] + (a - m) * lut[i1 + 2] + (m - c) * lut[i2 + 2] + c * lut[i3 + 2];
+    Pixel {
+        r: agx_roundoff(p[58] * x + p[59] * y + p[60] * z),
+        g: agx_roundoff(p[61] * x + p[62] * y + p[63] * z),
+        b: agx_roundoff(p[64] * x + p[65] * y + p[66] * z),
+        a: 1.,
+    }
+}
+
+#[cube]
 fn luma(rgb: Pixel) -> f32 {
     0.212639 * rgb.r + 0.7151687 * rgb.g + 0.07219232 * rgb.b
 }
@@ -292,6 +393,7 @@ fn base(
     input: &Array<f32>,
     d: &Array<u32>,
     p: &Array<f32>,
+    agx_lattice: &Array<f32>,
     u: f32,
     v: f32,
     #[comptime] mosaic: bool,
@@ -333,8 +435,10 @@ fn base(
                 b: (p[15] * rgb.r + p[16] * rgb.g + p[17] * rgb.b) * gain,
                 a: 1.,
             };
-            if d[17] != 0 {
+            if d[17] == 1 {
                 calibrated = tone(calibrated);
+            } else if d[17] == 2 {
+                calibrated = photographic_tone(calibrated, p, agx_lattice);
             }
             let l = luma(calibrated);
             Pixel {
@@ -391,6 +495,7 @@ pub fn render(
     d: &Array<u32>,
     p: &Array<f32>,
     lut: &Array<f32>,
+    agx_lattice: &Array<f32>,
     brushes: &Array<f32>,
     index: &Array<u32>,
     output: &mut Array<f32>,
@@ -403,7 +508,7 @@ pub fn render(
     }
     let u = p[45] + p[47] * ((pixel % d[19]) as f32 + 0.5) / d[19] as f32;
     let v = p[46] + p[48] * ((pixel / d[19]) as f32 + 0.5) / d[20] as f32;
-    let mut rgb = base(input, d, p, u, v, mosaic, detail);
+    let mut rgb = base(input, d, p, agx_lattice, u, v, mosaic, detail);
     let cx = bounded((u * 64.).floor(), 0., 63.) as usize;
     let cy = bounded((v * 64.).floor(), 0., 63.) as usize;
     let cell = cy * 64 + cx;
@@ -425,6 +530,7 @@ pub fn render(
                 input,
                 d,
                 p,
+                agx_lattice,
                 u + brushes[brush] - brushes[brush + 2],
                 v + brushes[brush + 1] - brushes[brush + 3],
                 mosaic,

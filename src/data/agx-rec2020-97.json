@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "grid": 97,
+  "input_basis": "linear Rec.2020, with explicit EXR chromaticities",
+  "output_basis": "linear Rec.2020",
+  "order": "red fastest, then green, then blue; RGB float32 little endian",
+  "shaper": "0..0.5: log2(1 + x/(0.18/1024))/log2(1025)/2; 0.5..1: 0.5 + log2(x/0.18)/32",
+  "oracle_version": "darktable 5.5.0+1479~g9e36df0344",
+  "oracle_executable_sha256": "62b33b4e8fe9ca7906a0ca103cf1c2c984079964f8ed481dd6b2b3e96a2fd549",
+  "preset_sha256": "d411ee9a86d4d6c5ff7a9a8f9f1027e0fbed20aaef31caa095001dd58ec8c8c2",
+  "preset_name": "_builtin_blender-like|base",
+  "preset_params": "gz02eJxjYACBBnsEBgGFgwwMFxzOnjljC+K9CbSwmzVT0oEBDg7Yg/DZMzxIYg32TFAW281pdlzMgrb7MlvsHPes2VP1VtROXaVxL8yOpQ+m2IHU+e1pA9NsS6zB9gAAAZcfGA==",
+  "sha256": "3a250c38f332f9659d56dd6a1607c50cfeb21202e389228eb7458a190d28c1f8",
+  "oracle_module_sha256": "2573800d1f0b8563a061fdfc8a5166521af078fcab99520dfd9ca25fbe7574a7",
+  "oracle_core_sha256": "0ec8cac53784f1bcf90982ca585348a2497b96737ba107cf2650df5e176bd237"
+}

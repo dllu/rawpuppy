@@ -78,26 +78,33 @@ fn composed_gpu_matches_cpu_for_rgb_bayer_orientation_and_local_edits() {
                     mode,
                 });
             }
-            let reference = Pipeline::compile(&image, &edits)
-                .unwrap()
-                .render(None)
-                .unwrap();
-            let actual = gpu.render(image.clone(), &edits, None).unwrap();
-            assert_eq!(
-                (reference.width, reference.height),
-                (actual.width, actual.height)
-            );
-            let mut largest = 0f32;
-            for (i, (a, b)) in actual.pixels.iter().zip(&reference.pixels).enumerate() {
-                for c in 0..4 {
-                    assert!(a[c].is_finite(), "Nonfinite GPU output at {i}:{c}");
-                    largest = largest.max((a[c] - b[c]).abs());
+            for tone in [
+                rawpuppy::edits::ToneMapper::AgxSdr,
+                rawpuppy::edits::ToneMapper::Agx,
+                rawpuppy::edits::ToneMapper::Linear,
+            ] {
+                edits.tone.mapper = tone;
+                let reference = Pipeline::compile(&image, &edits)
+                    .unwrap()
+                    .render(None)
+                    .unwrap();
+                let actual = gpu.render(image.clone(), &edits, None).unwrap();
+                assert_eq!(
+                    (reference.width, reference.height),
+                    (actual.width, actual.height)
+                );
+                let mut largest = 0f32;
+                for (i, (a, b)) in actual.pixels.iter().zip(&reference.pixels).enumerate() {
+                    for c in 0..4 {
+                        assert!(a[c].is_finite(), "Nonfinite GPU output at {i}:{c}");
+                        largest = largest.max((a[c] - b[c]).abs());
+                    }
                 }
+                assert!(
+                    largest < 0.0003,
+                    "GPU mismatch {largest} with mosaic={mosaic}, orientation={orientation}"
+                );
             }
-            assert!(
-                largest < 0.0003,
-                "GPU mismatch {largest} with mosaic={mosaic}, orientation={orientation}"
-            );
         }
     }
     let wide = Arc::new(SensorImage::from_rgb(100_003, 2, vec![0.18; 100_003 * 2 * 3]).unwrap());

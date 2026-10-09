@@ -23,10 +23,12 @@ semantics must be checked before adopting weights.
 ## Tone and color
 
 [AgX's original configuration](https://github.com/sobotka/AgX) documents the
-inset and logarithmic domain. The implemented analytic approximation is identified
-as such. [Blender's configuration](https://github.com/blender/blender/blob/main/release/datafiles/colormanagement/config.ocio)
-uses a different, evolved 3D LUT transform and includes HDR display transforms.
-These variants should not be conflated when comparing results.
+inset and logarithmic domain. The default now uses independently sampled
+photographic formation with a Rust lattice evaluator; the original approximation
+is retained for old recipes. [Verification](color.md) records its preset, numeric
+provenance and error measurements. [Blender's configuration](https://github.com/blender/blender/blob/main/release/datafiles/colormanagement/config.ocio)
+uses an evolved transform and includes HDR display transforms. These variants
+should not be conflated when comparing results.
 
 [Little CMS](https://www.littlecms.com/) handles ICC color management. Display P3
 uses the piecewise sRGB transfer function; Adobe RGB uses gamma 563/256; Rec.2020
