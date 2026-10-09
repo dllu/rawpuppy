@@ -22,8 +22,10 @@ pub fn lattice() -> &'static [f32] {
         let bytes = include_bytes!("data/agx-rec2020-97.f32");
         assert_eq!(bytes.len(), GRID * GRID * GRID * 3 * 4);
         bytes
-            .chunks_exact(4)
-            .map(|v| f32::from_le_bytes(v.try_into().unwrap()))
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .map(|v| f32::from_le_bytes(*v))
             .collect()
     })
 }

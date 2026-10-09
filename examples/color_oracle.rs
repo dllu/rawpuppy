@@ -38,8 +38,10 @@ fn main() -> Result<()> {
         .as_ref()
         .map(|p| {
             std::fs::read(p).map(|b| {
-                b.chunks_exact(4)
-                    .map(|v| f32::from_le_bytes(v.try_into().unwrap()))
+                b.as_chunks::<4>()
+                    .0
+                    .iter()
+                    .map(|v| f32::from_le_bytes(*v))
                     .collect::<Vec<_>>()
             })
         })

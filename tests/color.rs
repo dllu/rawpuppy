@@ -71,7 +71,7 @@ fn tagged_hdr_exr_import_preserves_wide_gamut_and_unbounded_values() {
         color::inverse(color::SRGB_TO_XYZ).unwrap(),
         color::REC2020_TO_XYZ,
     );
-    for (p, actual) in values.iter().zip(source.data.chunks_exact(3)) {
+    for (p, actual) in values.iter().zip(source.data.as_chunks::<3>().0.iter()) {
         let expected = color::apply(m, [p[0], p[1], p[2]]);
         for c in 0..3 {
             assert!((expected[c] - actual[c]).abs() < 0.000008);
