@@ -45,5 +45,5 @@ recipes retain their saved behavior. See [lens correction](docs/lens-correction.
 The optional `moebius` feature adds native AI removal and corner filling, saved as
 non-destructive layers. See [runtime setup](docs/moebius.md) and [model evaluation](docs/inpainting-research.md).
 The `neural` feature exposes `inpaint-lama` as an experimental comparison backend.
-The optional `raw-ml` feature exposes an experimental native joint Bayer
-reconstruction API and headless benchmark; see [learned reconstruction](docs/learned-reconstruction.md).
+The optional `raw-ml` feature adds experimental joint AI Bayer reconstruction
+with a reusable editor/export cache; see [setup and validation](docs/learned-reconstruction.md).

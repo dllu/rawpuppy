@@ -109,3 +109,93 @@ fn overlapping_contexts_agree_before_local_gain_matching() {
         }
     }
 }
+
+#[test]
+#[ignore = "requires the verified external RawNIND graph"]
+fn tiled_reconstruction_matches_single_context_and_ignores_sensor_margins() {
+    use rawpuppy::{
+        edits::{Edits, Reconstruction},
+        pipeline::Pipeline,
+    };
+    let model = model();
+    let mut source = sensor(79, 83, "BGGR");
+    source.origin = [7, 9];
+    source.active = [61, 63];
+    source.metadata.width = 61;
+    source.metadata.height = 63;
+    for y in 0..83 {
+        for x in 0..79 {
+            if !(7..68).contains(&x) || !(9..72).contains(&y) {
+                source.data[y * 79 + x] = 9.;
+            }
+        }
+    }
+    let original = source.data.clone();
+    let tiled = model
+        .reconstruct_image(&source, false, 32, |_, _| {})
+        .unwrap();
+    let one = model
+        .reconstruct_image(&source, false, 1024, |_, _| {})
+        .unwrap();
+    let max = tiled
+        .data
+        .iter()
+        .zip(&one.data)
+        .map(|(a, b)| (a - b).abs())
+        .fold(0f32, f32::max);
+    assert!(
+        max < 3e-6,
+        "Tile seams or pooling/photometry mismatch: {max}"
+    );
+    assert_eq!(source.data, original);
+    let mut edits = Edits::default();
+    edits.raw.reconstruction = Reconstruction::RawNindV1;
+    let rendered = Pipeline::compile(&tiled, &edits)
+        .unwrap()
+        .render(None)
+        .unwrap();
+    assert_eq!((rendered.width, rendered.height), (61, 63));
+    assert!(rendered.pixels.iter().all(|p| p[3] == 1.));
+    assert!(tiled.data.iter().all(|v| v.abs() < 1.));
+}
+
+#[test]
+#[ignore = "requires the verified RawNIND graph installed in the standard model cache"]
+fn renderer_composes_learned_camera_rgb_and_releases_retired_sources() {
+    use rawpuppy::{
+        edits::{Edits, Reconstruction, ToneMapper},
+        pipeline::Pipeline,
+        render::{Backend, Renderer},
+    };
+    use std::sync::Arc;
+    let model = model();
+    let source = Arc::new(sensor(96, 98, "GBRG"));
+    let original = source.data.clone();
+    let retired = Arc::downgrade(&source);
+    let prepared = model
+        .reconstruct_image(&source, false, 1024, |_, _| {})
+        .unwrap();
+    let mut edits = Edits::default();
+    edits.raw.reconstruction = Reconstruction::RawNindV1;
+    edits.tone.mapper = ToneMapper::Linear;
+    let mut renderer = Renderer::new(Backend::Cpu);
+    for exposure in [0., 0.5, -0.2] {
+        edits.scene.exposure = exposure;
+        let actual = renderer.render(source.clone(), &edits, Some(32)).unwrap();
+        let expected = Pipeline::compile(&prepared, &edits)
+            .unwrap()
+            .render(Some(32))
+            .unwrap();
+        for (a, b) in actual.pixels.iter().zip(expected.pixels) {
+            for c in 0..4 {
+                assert!((a[c] - b[c]).abs() < 2e-6);
+            }
+        }
+    }
+    assert_eq!(source.data, original);
+    drop(source);
+    assert!(retired.upgrade().is_some());
+    let next = Arc::new(SensorImage::from_rgb(3, 3, vec![0.2; 27]).unwrap());
+    renderer.render(next, &Edits::default(), None).unwrap();
+    assert!(retired.upgrade().is_none());
+}

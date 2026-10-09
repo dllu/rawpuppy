@@ -65,9 +65,24 @@ impl LensEdits {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 #[serde(default, deny_unknown_fields)]
 pub struct RawEdits {
+    #[serde(skip_serializing_if = "Reconstruction::is_standard")]
+    pub reconstruction: Reconstruction,
     pub hot_pixels: bool,
     /// Standard deviation in normalized sensor units. Zero disables denoising.
     pub denoise: f32,
+}
+
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq, clap::ValueEnum)]
+#[serde(rename_all = "snake_case")]
+pub enum Reconstruction {
+    #[default]
+    Mhc,
+    RawNindV1,
+}
+impl Reconstruction {
+    pub fn is_standard(&self) -> bool {
+        *self == Self::Mhc
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]

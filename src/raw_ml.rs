@@ -1,5 +1,6 @@
 //! Optional joint Bayer reconstruction over bounded, immutable sensor contexts.
 use crate::{
+    edits::{RawEdits, Reconstruction},
     input::{SensorImage, pixel_count},
     ml_runtime::InferenceDevice,
     models,
@@ -81,6 +82,17 @@ impl BayerModel {
         origin: [usize; 2],
         size: [usize; 2],
     ) -> Result<CameraRgbPatch> {
+        self.reconstruct_region(source, origin, size, false, true)
+    }
+
+    fn reconstruct_region(
+        &self,
+        source: &SensorImage,
+        origin: [usize; 2],
+        size: [usize; 2],
+        hot_pixels: bool,
+        match_local_gain: bool,
+    ) -> Result<CameraRgbPatch> {
         let count = pixel_count(size[0], size[1], 1)?;
         ensure!(
             source.cpp == 1,
@@ -130,6 +142,14 @@ impl BayerModel {
         let height = context_extent(origin[1], size[1], top)?;
         let packed_count = pixel_count(width / 2, height / 2, 4)?;
         let plane = packed_count / 4;
+        let inside_active = origin[0] >= source.origin[0]
+            && origin[1] >= source.origin[1]
+            && origin[0] + size[0] <= source.origin[0] + source.active[0]
+            && origin[1] + size[1] <= source.origin[1] + source.active[1];
+        let cleanup = RawEdits {
+            hot_pixels,
+            ..Default::default()
+        };
         let mut packed = Vec::new();
         packed.try_reserve_exact(packed_count)?;
         packed.resize(packed_count, 0.);
@@ -138,7 +158,27 @@ impl BayerModel {
                 for c in 0..4 {
                     let x = left + (2 * px + c % 2) as isize;
                     let y = top + (2 * py + c / 2) as isize;
-                    let value = source.raw_at(x, y, 0);
+                    let (x, y) = if inside_active {
+                        (
+                            source.origin[0] as isize
+                                + SensorImage::reflect(
+                                    x - source.origin[0] as isize,
+                                    source.active[0],
+                                ) as isize,
+                            source.origin[1] as isize
+                                + SensorImage::reflect(
+                                    y - source.origin[1] as isize,
+                                    source.active[1],
+                                ) as isize,
+                        )
+                    } else {
+                        (x, y)
+                    };
+                    let value = if hot_pixels {
+                        source.clean_raw(x, y, &cleanup)
+                    } else {
+                        source.raw_at(x, y, 0)
+                    };
                     ensure!(value.is_finite(), "Nonfinite sensor input");
                     packed[c * plane + py * (width / 2) + px] = value;
                 }
@@ -177,9 +217,11 @@ impl BayerModel {
                     "Nonfinite reconstruction output"
                 );
                 let channel = cfa.color_at(origin[1] + y, origin[0] + x);
-                input_sum += source.data
-                    [(origin[1] + y) * source.metadata.sensor_width + origin[0] + x]
-                    as f64;
+                input_sum += if hot_pixels {
+                    source.clean_raw((origin[0] + x) as isize, (origin[1] + y) as isize, &cleanup)
+                } else {
+                    source.data[(origin[1] + y) * source.metadata.sensor_width + origin[0] + x]
+                } as f64;
                 generated_sum += pixel[channel] as f64;
                 pixels.push(pixel);
             }
@@ -197,13 +239,15 @@ impl BayerModel {
             (input_sum / generated_sum) as f32
         };
         ensure!(gain.is_finite(), "Invalid learned exposure gain");
-        for pixel in &mut pixels {
-            for component in pixel {
-                *component *= gain;
-                ensure!(
-                    component.is_finite(),
-                    "Reconstruction exceeds finite float range"
-                );
+        if match_local_gain {
+            for pixel in &mut pixels {
+                for component in pixel {
+                    *component *= gain;
+                    ensure!(
+                        component.is_finite(),
+                        "Reconstruction exceeds finite float range"
+                    );
+                }
             }
         }
         Ok(CameraRgbPatch {
@@ -213,6 +257,145 @@ impl BayerModel {
             gain,
             context_origin: [left, top],
             context_size: [width, height],
+        })
+    }
+
+    /// Reconstruct once in bounded tiles, using one image-wide exposure gain.
+    /// The result remains camera-native RGB, compatible with composed sampling.
+    pub fn reconstruct_image(
+        &self,
+        source: &SensorImage,
+        hot_pixels: bool,
+        tile_edge: usize,
+        mut progress: impl FnMut(usize, usize),
+    ) -> Result<SensorImage> {
+        ensure!(
+            tile_edge > 0 && source.active.iter().all(|v| *v >= 2),
+            "Invalid reconstruction tile or active image dimensions"
+        );
+        ensure!(
+            source.cpp == 1
+                && source
+                    .cfa
+                    .as_ref()
+                    .is_some_and(|c| c.width == 2 && c.height == 2),
+            "Joint reconstruction requires RGB Bayer RAW"
+        );
+        ensure!(
+            source.origin[0]
+                .checked_add(source.active[0])
+                .is_some_and(|v| v <= source.metadata.sensor_width)
+                && source.origin[1]
+                    .checked_add(source.active[1])
+                    .is_some_and(|v| v <= source.metadata.sensor_height)
+                && source.data.len()
+                    == pixel_count(
+                        source.metadata.sensor_width,
+                        source.metadata.sensor_height,
+                        1
+                    )?,
+            "Invalid active sensor area or allocation"
+        );
+        let width = source.metadata.sensor_width;
+        let height = source.metadata.sensor_height;
+        let count = pixel_count(width, height, 3)?;
+        let mut data = Vec::new();
+        data.try_reserve_exact(count)?;
+        #[cfg(feature = "cuda")]
+        crate::gpu::advise_sensor_allocation(data.spare_capacity_mut());
+        data.resize(count, 0.);
+        let columns = source.active[0].div_ceil(tile_edge);
+        let rows = source.active[1].div_ceil(tile_edge);
+        let total = columns.checked_mul(rows).context("Tile count overflow")?;
+        let mut input_sum = 0f64;
+        let mut generated_sum = 0f64;
+        let cleanup = RawEdits {
+            hot_pixels,
+            ..Default::default()
+        };
+        for row in 0..rows {
+            for column in 0..columns {
+                let origin = [
+                    source.origin[0] + column * tile_edge,
+                    source.origin[1] + row * tile_edge,
+                ];
+                let size = [
+                    (source.origin[0] + source.active[0] - origin[0]).min(tile_edge),
+                    (source.origin[1] + source.active[1] - origin[1]).min(tile_edge),
+                ];
+                let patch = self.reconstruct_region(source, origin, size, hot_pixels, false)?;
+                let cfa = source.cfa.as_ref().context("Missing Bayer pattern")?;
+                for y in 0..size[1] {
+                    for x in 0..size[0] {
+                        let pixel = patch.pixels[y * size[0] + x];
+                        let index = (origin[1] + y) * width + origin[0] + x;
+                        data[index * 3..index * 3 + 3].copy_from_slice(&pixel);
+                        input_sum += if hot_pixels {
+                            source.clean_raw(
+                                (origin[0] + x) as isize,
+                                (origin[1] + y) as isize,
+                                &cleanup,
+                            )
+                        } else {
+                            source.data[index]
+                        } as f64;
+                        generated_sum += pixel[cfa.color_at(origin[1] + y, origin[0] + x)] as f64;
+                    }
+                }
+                progress(row * columns + column + 1, total);
+            }
+        }
+        ensure!(
+            generated_sum.abs() > 1e-12 || input_sum.abs() <= 1e-12,
+            "Cannot preserve image-wide sensor photometry"
+        );
+        let gain = if input_sum.abs() <= 1e-12 {
+            0.
+        } else {
+            (input_sum / generated_sum) as f32
+        };
+        ensure!(gain.is_finite(), "Invalid image-wide reconstruction gain");
+        use rayon::prelude::*;
+        data.par_iter_mut().for_each(|v| *v *= gain);
+        // Populate sensor margins by reflecting valid image RGB, so continuous
+        // sampling at the crop boundary never mixes in zero/overscan values.
+        for y in 0..height {
+            for x in 0..width {
+                if x >= source.origin[0]
+                    && x < source.origin[0] + source.active[0]
+                    && y >= source.origin[1]
+                    && y < source.origin[1] + source.active[1]
+                {
+                    continue;
+                }
+                let sx = source.origin[0]
+                    + SensorImage::reflect(
+                        x as isize - source.origin[0] as isize,
+                        source.active[0],
+                    );
+                let sy = source.origin[1]
+                    + SensorImage::reflect(
+                        y as isize - source.origin[1] as isize,
+                        source.active[1],
+                    );
+                let pixel: [f32; 3] =
+                    data[(sy * width + sx) * 3..(sy * width + sx) * 3 + 3].try_into()?;
+                data[(y * width + x) * 3..(y * width + x) * 3 + 3].copy_from_slice(&pixel);
+            }
+        }
+        ensure!(
+            data.iter().all(|v| v.is_finite()),
+            "Nonfinite reconstructed camera RGB"
+        );
+        Ok(SensorImage {
+            reconstruction: Reconstruction::RawNindV1,
+            metadata: source.metadata.clone(),
+            data,
+            cfa: None,
+            cpp: 3,
+            origin: source.origin,
+            active: source.active,
+            orientation: source.orientation,
         })
     }
 }

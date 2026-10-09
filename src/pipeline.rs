@@ -5,7 +5,7 @@ use crate::{
     geometry::Geometry,
     input::{SensorImage, pixel_count},
 };
-use anyhow::Result;
+use anyhow::{Result, ensure};
 use rayon::prelude::*;
 
 pub const MODULE_ORDER: &[&str] = &[
@@ -46,6 +46,10 @@ pub struct Rendered {
 impl<'a> Pipeline<'a> {
     pub fn compile(source: &'a SensorImage, edits: &'a Edits) -> Result<Self> {
         edits.validate()?;
+        ensure!(
+            source.reconstruction == edits.raw.reconstruction,
+            "Joint reconstruction needs its prepared camera RGB source"
+        );
         let mut geometry = Geometry::compile(
             &edits.geometry,
             source.metadata.width,

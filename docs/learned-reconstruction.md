@@ -1,11 +1,12 @@
 # Joint RAW reconstruction pilot
 
 The optional `raw-ml` feature provides native Rust inference for the RawNIND Bayer
-joint denoising/demosaicing checkpoint. It reconstructs bounded sensor regions
-without uploading the entire RAW or allocating a full-image RGB intermediate.
-This is currently a library/headless pilot. The editor's reconstruction remains
-MHC and sensor bilateral filtering; viewport caching and editor integration are
-still required before selecting learned reconstruction in the UI.
+joint denoising/demosaicing checkpoint. The region API processes bounded sensor
+contexts; the editor and exporter cache a full camera-RGB reconstruction.
+The editor offers **Joint AI (experimental)** under Sensor & detail after a verified
+model is installed. Standard MHC/bilateral remains the default. Preview, export
+and synthesis use the same prepared camera RGB. Selection remains provisional;
+the measured quality gains below also come with some detail loss.
 
 ## Model selection and attribution
 
@@ -52,6 +53,10 @@ python tools/export_rawnind.py --weights /path/to/iter_4350000.pt \
 cargo build --release --features raw-ml --example benchmark_rawnind
 target/release/examples/benchmark_rawnind photo.raf /path/to/new-results \
   --graph /path/to/prepared-raw-model --device cuda --crop 3000 4000 513 517
+cargo build --release --features raw-ml,cuda
+target/release/rawpuppy install-raw-model /path/to/prepared-raw-model
+target/release/rawpuppy edit photo.raf
+target/release/rawpuppy export photo.raf result.tiff --reconstruction raw-nind-v1
 ```
 
 The exporter validates the checkpoint identity and unchanged oracle source,
@@ -63,14 +68,19 @@ The loader requires manifest version 2 and verifies the graph checksum.
 
 Regions use **unrotated sensor coordinates**, including sensor margins. The model
 receives packed RGGB `[R,G top-right,G bottom-left,B]`, without white balance.
-Reflection supplies context beyond physical sensor edges, a 256-pixel halo covers
+Reflection at the photographed active area supplies context without sensor
+overscan margins contaminating its borders. A 256-pixel halo covers
 the receptive field, and the pooling grid stays anchored to the sensor's CFA
 phase. Arbitrary odd region dimensions are cropped from the padded result.
 Its output scale is learned arbitrarily; the adapter matches the sum of output
 colors at observed CFA positions to the corresponding original sensor sum.
 It does not independently rebalance colors or clip signed/above-white samples.
-Full-frame blending/gain consistency and active-area border behavior still need
-validation before integrating cached tiles into the editor.
+Full-image preparation uses 1024-pixel tiles, retaining their unscaled predictions
+until one gain correction is computed from all observed active-area CFA samples.
+It reflects valid RGB into sensor margins for continuous edge sampling. This
+avoids changing exposure independently for neighboring tiles. An odd cropped-area
+test with deliberately bright overscan values agrees with a single-context result
+within `3e-6`, remains opaque and leaves the original untouched.
 
 The graph embeds deterministic, full-float32 convolution requests. An initial
 graph captured cuDNN's TF32 allowance, causing small differences between
@@ -111,6 +121,39 @@ GFX100S 100 MP source ran in 132 ms warm; this validates a bounded region, not
 full-frame neural performance or GFX high-ISO quality. Two same-device runs were
 byte-identical. Other projects shared the workstation. GPU peak memory was not
 measured here, and these timings are not latency guarantees.
+
+## Editor and full-image cache — 2026-10-09
+
+The renderer retains one prepared RGB source keyed by original identity and hot
+pixel correction. Exposure, calibration, tone and geometry changes reuse it.
+Hot pixel correction runs before learned inference; standard sensor bilateral
+filtering is bypassed for the joint method. Old recipes omit the new reconstruction
+field and retain their exact serialization/fill hashes. Changing the selected
+method changes the saved recipe and invalidates preceding synthesis identities.
+Direct pipeline calls reject an unprepared source for a neural recipe.
+
+The GFX100S 101.8 MP image took **16.57 seconds** for its initial full reconstruction
+and CUDA preview in the controlled benchmark. Three subsequent 1800-pixel previews
+with exposure changes averaged **3.24 ms**. A full corrected 8736×11648 RGBA16 TIFF
+export took **17.90 seconds** including reconstruction/render and **0.89 seconds**
+for encoding; alpha is 65535 throughout. The inspected knit crop is close to the
+MHC appearance with mild smoothing and no obvious tile boundary. These measurements
+use one scene on a shared GB10, not a general quality or latency guarantee.
+
+An isolated native X11 editor exercised model selection, a cached exposure change,
+save, normal close and reload. The XMP retains `raw_nind_v1` and the exposure value;
+reopening rebuilds the cache. Source-retirement tests confirm the renderer releases
+old original allocations when switching documents. Saved synthesis uses the same
+learned base source.
+
+The cache is in RAM, with a single camera-RGB allocation (~1.24 GB for this sensor)
+in addition to the original sensor. Eligible coherent CUDA devices share that
+allocation with the fused renderer. No processed photo database is written. The
+initial pass still occupies the photo worker; controls/UI stay responsive, but
+preview requests queue until it completes. Progressive preparation, cancellation,
+more memory-pressure coverage, wider camera/illuminant quality and native MPS
+validation remain outstanding. Full-frame execution does not establish HDR
+restoration quality.
 
 Tests cover all four Bayer phases, unchanged originals, observed-sample photometry,
 odd regions on a 100,003-pixel-wide source, and overlapping context consistency.

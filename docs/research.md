@@ -25,8 +25,10 @@ CC BY 4.0 alternative is used by an independently expressed, oracle-checked
 parameter graph and native bounded-region pilot. Two real held-out RAW scenes
 improve over the tested bilateral/MHC baseline, with fine-detail losses still
 visible. [Learned reconstruction](learned-reconstruction.md) records full-float32
-precision, CFA packing, photometric matching, timing and limits. Editor caching,
-broader camera quality and HDR validation remain required.
+precision, CFA packing, photometric matching, timing and limits. The editor,
+exporter and synthesis now share a tiled, globally gain-matched camera RGB cache.
+Broad camera/detail quality, progressive preparation and HDR validation remain
+required before treating this as a final reconstruction choice.
 
 ## Tone and color
 

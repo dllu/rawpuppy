@@ -1,0 +1,176 @@
+{
+  "scope": "Optional learned editor/export/synthesis integration; one GFX full-image validation, not general quality bounds",
+  "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+  "model_graph_sha256": "f6a6fece6fe3b31035fe34d8460bb9204b83a976e153e89106af1a520c77b890",
+  "cache": {
+    "inference_tile_edge": 1024,
+    "halo_raw_pixels": 256,
+    "normalization": "One image-wide ratio of corrected original CFA sum to predicted colors at observed CFA locations",
+    "camera_rgb_buffer": "One fallibly allocated float32 sensor-sized RGB array; in-memory only",
+    "key": [
+      "Original Arc identity",
+      "hot-pixel correction"
+    ],
+    "active_border": "CFA-aware reflection of active image before inference; reflected RGB in physical sensor margins after preparation"
+  },
+  "gfx_benchmark_log": "decode_ms=463.44\niteration=0 render_ms=16574.754 checksum=163.588321 backend=cuda (system memory)\niteration=1 render_ms=3.221 checksum=178.601889 backend=cuda (system memory)\niteration=2 render_ms=3.244 checksum=194.739439 backend=cuda (system memory)\niteration=3 render_ms=3.254 checksum=211.956528 backend=cuda (system memory)\nwarm_mean_ms=3.240\n",
+  "full_export": {
+    "shape": [
+      11648,
+      8736,
+      4
+    ],
+    "dtype": "uint16",
+    "minimum_alpha": 65535,
+    "sha256": "90f9f57d1d982efd91e608427171b663ab0be52de57795d7b59d49286cf2141c"
+  },
+  "export_log": "Compute: cuda (system memory)\n8736 \u00d7 11648 \u2192 /tmp/rawpuppy-validation/reconstruction-integration/gfx-joint-full.tiff \u00b7 decode 0.44s \u00b7 render 17.90s \u00b7 export 0.89s\n",
+  "gui": {
+    "environment": "Owned Xvfb, CUDA photo processing, copied/hardlinked temporary source",
+    "selection": "Joint AI experimental in Sensor & detail",
+    "first_measured_preview_ms": 12640,
+    "saved_recipe": {
+      "version": 1,
+      "raw": {
+        "reconstruction": "raw_nind_v1",
+        "hot_pixels": false,
+        "denoise": 0.0
+      },
+      "lens": {
+        "mode": "embedded_v1",
+        "distortion": true,
+        "vignette": true,
+        "auto_frame": true
+      },
+      "geometry": {
+        "distortion": [
+          0.0,
+          0.0
+        ],
+        "chromatic_aberration": [
+          0.0,
+          0.0
+        ],
+        "yaw": 0.0,
+        "pitch": 0.0,
+        "rotation": 0.0,
+        "field_of_view": 50.0,
+        "crop": [
+          0.0,
+          0.0,
+          1.0,
+          1.0
+        ],
+        "scale": 1.0
+      },
+      "scene": {
+        "exposure": 1.0,
+        "calibration": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "mixer": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "vignette": [
+          0.0,
+          0.0
+        ],
+        "graduated": {
+          "exposure": 0.0,
+          "angle": 0.0,
+          "center": [
+            0.5,
+            0.5
+          ],
+          "width": 0.3
+        }
+      },
+      "tone": {
+        "mapper": "agx_sdr_v1",
+        "saturation": 1.0
+      },
+      "display": {
+        "curve": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "shadows": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "highlights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "split_strength": 0.0,
+        "retouch": [],
+        "synthesis": []
+      }
+    },
+    "reload_observed_preview_ms": 13750,
+    "normal_close": "Both editor processes exited after WM_DELETE_WINDOW; owned Xvfb stopped after verifying command and logfile ownership"
+  },
+  "validation": {
+    "default_tests": "33 nonignored passed",
+    "native_optional_tests": "35 nonignored passed",
+    "native_external_model_tests": "Four passed, including tiled/single-context active-area agreement and renderer composition/source retirement",
+    "strict_clippy": "Default and moebius,raw-ml,cuda all-targets passed on Rust 1.99",
+    "prior_implementation_ci": "ab0fb68: Linux, macOS, Windows and native learning jobs succeeded",
+    "external_model_tests": "Four passed: Bayer phases/source preservation/photometry, overlap consistency, full-image tiled/active-border agreement, renderer composition and retired-source release"
+  },
+  "limits": [
+    "First preparation occupies photo worker; requests queue until completion, though UI thread remains responsive",
+    "Cache allocates full RGB in addition to original sensor; broader pressure/tiled-storage coverage pending",
+    "No persistent processed-image database or disk cache",
+    "Joint method remains experimental; some real details are smoothed",
+    "Native MPS inference, broad cameras/high-ISO GFX and HDR quality remain unverified",
+    "Timings from shared GB10 are observations, not guarantees",
+    "Photos and derived image assets remain local outside repository"
+  ],
+  "synthesis": {
+    "generation_log": "Generated 1 saved layers in 5.33s \u2192 /tmp/rawpuppy-validation/reconstruction-integration/synthesis/generated.png\n",
+    "reload_log": "Compute: cuda (system memory)\n512 \u00d7 341 \u2192 /tmp/rawpuppy-validation/reconstruction-integration/synthesis/reloaded.png \u00b7 decode 0.17s \u00b7 render 3.55s \u00b7 export 0.02s\n",
+    "decoded_pixel_comparison": {
+      "shape": [
+        341,
+        512,
+        4
+      ],
+      "dtype": "uint16",
+      "different_channel_samples": 0,
+      "max_absolute_channel_difference": 0,
+      "mean_absolute_channel_difference": 0.0
+    },
+    "note": "PNG container hashes differ; decoded uint16 RGBA samples are identical",
+    "saved_raw_method": {
+      "reconstruction": "raw_nind_v1",
+      "hot_pixels": false,
+      "denoise": 0.0
+    },
+    "saved_layers": 1
+  }
+}

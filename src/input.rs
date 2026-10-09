@@ -1,7 +1,7 @@
 //! Decode immutable originals, retain a single normalized sensor allocation, reconstruct on demand.
 use crate::{
     color::{self, Matrix},
-    edits::RawEdits,
+    edits::{RawEdits, Reconstruction},
 };
 use anyhow::{Context, Result, bail, ensure};
 use image::ImageDecoder;
@@ -32,6 +32,7 @@ pub struct Metadata {
 }
 
 pub struct SensorImage {
+    pub(crate) reconstruction: Reconstruction,
     pub metadata: Metadata,
     pub data: Vec<f32>,
     pub cfa: Option<CFA>,
@@ -283,6 +284,7 @@ impl SensorImage {
             lens_profile_error,
         };
         Ok(Self {
+            reconstruction: Reconstruction::Mhc,
             metadata,
             data,
             cfa,
@@ -369,6 +371,7 @@ impl SensorImage {
             lens_profile_error: None,
         };
         Ok(Self {
+            reconstruction: Reconstruction::Mhc,
             metadata,
             data,
             cfa: None,
@@ -460,6 +463,7 @@ impl SensorImage {
             "RGB input must be finite"
         );
         Ok(Self {
+            reconstruction: Reconstruction::Mhc,
             metadata: Metadata {
                 make: String::new(),
                 model: "Linear RGB".into(),
@@ -508,7 +512,7 @@ impl SensorImage {
         ])
     }
 
-    fn reflect(x: isize, length: usize) -> usize {
+    pub(crate) fn reflect(x: isize, length: usize) -> usize {
         if length == 1 {
             return 0;
         }
@@ -525,7 +529,7 @@ impl SensorImage {
         let y = Self::reflect(y, self.metadata.sensor_height);
         self.data[(y * self.metadata.sensor_width + x) * self.cpp + channel.min(self.cpp - 1)]
     }
-    fn clean_raw(&self, x: isize, y: isize, e: &RawEdits) -> f32 {
+    pub(crate) fn clean_raw(&self, x: isize, y: isize, e: &RawEdits) -> f32 {
         let center = self.raw_at(x, y, 0);
         let mut neighbors = [
             self.raw_at(x - 2, y, 0),

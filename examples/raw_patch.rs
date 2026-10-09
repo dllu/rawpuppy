@@ -81,6 +81,7 @@ fn main() -> Result<()> {
     let edits = RawEdits {
         hot_pixels: args.hot_pixels,
         denoise: args.denoise,
+        ..Default::default()
     };
     for yy in y..y + height {
         for xx in x..x + width {

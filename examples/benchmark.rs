@@ -2,7 +2,7 @@
 use anyhow::Result;
 use clap::Parser;
 use rawpuppy::{
-    edits::Edits,
+    edits::{Edits, Reconstruction},
     input::SensorImage,
     render::{Backend, CudaMemoryMode, Renderer},
 };
@@ -21,6 +21,8 @@ struct Args {
     no_camera_corrections: bool,
     #[arg(long, value_enum, default_value = "auto")]
     cuda_memory: CudaMemoryMode,
+    #[arg(long, value_enum, default_value = "mhc")]
+    reconstruction: Reconstruction,
 }
 fn main() -> Result<()> {
     #[cfg(feature = "cuda")]
@@ -44,6 +46,7 @@ fn main() -> Result<()> {
         Edits::for_image(&source)
     };
     let mut times = Vec::new();
+    edits.raw.reconstruction = args.reconstruction;
     for i in 0..args.iterations {
         edits.scene.exposure = i as f32 * 0.1;
         let start = Instant::now();

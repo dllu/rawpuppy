@@ -2,7 +2,7 @@
 use crate::{
     color::{self, OutputSpace},
     display,
-    edits::{Edits, LensEdits, LensMode, Retouch, RetouchMode, ToneMapper},
+    edits::{Edits, LensEdits, LensMode, Reconstruction, Retouch, RetouchMode, ToneMapper},
     export,
     input::SensorImage,
     render::{Backend, Renderer},
@@ -168,7 +168,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
             } => {
                 renderer.set_document(path);
                 let hash = crate::synthesis::recipe_hash(&edits)?;
-                let (w, h) = crate::pipeline::Pipeline::compile(&image, &edits)?.dimensions(None);
+                let (w, h) = renderer.dimensions(image.clone(), &edits, None)?;
                 let mut jobs = Vec::new();
                 if regenerate {
                     for fill in &edits.display.synthesis {
@@ -1062,14 +1062,35 @@ impl Editor {
                             }
                         });
                         egui::CollapsingHeader::new("Sensor & detail").show(ui, |ui| {
+                            egui::ComboBox::from_label("Reconstruction")
+                                .selected_text(match self.edits.raw.reconstruction {
+                                    Reconstruction::Mhc => "Standard",
+                                    Reconstruction::RawNindV1 => "Joint AI (experimental)",
+                                }).show_ui(ui, |ui| {
+                                    ui.selectable_value(&mut self.edits.raw.reconstruction,
+                                                        Reconstruction::Mhc, "Standard");
+                                    #[cfg(feature = "raw-ml")]
+                                    {
+                                        let supported = source_image.as_ref().is_some_and(|image|
+                                            image.cfa.as_ref().is_some_and(|c| c.width == 2 && c.height == 2));
+                                        let installed = crate::models::raw_model_path().is_ok_and(|p| p.join("manifest.json").is_file());
+                                        ui.add_enabled_ui(supported && installed, |ui| {
+                                            ui.selectable_value(&mut self.edits.raw.reconstruction,
+                                                Reconstruction::RawNindV1, "Joint AI (experimental)");
+                                        });
+                                    }
+                                });
+                            if self.edits.raw.reconstruction == Reconstruction::RawNindV1 {
+                                ui.label("The first pass prepares the photo; later adjustments reuse it.");
+                            }
                             ui.checkbox(&mut self.edits.raw.hot_pixels, "Correct hot pixels");
-                            slider(
+                            if self.edits.raw.reconstruction == Reconstruction::Mhc { slider(
                                 ui,
                                 &mut self.edits.raw.denoise,
                                 0.0..=0.05,
                                 "Sensor denoise",
                                 "",
-                            );
+                            ); }
                         });
                         egui::CollapsingHeader::new("Tone").show(ui, |ui| {
                             ui.horizontal(|ui| {

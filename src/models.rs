@@ -38,6 +38,36 @@ pub fn cache_dir() -> Result<PathBuf> {
 pub fn lama_path() -> Result<PathBuf> {
     Ok(cache_dir()?.join("models/lama_fp32.onnx"))
 }
+pub fn raw_model_path() -> Result<PathBuf> {
+    Ok(cache_dir()?.join("models/rawnind/torchscript-v2"))
+}
+
+#[cfg(feature = "raw-ml")]
+pub fn install_raw_model(directory: &Path) -> Result<PathBuf> {
+    crate::raw_ml::BayerModel::open(directory, crate::ml_runtime::InferenceDevice::Cpu)?;
+    ensure!(
+        directory.join("NOTICE.txt").is_file(),
+        "The model needs its attribution notice"
+    );
+    let destination = raw_model_path()?;
+    if destination.exists() {
+        crate::raw_ml::BayerModel::open(&destination, crate::ml_runtime::InferenceDevice::Cpu)?;
+        ensure!(
+            sha256(&directory.join("bayer.pt"))? == sha256(&destination.join("bayer.pt"))?,
+            "A different prepared graph is already installed"
+        );
+        return Ok(destination);
+    }
+    let parent = destination.parent().context("Missing model cache parent")?;
+    fs::create_dir_all(parent)?;
+    let temporary = tempfile::tempdir_in(parent)?;
+    for name in ["bayer.pt", "manifest.json", "NOTICE.txt"] {
+        fs::copy(directory.join(name), temporary.path().join(name))?;
+    }
+    crate::raw_ml::BayerModel::open(temporary.path(), crate::ml_runtime::InferenceDevice::Cpu)?;
+    fs::rename(temporary.path(), &destination)?;
+    Ok(destination)
+}
 pub fn sha256(path: &Path) -> Result<String> {
     let mut file = fs::File::open(path)?;
     let mut digest = Sha256::new();

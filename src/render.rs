@@ -1,6 +1,6 @@
 //! Backend selection, conservative CPU fallback, and one rendering interface for CLI and GUI.
 use crate::{
-    edits::Edits,
+    edits::{Edits, Reconstruction},
     input::SensorImage,
     pipeline::{Pipeline, Rendered},
 };
@@ -36,6 +36,10 @@ pub struct Renderer {
     layers: Option<crate::synthesis::Layers>,
     #[cfg(feature = "moebius")]
     moebius: Option<crate::moebius::Moebius>,
+    #[cfg(feature = "raw-ml")]
+    raw_model: Option<crate::raw_ml::BayerModel>,
+    #[cfg(feature = "raw-ml")]
+    reconstructed: Option<(Arc<SensorImage>, bool, Arc<SensorImage>)>,
 }
 impl Renderer {
     pub fn new(backend: Backend) -> Self {
@@ -55,10 +59,72 @@ impl Renderer {
             layers: None,
             #[cfg(feature = "moebius")]
             moebius: None,
+            #[cfg(feature = "raw-ml")]
+            raw_model: None,
+            #[cfg(feature = "raw-ml")]
+            reconstructed: None,
         }
     }
     pub fn label(&self) -> &str {
         &self.label
+    }
+    fn prepare_source(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+    ) -> Result<Arc<SensorImage>> {
+        if image.reconstruction == Reconstruction::RawNindV1 {
+            anyhow::ensure!(
+                edits.raw.reconstruction == image.reconstruction,
+                "Prepared reconstruction and recipe disagree"
+            );
+            return Ok(image);
+        }
+        #[cfg(feature = "raw-ml")]
+        if self
+            .reconstructed
+            .as_ref()
+            .is_some_and(|(original, _, _)| !Arc::ptr_eq(original, &image))
+        {
+            self.reconstructed = None;
+        }
+        if edits.raw.reconstruction == Reconstruction::Mhc {
+            return Ok(image);
+        }
+        #[cfg(feature = "raw-ml")]
+        {
+            if let Some((original, hot, prepared)) = &self.reconstructed
+                && Arc::ptr_eq(original, &image)
+                && *hot == edits.raw.hot_pixels
+            {
+                return Ok(prepared.clone());
+            }
+            if self.raw_model.is_none() {
+                self.raw_model = Some(crate::raw_ml::BayerModel::open(
+                    &crate::models::raw_model_path()?,
+                    crate::ml_runtime::InferenceDevice::Auto,
+                )?);
+            }
+            let prepared = Arc::new(self.raw_model.as_ref().unwrap().reconstruct_image(
+                &image,
+                edits.raw.hot_pixels,
+                1024,
+                |_, _| {},
+            )?);
+            self.reconstructed = Some((image, edits.raw.hot_pixels, prepared.clone()));
+            Ok(prepared)
+        }
+        #[cfg(not(feature = "raw-ml"))]
+        anyhow::bail!("This recipe uses joint AI reconstruction; build with the raw-ml feature")
+    }
+    pub fn dimensions(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        max_edge: Option<usize>,
+    ) -> Result<(usize, usize)> {
+        let image = self.prepare_source(image, edits)?;
+        Ok(Pipeline::compile(&image, edits)?.dimensions(max_edge))
     }
     pub fn set_document(&mut self, path: std::path::PathBuf) {
         self.layers = Some(crate::synthesis::Layers::new(path));
@@ -102,6 +168,7 @@ impl Renderer {
         edits: &Edits,
         max_edge: Option<usize>,
     ) -> Result<Rendered> {
+        let image = self.prepare_source(image, edits)?;
         let (w, h) = Pipeline::compile(&image, edits)?.dimensions(max_edge);
         self.render_region(image, edits, [0., 0., 1., 1.], w, h)
     }
@@ -130,6 +197,7 @@ impl Renderer {
         width: usize,
         height: usize,
     ) -> Result<Rendered> {
+        let image = self.prepare_source(image, edits)?;
         if let Err(e) = self.initialize() {
             if self.backend != Backend::Auto {
                 return Err(e);
@@ -161,6 +229,7 @@ impl Renderer {
         settings: &crate::moebius::Sampling,
     ) -> Result<crate::synthesis::GeneratedFill> {
         ensure_region(region)?;
+        let image = self.prepare_source(image, edits)?;
         let (w, h) = Pipeline::compile(&image, edits)?.dimensions(None);
         let color_revision = image.metadata.color_revision;
         let mut context_edits = edits.clone();

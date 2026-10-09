@@ -2,7 +2,7 @@ use anyhow::{Result, ensure};
 use clap::{Parser, Subcommand};
 use rawpuppy::{
     color::OutputSpace,
-    edits::Edits,
+    edits::{Edits, Reconstruction},
     export,
     input::SensorImage,
     render::{Backend, Renderer},
@@ -46,6 +46,8 @@ enum Command {
         color_space: OutputSpace,
         #[arg(long)]
         overwrite: bool,
+        #[arg(long, value_enum)]
+        reconstruction: Option<Reconstruction>,
     },
     /// Print a default JSON recipe for scripting.
     Recipe,
@@ -53,6 +55,9 @@ enum Command {
     FetchLama,
     /// Download and verify the recent Moebius scene inpainting checkpoint and VAE.
     FetchMoebius,
+    /// Install a verified, attributed joint reconstruction model in the local cache.
+    #[cfg(feature = "raw-ml")]
+    InstallRawModel { directory: PathBuf },
     /// Generate non-destructive Moebius layers for painted regions or geometric corners.
     #[cfg(feature = "moebius")]
     Inpaint {
@@ -138,6 +143,7 @@ fn main() -> Result<()> {
             max_edge,
             color_space,
             overwrite,
+            reconstruction,
         } => {
             let original = input.canonicalize()?;
             ensure!(
@@ -154,6 +160,9 @@ fn main() -> Result<()> {
                 sidecar::load_for_default(&input, Edits::for_image(&image))?
             };
             edits.scene.exposure += exposure;
+            if let Some(method) = reconstruction {
+                edits.raw.reconstruction = method;
+            }
             let mut renderer = Renderer::new(cli.backend);
             renderer.set_document(input.clone());
             let rendered = renderer.render(image, &edits, max_edge)?;
@@ -173,6 +182,11 @@ fn main() -> Result<()> {
         Command::Recipe => println!("{}", serde_json::to_string_pretty(&Edits::default())?),
         Command::FetchLama => println!("{}", rawpuppy::models::fetch_lama()?.display()),
         Command::FetchMoebius => println!("{}", rawpuppy::models::fetch_moebius()?.display()),
+        #[cfg(feature = "raw-ml")]
+        Command::InstallRawModel { directory } => println!(
+            "{}",
+            rawpuppy::models::install_raw_model(&directory)?.display()
+        ),
         #[cfg(feature = "moebius")]
         Command::Inpaint {
             input,
@@ -199,7 +213,7 @@ fn main() -> Result<()> {
             let mut edits = sidecar::load_for_default(&input, Edits::for_image(&image))?;
             let mut renderer = Renderer::new(cli.backend);
             renderer.set_document(input.clone());
-            let (w, h) = rawpuppy::pipeline::Pipeline::compile(&image, &edits)?.dimensions(None);
+            let (w, h) = renderer.dimensions(image.clone(), &edits, None)?;
             let dabs: Vec<_> = erase
                 .into_iter()
                 .map(|p| rawpuppy::synthesis::MaskDab {

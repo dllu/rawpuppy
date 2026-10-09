@@ -50,11 +50,29 @@ fn hot_pixel_correction_preserves_source_and_removes_isolated_outlier() {
     let e = rawpuppy::edits::RawEdits {
         hot_pixels: true,
         denoise: 0.,
+        ..Default::default()
     };
     for v in image.reconstruct(6, 6, &e) {
         close(v, 0.1, 1e-6);
     }
     assert_eq!(image.data[6 * 13 + 6], 1.);
+}
+
+#[test]
+fn reconstruction_methods_keep_legacy_json_and_require_matching_sources() {
+    use rawpuppy::edits::Reconstruction;
+    let raw: rawpuppy::edits::RawEdits =
+        serde_json::from_str(r#"{"hot_pixels":false,"denoise":0.0}"#).unwrap();
+    assert_eq!(
+        serde_json::to_string(&raw).unwrap(),
+        r#"{"hot_pixels":false,"denoise":0.0}"#
+    );
+    let source = bayer(16, 16, "RGGB", [0.2; 3]);
+    let mut edits = Edits::default();
+    edits.raw.reconstruction = Reconstruction::RawNindV1;
+    assert!(Pipeline::compile(&source, &edits).is_err());
+    let roundtrip: Edits = serde_json::from_str(&serde_json::to_string(&edits).unwrap()).unwrap();
+    assert_eq!(roundtrip.raw.reconstruction, Reconstruction::RawNindV1);
 }
 
 #[test]
