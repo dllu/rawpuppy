@@ -6,6 +6,10 @@ use sha2::{Digest, Sha256};
 use std::{path::PathBuf, sync::Arc};
 
 mod platform;
+#[cfg(target_os = "linux")]
+mod wayland_surface;
+#[cfg(target_os = "linux")]
+pub use wayland_surface::WaylandSurface;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Desktop {

@@ -32,6 +32,8 @@ ureq = { version = "3", default-features = false, features = ["rustls"] }
 libc = { version = "0.2", optional = true }
 x11rb = { version = "0.13", features = ["randr", "xinerama"] }
 wayland-client = "0.31"
+wayland-backend = { version = "0.3", features = ["client_system", "dlopen"] }
+wayland-protocols = { version = "0.32", features = ["client", "staging"] }
 zbus = { version = "5.19", features = ["blocking-api"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]

@@ -15,10 +15,20 @@ Colord is an additional source when the monitor name matches the display device'
 On legacy Wayland without the color-management global, a matching colord display
 profile is used when available; otherwise the status identifies the legacy sRGB
 fallback. When `wp_color_manager_v1` is advertised, previews stay sRGB for the
-compositor instead of targeting the physical display twice. Surface behavior
-without an explicit description remains implementation-defined in the protocol,
-which recommends sRGB. Legacy custom ICC overrides are rejected on these managed
-compositors until explicit custom surface-description negotiation is implemented.
+compositor instead of targeting the physical display twice. The owned native
+window explicitly negotiates an sRGB image description on Winit's existing
+Wayland connection. Named sRGB primaries/transfer are used only if advertised;
+otherwise an advertised ICC creator receives the application's sRGB profile.
+Rendering intent is selected from advertised capabilities. The image description
+must be ready before it is applied, and its color-control object is retained for
+the window lifetime. Legacy physical-monitor ICC overrides remain rejected on
+managed compositors to prevent double conversion.
+
+Negotiation dispatches a private pending event queue without blocking the UI.
+The window is retained while guest protocol state exists; the bridge does not
+take over its listener, commit its buffers, destroy its surface or close Winit's
+connection. Failure and timeout paths clean up only owned protocol objects. If
+the compositor has no color-management global, the existing legacy policy applies.
 
 On macOS, the owned CAMetalLayer tree is explicitly tagged sRGB for automatic
 ColorSync matching. A manual ICC selection converts the photo to device values
@@ -41,7 +51,7 @@ Validation covers numeric RGB-reference agreement, alpha, profile replacement,
 monitor geometry, and live X11 root-property replacement/removal in an owned
 Xvfb session. The editor's automatic X11 selection and live preview change were
 also visually inspected. Native macOS/Windows code is exercised in desktop CI;
-physical monitor, multi-monitor, and managed Wayland runtime/colorimetry checks
+physical monitor, multi-monitor, and managed Wayland colorimetry checks
 remain in the completion audit. Native HDR presentation is separate work.
 
 An owned headless Mutter session without the color-management global also
@@ -50,6 +60,22 @@ rendered the editor through Vulkan, loaded its saved synthesis layers, and showe
 changing the recipe. This verifies the legacy policy and UI; it does not measure
 display colorimetry or establish managed Wayland behavior. The private compositor,
 bus, and PipeWire instance were stopped after inspection.
+
+A private Weston 16.0.0 session with color management enabled exercised the
+managed path. Its installed Little CMS 2.14 advertised no exact named sRGB
+transfer, so the ICC fallback was used: 588-byte sRGB profile, `ready` event,
+then relative-colorimetric surface description on the existing native surface.
+Protocol logs verify owned color-object teardown before Winit's normal surface
+destruction. A separate unmanaged Weston session verifies legacy operation and
+normal probe close. [wayland_surface_probe.rs](../examples/wayland_surface_probe.rs)
+provides the native probe; it fails if negotiation or expected tagging does not
+complete. The editor's rendered image was captured in the managed session.
+
+These are protocol/runtime checks on a headless compositor, not physical-monitor
+measurements or HDR presentation proof. Exact parametric sRGB selection is covered
+by capability tests; the actual runtime exercise used the ICC path. The private
+Weston build and newer protocol XML were installed only in the evaluation cache,
+without replacing the system compositor or libraries.
 
 Sources: [ICC profiles in X specification](https://www.freedesktop.org/wiki/Specifications/icc_profiles_in_x_spec/),
 [Wayland color-management protocol](https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/staging/color-management/color-management-v1.xml),

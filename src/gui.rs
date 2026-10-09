@@ -332,6 +332,10 @@ struct Editor {
     surface_encoding: Option<bool>,
     #[cfg(target_os = "macos")]
     present_managed: bool,
+    #[cfg(target_os = "linux")]
+    wayland_surface: Option<display::WaylandSurface>,
+    #[cfg(target_os = "linux")]
+    wayland_surface_checked: bool,
     space: OutputSpace,
     zoom: f32,
     center: [f32; 2],
@@ -424,6 +428,10 @@ impl Editor {
             surface_encoding: None,
             #[cfg(target_os = "macos")]
             present_managed: true,
+            #[cfg(target_os = "linux")]
+            wayland_surface: None,
+            #[cfg(target_os = "linux")]
+            wayland_surface_checked: false,
             space: OutputSpace::Srgb,
             zoom: 1.,
             center: [0.5; 2],
@@ -495,6 +503,30 @@ impl Editor {
             }
         }
         ctx.request_repaint_after(std::time::Duration::from_secs(2));
+        #[cfg(target_os = "linux")]
+        if !self.wayland_surface_checked
+            && let Some(window) = frame.winit_window()
+            && let Ok(handle) = window.window_handle()
+            && matches!(
+                handle.as_raw(),
+                raw_window_handle::RawWindowHandle::Wayland(_)
+            )
+        {
+            self.wayland_surface_checked = true;
+            match display::WaylandSurface::bind(window.clone()) {
+                Ok(surface) => self.wayland_surface = surface,
+                Err(error) => self.error = Some(error.to_string()),
+            }
+        }
+        #[cfg(target_os = "linux")]
+        if let Some(surface) = &mut self.wayland_surface {
+            if let Err(error) = surface.poll() {
+                self.error = Some(error.to_string());
+            }
+            if surface.pending() {
+                ctx.request_repaint_after(std::time::Duration::from_millis(50));
+            }
+        }
         #[cfg(target_os = "macos")]
         if self.surface_encoding != Some(self.present_managed)
             && let Some(window) = frame.winit_window()
@@ -1279,8 +1311,13 @@ impl Editor {
                             self.changed();
                         }
                         if self.profile.is_some() && ui.small_button("Use automatic display colour").clicked() {self.profile=None;}
+                        let display_label = self.display_resolved.label.as_str();
+                        #[cfg(target_os = "linux")]
+                        let display_label = if self.wayland_surface.as_ref().is_some_and(|surface| surface.tagged()) {
+                            "Automatic: compositor-managed sRGB surface"
+                        } else { display_label };
                         ui.label(
-                            egui::RichText::new(&self.display_resolved.label)
+                            egui::RichText::new(display_label)
                             .small()
                             .color(Color32::GRAY),
                         );

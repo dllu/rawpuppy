@@ -1,0 +1,58 @@
+{
+  "scope": "Native SDR surface protocol validation in isolated compositors; physical monitor/HDR colorimetry unverified",
+  "weston": {
+    "version": "16.0.0",
+    "source_commit": "d1882b0a544ae2197b597a6e39478e719bc54302",
+    "build_prefix": "~/.cache/rawpuppy/evaluation/wayland-color/prefix",
+    "wayland_protocols_commit": "ee78491a237eaff9389a0ccf8680521d074407d3",
+    "system_wayland_client": "1.22.0",
+    "little_cms": "2.14"
+  },
+  "managed": {
+    "creation": "ICC fallback because exact named sRGB transfer not advertised",
+    "profile_bytes": 588,
+    "render_intent": "Advertised relative colorimetric (1)",
+    "native_surface": "Borrowed wl_surface@13 on Winit connection; listener/ownership unchanged",
+    "protocol_lines": [
+      "[3348271.564]  -> wp_color_manager_v1@111.create_icc_creator(new id wp_image_description_creator_icc_v1@105)",
+      "[3348271.573]  -> wp_image_description_creator_icc_v1@105.set_icc_file(fd 61, 0, 588)",
+      "[3348288.238] wp_image_description_v1@106.ready(3)",
+      "[3348288.248]  -> wp_color_manager_v1@111.get_surface(new id wp_color_management_surface_v1@105, wl_surface@13)",
+      "[3348288.252]  -> wp_color_management_surface_v1@105.set_image_description(wp_image_description_v1@106, 1)"
+    ]
+  },
+  "managed_probe": {
+    "tagged": true,
+    "normal_close": true,
+    "owned_control_and_manager_destroy_before_winit_surfaces": true,
+    "protocol_lines": [
+      "[3046788.672]  -> wp_color_manager_v1@102.get_surface(new id wp_color_management_surface_v1@105, wl_surface@13)",
+      "[3046788.676]  -> wp_color_management_surface_v1@105.set_image_description(wp_image_description_v1@100, 1)",
+      "surface_tagged=true",
+      "[3046788.687]  -> wp_color_management_surface_v1@105.destroy()",
+      "[3046788.689]  -> wp_color_manager_v1@102.destroy()",
+      "[3046886.757]  -> wl_surface@13.destroy()"
+    ]
+  },
+  "legacy_probe": {
+    "tagged": false,
+    "normal_close": true
+  },
+  "manual_icc_override_test": "Passed in owned managed session; automatic yields no legacy ICC and custom monitor conversion is rejected",
+  "checks": {
+    "default_tests": "34 passed",
+    "strict_clippy_default": "Passed on Rust 1.99",
+    "strict_clippy_no_default": "Passed",
+    "cuda_all_targets_check": "Passed",
+    "capability_and_intent_selection": "Passes; exact sRGB requires all advertised values"
+  },
+  "render_artifact": "Headless Weston screenshooter capture; vertically flipped renderer capture orientation; image/GUI inspected",
+  "limits": [
+    "Physical/multi-monitor calibration and HDR presentation remain unverified",
+    "Parametric exact-sRGB path selected only by advertised capabilities; actual Weston runtime used ICC",
+    "Managed editor instances were stopped with verified owned SIGTERM; normal close verified by native probes",
+    "Debug screenshot authorization enabled only on private runtime directory compositor",
+    "No system compositor or monitor/profile settings changed"
+  ],
+  "cleanup": "Owned managed editor and both private compositors stopped after cmdline/logfile checks; normal close verified for native probes"
+}

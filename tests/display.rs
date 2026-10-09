@@ -5,6 +5,33 @@ use rawpuppy::{
     pipeline::Rendered,
 };
 
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "run only in an owned managed Wayland compositor session"]
+fn managed_wayland_uses_compositor_matching_and_rejects_double_icc_conversion() {
+    assert_eq!(std::env::var("RAWPUPPY_TEST_MANAGED_WAYLAND").unwrap(), "1");
+    let request = Request {
+        desktop: Desktop::Wayland,
+        ..Default::default()
+    };
+    let resolved = display::discover(&request).unwrap();
+    assert!(resolved.icc.is_none());
+    assert!(resolved.label.contains("compositor"));
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("monitor.icc");
+    std::fs::write(
+        &path,
+        export::profile(OutputSpace::Srgb).unwrap().icc().unwrap(),
+    )
+    .unwrap();
+    let custom = Request {
+        custom: Some(path),
+        ..request
+    };
+    let error = display::discover(&custom).unwrap_err();
+    assert!(error.to_string().contains("twice"));
+}
+
 #[test]
 fn rgba_display_conversion_matches_rgb_reference_and_retains_alpha() {
     let bytes = export::profile(OutputSpace::DisplayP3)
