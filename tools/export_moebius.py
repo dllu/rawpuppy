@@ -100,6 +100,33 @@ def dynamic_devices(module):
     torch._C._jit_pass_dce(graph)
 
 
+def portable_scalar_constants(module):
+    """Keep exactly representable scalar constants loadable on float32 MPS.
+
+    Frozen float32 graphs can retain wrapped scalar tensors as float64 even
+    though their arithmetic returns float32. MPS rejects them during loading.
+    Never round a constant or convert a non-scalar tensor silently.
+    """
+    converted = []
+
+    def visit(block):
+        for node in block.nodes():
+            if node.kind() == "prim::Constant":
+                value = node.output().toIValue()
+                if isinstance(value, torch.Tensor) and value.dtype == torch.float64:
+                    replacement = value.to(dtype=torch.float32)
+                    if value.ndim != 0 or not torch.equal(replacement.to(dtype=torch.float64), value):
+                        raise ValueError("Frozen graph contains a nonportable float64 tensor constant")
+                    node.t_("value", replacement)
+                    node.output().setType(torch._C.TensorType.create_from_tensor(replacement))
+                    converted.append(float(value))
+            for child in node.blocks():
+                visit(child)
+
+    visit(module.graph)
+    return converted
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True, type=Path)
@@ -166,9 +193,32 @@ def main():
             path = args.output / f"{name}.pt"
             temporary = path.with_suffix(".pt.part")
             frozen.save(str(temporary))
-            temporary.replace(path)
+            # Serialization materializes wrapped scalar constants as float64
+            # tensors. Normalize the reloaded representation, not just the
+            # in-memory trace, before mapping it to devices without float64.
+            portable = torch.jit.load(str(temporary), map_location=args.device)
+            scalar_constants = portable_scalar_constants(portable)
+            with torch.jit.optimized_execution(False):
+                portable_error = (expected - portable(*inputs)).abs().max().item()
+            if not math.isfinite(portable_error) or portable_error > 0.0001:
+                raise ValueError(f"{name} portable graph discrepancy: {portable_error}")
+            portable_path = path.with_suffix(".pt.portable.part")
+            portable.save(str(portable_path))
+            del portable
+            final = torch.jit.load(str(portable_path), map_location=args.device)
+            if portable_scalar_constants(final):
+                raise ValueError("Serialization reintroduced float64 scalar constants")
+            with torch.jit.optimized_execution(False):
+                final_error = (expected - final(*inputs)).abs().max().item()
+            if not math.isfinite(final_error) or final_error > 0.0001:
+                raise ValueError(f"{name} serialized graph discrepancy: {final_error}")
+            del final
+            portable_path.replace(path)
+            temporary.unlink()
+            error = max(error, portable_error, final_error)
             manifest["modules"][name] = {"file": path.name, "sha256": digest(path), "max_abs_error": error,
-                                        "max_trace_error": trace_error}
+                                        "max_trace_error": trace_error,
+                                        "float64_scalar_constants_converted": scalar_constants}
             print(f"Verified {name}: max absolute error {error}", flush=True)
     path = args.output / "manifest.json"
     temporary = path.with_suffix(".json.part")

@@ -50,6 +50,15 @@ actually sample on MPS with CPU operator fallback disabled. An explicit CPU
 case also runs on every platform. Only graph provenance is retained in CI.
 Execution results must still be observed before marking Windows/MPS verified.
 
+Frozen graphs can serialize wrapped `0.5`/`1.0` scalar constants as float64
+tensors, which MPS rejects while loading an otherwise float32 network. The
+exporter reloads its temporary graph, converts only exactly representable scalar
+constants to float32, and checks the final serialized file against the original
+network. Inexact scalars and non-scalar float64 constants are rejected. The
+manifest records the converted values and the maximum checked discrepancy.
+Regenerate graphs prepared with an older exporter before using them on MPS;
+existing CPU/CUDA graphs remain supported.
+
 ## Editor and CLI
 
 Open “AI removal & corner fill,” paint the selected area, then generate. Context

@@ -143,6 +143,9 @@ jobs:
         run: cargo test --features moebius,raw-ml --test raw_ml -j 2 --locked -- --ignored --test-threads=1 --nocapture
       - name: Prepare verified real inpainting graphs
         shell: bash
+        run: python tools/test_moebius_export.py
+      - name: Export verified real inpainting graphs
+        shell: bash
         run: python tools/prepare_ci_moebius.py "$RAWPUPPY_CI_MODEL_ROOT/moebius"
       - name: Real native inpainting on the selected device and CPU
         run: cargo test --features moebius,raw-ml --test moebius -j 2 --locked -- --ignored --test-threads=1 --nocapture
