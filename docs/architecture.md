@@ -25,7 +25,7 @@ sixth-order contrast approximation, outset, linearization); it is not the curren
 Blender 3D LUT variant. The alternative linear mode preserves scene values for
 HDR interchange. Clone/heal reads the tone-mapped source, followed by a monotone
 cubic curve in perceptual sRGB coordinates and split toning in display-linear
-RGB. Neural synthesis belongs after those local edits. Finally, output conversion
+RGB. Saved neural synthesis layers are composited after those local edits. Finally, output conversion
 changes primaries and applies the correct transfer function. Little CMS generates
 matching ICC profiles and interprets embedded RGB input profiles.
 
@@ -33,6 +33,13 @@ Sidecars use their own `https://rawpuppy.org/ns/1.0/` XMP namespace and full
 original filenames plus `.rawpuppy.xmp`. They contain a versioned JSON recipe in
 an RDF property. Reads verify the namespace and reject unknown versions or invalid
 parameters. Writes stage in the destination directory and rename atomically.
+
+Modern generation uses bounded 512-square context rendered directly from the
+original, with seeded Moebius sampling in Rust. Generated pixels persist in
+content-addressed float EXR assets beside the XMP, with source and preceding-recipe
+identities. Exact output-resolution masks preserve every unpainted pixel. Earlier
+edits invalidate their fills and require regeneration. Saved layers render without
+the model; inference runs only when explicitly requested. See [Moebius](moebius.md).
 
 Dimensions and indices are `usize`; checked multiplication detects address-space
 overflow. Export narrows dimensions only to the actual file format's representation.
@@ -51,6 +58,9 @@ AgX, retouch, curve and split toning run in the output kernel. GPU retouch uses 
 same spatial index and precomputed heal offsets as CPU. Source/device addressing
 and binding limits select CPU fallback in auto mode and never limit the core image
 representation. GPU X-Trans currently selects CPU.
+Saved synthesis currently uses sparse CPU composition after GPU readback, with
+bounded layer caches and viewport culling. It does not create another full-image
+raster; fusing layer sampling into the GPU kernel remains an optimization.
 
 The CUDA compiler worker requires a 32 MiB stack for the composed Bayer kernel.
 The executable sets `RUST_MIN_STACK` at process startup before threads exist;

@@ -51,5 +51,7 @@ gap filling and object removal. Any adopted model needs its own license record,
 deterministic saved results, and inference over bounded regions rather than an
 entire 100 MP image. These were initial candidates; the current selection work is
 recorded in [inpainting-research.md](inpainting-research.md). The user requested
-newer models. Moebius is now the integration candidate, and Qwen Image 2.1 is a
-research comparison candidate under its different, restrictive license.
+newer models. Moebius now has an optional native inference backend and editor
+integration, with quality selection still provisional. Qwen Image 2.1 is a
+research comparison candidate under its different, restrictive license; the
+current shortlist also includes September's LLaDA-Image/Turbo.

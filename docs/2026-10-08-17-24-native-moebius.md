@@ -45,3 +45,11 @@ content and improved the 20-step result, while one corner remained dark. This
 limitation is recorded in the model comparison; the backend is provisional.
 A 50-step seed-42 run subsequently filled all four visible wedges in 36.4 seconds.
 This changes both sampling variables; it is not a controlled model comparison.
+At the 750×1000 inspection resolution, both runs preserve every originally opaque
+pixel exactly at 8-bit comparison precision. Both are fully opaque. Of 91,510
+original gap pixels, 21,832 have all RGB channels below 8/255 in the 20-step run;
+none do in the 50-step seed-42 run. These describe this test, not general quality.
+
+Windows CI exposed an open staging-file handle during atomic layer export. The
+staging handle is now closed before export replaces its path; the same integrity
+tests cover asset storage, reload and composition across the three desktop builds.

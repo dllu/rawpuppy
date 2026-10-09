@@ -108,14 +108,17 @@ impl Layers {
         std::fs::create_dir_all(&directory)?;
         let temporary = tempfile::Builder::new()
             .suffix(".exr")
-            .tempfile_in(&directory)?;
+            .tempfile_in(&directory)?
+            .into_temp_path();
+        // Export atomically replaces this staging path. Close its initial file
+        // handle first: Windows cannot replace an open destination file.
         crate::export::write(
-            temporary.path(),
+            &temporary,
             image,
             crate::color::OutputSpace::LinearSrgb,
             true,
         )?;
-        let hash = models::sha256(temporary.path())?;
+        let hash = models::sha256(&temporary)?;
         let name = format!("{hash}.exr");
         let path = directory.join(&name);
         if path.is_file() {
