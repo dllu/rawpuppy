@@ -7,48 +7,7 @@ use tch::{CModule, Device, Kind, Tensor};
 
 static SAMPLER_LOCK: Mutex<()> = Mutex::new(());
 
-#[derive(Clone, Copy, Debug, Default, clap::ValueEnum)]
-pub enum InferenceDevice {
-    #[default]
-    Auto,
-    Cpu,
-    Cuda,
-    Mps,
-}
-impl InferenceDevice {
-    fn resolve(self) -> Result<Device> {
-        #[cfg(target_os = "linux")]
-        if !matches!(self, Self::Cpu) {
-            // LibTorch's CUDA implementation registers itself at library load.
-            // Native linkers may omit it because its registration has no direct
-            // referenced symbol. Retain a process-lifetime handle when available.
-            static CUDA: std::sync::OnceLock<Option<libloading::Library>> =
-                std::sync::OnceLock::new();
-            CUDA.get_or_init(|| {
-                // SAFETY: load the selected LibTorch runtime through the system
-                // loader; the retained handle prevents registration pointers from
-                // being invalidated before tensors and modules are destroyed.
-                unsafe { libloading::Library::new("libtorch_cuda.so").ok() }
-            });
-        }
-        match self {
-            Self::Auto if tch::Cuda::is_available() => Ok(Device::Cuda(0)),
-            Self::Auto if tch::utils::has_mps() => Ok(Device::Mps),
-            Self::Auto | Self::Cpu => Ok(Device::Cpu),
-            Self::Cuda => {
-                ensure!(
-                    tch::Cuda::is_available(),
-                    "CUDA inference device unavailable"
-                );
-                Ok(Device::Cuda(0))
-            }
-            Self::Mps => {
-                ensure!(tch::utils::has_mps(), "Metal inference device unavailable");
-                Ok(Device::Mps)
-            }
-        }
-    }
-}
+pub use crate::ml_runtime::InferenceDevice;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(default, deny_unknown_fields)]

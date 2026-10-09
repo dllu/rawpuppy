@@ -8,7 +8,7 @@ from verification; the project is not complete merely because core tests pass.
 | Rust, cross-platform egui single-photo UI | Native egui editor implemented; X11 GFX editing/save/reload/zoom and isolated Wayland synthesis/save/undo verified; desktop CI passes; macOS/Windows GUI runtime validation pending |
 | CUDA / Vulkan / Metal acceleration | Shared Rust compute kernel; CUDA and Vulkan parity, real GFX previews/full exports verified; native Metal parity passed on macOS CI; more physical platform coverage pending |
 | Real RAW decoding including GFX100S | Rawler integration; actual 103 MP sensor decoded; more real files to verify |
-| Demosaicing, denoise, hot pixels | MHC and sensor bilateral baseline, tests; quality comparison and ML upgrade research ongoing |
+| Demosaicing, denoise, hot pixels | MHC/sensor bilateral baseline; native optional joint RawNIND region reconstruction, real held-out Canon/Sony comparisons, full-float32 CPU/CUDA checks and 100 MP source ROI verified; editor/cache integration, fine-detail and broader camera/HDR validation pending |
 | Chromatic aberration | Composed radial red/blue resampling implemented; real lens validation pending |
 | Distortion, perspective, crop, rotation | Composed pinhole/manual/embedded RAF map; GFX distortion direction verified by independent output matching; camera framing and CPU/CUDA/Vulkan/Metal composition tested; more cameras/crops/lenses pending |
 | Vignetting, graduated ND, exposure, calibration | Composed camera/manual scalar gain and calibration matrix; GFX vignetting ratios verified against independent linear exports; one GFX100S calibration comparison has mean RGB ratios within 0.04%; additional cameras/illuminants pending |

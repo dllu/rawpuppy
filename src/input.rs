@@ -520,7 +520,7 @@ impl SensorImage {
             x as usize
         }
     }
-    fn raw_at(&self, x: isize, y: isize, channel: usize) -> f32 {
+    pub(crate) fn raw_at(&self, x: isize, y: isize, channel: usize) -> f32 {
         let x = Self::reflect(x, self.metadata.sensor_width);
         let y = Self::reflect(y, self.metadata.sensor_height);
         self.data[(y * self.metadata.sensor_width + x) * self.cpp + channel.min(self.cpp - 1)]

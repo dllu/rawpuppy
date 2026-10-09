@@ -9,12 +9,16 @@ pub mod gpu;
 pub mod gui;
 pub mod input;
 pub mod lens;
+#[cfg(any(feature = "moebius", feature = "raw-ml"))]
+pub mod ml_runtime;
 pub mod models;
 #[cfg(feature = "moebius")]
 pub mod moebius;
 #[cfg(feature = "neural")]
 pub mod neural;
 pub mod pipeline;
+#[cfg(feature = "raw-ml")]
+pub mod raw_ml;
 pub mod render;
 pub mod sidecar;
 pub mod synthesis;

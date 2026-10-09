@@ -1,0 +1,1274 @@
+{
+  "scope": "Native joint Bayer ROI pilot; two held-out scene regions, not full-frame or general quality validation",
+  "model_manifest": {
+    "version": 2,
+    "architecture": "independent four-level U-Net parameter graph",
+    "pool": "max",
+    "skip_first": false,
+    "negative_slope": 0.2,
+    "allow_tf32": false,
+    "deterministic_convolutions": true,
+    "weights_sha256": "c1f7de3de24cb12f4803ee65e11cfb467e9a5b80c3cb7126746ef026106c15e0",
+    "weight_source": "https://drive.google.com/uc?id=1dFTLeljWi9wwojcZUsam8bE31JdYy3oM",
+    "weight_authors": "Benoit Brummer and Christophe De Vleeschouwer",
+    "weight_license": "CC BY 4.0, chosen from authors' GPLv3 / CC BY 4.0 dual license",
+    "license_declaration": "https://github.com/trougnouf/rawnind_jddc/blob/e80fb7b14dc440bba38c01f312fd3cc02deb566c/README.md",
+    "oracle_revision": "e80fb7b14dc440bba38c01f312fd3cc02deb566c",
+    "oracle_source_sha256": "154868a016cc83a74f8efc54675a2c4ffd120e3f30c159d10f11e012e8ca8d65",
+    "oracle_code_bundled": false,
+    "torch_export_version": "2.14.0+cu130",
+    "graph_sha256": "f6a6fece6fe3b31035fe34d8460bb9204b83a976e153e89106af1a520c77b890",
+    "input": "NCHW float32 packed RGGB [R,G top-right,G bottom-left,B], before white balance",
+    "output": "NCHW float32 camera-native RGB, twice spatial size, arbitrary learned gain",
+    "packed_dimension_multiple": 16,
+    "clipping": "none in this graph; signed and above-white probes are parity checks, not HDR quality validation",
+    "checks": [
+      {
+        "packed_size": [
+          48,
+          32
+        ],
+        "input_range": [
+          0.0,
+          1.0
+        ],
+        "max_absolute_error": 0.0
+      },
+      {
+        "packed_size": [
+          64,
+          64
+        ],
+        "input_range": [
+          -0.02,
+          1.2
+        ],
+        "max_absolute_error": 0.0
+      },
+      {
+        "packed_size": [
+          80,
+          96
+        ],
+        "input_range": [
+          0.0,
+          4.0
+        ],
+        "max_absolute_error": 0.0
+      },
+      {
+        "packed_size": [
+          128,
+          128
+        ],
+        "input_range": [
+          0.0,
+          0.02
+        ],
+        "max_absolute_error": 0.0
+      }
+    ]
+  },
+  "weight_download": [
+    {
+      "file_id": "1dFTLeljWi9wwojcZUsam8bE31JdYy3oM",
+      "file": "bayer-4350000.pt",
+      "sha256": "c1f7de3de24cb12f4803ee65e11cfb467e9a5b80c3cb7126746ef026106c15e0",
+      "bytes": 31059270
+    },
+    {
+      "file_id": "1jd-6jy1D_v6zaNpokG5ZJwRwKmvGiavw",
+      "file": "bayer-args.yaml",
+      "sha256": "0db5778012ecb0eb2c7dfd4ef96338fa79521b751ba936495782504d84bfe999",
+      "bytes": 1569
+    }
+  ],
+  "raw_fixture_downloads": [
+    {
+      "filename": "Bayer_TEST_MuseeL-Saint-Pierre-C500D_GT_ISO100_sha1=f71bff2d267cefbf243971b98beb973daeee84db.cr2",
+      "url": "https://dataverse.uclouvain.be/api/access/datafile/30031",
+      "sha1": "f71bff2d267cefbf243971b98beb973daeee84db",
+      "sha256": "bc8710ab9d9eb1362065045bf72b05655f887e19eb6d64fb3c77a466991640a7",
+      "bytes": 20369667
+    },
+    {
+      "filename": "Bayer_TEST_MuseeL-Saint-Pierre-C500D_ISO3200_sha1=4b71ad313b4fb8d70ba3c5d8cf5a5b9839f8ed80.cr2",
+      "url": "https://dataverse.uclouvain.be/api/access/datafile/29518",
+      "sha1": "4b71ad313b4fb8d70ba3c5d8cf5a5b9839f8ed80",
+      "sha256": "65db845046dd635a58a27c62417eb79df6905f219d75cbbd4737e4487131b891",
+      "bytes": 23927690
+    },
+    {
+      "filename": "Bayer_TEST_MuseeL-vases-A7C_GT_ISO50_sha1=3512b789004767165f4330b1e82c6fdce766b221.arw",
+      "url": "https://dataverse.uclouvain.be/api/access/datafile/30381",
+      "sha1": "3512b789004767165f4330b1e82c6fdce766b221",
+      "sha256": "1baafd7337bf357bf7004de1bdee727b5f1912ee9e9b438b230c3c88c1bfe694",
+      "bytes": 49128960
+    },
+    {
+      "filename": "Bayer_TEST_MuseeL-vases-A7C_ISO40000_sha1=bf6f7b3df7af7ab9152411a2bae3a4e7a68e08ca.arw",
+      "url": "https://dataverse.uclouvain.be/api/access/datafile/30727",
+      "sha1": "bf6f7b3df7af7ab9152411a2bae3a4e7a68e08ca",
+      "sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+      "bytes": 49149440
+    }
+  ],
+  "dataset": {
+    "doi": "10.14428/DVN/DEQCIM",
+    "metadata_sha256": "370f2b58b2d8f321a51c181239c09469c1620b7cde71972749c56d7e7fd065bc",
+    "umbrella_license": "CC-BY-SA-4.0",
+    "canonical_scene_permission": "MuseeL-Saint-Pierre-C500D: CC0, by Benoit Brummer",
+    "permission_file_sha256": "93f72823ef4ffa3960c8979cd9bba6a403e602a4a29b85e5cfcbdb3ea15e0270",
+    "scene_descriptor_sha256": "f9af6290fb94e4d64941cf789ea30e97a02e586f225a75e60722764d4a254fbc",
+    "selection": "Both Canon and Sony scenes are explicitly reserved in the evaluated checkpoint training arguments"
+  },
+  "comparisons": {
+    "canon": {
+      "reference_source_sha256": "bc8710ab9d9eb1362065045bf72b05655f887e19eb6d64fb3c77a466991640a7",
+      "noisy_source_sha256": "65db845046dd635a58a27c62417eb79df6905f219d75cbbd4737e4487131b891",
+      "crop_xywh": [
+        2000,
+        1400,
+        512,
+        512
+      ],
+      "reference_alignment_to_noisy_xy": [
+        1.366448120218763,
+        -1.193161989937721
+      ],
+      "phase_correlation_response": 0.32063037261832505,
+      "alignment_input": "Clean/noisy MHC green; Gaussian sigma 2, 9\u00d79 support",
+      "reference_resampling": "OpenCV linear interpolation, reference only",
+      "shared_exposure_from_observed_cfa_samples": 1.031210070550062,
+      "excluded_border_pixels": 32,
+      "valid_reference_pixels": 200704,
+      "saturation_exclusion": "Reference camera-RGB maximum < 0.99",
+      "scope": "One ROI; clean reference itself uses MHC; not publisher metrics or a general quality ranking",
+      "results": [
+        {
+          "method": "MHC",
+          "input_sha256": "a49dba2ae059dbba6dfe84b045114bef9d2bd523da2a289581c8d0e54edcf43c",
+          "camera_linear_rmse": 0.012971078539555843,
+          "camera_linear_mae": 0.008911844704535274,
+          "camera_linear_psnr_reference_peak_one_db": 37.74047822033337,
+          "per_channel_mean_ratio": [
+            1.015428807830598,
+            0.9979296832689553,
+            0.972756179715206
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.003000000026077032",
+          "input_sha256": "21f260277f9f88b21de7d7e4b0b2e8756f8c089784baeb6f7cfad57180f48184",
+          "camera_linear_rmse": 0.012825323470861329,
+          "camera_linear_mae": 0.008700168885044934,
+          "camera_linear_psnr_reference_peak_one_db": 37.83863345244993,
+          "per_channel_mean_ratio": [
+            1.015424628060281,
+            0.9978957131979845,
+            0.9727149522462615
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.009999999776482582",
+          "input_sha256": "6ffc68762e1fb3a72f11cfa1b38964b581d170eb1eed0871d8844064a746bdc8",
+          "camera_linear_rmse": 0.011591514373140023,
+          "camera_linear_mae": 0.007170854624127296,
+          "camera_linear_psnr_reference_peak_one_db": 38.717196438735265,
+          "per_channel_mean_ratio": [
+            1.0151077282862788,
+            0.9974050014436157,
+            0.9718149351243467
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.029999999329447746",
+          "input_sha256": "060c7df0e6447520b0f31b24076a871a9c62e275a8d2f295a5feb0fae5ec4f71",
+          "camera_linear_rmse": 0.009688825576211074,
+          "camera_linear_mae": 0.005520745916303835,
+          "camera_linear_psnr_reference_peak_one_db": 40.27457724883425,
+          "per_channel_mean_ratio": [
+            1.0146581512283817,
+            0.9968415824063103,
+            0.9719924434721012
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.10000000149011612",
+          "input_sha256": "788c6263d38163578237c5ec177b3ff7965beddeda0dbbc7f56fb6f5aca879af",
+          "camera_linear_rmse": 0.008858604543084393,
+          "camera_linear_mae": 0.005227857837477213,
+          "camera_linear_psnr_reference_peak_one_db": 41.05269370440125,
+          "per_channel_mean_ratio": [
+            1.01513490697178,
+            0.9975187762004238,
+            0.9725802631346887
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.30000001192092896",
+          "input_sha256": "f5778693fd2898cff4a2358c19b710756c01297bbc66d4ea89a04c06e9524dc1",
+          "camera_linear_rmse": 0.008936031912258866,
+          "camera_linear_mae": 0.005277038062882872,
+          "camera_linear_psnr_reference_peak_one_db": 40.97710577884003,
+          "per_channel_mean_ratio": [
+            1.0154067455013618,
+            0.9978913911106422,
+            0.9727261452394932
+          ]
+        },
+        {
+          "method": "RawNIND joint Bayer",
+          "input_sha256": "5487c591a9dd9b51cc7dc8a28ee1e96614614ccbb838b92d1aaae5ca52a1fe6a",
+          "camera_linear_rmse": 0.00840135093698953,
+          "camera_linear_mae": 0.00477265954288665,
+          "camera_linear_psnr_reference_peak_one_db": 41.513017475651914,
+          "per_channel_mean_ratio": [
+            0.9989742031377856,
+            1.001580524444812,
+            0.9899416795898339
+          ]
+        }
+      ]
+    },
+    "sony": {
+      "reference_source_sha256": "1baafd7337bf357bf7004de1bdee727b5f1912ee9e9b438b230c3c88c1bfe694",
+      "noisy_source_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+      "crop_xywh": [
+        2800,
+        1800,
+        512,
+        512
+      ],
+      "reference_alignment_to_noisy_xy": [
+        -0.07028845819161234,
+        0.12020835602046986
+      ],
+      "phase_correlation_response": 0.6674449412385002,
+      "alignment_input": "Clean/noisy MHC green; Gaussian sigma 2, 9\u00d79 support",
+      "reference_resampling": "OpenCV linear interpolation, reference only",
+      "shared_exposure_from_observed_cfa_samples": 1.84565539859657,
+      "excluded_border_pixels": 32,
+      "valid_reference_pixels": 200704,
+      "saturation_exclusion": "Reference camera-RGB maximum < 0.99",
+      "scope": "One ROI; clean reference itself uses MHC; not publisher metrics or a general quality ranking",
+      "results": [
+        {
+          "method": "MHC",
+          "input_sha256": "d52936e5de501471f5de72dd80bad92ce4497e9c4cb6d9299b0327e36368e03e",
+          "camera_linear_rmse": 0.021882022317976042,
+          "camera_linear_mae": 0.015132811862295996,
+          "camera_linear_psnr_reference_peak_one_db": 33.19825086710908,
+          "per_channel_mean_ratio": [
+            0.9932865416823236,
+            1.002039669738718,
+            0.9999046495323629
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.003000000026077032",
+          "input_sha256": "efd5c87c4f7b5407882e225b0d4bd009de24f78fff07e7c36c691319f953e5ac",
+          "camera_linear_rmse": 0.021590923516392215,
+          "camera_linear_mae": 0.014633959550147227,
+          "camera_linear_psnr_reference_peak_one_db": 33.31457562066579,
+          "per_channel_mean_ratio": [
+            0.9931680562665615,
+            1.0019168307848918,
+            0.9996551898208523
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.009999999776482582",
+          "input_sha256": "e2ced6ebaef84c00eba34377f81bb03893f2fea94afd82af8774901f122989c3",
+          "camera_linear_rmse": 0.01907471739064279,
+          "camera_linear_mae": 0.011893339179977919,
+          "camera_linear_psnr_reference_peak_one_db": 34.390837755895284,
+          "per_channel_mean_ratio": [
+            0.9912425893493141,
+            1.0005326610343854,
+            0.9974389447451021
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.029999999329447746",
+          "input_sha256": "198f0713386f311f0da76ece81ce9b5650752a9a3c63f9eb70316a02d7fba6f2",
+          "camera_linear_rmse": 0.011861687532178335,
+          "camera_linear_mae": 0.007380780118694295,
+          "camera_linear_psnr_reference_peak_one_db": 38.517070412052824,
+          "per_channel_mean_ratio": [
+            0.9890800133622769,
+            0.9983296182864303,
+            0.9960903870008545
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.10000000149011612",
+          "input_sha256": "745a269d7a137c890c2e178d9d5704a757eaf34d175ee25dcd7c89040d484b15",
+          "camera_linear_rmse": 0.008758512671252073,
+          "camera_linear_mae": 0.005972720758106534,
+          "camera_linear_psnr_reference_peak_one_db": 41.151392747665795,
+          "per_channel_mean_ratio": [
+            0.9921213038030423,
+            1.0007375886871313,
+            0.999049541573911
+          ]
+        },
+        {
+          "method": "MHC + sensor bilateral sigma=0.30000001192092896",
+          "input_sha256": "a7cf171690f2a4dd8f7bc8da127ca8ae295ec6b9cfa5fb77bef26b6b308c85de",
+          "camera_linear_rmse": 0.008860457225154337,
+          "camera_linear_mae": 0.005991707920416773,
+          "camera_linear_psnr_reference_peak_one_db": 41.05087733373071,
+          "per_channel_mean_ratio": [
+            0.9930445738968022,
+            1.001808423626309,
+            0.9997242148462891
+          ]
+        },
+        {
+          "method": "RawNIND joint Bayer",
+          "input_sha256": "5ad7671c896eda35a5801ca551dd9724260874a78f2857fadf4e1fd2c2a3071b",
+          "camera_linear_rmse": 0.006281312179661383,
+          "camera_linear_mae": 0.0034589079912967545,
+          "camera_linear_psnr_reference_peak_one_db": 44.03899243462463,
+          "per_channel_mean_ratio": [
+            1.0106939770294499,
+            0.9973571214229161,
+            0.9974763222723217
+          ]
+        }
+      ]
+    }
+  },
+  "native_runs": {
+    "canon-fp32-cuda": {
+      "camera_to_linear_srgb_with_as_shot": [
+        [
+          3.8301732540130615,
+          -1.4850836992263794,
+          0.39245548844337463
+        ],
+        [
+          -0.1521783471107483,
+          1.547242283821106,
+          -0.7446814179420471
+        ],
+        [
+          0.04103456437587738,
+          -0.6081724166870117,
+          2.575157880783081
+        ]
+      ],
+      "crop_xywh": [
+        2000,
+        1400,
+        512,
+        512
+      ],
+      "device": "Cuda(0)",
+      "load_seconds": 0.343420071,
+      "metadata": {
+        "aperture": 9.0,
+        "as_shot": [
+          1.707108974456787,
+          1.0,
+          1.6255924701690674
+        ],
+        "bits": 16,
+        "camera_to_working": [
+          [
+            2.2436606884002686,
+            -1.4850836992263794,
+            0.24142305552959442
+          ],
+          [
+            -0.08914389461278915,
+            1.547242283821106,
+            -0.45809847116470337
+          ],
+          [
+            0.02403745986521244,
+            -0.6081724166870117,
+            1.5841349363327026
+          ]
+        ],
+        "color_revision": 0,
+        "focal_length_mm": 18.0,
+        "height": 3168,
+        "lens_model": "EF-S 18-135mm f/3.5-5.6 IS",
+        "lens_profile": null,
+        "lens_profile_error": null,
+        "make": "Canon",
+        "model": "EOS 500D",
+        "pattern": "RGGB",
+        "sensor_height": 3204,
+        "sensor_width": 4832,
+        "width": 4752
+      },
+      "model_manifest": {
+        "allow_tf32": false,
+        "architecture": "independent four-level U-Net parameter graph",
+        "checks": [
+          {
+            "input_range": [
+              0.0,
+              1.0
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              48,
+              32
+            ]
+          },
+          {
+            "input_range": [
+              -0.02,
+              1.2
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              64,
+              64
+            ]
+          },
+          {
+            "input_range": [
+              0.0,
+              4.0
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              80,
+              96
+            ]
+          },
+          {
+            "input_range": [
+              0.0,
+              0.02
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              128,
+              128
+            ]
+          }
+        ],
+        "clipping": "none in this graph; signed and above-white probes are parity checks, not HDR quality validation",
+        "deterministic_convolutions": true,
+        "graph_sha256": "f6a6fece6fe3b31035fe34d8460bb9204b83a976e153e89106af1a520c77b890",
+        "input": "NCHW float32 packed RGGB [R,G top-right,G bottom-left,B], before white balance",
+        "license_declaration": "https://github.com/trougnouf/rawnind_jddc/blob/e80fb7b14dc440bba38c01f312fd3cc02deb566c/README.md",
+        "negative_slope": 0.2,
+        "oracle_code_bundled": false,
+        "oracle_revision": "e80fb7b14dc440bba38c01f312fd3cc02deb566c",
+        "oracle_source_sha256": "154868a016cc83a74f8efc54675a2c4ffd120e3f30c159d10f11e012e8ca8d65",
+        "output": "NCHW float32 camera-native RGB, twice spatial size, arbitrary learned gain",
+        "packed_dimension_multiple": 16,
+        "pool": "max",
+        "skip_first": false,
+        "torch_export_version": "2.14.0+cu130",
+        "version": 2,
+        "weight_authors": "Benoit Brummer and Christophe De Vleeschouwer",
+        "weight_license": "CC BY 4.0, chosen from authors' GPLv3 / CC BY 4.0 dual license",
+        "weight_source": "https://drive.google.com/uc?id=1dFTLeljWi9wwojcZUsam8bE31JdYy3oM",
+        "weights_sha256": "c1f7de3de24cb12f4803ee65e11cfb467e9a5b80c3cb7126746ef026106c15e0"
+      },
+      "runs": [
+        {
+          "camera_sha256": "5487c591a9dd9b51cc7dc8a28ee1e96614614ccbb838b92d1aaae5ca52a1fe6a",
+          "context_origin": [
+            1728,
+            1120
+          ],
+          "context_size": [
+            1056,
+            1056
+          ],
+          "gain_matched_to_observed_cfa_samples": 9.975449302146444e-07,
+          "iteration": 0,
+          "preview_sha256": "cacdae757e33d6ca3604f32c8ed238165ba304ed5223eee603f01d29954e1c03",
+          "seconds": 0.403996734
+        },
+        {
+          "camera_sha256": "5487c591a9dd9b51cc7dc8a28ee1e96614614ccbb838b92d1aaae5ca52a1fe6a",
+          "context_origin": [
+            1728,
+            1120
+          ],
+          "context_size": [
+            1056,
+            1056
+          ],
+          "gain_matched_to_observed_cfa_samples": 9.975449302146444e-07,
+          "iteration": 1,
+          "preview_sha256": "cacdae757e33d6ca3604f32c8ed238165ba304ed5223eee603f01d29954e1c03",
+          "seconds": 0.129540325
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "source_sha256": "65db845046dd635a58a27c62417eb79df6905f219d75cbbd4737e4487131b891"
+    },
+    "sony-fp32-cuda": {
+      "camera_to_linear_srgb_with_as_shot": [
+        [
+          2.9836063385009766,
+          -0.4220547080039978,
+          -0.5187340974807739
+        ],
+        [
+          -0.2390846461057663,
+          1.5427645444869995,
+          -1.0003100633621216
+        ],
+        [
+          0.020843984559178352,
+          -0.41951775550842285,
+          3.42122220993042
+        ]
+      ],
+      "crop_xywh": [
+        2800,
+        1800,
+        512,
+        512
+      ],
+      "device": "Cuda(0)",
+      "load_seconds": 0.337104914,
+      "metadata": {
+        "aperture": 8.0,
+        "as_shot": [
+          1.82421875,
+          1.0,
+          2.4296875
+        ],
+        "bits": 16,
+        "camera_to_working": [
+          [
+            1.6355528831481934,
+            -0.4220547080039978,
+            -0.2134982794523239
+          ],
+          [
+            -0.131061390042305,
+            1.5427645444869995,
+            -0.4117031693458557
+          ],
+          [
+            0.01142625231295824,
+            -0.41951775550842285,
+            1.408091425895691
+          ]
+        ],
+        "color_revision": 0,
+        "focal_length_mm": 32.0,
+        "height": 4000,
+        "lens_model": "28-200mm F2.8-5.6 Di III RXD",
+        "lens_profile": null,
+        "lens_profile_error": null,
+        "make": "Sony",
+        "model": "ILCE-7C",
+        "pattern": "RGGB",
+        "sensor_height": 4024,
+        "sensor_width": 6048,
+        "width": 6000
+      },
+      "model_manifest": {
+        "allow_tf32": false,
+        "architecture": "independent four-level U-Net parameter graph",
+        "checks": [
+          {
+            "input_range": [
+              0.0,
+              1.0
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              48,
+              32
+            ]
+          },
+          {
+            "input_range": [
+              -0.02,
+              1.2
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              64,
+              64
+            ]
+          },
+          {
+            "input_range": [
+              0.0,
+              4.0
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              80,
+              96
+            ]
+          },
+          {
+            "input_range": [
+              0.0,
+              0.02
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              128,
+              128
+            ]
+          }
+        ],
+        "clipping": "none in this graph; signed and above-white probes are parity checks, not HDR quality validation",
+        "deterministic_convolutions": true,
+        "graph_sha256": "f6a6fece6fe3b31035fe34d8460bb9204b83a976e153e89106af1a520c77b890",
+        "input": "NCHW float32 packed RGGB [R,G top-right,G bottom-left,B], before white balance",
+        "license_declaration": "https://github.com/trougnouf/rawnind_jddc/blob/e80fb7b14dc440bba38c01f312fd3cc02deb566c/README.md",
+        "negative_slope": 0.2,
+        "oracle_code_bundled": false,
+        "oracle_revision": "e80fb7b14dc440bba38c01f312fd3cc02deb566c",
+        "oracle_source_sha256": "154868a016cc83a74f8efc54675a2c4ffd120e3f30c159d10f11e012e8ca8d65",
+        "output": "NCHW float32 camera-native RGB, twice spatial size, arbitrary learned gain",
+        "packed_dimension_multiple": 16,
+        "pool": "max",
+        "skip_first": false,
+        "torch_export_version": "2.14.0+cu130",
+        "version": 2,
+        "weight_authors": "Benoit Brummer and Christophe De Vleeschouwer",
+        "weight_license": "CC BY 4.0, chosen from authors' GPLv3 / CC BY 4.0 dual license",
+        "weight_source": "https://drive.google.com/uc?id=1dFTLeljWi9wwojcZUsam8bE31JdYy3oM",
+        "weights_sha256": "c1f7de3de24cb12f4803ee65e11cfb467e9a5b80c3cb7126746ef026106c15e0"
+      },
+      "runs": [
+        {
+          "camera_sha256": "5ad7671c896eda35a5801ca551dd9724260874a78f2857fadf4e1fd2c2a3071b",
+          "context_origin": [
+            2528,
+            1536
+          ],
+          "context_size": [
+            1056,
+            1056
+          ],
+          "gain_matched_to_observed_cfa_samples": 9.909001619234914e-07,
+          "iteration": 0,
+          "preview_sha256": "e56d802c3b7f723eee6358eea3b7163af1ec02330a4e5d71904f23c15a80f24b",
+          "seconds": 0.342659958
+        },
+        {
+          "camera_sha256": "5ad7671c896eda35a5801ca551dd9724260874a78f2857fadf4e1fd2c2a3071b",
+          "context_origin": [
+            2528,
+            1536
+          ],
+          "context_size": [
+            1056,
+            1056
+          ],
+          "gain_matched_to_observed_cfa_samples": 9.909001619234914e-07,
+          "iteration": 1,
+          "preview_sha256": "e56d802c3b7f723eee6358eea3b7163af1ec02330a4e5d71904f23c15a80f24b",
+          "seconds": 0.138331037
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "source_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e"
+    },
+    "canon-fp32-cpu": {
+      "camera_to_linear_srgb_with_as_shot": [
+        [
+          3.8301732540130615,
+          -1.4850836992263794,
+          0.39245548844337463
+        ],
+        [
+          -0.1521783471107483,
+          1.547242283821106,
+          -0.7446814179420471
+        ],
+        [
+          0.04103456437587738,
+          -0.6081724166870117,
+          2.575157880783081
+        ]
+      ],
+      "crop_xywh": [
+        2000,
+        1400,
+        512,
+        512
+      ],
+      "device": "Cpu",
+      "load_seconds": 0.071857201,
+      "metadata": {
+        "aperture": 9.0,
+        "as_shot": [
+          1.707108974456787,
+          1.0,
+          1.6255924701690674
+        ],
+        "bits": 16,
+        "camera_to_working": [
+          [
+            2.2436606884002686,
+            -1.4850836992263794,
+            0.24142305552959442
+          ],
+          [
+            -0.08914389461278915,
+            1.547242283821106,
+            -0.45809847116470337
+          ],
+          [
+            0.02403745986521244,
+            -0.6081724166870117,
+            1.5841349363327026
+          ]
+        ],
+        "color_revision": 0,
+        "focal_length_mm": 18.0,
+        "height": 3168,
+        "lens_model": "EF-S 18-135mm f/3.5-5.6 IS",
+        "lens_profile": null,
+        "lens_profile_error": null,
+        "make": "Canon",
+        "model": "EOS 500D",
+        "pattern": "RGGB",
+        "sensor_height": 3204,
+        "sensor_width": 4832,
+        "width": 4752
+      },
+      "model_manifest": {
+        "allow_tf32": false,
+        "architecture": "independent four-level U-Net parameter graph",
+        "checks": [
+          {
+            "input_range": [
+              0.0,
+              1.0
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              48,
+              32
+            ]
+          },
+          {
+            "input_range": [
+              -0.02,
+              1.2
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              64,
+              64
+            ]
+          },
+          {
+            "input_range": [
+              0.0,
+              4.0
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              80,
+              96
+            ]
+          },
+          {
+            "input_range": [
+              0.0,
+              0.02
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              128,
+              128
+            ]
+          }
+        ],
+        "clipping": "none in this graph; signed and above-white probes are parity checks, not HDR quality validation",
+        "deterministic_convolutions": true,
+        "graph_sha256": "f6a6fece6fe3b31035fe34d8460bb9204b83a976e153e89106af1a520c77b890",
+        "input": "NCHW float32 packed RGGB [R,G top-right,G bottom-left,B], before white balance",
+        "license_declaration": "https://github.com/trougnouf/rawnind_jddc/blob/e80fb7b14dc440bba38c01f312fd3cc02deb566c/README.md",
+        "negative_slope": 0.2,
+        "oracle_code_bundled": false,
+        "oracle_revision": "e80fb7b14dc440bba38c01f312fd3cc02deb566c",
+        "oracle_source_sha256": "154868a016cc83a74f8efc54675a2c4ffd120e3f30c159d10f11e012e8ca8d65",
+        "output": "NCHW float32 camera-native RGB, twice spatial size, arbitrary learned gain",
+        "packed_dimension_multiple": 16,
+        "pool": "max",
+        "skip_first": false,
+        "torch_export_version": "2.14.0+cu130",
+        "version": 2,
+        "weight_authors": "Benoit Brummer and Christophe De Vleeschouwer",
+        "weight_license": "CC BY 4.0, chosen from authors' GPLv3 / CC BY 4.0 dual license",
+        "weight_source": "https://drive.google.com/uc?id=1dFTLeljWi9wwojcZUsam8bE31JdYy3oM",
+        "weights_sha256": "c1f7de3de24cb12f4803ee65e11cfb467e9a5b80c3cb7126746ef026106c15e0"
+      },
+      "runs": [
+        {
+          "camera_sha256": "853ae08820b2afc211c74c043ece7555e4942287a1b90cac0351e50048f534bb",
+          "context_origin": [
+            1728,
+            1120
+          ],
+          "context_size": [
+            1056,
+            1056
+          ],
+          "gain_matched_to_observed_cfa_samples": 9.975449302146444e-07,
+          "iteration": 0,
+          "preview_sha256": "cfc8f87bf9bba58d2937693cce0918c6bf21c7151089415dcc516b0309e78b0e",
+          "seconds": 0.386869231
+        },
+        {
+          "camera_sha256": "853ae08820b2afc211c74c043ece7555e4942287a1b90cac0351e50048f534bb",
+          "context_origin": [
+            1728,
+            1120
+          ],
+          "context_size": [
+            1056,
+            1056
+          ],
+          "gain_matched_to_observed_cfa_samples": 9.975449302146444e-07,
+          "iteration": 1,
+          "preview_sha256": "cfc8f87bf9bba58d2937693cce0918c6bf21c7151089415dcc516b0309e78b0e",
+          "seconds": 0.283365169
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "source_sha256": "65db845046dd635a58a27c62417eb79df6905f219d75cbbd4737e4487131b891"
+    },
+    "gfx-fp32-cuda": {
+      "camera_to_linear_srgb_with_as_shot": [
+        [
+          1.8148659467697144,
+          0.17127156257629395,
+          -0.4344150424003601
+        ],
+        [
+          -0.2143934667110443,
+          1.431113362312317,
+          -0.5422883629798889
+        ],
+        [
+          -0.016401590779423714,
+          -0.2934032380580902,
+          2.321410655975342
+        ]
+      ],
+      "crop_xywh": [
+        3000,
+        4000,
+        513,
+        517
+      ],
+      "device": "Cuda(0)",
+      "load_seconds": 0.333437886,
+      "metadata": {
+        "aperture": 1.7000000476837158,
+        "as_shot": [
+          1.692052960395813,
+          1.0,
+          1.7814569473266602
+        ],
+        "bits": 16,
+        "camera_to_working": [
+          [
+            1.0725822448730469,
+            0.17127156257629395,
+            -0.24385379254817963
+          ],
+          [
+            -0.12670612335205078,
+            1.431113362312317,
+            -0.3044072091579437
+          ],
+          [
+            -0.009693307802081108,
+            -0.2934032380580902,
+            1.3030966520309448
+          ]
+        ],
+        "color_revision": 0,
+        "focal_length_mm": 55.0,
+        "height": 11648,
+        "lens_model": "GF55mmF1.7 R WR",
+        "lens_profile": {
+          "blue_ca": {
+            "knots": [
+              [
+                0.35356488823890686,
+                -6.103515625e-05
+              ],
+              [
+                0.5001828074455261,
+                -7.62939453125e-05
+              ],
+              [
+                0.6124314665794373,
+                -6.103515625e-05
+              ],
+              [
+                0.7071297764778137,
+                -4.57763671875e-05
+              ],
+              [
+                0.7904936075210571,
+                -3.0517578125e-05
+              ],
+              [
+                0.8661791682243347,
+                0.0
+              ],
+              [
+                0.935283362865448,
+                3.0517578125e-05
+              ],
+              [
+                1.0,
+                0.0001373291015625
+              ],
+              [
+                1.060694694519043,
+                0.000213623046875
+              ]
+            ],
+            "radius_pixels": 7280.0
+          },
+          "distortion": {
+            "knots": [
+              [
+                0.35356488823890686,
+                -0.2714385986328125
+              ],
+              [
+                0.5001828074455261,
+                -0.6280059814453125
+              ],
+              [
+                0.6124314665794373,
+                -0.9942169189453125
+              ],
+              [
+                0.7071297764778137,
+                -1.350799560546875
+              ],
+              [
+                0.7904936075210571,
+                -1.681671142578125
+              ],
+              [
+                0.8661791682243347,
+                -1.9739990234375
+              ],
+              [
+                0.935283362865448,
+                -2.2165374755859375
+              ],
+              [
+                1.0,
+                -2.409271240234375
+              ],
+              [
+                1.060694694519043,
+                -2.409271240234375
+              ]
+            ],
+            "radius_pixels": 7280.0
+          },
+          "red_ca": {
+            "knots": [
+              [
+                0.35356488823890686,
+                9.1552734375e-05
+              ],
+              [
+                0.5001828074455261,
+                0.0001220703125
+              ],
+              [
+                0.6124314665794373,
+                0.0001373291015625
+              ],
+              [
+                0.7071297764778137,
+                0.0001373291015625
+              ],
+              [
+                0.7904936075210571,
+                0.0001220703125
+              ],
+              [
+                0.8661791682243347,
+                0.0001220703125
+              ],
+              [
+                0.935283362865448,
+                9.1552734375e-05
+              ],
+              [
+                1.0,
+                1.52587890625e-05
+              ],
+              [
+                1.060694694519043,
+                -1.52587890625e-05
+              ]
+            ],
+            "radius_pixels": 7280.0
+          },
+          "vignette": {
+            "knots": [
+              [
+                0.35356488823890686,
+                87.59619140625
+              ],
+              [
+                0.5001828074455261,
+                79.44140625
+              ],
+              [
+                0.6124314665794373,
+                72.4951171875
+              ],
+              [
+                0.7071297764778137,
+                67.103515625
+              ],
+              [
+                0.7904936075210571,
+                62.09814453125
+              ],
+              [
+                0.8661791682243347,
+                57.78759765625
+              ],
+              [
+                0.935283362865448,
+                54.16552734375
+              ],
+              [
+                1.0,
+                51.19970703125
+              ],
+              [
+                1.060694694519043,
+                51.19970703125
+              ]
+            ],
+            "radius_pixels": 7280.0
+          }
+        },
+        "lens_profile_error": null,
+        "make": "Fujifilm",
+        "model": "GFX 100S",
+        "pattern": "RGGB",
+        "sensor_height": 8754,
+        "sensor_width": 11808,
+        "width": 8736
+      },
+      "model_manifest": {
+        "allow_tf32": false,
+        "architecture": "independent four-level U-Net parameter graph",
+        "checks": [
+          {
+            "input_range": [
+              0.0,
+              1.0
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              48,
+              32
+            ]
+          },
+          {
+            "input_range": [
+              -0.02,
+              1.2
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              64,
+              64
+            ]
+          },
+          {
+            "input_range": [
+              0.0,
+              4.0
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              80,
+              96
+            ]
+          },
+          {
+            "input_range": [
+              0.0,
+              0.02
+            ],
+            "max_absolute_error": 0.0,
+            "packed_size": [
+              128,
+              128
+            ]
+          }
+        ],
+        "clipping": "none in this graph; signed and above-white probes are parity checks, not HDR quality validation",
+        "deterministic_convolutions": true,
+        "graph_sha256": "f6a6fece6fe3b31035fe34d8460bb9204b83a976e153e89106af1a520c77b890",
+        "input": "NCHW float32 packed RGGB [R,G top-right,G bottom-left,B], before white balance",
+        "license_declaration": "https://github.com/trougnouf/rawnind_jddc/blob/e80fb7b14dc440bba38c01f312fd3cc02deb566c/README.md",
+        "negative_slope": 0.2,
+        "oracle_code_bundled": false,
+        "oracle_revision": "e80fb7b14dc440bba38c01f312fd3cc02deb566c",
+        "oracle_source_sha256": "154868a016cc83a74f8efc54675a2c4ffd120e3f30c159d10f11e012e8ca8d65",
+        "output": "NCHW float32 camera-native RGB, twice spatial size, arbitrary learned gain",
+        "packed_dimension_multiple": 16,
+        "pool": "max",
+        "skip_first": false,
+        "torch_export_version": "2.14.0+cu130",
+        "version": 2,
+        "weight_authors": "Benoit Brummer and Christophe De Vleeschouwer",
+        "weight_license": "CC BY 4.0, chosen from authors' GPLv3 / CC BY 4.0 dual license",
+        "weight_source": "https://drive.google.com/uc?id=1dFTLeljWi9wwojcZUsam8bE31JdYy3oM",
+        "weights_sha256": "c1f7de3de24cb12f4803ee65e11cfb467e9a5b80c3cb7126746ef026106c15e0"
+      },
+      "runs": [
+        {
+          "camera_sha256": "64ab43efb1bf956061894e888c108c8399ba295124df468fed3577fac2892b33",
+          "context_origin": [
+            2720,
+            3744
+          ],
+          "context_size": [
+            1056,
+            1056
+          ],
+          "gain_matched_to_observed_cfa_samples": 9.988173133024247e-07,
+          "iteration": 0,
+          "preview_sha256": "8eeb6badab266df075bfa56fa2c3d405326b729ce5a6be41954598b658846403",
+          "seconds": 0.335304582
+        },
+        {
+          "camera_sha256": "64ab43efb1bf956061894e888c108c8399ba295124df468fed3577fac2892b33",
+          "context_origin": [
+            2720,
+            3744
+          ],
+          "context_size": [
+            1056,
+            1056
+          ],
+          "gain_matched_to_observed_cfa_samples": 9.988173133024247e-07,
+          "iteration": 1,
+          "preview_sha256": "8eeb6badab266df075bfa56fa2c3d405326b729ce5a6be41954598b658846403",
+          "seconds": 0.131893766
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc"
+    }
+  },
+  "cpu_cuda_parity": {
+    "maximum_camera_linear_difference": 5.662441253662109e-07,
+    "mean_difference": 2.078142280481643e-08,
+    "p99_difference": 1.1920928955078125e-07
+  },
+  "precision_diagnostic": {
+    "initial_graph_version": 1,
+    "tf32_allowed": true,
+    "initial_max_cpu_cuda_camera_linear_difference": 0.00039643049240112305,
+    "initial_overlap_test": "Failed at 3e-5 tolerance; CPU and NVIDIA_TF32_OVERRIDE=0 runs passed",
+    "resolution": "Version 2 graph encodes deterministic _convolution operators with allow_tf32=false; CPU/CUDA max error 5.66e-7 and overlap test passes",
+    "global_policy_changed": false
+  },
+  "moebius_regression": {
+    "device": "Cuda(0)",
+    "dtype": "float32",
+    "image_sha256": "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+    "input_color": "sRGB encoded PNG, decoded to display-linear sRGB",
+    "input_size": [
+      512,
+      512
+    ],
+    "load_seconds": 3.790486507,
+    "mask_sha256": "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810",
+    "model": "Moebius scene checkpoint",
+    "model_manifest": {
+      "modules": {
+        "decoder": {
+          "file": "decoder.pt",
+          "max_abs_error": 0.0,
+          "sha256": "71d59b35a6505694a484c975c83849f9b556a63e1450ae99e4e986520f7d3d6a"
+        },
+        "denoiser": {
+          "file": "denoiser.pt",
+          "max_abs_error": 0.0,
+          "sha256": "0786ea80a3e69193ee171d52328ce6a87a2b36b40ca53669e36303d23db9fb1b"
+        },
+        "encoder": {
+          "file": "encoder.pt",
+          "max_abs_error": 0.0,
+          "sha256": "326c921d601b746390c1436f63f2d3f36543774ee1055c221373aae682764770"
+        }
+      },
+      "scaling_factor": 0.13025,
+      "size": 512,
+      "source_hashes": {
+        "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+        "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+        "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+      },
+      "torch_version": "2.14.0+cu130",
+      "version": 1
+    },
+    "purpose": "native bounded-context image/mask comparison",
+    "runs": [
+      {
+        "iteration": 0,
+        "output_sha256": "bfa95982634d18fb1b7876dea1fc62a3f55b3ab1bab2e6a61590a543b6e93896",
+        "outside_composed_max_absolute_8bit_channel_change": 0,
+        "seconds": 3.397266248
+      }
+    ],
+    "runtime": "native Rust / LibTorch 2.13",
+    "settings": {
+      "guidance": 2.0,
+      "noise_offset": 0.0357,
+      "seed": 42,
+      "steps": 20,
+      "strength": 1.0
+    }
+  },
+  "validation": {
+    "native_cuda_graph_tests": "2 passed: phases/large width/source identity/photometry and overlapping contexts",
+    "full_native_optional_suite": "34 nonignored tests passed with moebius,raw-ml and LibTorch 2.13",
+    "initial_suite_loader_error": "A run without runtime LD_LIBRARY_PATH failed loading libtorch_cpu.so; rerun with matching library paths passed",
+    "native_release_examples": "passed",
+    "strict_clippy_1_99_all_optional_features": "passed",
+    "default_suite": "32 nonignored tests passed; strict default Clippy passed"
+  },
+  "limitations": [
+    "No editor or full-frame neural cache integration yet",
+    "Two ROIs and clean MHC references do not establish a demosaicing or camera-wide ranking",
+    "Best bilateral sigma chosen from the fixed grid after inspecting reference metrics, giving that baseline an optimistic advantage",
+    "Only clean reference is interpolated for alignment; imperfect registration remains",
+    "Some real fine speckles/details are smoothed in inspected learned results",
+    "GFX test is a bounded region from a 100 MP source, not full-frame inference or high-ISO validation",
+    "Native MPS/Windows inference and active-area boundary behavior not verified",
+    "Signed/above-white probes verify numerical parity and no explicit clamp, not HDR restoration quality",
+    "Local gain matching requires blending/cache validation before whole-image integration",
+    "GPU peak memory not measured; other projects shared the workstation",
+    "Photographs, cropped derivatives and model weights retained locally outside repository"
+  ]
+}

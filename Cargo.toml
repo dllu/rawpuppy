@@ -49,6 +49,7 @@ gpu = ["dep:cubecl"]
 cuda = ["gpu", "cubecl/cuda", "dep:cudarc", "dep:libc"]
 neural = ["dep:ort"]
 moebius = ["dep:tch", "dep:libloading"]
+raw-ml = ["dep:tch", "dep:libloading"]
 
 [profile.release]
 lto = "thin"

@@ -20,6 +20,14 @@ Bayer and linear RGB models. These are candidates for tiled inference; model
 weight licensing, noise scaling, camera generalization, and RAW output color
 semantics must be checked before adopting weights.
 
+RawNIND's authors now explicitly dual-license weights GPLv3 / CC BY 4.0. The
+CC BY 4.0 alternative is used by an independently expressed, oracle-checked
+parameter graph and native bounded-region pilot. Two real held-out RAW scenes
+improve over the tested bilateral/MHC baseline, with fine-detail losses still
+visible. [Learned reconstruction](learned-reconstruction.md) records full-float32
+precision, CFA packing, photometric matching, timing and limits. Editor caching,
+broader camera quality and HDR validation remain required.
+
 ## Tone and color
 
 [AgX's original configuration](https://github.com/sobotka/AgX) documents the

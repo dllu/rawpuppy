@@ -66,8 +66,8 @@ jobs:
       - run: pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
       - run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libwayland-dev
       - uses: Swatinem/rust-cache@v2
-      - run: cargo clippy --features moebius --all-targets -j 2 -- -D warnings
+      - run: cargo clippy --features moebius,raw-ml --all-targets -j 2 -- -D warnings
       - name: Native scheduler and layer tests
         run: |
           export LD_LIBRARY_PATH="$(python -c 'import torch,pathlib;print(pathlib.Path(torch.__file__).parent / "lib")'):${LD_LIBRARY_PATH:-}"
-          cargo test --features moebius -j 2
+          cargo test --features moebius,raw-ml -j 2
