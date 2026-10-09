@@ -12,7 +12,14 @@ backend. Set `LIBTORCH` to its distribution directory and put its libraries and
 CUDA dependencies on the loader path (Linux `LD_LIBRARY_PATH`, Windows `PATH`).
 The `LIBTORCH_USE_PYTORCH=1` alternative is supported by `tch` for matching Python
 installations. Do not bypass a runtime-version mismatch: PyTorch 2.14 removed
-symbols used by this binding and also requires a different C++ standard.
+symbols used by this binding.
+
+For Windows MSVC builds, set
+`CXXFLAGS=/std:c++20 /Zc:__cplusplus /permissive-` before Cargo. The matching
+2.13 headers use designated initializers and bit-field defaults that MSVC rejects
+in the binding's default C++17 mode. `cc-rs` appends the environment flags after
+that default. Windows runtime libraries must still be on `PATH`; a language-mode
+change does not permit substituting an incompatible LibTorch version.
 
 ```sh
 cargo build --release --features moebius,cuda

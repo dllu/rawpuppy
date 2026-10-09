@@ -110,6 +110,8 @@ jobs:
               elif os.environ['RUNNER_OS'] == 'macOS':
                   handle.write('DYLD_LIBRARY_PATH=' + library + '\n')
                   handle.write('RAWPUPPY_TEST_REQUIRE_MPS=1\n')
+              elif os.environ['RUNNER_OS'] == 'Windows':
+                  handle.write('CXXFLAGS=/std:c++20 /Zc:__cplusplus /permissive-\n')
               root = pathlib.Path(os.environ['RUNNER_TEMP']) / ('rawpuppy-native-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
               handle.write('RAWPUPPY_CI_MODEL_ROOT=' + str(root) + '\n')
               handle.write('RAWPUPPY_TEST_RAWNIND_GRAPH=' + str(root / 'graph') + '\n')
