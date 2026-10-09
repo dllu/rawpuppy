@@ -76,13 +76,15 @@ including all Bayer phases, wide inputs, tiles, cancellation and renderer reuse.
 The device comparison includes signed/above-white inputs and compares against
 CPU output. macOS explicitly requires MPS, with CPU operator fallback disabled.
 Only graph provenance and attribution are uploaded, not the weights or photos.
-Linux CPU and macOS MPS passed all seven real-model checks in CI run
-`37965948083`. The macOS probe explicitly selected `Mps` and differed from CPU
+Linux CPU, Windows CPU and macOS MPS passed all seven real-model checks in CI run
+`37971658127`, using the pinned local native-binding patch. The macOS probe
+explicitly selected `Mps` and differed from CPU
 by at most `1.55e-6` camera-linear units on the four-phase signed/above-white
 probe. The local GB10 CUDA comparison observed the same maximum difference.
 Windows preparation exposed Git's CRLF conversion; the owned oracle checkout
-now disables conversion rather than relaxing the byte-identity check. Its rerun
-remains pending. These checks establish execution/integrity, not photographic
+now disables conversion rather than relaxing the byte-identity check. The
+Windows probe selected `Cpu`, matched its CPU reference exactly, and the graph
+exporter matched the external oracle exactly. These checks establish execution/integrity, not photographic
 restoration quality across all cameras or native inference latency guarantees.
 
 Regions use **unrotated sensor coordinates**, including sensor margins. The model
@@ -198,8 +200,8 @@ address space; this does not exhaust shared system RAM or establish CUDA/MPS
 device-allocation recovery. [The record](data/reconstruction-memory-2026-10-09.json)
 retains the exact limit and failure. No partial reconstructed image is returned.
 
-More device/memory-pressure coverage, wider camera/illuminant quality and Windows
-runtime verification remain outstanding. Full-frame execution does not establish HDR
+More device/memory-pressure coverage and wider camera/illuminant quality
+remain outstanding. Full-frame execution does not establish HDR
 restoration quality.
 
 Tests cover all four Bayer phases, unchanged originals, observed-sample photometry,

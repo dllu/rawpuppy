@@ -38,6 +38,7 @@ enum Work {
         hdr: bool,
     },
     Save {
+        load_id: u64,
         path: PathBuf,
         edits: Edits,
     },
@@ -54,6 +55,7 @@ enum Work {
         regenerate: bool,
     },
     Export {
+        load_id: u64,
         original: PathBuf,
         path: PathBuf,
         image: Arc<SensorImage>,
@@ -79,6 +81,7 @@ enum Reply {
         reconstruction_progress: Option<[usize; 2]>,
     },
     Saved {
+        load_id: u64,
         path: PathBuf,
         edits: Edits,
     },
@@ -89,7 +92,10 @@ enum Reply {
         fills: Vec<crate::synthesis::GeneratedFill>,
         replace: bool,
     },
-    Exported(PathBuf),
+    Exported {
+        load_id: u64,
+        path: PathBuf,
+    },
     Error {
         scope: ErrorScope,
         message: String,
@@ -100,14 +106,40 @@ enum Reply {
 enum ErrorScope {
     Load(u64),
     Preview(u64),
-    CurrentOperation,
+    Save(u64),
+    Export(u64),
+    #[cfg(feature = "moebius")]
+    Generate(u64),
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Busy {
+    Load(u64),
+    Export(u64),
+    #[cfg(feature = "moebius")]
+    Generate(u64),
 }
 impl ErrorScope {
     fn applies(self, load: u64, preview: u64) -> bool {
         match self {
             Self::Load(id) => id == load,
             Self::Preview(id) => id == preview,
-            Self::CurrentOperation => true,
+            // Durable I/O failures still need to name the failed destination,
+            // even after the user changes photographs.
+            Self::Save(_) | Self::Export(_) => true,
+            #[cfg(feature = "moebius")]
+            Self::Generate(id) => id == load,
+        }
+    }
+    fn finish_busy(self, busy: &mut Option<Busy>) {
+        let finished = match self {
+            Self::Load(id) => Some(Busy::Load(id)),
+            Self::Export(id) => Some(Busy::Export(id)),
+            #[cfg(feature = "moebius")]
+            Self::Generate(id) => Some(Busy::Generate(id)),
+            Self::Preview(_) | Self::Save(_) => None,
+        };
+        if finished.is_some() && *busy == finished {
+            *busy = None;
         }
     }
 }
@@ -117,8 +149,9 @@ impl Work {
             Self::Open { id, .. } => ErrorScope::Load(*id),
             Self::Render { id, .. } => ErrorScope::Preview(*id),
             #[cfg(feature = "moebius")]
-            Self::Generate { load_id, .. } => ErrorScope::Load(*load_id),
-            _ => ErrorScope::CurrentOperation,
+            Self::Generate { load_id, .. } => ErrorScope::Generate(*load_id),
+            Self::Save { load_id, .. } => ErrorScope::Save(*load_id),
+            Self::Export { load_id, .. } => ErrorScope::Export(*load_id),
         }
     }
 }
@@ -161,6 +194,11 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
             last_preview = Some(work.clone());
         }
         let scope = work.error_scope();
+        let destination = match &work {
+            Work::Save { path, .. } => Some(format!("Saving edits to {}", path.display())),
+            Work::Export { path, .. } => Some(format!("Exporting {}", path.display())),
+            _ => None,
+        };
         let result: Result<Reply> = (|| match work {
             Work::Open { id, path } => {
                 renderer.cancel_reconstruction();
@@ -230,9 +268,17 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                     reconstruction_progress,
                 })
             }
-            Work::Save { path, edits } => {
+            Work::Save {
+                load_id,
+                path,
+                edits,
+            } => {
                 sidecar::save(&path, &edits)?;
-                Ok(Reply::Saved { path, edits })
+                Ok(Reply::Saved {
+                    load_id,
+                    path,
+                    edits,
+                })
             }
             #[cfg(feature = "moebius")]
             Work::Generate {
@@ -303,6 +349,7 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 })
             }
             Work::Export {
+                load_id,
                 original,
                 path,
                 image,
@@ -315,12 +362,19 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 );
                 let rendered = renderer.render(image, &edits, None)?;
                 export::write(&path, &rendered, space, true)?;
-                Ok(Reply::Exported(path))
+                Ok(Reply::Exported { load_id, path })
             }
         })();
-        let reply = result.unwrap_or_else(|e| Reply::Error {
-            scope,
-            message: format!("{e:#}"),
+        let reply = result.unwrap_or_else(|e| {
+            let error = if let Some(destination) = destination {
+                e.context(destination)
+            } else {
+                e
+            };
+            Reply::Error {
+                scope,
+                message: format!("{error:#}"),
+            }
         });
         if tx.send(reply).is_err() {
             break;
@@ -392,7 +446,7 @@ struct Editor {
     generation: u64,
     load_generation: u64,
     preview_pending: bool,
-    busy: bool,
+    busy: Option<Busy>,
     status: String,
     error: Option<String>,
     profile: Option<PathBuf>,
@@ -505,7 +559,7 @@ impl Editor {
             generation: 0,
             load_generation: 0,
             preview_pending: false,
-            busy: false,
+            busy: None,
             status: "Open a photograph to begin".into(),
             error: None,
             profile,
@@ -657,13 +711,13 @@ impl Editor {
     fn send(&mut self, work: Work) {
         if self.tx.send(work).is_err() {
             self.error = Some("Photo worker stopped".into());
-            self.busy = false;
+            self.busy = None;
         }
     }
     fn open(&mut self, path: PathBuf) {
         self.load_generation = self.load_generation.wrapping_add(1);
         self.generation = self.generation.wrapping_add(1);
-        self.busy = true;
+        self.busy = Some(Busy::Load(self.load_generation));
         self.status = "Decoding photograph…".into();
         self.send(Work::Open {
             id: self.load_generation,
@@ -720,15 +774,22 @@ impl Editor {
         }
     }
     fn save(&mut self) {
+        if matches!(self.busy, Some(Busy::Load(_))) {
+            return;
+        }
         if let Some(path) = &self.path {
             self.status = "Saving edits…".into();
             self.send(Work::Save {
+                load_id: self.load_generation,
                 path: sidecar::path_for(path),
                 edits: self.edits.clone(),
             });
         }
     }
     fn generate(&mut self, gaps: bool, regenerate: bool) {
+        if self.busy.is_some() {
+            return;
+        }
         #[cfg(feature = "moebius")]
         if let (Some(image), Some(path)) = (&self.image, &self.path) {
             let work = Work::Generate {
@@ -742,7 +803,7 @@ impl Editor {
                 seed: self.ai_seed,
                 regenerate,
             };
-            self.busy = true;
+            self.busy = Some(Busy::Generate(self.load_generation));
             self.status = "Generating local fill…".into();
             self.send(work);
         }
@@ -750,6 +811,9 @@ impl Editor {
         let _ = (gaps, regenerate);
     }
     fn export(&mut self) {
+        if self.busy.is_some() {
+            return;
+        }
         let (Some(image), Some(original)) = (&self.image, &self.path) else {
             return;
         };
@@ -772,13 +836,14 @@ impl Editor {
                 self.space
             };
             let work = Work::Export {
+                load_id: self.load_generation,
                 original: original.clone(),
                 path,
                 image: image.clone(),
                 edits: self.edits.clone(),
                 space,
             };
-            self.busy = true;
+            self.busy = Some(Busy::Export(self.load_generation));
             self.status = "Exporting full resolution…".into();
             self.send(work);
         }
@@ -805,7 +870,7 @@ impl Editor {
                     self.center = [0.5; 2];
                     self.clone_source = None;
                     self.mask.clear();
-                    self.busy = false;
+                    self.busy = None;
                     self.changed();
                     self.status = "Ready".into();
                 }
@@ -853,7 +918,7 @@ impl Editor {
                         }
                     }
                     self.histogram = histogram;
-                    if !self.busy {
+                    if self.busy.is_none() {
                         self.status = if let Some([done, total]) = reconstruction_progress {
                             if total == 0 {
                                 "Preparing Joint AI · Standard preview".into()
@@ -865,14 +930,20 @@ impl Editor {
                         };
                     }
                 }
-                Reply::Saved { path, edits }
-                    if self
+                Reply::Saved {
+                    load_id,
+                    path,
+                    edits,
+                } if load_id == self.load_generation
+                    && self
                         .path
                         .as_ref()
                         .is_some_and(|p| sidecar::path_for(p) == path) =>
                 {
                     self.saved = edits;
-                    self.status = "Edits saved".into();
+                    if self.busy.is_none() {
+                        self.status = "Edits saved".into();
+                    }
                     if self.close_after_save && !self.dirty() {
                         self.close_after_save = false;
                         self.perform_pending(ctx);
@@ -885,7 +956,7 @@ impl Editor {
                     fills,
                     replace,
                 } if load_id == self.load_generation => {
-                    self.busy = false;
+                    ErrorScope::Generate(load_id).finish_busy(&mut self.busy);
                     if crate::synthesis::recipe_hash(&self.edits).ok().as_ref()
                         == Some(&recipe_hash)
                     {
@@ -900,8 +971,8 @@ impl Editor {
                         self.status = "Generated fill ready; save edits to keep it".into();
                     }
                 }
-                Reply::Exported(path) => {
-                    self.busy = false;
+                Reply::Exported { load_id, path } if self.busy == Some(Busy::Export(load_id)) => {
+                    self.busy = None;
                     self.status = format!(
                         "Exported {}",
                         path.file_name().unwrap_or_default().to_string_lossy()
@@ -911,8 +982,10 @@ impl Editor {
                     if scope.applies(self.load_generation, self.generation) =>
                 {
                     self.error = Some(message);
-                    self.busy = false;
-                    self.close_after_save = false;
+                    scope.finish_busy(&mut self.busy);
+                    if matches!(scope, ErrorScope::Save(id) if id == self.load_generation) {
+                        self.close_after_save = false;
+                    }
                 }
                 _ => {}
             }
@@ -940,7 +1013,7 @@ impl Editor {
                 if ui.button("Open…").clicked() {
                     self.choose_photo();
                 }
-                ui.add_enabled_ui(self.image.is_some() && !self.busy, |ui| {
+                ui.add_enabled_ui(self.image.is_some() && self.busy.is_none(), |ui| {
                     if ui
                         .button(if self.dirty() {
                             "Save edits •"
@@ -981,7 +1054,7 @@ impl Editor {
             .show(ui, |ui| {
                 ui.horizontal_centered(|ui| {
                     ui.add_space(14.);
-                    if self.busy {
+                    if self.busy.is_some() {
                         ui.spinner();
                     }
                     ui.label(
@@ -1053,7 +1126,7 @@ impl Editor {
                 ui.separator();
                 let previous = self.edits.clone();
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    ui.add_enabled_ui(self.image.is_some() && !self.compare && !self.busy, |ui| {
+                    ui.add_enabled_ui(self.image.is_some() && !self.compare && self.busy.is_none(), |ui| {
                         egui::CollapsingHeader::new("Light")
                             .default_open(true)
                             .show(ui, |ui| {
@@ -1656,7 +1729,7 @@ impl Editor {
                 }
                 if self.tool == Tool::Mask
                     && !self.compare
-                    && !self.busy
+                    && self.busy.is_none()
                     && (response.clicked() || response.dragged())
                     && let Some(pos) = response.interact_pointer_pos()
                 {
@@ -1676,7 +1749,7 @@ impl Editor {
                 }
                 if matches!(self.tool, Tool::Clone | Tool::Heal)
                     && !self.compare
-                    && !self.busy
+                    && self.busy.is_none()
                     && let Some(pos) = response.interact_pointer_pos()
                 {
                     let uv = [
@@ -1712,7 +1785,7 @@ impl Editor {
                 if !ui.input(|i| i.pointer.primary_down()) {
                     self.stroke_recorded = false;
                 }
-                if self.preview_pending && !self.busy {
+                if self.preview_pending && self.busy.is_none() {
                     let edits = if self.compare {
                         Edits {
                             geometry: self.edits.geometry.clone(),
@@ -1933,6 +2006,188 @@ fn curve_editor(ui: &mut egui::Ui, points: &mut Vec<[f32; 2]>) {
 #[cfg(test)]
 mod error_scope_tests {
     use super::*;
+    #[cfg(feature = "moebius")]
+    #[test]
+    fn invalid_generation_finishes_only_its_own_activity() {
+        let directory = tempfile::tempdir().unwrap();
+        let original = directory.path().join("photo.png");
+        image::RgbImage::from_pixel(2, 2, image::Rgb([40, 50, 60]))
+            .save(&original)
+            .unwrap();
+        let source = Arc::new(SensorImage::open(&original).unwrap());
+        let bytes = std::fs::read(&original).unwrap();
+        let (send, requests) = mpsc::channel();
+        let (responses, receive) = mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            super::worker(requests, responses, egui::Context::default(), Backend::Cpu)
+        });
+        // An empty painted selection is rejected before any model is loaded.
+        send.send(Work::Generate {
+            load_id: 1,
+            path: original.clone(),
+            image: source,
+            edits: Edits::default(),
+            dabs: vec![],
+            gaps: false,
+            steps: 20,
+            seed: 42,
+            regenerate: false,
+        })
+        .unwrap();
+        let Reply::Error { scope, .. } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Empty selection must fail before inference");
+        };
+        assert_eq!(scope, ErrorScope::Generate(1));
+        assert!(!scope.applies(2, 3));
+        let mut exporting = Some(Busy::Export(1));
+        scope.finish_busy(&mut exporting);
+        assert_eq!(exporting, Some(Busy::Export(1)));
+        let mut generating = Some(Busy::Generate(1));
+        scope.finish_busy(&mut generating);
+        assert_eq!(generating, None);
+        assert_eq!(std::fs::read(&original).unwrap(), bytes);
+        drop(send);
+        worker.join().unwrap();
+    }
+    #[test]
+    fn durable_failures_preserve_newer_activity_and_the_worker_recovers() {
+        let directory = tempfile::tempdir().unwrap();
+        let original = directory.path().join("photo.png");
+        image::RgbImage::from_pixel(2, 2, image::Rgb([40, 50, 60]))
+            .save(&original)
+            .unwrap();
+        let original_bytes = std::fs::read(&original).unwrap();
+        let image = Arc::new(SensorImage::open(&original).unwrap());
+        let failed_save = directory.path().join("blocked.xmp");
+        let failed_export = directory.path().join("blocked.png");
+        std::fs::create_dir(&failed_save).unwrap();
+        std::fs::create_dir(&failed_export).unwrap();
+        let (send, requests) = mpsc::channel();
+        let (responses, receive) = mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            super::worker(requests, responses, egui::Context::default(), Backend::Cpu)
+        });
+        let mut edits = Edits::default();
+        edits.tone.mapper = ToneMapper::Linear;
+        send.send(Work::Save {
+            load_id: 1,
+            path: failed_save.clone(),
+            edits: edits.clone(),
+        })
+        .unwrap();
+        send.send(Work::Export {
+            load_id: 1,
+            original: original.clone(),
+            path: failed_export.clone(),
+            image: image.clone(),
+            edits: edits.clone(),
+            space: OutputSpace::Srgb,
+        })
+        .unwrap();
+        send.send(Work::Open {
+            id: 2,
+            path: original.clone(),
+        })
+        .unwrap();
+        for (expected, destination) in [
+            (ErrorScope::Save(1), &failed_save),
+            (ErrorScope::Export(1), &failed_export),
+        ] {
+            let Reply::Error { scope, message } = receive
+                .recv_timeout(std::time::Duration::from_secs(3))
+                .unwrap()
+            else {
+                panic!("Blocked durable destination should fail");
+            };
+            assert_eq!(scope, expected);
+            assert!(
+                scope.applies(2, 3),
+                "Durable failure must still be reported"
+            );
+            assert!(
+                message.contains(destination.to_str().unwrap()),
+                "Failure must identify its destination: {message}"
+            );
+            let mut busy = Some(Busy::Load(2));
+            scope.finish_busy(&mut busy);
+            assert_eq!(
+                busy,
+                Some(Busy::Load(2)),
+                "Old I/O cleared the new document's activity"
+            );
+            if scope == ErrorScope::Save(1) {
+                let mut exporting = Some(Busy::Export(1));
+                scope.finish_busy(&mut exporting);
+                assert_eq!(
+                    exporting,
+                    Some(Busy::Export(1)),
+                    "Saving never owned the export's busy state"
+                );
+            }
+        }
+        let Reply::Opened { id, .. } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Worker did not open the next document");
+        };
+        assert_eq!(id, 2);
+        let mut busy = Some(Busy::Export(2));
+        ErrorScope::Preview(3).finish_busy(&mut busy);
+        assert_eq!(
+            busy,
+            Some(Busy::Export(2)),
+            "Preview failure cannot finish an export"
+        );
+        let saved = sidecar::path_for(&original);
+        let exported = directory.path().join("result.png");
+        send.send(Work::Save {
+            load_id: 2,
+            path: saved.clone(),
+            edits: edits.clone(),
+        })
+        .unwrap();
+        send.send(Work::Export {
+            load_id: 2,
+            original: original.clone(),
+            path: exported.clone(),
+            image,
+            edits: edits.clone(),
+            space: OutputSpace::Srgb,
+        })
+        .unwrap();
+        let Reply::Saved {
+            load_id,
+            path,
+            edits: snapshot,
+        } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Worker did not save the current document");
+        };
+        assert_eq!(load_id, 2);
+        assert_eq!(path, saved);
+        assert_eq!(snapshot, edits);
+        assert_eq!(sidecar::load(&saved).unwrap(), edits);
+        let Reply::Exported { load_id, path } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Worker did not export the current document");
+        };
+        assert_eq!(load_id, 2);
+        assert_eq!(path, exported);
+        ErrorScope::Export(load_id).finish_busy(&mut busy);
+        assert_eq!(busy, None);
+        assert_eq!(image::image_dimensions(exported).unwrap(), (2, 2));
+        assert_eq!(std::fs::read(&original).unwrap(), original_bytes);
+        drop(send);
+        worker.join().unwrap();
+    }
     #[test]
     fn failed_old_preview_is_scoped_and_the_worker_still_renders_the_new_request() {
         let (send, requests) = mpsc::channel();
