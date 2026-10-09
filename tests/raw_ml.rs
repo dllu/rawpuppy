@@ -7,6 +7,59 @@ fn model() -> BayerModel {
     BayerModel::open(std::path::Path::new(&directory), InferenceDevice::Auto).unwrap()
 }
 
+#[test]
+#[ignore = "requires the verified external RawNIND graph"]
+fn selected_native_device_agrees_with_cpu_on_signed_and_above_white_input() {
+    let directory = std::env::var_os("RAWPUPPY_TEST_RAWNIND_GRAPH")
+        .expect("Set RAWPUPPY_TEST_RAWNIND_GRAPH to the verified prepared graph directory");
+    let cpu = BayerModel::open(std::path::Path::new(&directory), InferenceDevice::Cpu).unwrap();
+    let selected = model();
+    eprintln!(
+        "selected native RAW inference device: {:?}",
+        selected.device()
+    );
+    if std::env::var("RAWPUPPY_TEST_REQUIRE_MPS").as_deref() == Ok("1") {
+        assert_eq!(
+            selected.device(),
+            tch::Device::Mps,
+            "MPS must execute this check"
+        );
+    }
+    let mut maximum = 0f32;
+    for pattern in ["RGGB", "BGGR", "GRBG", "GBRG"] {
+        let mut source = sensor(109, 111, pattern);
+        let cfa = source.cfa.as_ref().unwrap();
+        for y in 0..111 {
+            for x in 0..109 {
+                let rgb = [
+                    -0.08 + 0.6 * x as f32 / 108.,
+                    0.1 + 0.4 * y as f32 / 110.,
+                    1.2 + 0.4 * ((x + 3 * y) as f32 * 0.07).sin(),
+                ];
+                source.data[y * 109 + x] = rgb[cfa.color_at(y, x)];
+            }
+        }
+        assert!(source.data.iter().any(|v| *v < 0.));
+        assert!(source.data.iter().any(|v| *v > 1.));
+        let original = source.data.clone();
+        let expected = cpu.reconstruct_patch(&source, [17, 19], [31, 33]).unwrap();
+        let actual = selected
+            .reconstruct_patch(&source, [17, 19], [31, 33])
+            .unwrap();
+        assert_eq!(actual.size, expected.size);
+        assert_eq!(actual.origin, expected.origin);
+        assert_eq!(source.data, original);
+        for (a, b) in actual.pixels.iter().zip(&expected.pixels) {
+            for channel in 0..3 {
+                assert!(a[channel].is_finite());
+                maximum = maximum.max((a[channel] - b[channel]).abs());
+            }
+        }
+    }
+    eprintln!("maximum camera-linear CPU/device difference: {maximum}");
+    assert!(maximum < 3e-5, "Native device diverged from CPU: {maximum}");
+}
+
 fn sensor(width: usize, height: usize, pattern: &str) -> SensorImage {
     let mut source = SensorImage::from_rgb(width, height, vec![0.; width * height * 3]).unwrap();
     let cfa = rawler::CFA::new(pattern);

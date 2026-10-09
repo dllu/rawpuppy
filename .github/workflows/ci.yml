@@ -70,13 +70,18 @@ jobs:
         env:
           RUST_MIN_STACK: '33554432'
         run: cargo test --test gpu --test hdr -- --ignored --nocapture
-  native-moebius:
-    runs-on: ubuntu-latest
+  native-learning:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     env:
       LIBTORCH_USE_PYTORCH: '1'
-      CXX: clang++
-      CXXFLAGS: '-g0'
       CARGO_BUILD_JOBS: '2'
+      OMP_NUM_THREADS: '2'
+      MKL_NUM_THREADS: '2'
+      PYTORCH_ENABLE_MPS_FALLBACK: '0'
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -85,11 +90,54 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
-      - run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libwayland-dev
+      - name: Install CPU LibTorch on Linux and Windows
+        if: runner.os != 'macOS'
+        run: python -m pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
+      - name: Install native Apple Silicon LibTorch
+        if: runner.os == 'macOS'
+        run: python -m pip install torch==2.13.0
+      - name: Configure native library loader
+        shell: python
+        run: |
+          import os, pathlib, torch
+          library = str(pathlib.Path(torch.__file__).parent / 'lib')
+          with open(os.environ['GITHUB_PATH'], 'a') as handle:
+              handle.write(library + '\n')
+          with open(os.environ['GITHUB_ENV'], 'a') as handle:
+              if os.environ['RUNNER_OS'] == 'Linux':
+                  handle.write('CXX=clang++\nCXXFLAGS=-g0\n')
+                  handle.write('LD_LIBRARY_PATH=' + library + '\n')
+              elif os.environ['RUNNER_OS'] == 'macOS':
+                  handle.write('DYLD_LIBRARY_PATH=' + library + '\n')
+                  handle.write('RAWPUPPY_TEST_REQUIRE_MPS=1\n')
+              root = pathlib.Path(os.environ['RUNNER_TEMP']) / ('rawpuppy-native-' + os.environ['GITHUB_RUN_ID'] + '-' + os.environ['GITHUB_RUN_ATTEMPT'])
+              handle.write('RAWPUPPY_CI_MODEL_ROOT=' + str(root) + '\n')
+              handle.write('RAWPUPPY_TEST_RAWNIND_GRAPH=' + str(root / 'graph') + '\n')
+              handle.write('XDG_CACHE_HOME=' + str(root / 'cache') + '\n')
+      - name: Linux neural build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y liblcms2-dev libxkbcommon-dev libwayland-dev
+      - name: macOS neural build dependencies
+        if: runner.os == 'macOS'
+        run: brew install little-cms2
+      - name: Prepare verified real RAW graph
+        shell: bash
+        run: python tools/prepare_ci_raw_model.py "$RAWPUPPY_CI_MODEL_ROOT"
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --features moebius,raw-ml --all-targets -j 2 -- -D warnings
       - name: Native scheduler and layer tests
-        run: |
-          export LD_LIBRARY_PATH="$(python -c 'import torch,pathlib;print(pathlib.Path(torch.__file__).parent / "lib")'):${LD_LIBRARY_PATH:-}"
-          cargo test --features moebius,raw-ml -j 2
+        run: cargo test --features moebius,raw-ml -j 2 --locked
+      - name: Install attributed RAW graph for renderer tests
+        shell: bash
+        run: cargo run --features moebius,raw-ml -j 2 --locked -- install-raw-model "$RAWPUPPY_TEST_RAWNIND_GRAPH"
+      - name: Real native RAW inference and CPU parity
+        run: cargo test --features moebius,raw-ml --test raw_ml -j 2 --locked -- --ignored --test-threads=1 --nocapture
+      - name: Retain native graph provenance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-raw-${{ runner.os }}
+          path: |
+            ${{ env.RAWPUPPY_TEST_RAWNIND_GRAPH }}/manifest.json
+            ${{ env.RAWPUPPY_TEST_RAWNIND_GRAPH }}/NOTICE.txt
+          if-no-files-found: ignore

@@ -66,6 +66,19 @@ their hashes, attribution, source identities and maximum numerical differences.
 The loader requires manifest version 2 and verifies the graph checksum.
 `--device cpu` also ran successfully. Native Metal/MPS inference is unverified.
 
+The native-learning CI matrix now covers Linux, macOS and Windows with matching
+PyTorch/LibTorch 2.13. `tools/prepare_ci_raw_model.py` downloads the published
+31 MB weights, verifies their exact size/hash, checks out the pinned external
+oracle, and prepares the independently expressed graph with attribution. Tests
+install it into an isolated model cache and run the seven real-model checks,
+including all Bayer phases, wide inputs, tiles, cancellation and renderer reuse.
+The device comparison includes signed/above-white inputs and compares against
+CPU output. macOS explicitly requires MPS, with CPU operator fallback disabled.
+Only graph provenance and attribution are uploaded, not the weights or photos.
+CI execution results still need to be observed before claiming those platforms
+verified. Local Linux CPU checks pass; the new GB10 CUDA comparison differs from
+CPU by at most `1.55e-6` camera-linear units in its four-phase synthetic probe.
+
 Regions use **unrotated sensor coordinates**, including sensor margins. The model
 receives packed RGGB `[R,G top-right,G bottom-left,B]`, without white balance.
 Reflection at the photographed active area supplies context without sensor
