@@ -60,7 +60,12 @@ save/reload, regeneration after exposure changes, and four-corner filling on a
 GFX100S photo have been exercised. Prepared contexts contain 512×512 model detail;
 large gaps and boundary/detail quality still need further evaluation. The same
 prepared graphs ran natively on CPU, taking 27.3 seconds for the 10-step synthetic
-test with eight OpenMP workers. MPS/Windows inference has not been exercised.
+test with eight OpenMP workers. Subsequent native-learning CI verified actual
+Windows CPU and macOS MPS sampling with the same preparation and integrity
+checks. Run `37980551392` passed all six desktop/native-learning jobs; its macOS
+case required MPS and disabled CPU operator fallback. See
+[runtime verification](moebius.md) for details. This establishes execution and
+sample preservation, not general photographic quality.
 
 An initial 18-degree GFX100S rotation exposed weak outpainting: corner-centered
 context put most pixels outside the photograph and produced dark wedges despite

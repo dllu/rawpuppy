@@ -295,35 +295,47 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                 renderer.set_document(path);
                 let hash = crate::synthesis::recipe_hash(&edits)?;
                 let (w, h) = renderer.dimensions(image.clone(), &edits, None)?;
-                let mut jobs = Vec::new();
-                if regenerate {
-                    for fill in &edits.display.synthesis {
-                        jobs.push((fill.region, fill.dabs.clone(), fill.fill_gaps, steps, seed));
-                    }
-                } else if gaps {
+                let wants_gaps =
+                    gaps || regenerate && edits.display.synthesis.iter().any(|fill| fill.fill_gaps);
+                let gap_regions = if wants_gaps {
                     let mut base = edits.clone();
                     base.display.synthesis.clear();
-                    let probe =
-                        renderer.render_region(image.clone(), &base, [0., 0., 1., 1.], 128, 128)?;
-                    for region in crate::synthesis::gap_contexts(&probe, w, h) {
-                        jobs.push((region, vec![], true, steps, seed));
-                    }
+                    renderer.gap_contexts(image.clone(), &base)?
                 } else {
-                    jobs.push((
-                        crate::synthesis::brush_context(&dabs, w, h)?,
+                    vec![]
+                };
+                let jobs = if regenerate {
+                    crate::synthesis::regeneration_contexts(
+                        &edits.display.synthesis,
+                        w,
+                        h,
+                        &gap_regions,
+                    )?
+                } else if gaps {
+                    gap_regions
+                        .into_iter()
+                        .map(|region| crate::synthesis::FillContext {
+                            region,
+                            dabs: vec![],
+                            fill_gaps: true,
+                        })
+                        .collect()
+                } else {
+                    vec![crate::synthesis::FillContext {
+                        region: crate::synthesis::brush_context(&dabs, w, h)?,
                         dabs,
-                        false,
-                        steps,
-                        seed,
-                    ));
+                        fill_gaps: false,
+                    }]
+                };
+                if !regenerate {
+                    ensure!(!jobs.is_empty(), "No geometric gaps to fill");
                 }
-                ensure!(!jobs.is_empty(), "No geometric gaps to fill");
                 let mut fills = Vec::new();
                 let mut current = edits.clone();
                 if regenerate {
                     current.display.synthesis.clear();
                 }
-                for (region, dabs, gaps, steps, seed) in jobs {
+                for job in jobs {
                     let settings = crate::moebius::Sampling {
                         steps,
                         seed,
@@ -332,9 +344,9 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                     let fill = renderer.generate_fill(
                         image.clone(),
                         &current,
-                        region,
-                        dabs,
-                        gaps,
+                        job.region,
+                        job.dabs,
+                        job.fill_gaps,
                         &settings,
                     )?;
                     current.display.synthesis.push(fill.clone());
@@ -961,6 +973,7 @@ impl Editor {
                         == Some(&recipe_hash)
                     {
                         let previous = self.edits.clone();
+                        let cleared_gaps = replace && fills.is_empty();
                         if replace {
                             self.edits.display.synthesis.clear();
                         }
@@ -968,7 +981,11 @@ impl Editor {
                         self.remember(previous);
                         self.mask.clear();
                         self.tool = Tool::View;
-                        self.status = "Generated fill ready; save edits to keep it".into();
+                        self.status = if cleared_gaps {
+                            "No geometric gaps remain; save edits to keep the update".into()
+                        } else {
+                            "Generated fill ready; save edits to keep it".into()
+                        };
                     }
                 }
                 Reply::Exported { load_id, path } if self.busy == Some(Busy::Export(load_id)) => {
@@ -1730,7 +1747,7 @@ impl Editor {
                 if self.tool == Tool::Mask
                     && !self.compare
                     && self.busy.is_none()
-                    && (response.clicked() || response.dragged())
+                    && primary_stroke(&response)
                     && let Some(pos) = response.interact_pointer_pos()
                 {
                     let uv = [
@@ -1756,9 +1773,12 @@ impl Editor {
                         region[0] + (pos.x - rect.left()) / rect.width() * region[2],
                         region[1] + (pos.y - rect.top()) / rect.height() * region[3],
                     ];
-                    if ui.input(|i| i.modifiers.alt) && response.clicked() {
+                    if ui.input(|i| i.modifiers.alt)
+                        && response.clicked_by(egui::PointerButton::Primary)
+                    {
                         self.clone_source = Some(uv);
-                    } else if (response.clicked() || response.dragged())
+                    } else if !ui.input(|i| i.modifiers.alt)
+                        && primary_stroke(&response)
                         && let Some(source) = self.clone_source
                     {
                         if !self.stroke_recorded {
@@ -1933,7 +1953,81 @@ fn slider(
     ui.add(egui::Slider::new(value, range).text(label).suffix(suffix));
 }
 
-fn curve_editor(ui: &mut egui::Ui, points: &mut Vec<[f32; 2]>) {
+fn primary_stroke(response: &egui::Response) -> bool {
+    response.clicked_by(egui::PointerButton::Primary)
+        || response.dragged_by(egui::PointerButton::Primary)
+}
+
+#[cfg(test)]
+mod brush_interaction_tests {
+    use super::*;
+    fn frame(ctx: &egui::Context, time: f64, events: Vec<egui::Event>) -> (Rect, bool, bool) {
+        let mut result = (Rect::NOTHING, false, false);
+        let mut output = ctx.run_ui(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(Pos2::ZERO, Vec2::new(400., 300.))),
+                time: Some(time),
+                events,
+                ..Default::default()
+            },
+            |ui| {
+                let (rect, response) =
+                    ui.allocate_exact_size(Vec2::new(300., 150.), egui::Sense::click_and_drag());
+                result = (
+                    rect,
+                    primary_stroke(&response),
+                    response.dragged_by(egui::PointerButton::Middle),
+                );
+            },
+        );
+        output.textures_delta.clear();
+        result
+    }
+    fn button(pos: Pos2, button: egui::PointerButton, pressed: bool) -> egui::Event {
+        egui::Event::PointerButton {
+            pos,
+            button,
+            pressed,
+            modifiers: egui::Modifiers::NONE,
+        }
+    }
+    #[test]
+    fn middle_button_pans_without_painting_and_primary_drag_paints() {
+        let ctx = egui::Context::default();
+        let (rect, _, _) = frame(&ctx, 0., vec![]);
+        let start = rect.center();
+        frame(
+            &ctx,
+            0.1,
+            vec![
+                egui::Event::PointerMoved(start),
+                button(start, egui::PointerButton::Middle, true),
+            ],
+        );
+        let end = start + Vec2::new(20., 10.);
+        let (_, paint, pan) = frame(&ctx, 0.2, vec![egui::Event::PointerMoved(end)]);
+        assert!(pan, "Middle-button drag must remain a pan gesture");
+        assert!(!paint, "Pan gesture also painted a brush stroke");
+        frame(
+            &ctx,
+            0.3,
+            vec![button(end, egui::PointerButton::Middle, false)],
+        );
+        frame(
+            &ctx,
+            0.4,
+            vec![
+                egui::Event::PointerMoved(start),
+                button(start, egui::PointerButton::Primary, true),
+            ],
+        );
+        let (_, paint, pan) = frame(&ctx, 0.5, vec![egui::Event::PointerMoved(end)]);
+        assert!(paint, "Primary drag must still paint");
+        assert!(!pan);
+    }
+}
+
+fn curve_editor(ui: &mut egui::Ui, points: &mut Vec<[f32; 2]>) -> Rect {
     let (rect, response) = ui.allocate_exact_size(
         Vec2::new(ui.available_width(), 150.),
         egui::Sense::click_and_drag(),
@@ -1962,6 +2056,22 @@ fn curve_editor(ui: &mut egui::Ui, points: &mut Vec<[f32; 2]>) {
             Color32::WHITE,
         );
     }
+    let dragged_point = response.id.with("dragged-curve-point");
+    if response.drag_started()
+        && let Some(origin) = ui.input(|i| i.pointer.press_origin())
+    {
+        let x = ((origin.x - rect.left()) / rect.width()).clamp(0., 1.);
+        let nearest = points
+            .iter()
+            .enumerate()
+            .min_by(|(_, a), (_, b)| (a[0] - x).abs().total_cmp(&(b[0] - x).abs()))
+            .map(|(i, _)| i)
+            .unwrap();
+        ui.data_mut(|data| data.insert_temp(dragged_point, nearest));
+    }
+    if response.drag_stopped() || !ui.input(|i| i.pointer.primary_down()) {
+        ui.data_mut(|data| data.remove::<usize>(dragged_point));
+    }
     if response.double_clicked()
         && let Some(pos) = response.interact_pointer_pos()
     {
@@ -1973,14 +2083,10 @@ fn curve_editor(ui: &mut egui::Ui, points: &mut Vec<[f32; 2]>) {
         }
     } else if response.dragged()
         && let Some(pos) = response.interact_pointer_pos()
+        && let Some(nearest) = ui
+            .data(|data| data.get_temp::<usize>(dragged_point))
+            .filter(|index| *index < points.len())
     {
-        let x = ((pos.x - rect.left()) / rect.width()).clamp(0., 1.);
-        let nearest = points
-            .iter()
-            .enumerate()
-            .min_by(|(_, a), (_, b)| (a[0] - x).abs().total_cmp(&(b[0] - x).abs()))
-            .map(|(i, _)| i)
-            .unwrap();
         let lower = if nearest == 0 {
             0.
         } else {
@@ -2000,12 +2106,166 @@ fn curve_editor(ui: &mut egui::Ui, points: &mut Vec<[f32; 2]>) {
     );
     if ui.small_button("Reset curve").clicked() {
         *points = vec![[0., 0.], [1., 1.]];
+        ui.data_mut(|data| data.remove::<usize>(dragged_point));
+    }
+    rect
+}
+
+#[cfg(test)]
+mod curve_interaction_tests {
+    use super::*;
+    fn frame(
+        ctx: &egui::Context,
+        points: &mut Vec<[f32; 2]>,
+        time: f64,
+        events: Vec<egui::Event>,
+    ) -> Rect {
+        let mut rectangle = Rect::NOTHING;
+        let mut output = ctx.run_ui(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(Pos2::ZERO, Vec2::new(400., 300.))),
+                time: Some(time),
+                events,
+                ..Default::default()
+            },
+            |ui| rectangle = curve_editor(ui, points),
+        );
+        output.textures_delta.clear();
+        rectangle
+    }
+    fn button(pos: Pos2, pressed: bool) -> egui::Event {
+        egui::Event::PointerButton {
+            pos,
+            button: egui::PointerButton::Primary,
+            pressed,
+            modifiers: egui::Modifiers::NONE,
+        }
+    }
+    #[test]
+    fn a_curve_drag_keeps_its_original_point_across_other_handles() {
+        let ctx = egui::Context::default();
+        let mut points = vec![[0., 0.], [0.25, 0.25], [0.75, 0.75], [1., 1.]];
+        let rect = frame(&ctx, &mut points, 0., vec![]);
+        let at = |x: f32, y: f32| {
+            Pos2::new(
+                rect.left() + rect.width() * x,
+                rect.bottom() - rect.height() * y,
+            )
+        };
+        let start = at(0.25, 0.25);
+        frame(
+            &ctx,
+            &mut points,
+            0.1,
+            vec![egui::Event::PointerMoved(start), button(start, true)],
+        );
+        frame(
+            &ctx,
+            &mut points,
+            0.2,
+            vec![egui::Event::PointerMoved(at(0.25, 0.35))],
+        );
+        assert!((points[1][1] - 0.35).abs() < 1e-5);
+        let end = at(0.76, 0.6);
+        frame(&ctx, &mut points, 0.3, vec![egui::Event::PointerMoved(end)]);
+        assert!(
+            (points[1][1] - 0.6).abs() < 1e-5,
+            "Drag changed a different point: {points:?}"
+        );
+        assert_eq!(points[2], [0.75, 0.75]);
+        frame(&ctx, &mut points, 0.4, vec![button(end, false)]);
+        let second = at(0.75, 0.75);
+        frame(
+            &ctx,
+            &mut points,
+            0.5,
+            vec![egui::Event::PointerMoved(second), button(second, true)],
+        );
+        frame(
+            &ctx,
+            &mut points,
+            0.6,
+            vec![egui::Event::PointerMoved(at(0.75, 0.85))],
+        );
+        assert!((points[2][1] - 0.85).abs() < 1e-5);
+        assert!((points[1][1] - 0.6).abs() < 1e-5);
+        assert_eq!(points[0], [0., 0.]);
+        assert_eq!(points[3], [1., 1.]);
     }
 }
 
 #[cfg(test)]
 mod error_scope_tests {
     use super::*;
+    #[cfg(feature = "moebius")]
+    #[test]
+    fn regeneration_removes_obsolete_corner_fills_without_loading_assets_or_a_model() {
+        let directory = tempfile::tempdir().unwrap();
+        let original = directory.path().join("photo.png");
+        image::RgbImage::from_pixel(2, 2, image::Rgb([40, 50, 60]))
+            .save(&original)
+            .unwrap();
+        let bytes = std::fs::read(&original).unwrap();
+        let source = Arc::new(SensorImage::open(&original).unwrap());
+        let mut edits = Edits::for_image(&source);
+        let hash = "0".repeat(64);
+        edits
+            .display
+            .synthesis
+            .push(crate::synthesis::GeneratedFill {
+                region: [0., 0., 0.25, 0.25],
+                dabs: vec![],
+                fill_gaps: true,
+                steps: 20,
+                seed: 42,
+                asset: format!("{hash}.exr"),
+                sha256: hash.clone(),
+                source_sha256: hash.clone(),
+                source_color_revision: 0,
+                recipe_sha256: hash,
+                model: "moebius-scene-2026-v1".into(),
+            });
+        let expected_hash = crate::synthesis::recipe_hash(&edits).unwrap();
+        let (send, requests) = mpsc::channel();
+        let (responses, receive) = mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            super::worker(requests, responses, egui::Context::default(), Backend::Cpu)
+        });
+        // The current unrotated canvas has no gaps. Its obsolete corner asset
+        // deliberately does not exist, so replanning must use the base photo.
+        send.send(Work::Generate {
+            load_id: 1,
+            path: original.clone(),
+            image: source,
+            edits,
+            dabs: vec![],
+            gaps: false,
+            steps: 20,
+            seed: 42,
+            regenerate: true,
+        })
+        .unwrap();
+        let reply = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap();
+        drop(send);
+        worker.join().unwrap();
+        let Reply::Generated {
+            load_id,
+            recipe_hash,
+            fills,
+            replace,
+        } = reply
+        else {
+            panic!("Gap-free regeneration must remove obsolete fills");
+        };
+        assert_eq!(load_id, 1);
+        assert_eq!(recipe_hash, expected_hash);
+        assert!(replace && fills.is_empty());
+        assert!(!crate::synthesis::asset_directory(&original).exists());
+        assert!(!sidecar::path_for(&original).exists());
+        assert_eq!(std::fs::read(original).unwrap(), bytes);
+    }
     #[cfg(feature = "moebius")]
     #[test]
     fn invalid_generation_finishes_only_its_own_activity() {

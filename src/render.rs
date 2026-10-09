@@ -229,6 +229,59 @@ impl Renderer {
     pub fn set_document(&mut self, path: std::path::PathBuf) {
         self.layers = Some(crate::synthesis::Layers::new(path));
     }
+    fn layer_coverage<'a>(
+        &mut self,
+        edits: &'a Edits,
+        region: [f32; 4],
+        aspect: f32,
+    ) -> Result<Option<crate::synthesis::LayerCoverage<'a>>> {
+        if edits.display.synthesis.is_empty() {
+            return Ok(None);
+        }
+        Ok(Some(
+            self.layers
+                .as_mut()
+                .ok_or_else(|| anyhow::anyhow!("Saved fills need the original document path"))?
+                .coverage(edits, region, aspect)?,
+        ))
+    }
+    /// Plan corners using sparse interior samples and exact output perimeter pixels.
+    pub fn gap_contexts(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+    ) -> Result<Vec<[f32; 4]>> {
+        let image = self.prepare_source(image, edits)?;
+        let pipeline = Pipeline::compile(&image, edits)?;
+        let (w, h) = pipeline.dimensions(None);
+        let coverage = self.layer_coverage(edits, [0., 0., 1., 1.], h as f32 / w as f32)?;
+        Ok(crate::synthesis::gap_contexts(w, h, |uv| {
+            let alpha = pipeline.sample(uv)[3];
+            coverage
+                .as_ref()
+                .map_or(alpha, |layers| layers.alpha(uv, alpha))
+        }))
+    }
+    /// Keep output-edge gaps represented when a bounded inference crop misses them.
+    pub fn cover_gap_mask(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        region: [f32; 4],
+        mask: &mut [f32],
+        size: [usize; 2],
+    ) -> Result<()> {
+        let image = self.prepare_source(image, edits)?;
+        let pipeline = Pipeline::compile(&image, edits)?;
+        let (w, h) = pipeline.dimensions(None);
+        let coverage = self.layer_coverage(edits, region, h as f32 / w as f32)?;
+        crate::synthesis::cover_boundary_gaps(mask, size, region, [w, h], |uv| {
+            let alpha = pipeline.sample(uv)[3];
+            coverage
+                .as_ref()
+                .map_or(alpha, |layers| layers.alpha(uv, alpha))
+        })
+    }
     fn initialize(&mut self) -> Result<()> {
         if self.initialized || self.backend == Backend::Cpu {
             return Ok(());
@@ -347,9 +400,12 @@ impl Renderer {
         context_edits.display.synthesis.retain(|fill| {
             fill.recipe_sha256 == hash && fill.source_color_revision == color_revision
         });
-        let context = self.render_region(image, &context_edits, region, 512, 512)?;
-        let mask =
+        let context = self.render_region(image.clone(), &context_edits, region, 512, 512)?;
+        let mut mask =
             crate::synthesis::context_mask(&context, region, &dabs, fill_gaps, h as f32 / w as f32);
+        if fill_gaps {
+            self.cover_gap_mask(image, &context_edits, region, &mut mask, [512, 512])?;
+        }
         anyhow::ensure!(
             mask.iter().any(|v| *v > 0.),
             "No painted pixels or geometric gaps in this region"

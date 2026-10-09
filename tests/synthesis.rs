@@ -192,6 +192,95 @@ fn context_shape_remains_square_on_portrait_and_extremely_wide_images() {
 }
 
 #[test]
+fn edge_brush_context_uses_available_canvas_and_covers_the_selection() {
+    for (width, height) in [(11648, 8736), (8736, 11648), (100_003, 17)] {
+        for center in [[0.01, 0.01], [0.99, 0.01], [0.01, 0.99], [0.99, 0.99]] {
+            let dab = MaskDab {
+                center,
+                radius: 0.03,
+            };
+            let region =
+                synthesis::brush_context(std::slice::from_ref(&dab), width, height).unwrap();
+            for axis in 0..2 {
+                if region[axis + 2] <= 1. {
+                    assert!(
+                        region[axis] >= 0. && region[axis] + region[axis + 2] <= 1. + 1e-6,
+                        "Context wastes available canvas at {center:?}: {region:?}"
+                    );
+                }
+            }
+            assert!((region[2] * width as f32 - region[3] * height as f32).abs() < 0.002);
+            // Check the physical brush boundary, clipping only at the canvas.
+            // This also covers contexts taller than an extremely wide photo.
+            for angle in 0..360 {
+                let angle = (angle as f32).to_radians();
+                let point = [
+                    center[0] + dab.radius * angle.cos(),
+                    center[1] + dab.radius * width as f32 / height as f32 * angle.sin(),
+                ];
+                if point.iter().all(|v| (0.0..=1.0).contains(v)) {
+                    for axis in 0..2 {
+                        assert!(point[axis] >= region[axis] - 1e-6);
+                        assert!(point[axis] <= region[axis] + region[axis + 2] + 1e-6);
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn regeneration_replans_brushes_and_current_gaps_after_an_aspect_change() {
+    let dabs = vec![MaskDab {
+        center: [0.98, 0.04],
+        radius: 0.03,
+    }];
+    let hash = "0".repeat(64);
+    let brush = GeneratedFill {
+        region: synthesis::brush_context(&dabs, 4096, 2048).unwrap(),
+        dabs: dabs.clone(),
+        fill_gaps: false,
+        steps: 20,
+        seed: 0,
+        asset: format!("{hash}.exr"),
+        sha256: hash.clone(),
+        source_sha256: hash.clone(),
+        source_color_revision: 0,
+        recipe_sha256: hash,
+        model: "moebius-scene-2026-v1".into(),
+    };
+    let mut corner = brush.clone();
+    corner.region = [0., 0., 0.25, 0.5];
+    corner.dabs.clear();
+    corner.fill_gaps = true;
+    let old = vec![corner.clone(), brush.clone(), corner];
+    let snapshot = old.clone();
+    // The changed geometry now has one different corner; old corner layers
+    // must not duplicate the current fill or retain their obsolete region.
+    let gaps = [[0.75, 0.875, 0.25, 0.125]];
+    let current = synthesis::regeneration_contexts(&old, 2048, 4096, &gaps).unwrap();
+    assert_eq!(current.len(), 2);
+    assert!(current[0].fill_gaps);
+    assert_eq!(current[0].region, gaps[0]);
+    assert!(current[0].dabs.is_empty());
+    assert!(!current[1].fill_gaps);
+    assert_eq!(current[1].dabs, dabs);
+    assert_ne!(current[1].region, brush.region);
+    assert!((current[1].region[2] * 2048. - current[1].region[3] * 4096.).abs() < 0.002);
+    assert_eq!(old, snapshot, "Planning mutated saved layers");
+    // Cropping away every gap should still regenerate painted selections.
+    let current = synthesis::regeneration_contexts(&old, 2048, 4096, &[]).unwrap();
+    assert_eq!(current.len(), 1);
+    assert_eq!(current[0].dabs, dabs);
+    // With only corner fills left, a gap-free canvas requires no generation.
+    assert!(
+        synthesis::regeneration_contexts(&old[..1], 2048, 4096, &[])
+            .unwrap()
+            .is_empty()
+    );
+}
+
+#[test]
 fn corner_fill_uses_output_resolution_membership_and_preserves_opaque_pixels() {
     let dir = tempfile::tempdir().unwrap();
     let original = dir.path().join("photo.raw");
@@ -247,11 +336,211 @@ fn corner_context_keeps_square_shape_and_available_photographic_context() {
             probe.pixels[y * 128 + x][3] = 0.;
         }
     }
-    let regions = synthesis::gap_contexts(&probe, 8736, 11648);
+    let regions = synthesis::gap_contexts(8736, 11648, |uv| {
+        let x = ((uv[0] * probe.width as f32) as usize).min(probe.width - 1);
+        let y = ((uv[1] * probe.height as f32) as usize).min(probe.height - 1);
+        probe.pixels[y * probe.width + x][3]
+    });
     assert_eq!(regions.len(), 1);
     let region = regions[0];
     assert_eq!(region[..2], [0., 0.]);
     assert!((region[2] * 8736. - region[3] * 11648.).abs() < 0.002);
     assert!(region[2] >= 48. / 128. && region[3] >= 12. / 128.);
     assert!(region[0] + region[2] <= 1. && region[1] + region[3] <= 1.);
+}
+
+#[test]
+fn narrow_rotated_corners_are_detected_at_output_resolution() {
+    let (width, height) = (11648, 8736);
+    let geometry = rawpuppy::geometry::Geometry::compile(
+        &rawpuppy::edits::GeometryEdits {
+            rotation: 0.01,
+            ..Default::default()
+        },
+        width,
+        height,
+    )
+    .unwrap();
+    let alpha = |uv| {
+        if geometry
+            .map(uv, 1)
+            .is_some_and(|p| p.iter().all(|v| (0.0..=1.0).contains(v)))
+        {
+            1.
+        } else {
+            0.
+        }
+    };
+    let probe = Rendered {
+        width: 128,
+        height: 128,
+        pixels: (0..128 * 128)
+            .map(|i| {
+                [
+                    0.,
+                    0.,
+                    0.,
+                    alpha([
+                        ((i % 128) as f32 + 0.5) / 128.,
+                        ((i / 128) as f32 + 0.5) / 128.,
+                    ]),
+                ]
+            })
+            .collect(),
+    };
+    assert!(probe.pixels.iter().all(|p| p[3] == 1.));
+    let mut samples = 0;
+    let regions = synthesis::gap_contexts(width, height, |uv| {
+        samples += 1;
+        alpha(uv)
+    });
+    assert!(samples <= 128 * 128 + 2 * (width + height));
+    assert!(!regions.is_empty(), "Coarse probe missed real output gaps");
+    let mut missing = 0;
+    for x in 0..width {
+        for y in [0, height - 1] {
+            let uv = [
+                (x as f32 + 0.5) / width as f32,
+                (y as f32 + 0.5) / height as f32,
+            ];
+            if alpha(uv) < 1. {
+                missing += 1;
+                assert!(regions.iter().any(|r| uv[0] >= r[0]
+                    && uv[0] <= r[0] + r[2]
+                    && uv[1] >= r[1]
+                    && uv[1] <= r[1] + r[3]));
+            }
+        }
+    }
+    assert!(missing > 0);
+    for region in regions {
+        let context = Rendered {
+            width: 512,
+            height: 512,
+            pixels: (0..512 * 512)
+                .map(|i| {
+                    let uv = [
+                        region[0] + region[2] * ((i % 512) as f32 + 0.5) / 512.,
+                        region[1] + region[3] * ((i / 512) as f32 + 0.5) / 512.,
+                    ];
+                    [0.18, 0.18, 0.18, alpha(uv)]
+                })
+                .collect(),
+        };
+        let mut mask =
+            synthesis::context_mask(&context, region, &[], true, height as f32 / width as f32);
+        assert!(
+            mask.iter().all(|v| *v == 0.),
+            "This case must also miss the gap at inference resolution"
+        );
+        synthesis::cover_boundary_gaps(&mut mask, [512, 512], region, [width, height], alpha)
+            .unwrap();
+        assert!(mask.contains(&1.));
+        assert!(
+            (0..64).any(|y| (0..64).any(|x| mask[y * 8 * 512 + x * 8] == 1.)),
+            "Nearest latent downsampling lost the thin mask"
+        );
+    }
+}
+
+#[test]
+fn gap_planning_and_mask_coverage_respect_existing_saved_fills() {
+    use rawpuppy::{
+        input::SensorImage,
+        render::{Backend, Renderer},
+    };
+    use std::sync::Arc;
+    let dir = tempfile::tempdir().unwrap();
+    let original = dir.path().join("photo.raw");
+    std::fs::write(&original, b"immutable source").unwrap();
+    let source = Arc::new(SensorImage::from_rgb(128, 96, vec![0.18; 128 * 96 * 3]).unwrap());
+    let mut edits = Edits::default();
+    edits.geometry.rotation = 10.;
+    let mut renderer = Renderer::new(Backend::Cpu);
+    renderer.set_document(original.clone());
+    assert!(
+        !renderer
+            .gap_contexts(source.clone(), &edits)
+            .unwrap()
+            .is_empty()
+    );
+    let mut layers = Layers::new(original.clone());
+    let (asset, sha256) = layers
+        .store(&Rendered {
+            width: 2,
+            height: 2,
+            pixels: vec![[0.7, 0.2, 0.1, 1.]; 4],
+        })
+        .unwrap();
+    edits.display.synthesis.push(GeneratedFill {
+        region: [0., 0., 1., 1.],
+        dabs: vec![],
+        fill_gaps: true,
+        steps: 20,
+        seed: 0,
+        asset,
+        sha256,
+        source_sha256: layers.source_hash().unwrap().into(),
+        source_color_revision: 0,
+        recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        model: "moebius-scene-2026-v1".into(),
+    });
+    assert!(
+        renderer
+            .gap_contexts(source.clone(), &edits)
+            .unwrap()
+            .is_empty()
+    );
+    let mut mask = vec![0.; 512 * 512];
+    renderer
+        .cover_gap_mask(source, &edits, [0., 0., 1., 1.], &mut mask, [512, 512])
+        .unwrap();
+    assert!(mask.iter().all(|v| *v == 0.));
+    assert_eq!(std::fs::read(original).unwrap(), b"immutable source");
+}
+
+#[test]
+#[ignore = "requires an immutable real photograph via RAWPUPPY_TEST_GAP_SOURCE"]
+fn real_photo_narrow_corner_planning_and_model_masks() {
+    use rawpuppy::{
+        input::SensorImage,
+        pipeline::Pipeline,
+        render::{Backend, Renderer},
+    };
+    use std::sync::Arc;
+    let path = std::path::PathBuf::from(
+        std::env::var_os("RAWPUPPY_TEST_GAP_SOURCE").expect("Set RAWPUPPY_TEST_GAP_SOURCE"),
+    );
+    let hash = rawpuppy::models::sha256(&path).unwrap();
+    let source = Arc::new(SensorImage::open(&path).unwrap());
+    let mut edits = Edits::for_image(&source);
+    edits.lens = Default::default();
+    edits.tone.mapper = rawpuppy::edits::ToneMapper::Linear;
+    edits.geometry.rotation = 0.01;
+    let pipeline = Pipeline::compile(&source, &edits).unwrap();
+    let (w, h) = pipeline.dimensions(None);
+    assert!(w.max(h) > 8000, "Use a high-resolution photograph");
+    let coarse = pipeline.render_region([0., 0., 1., 1.], 128, 128).unwrap();
+    assert!(coarse.pixels.iter().all(|p| p[3] == 1.));
+    let mut renderer = Renderer::new(Backend::Cpu);
+    let started = std::time::Instant::now();
+    let regions = renderer.gap_contexts(source.clone(), &edits).unwrap();
+    eprintln!(
+        "{w}x{h}: {} contexts, planning {:?}",
+        regions.len(),
+        started.elapsed()
+    );
+    assert!(!regions.is_empty());
+    for region in regions {
+        let context = renderer
+            .render_region(source.clone(), &edits, region, 512, 512)
+            .unwrap();
+        let mut mask = synthesis::context_mask(&context, region, &[], true, h as f32 / w as f32);
+        assert!(mask.iter().all(|v| *v == 0.));
+        renderer
+            .cover_gap_mask(source.clone(), &edits, region, &mut mask, [512, 512])
+            .unwrap();
+        assert!((0..64).any(|y| (0..64).any(|x| mask[y * 8 * 512 + x * 8] == 1.)));
+    }
+    assert_eq!(rawpuppy::models::sha256(&path).unwrap(), hash);
 }

@@ -33,6 +33,41 @@ pub struct GeneratedFill {
     pub model: String,
 }
 
+pub struct FillContext {
+    pub region: [f32; 4],
+    pub dabs: Vec<MaskDab>,
+    pub fill_gaps: bool,
+}
+
+/// Replan saved selections for the current canvas, adding each current gap once.
+pub fn regeneration_contexts(
+    fills: &[GeneratedFill],
+    width: usize,
+    height: usize,
+    gap_regions: &[[f32; 4]],
+) -> Result<Vec<FillContext>> {
+    let mut contexts = Vec::new();
+    let mut gaps_added = false;
+    for fill in fills {
+        if !fill.dabs.is_empty() || !fill.fill_gaps {
+            contexts.push(FillContext {
+                region: brush_context(&fill.dabs, width, height)?,
+                dabs: fill.dabs.clone(),
+                fill_gaps: false,
+            });
+        }
+        if fill.fill_gaps && !gaps_added {
+            contexts.extend(gap_regions.iter().map(|region| FillContext {
+                region: *region,
+                dabs: vec![],
+                fill_gaps: true,
+            }));
+            gaps_added = true;
+        }
+    }
+    Ok(contexts)
+}
+
 pub fn asset_directory(original: &Path) -> PathBuf {
     let mut path = original.as_os_str().to_os_string();
     path.push(".rawpuppy-assets");
@@ -98,6 +133,37 @@ pub struct Layers {
     source_hash: Option<String>,
     loaded: HashMap<String, Arc<Rendered>>,
 }
+
+pub(crate) struct LayerCoverage<'a> {
+    layers: Vec<(&'a GeneratedFill, Arc<Rendered>)>,
+    aspect: f32,
+}
+impl LayerCoverage<'_> {
+    pub(crate) fn alpha(&self, uv: [f32; 2], mut alpha: f32) -> f32 {
+        for (fill, image) in &self.layers {
+            let local = [
+                (uv[0] - fill.region[0]) / fill.region[2],
+                (uv[1] - fill.region[1]) / fill.region[3],
+            ];
+            if local.iter().all(|v| (0.0..=1.0).contains(v))
+                && target_contains(fill, uv, self.aspect, alpha)
+            {
+                alpha += sample_layer(image, local[0], local[1])[3].clamp(0., 1.) * (1. - alpha);
+            }
+        }
+        alpha
+    }
+}
+
+fn target_contains(fill: &GeneratedFill, uv: [f32; 2], aspect: f32, alpha: f32) -> bool {
+    fill.fill_gaps && alpha < 1.
+        || fill.dabs.iter().any(|dab| {
+            let dx = uv[0] - dab.center[0];
+            let dy = (uv[1] - dab.center[1]) * aspect;
+            dx * dx + dy * dy <= dab.radius * dab.radius
+        })
+}
+
 impl Layers {
     pub fn new(original: PathBuf) -> Self {
         Self {
@@ -179,8 +245,7 @@ impl Layers {
         self.cache(fill.sha256.clone(), image.clone());
         Ok(image)
     }
-    /// Resolve all visible immutable layer snapshots before changing any output pixel.
-    pub fn apply(&mut self, edits: &Edits, image: &mut Rendered, viewport: [f32; 4]) -> Result<()> {
+    fn validate_layers(&mut self, edits: &Edits) -> Result<()> {
         if edits.display.synthesis.is_empty() {
             return Ok(());
         }
@@ -202,6 +267,36 @@ impl Layers {
                 "Generated fills need regeneration after changing the preceding edits"
             );
         }
+        Ok(())
+    }
+    /// Resolve immutable alpha coverage once for sparse output sampling.
+    pub(crate) fn coverage<'a>(
+        &mut self,
+        edits: &'a Edits,
+        viewport: [f32; 4],
+        aspect: f32,
+    ) -> Result<LayerCoverage<'a>> {
+        self.validate_layers(edits)?;
+        let mut layers = Vec::new();
+        layers.try_reserve(edits.display.synthesis.len())?;
+        for fill in &edits.display.synthesis {
+            if fill.region[0] + fill.region[2] < viewport[0]
+                || fill.region[1] + fill.region[3] < viewport[1]
+                || fill.region[0] > viewport[0] + viewport[2]
+                || fill.region[1] > viewport[1] + viewport[3]
+            {
+                continue;
+            }
+            layers.push((fill, self.load(fill)?));
+        }
+        Ok(LayerCoverage { layers, aspect })
+    }
+    /// Resolve all visible immutable layer snapshots before changing any output pixel.
+    pub fn apply(&mut self, edits: &Edits, image: &mut Rendered, viewport: [f32; 4]) -> Result<()> {
+        if edits.display.synthesis.is_empty() {
+            return Ok(());
+        }
+        self.validate_layers(edits)?;
         let mut prepared = Vec::new();
         prepared.try_reserve(edits.display.synthesis.len())?;
         for fill in &edits.display.synthesis {
@@ -246,12 +341,7 @@ impl Layers {
                         continue;
                     }
                     let pixel = &mut image.pixels[y * image.width + x];
-                    let painted = fill.dabs.iter().any(|dab| {
-                        let dx = uv[0] - dab.center[0];
-                        let dy = (uv[1] - dab.center[1]) * aspect;
-                        dx * dx + dy * dy <= dab.radius * dab.radius
-                    });
-                    if !(painted || fill.fill_gaps && pixel[3] < 1.) {
+                    if !target_contains(fill, uv, aspect, pixel[3]) {
                         continue;
                     }
                     for c in 0..3 {
@@ -316,12 +406,23 @@ pub fn brush_context(dabs: &[MaskDab], width: usize, height: usize) -> Result<[f
         }
     }
     let side = ((max[0] - min[0]).max(max[1] - min[1]) * 1.6).max(128.);
-    Ok([
+    Ok(fit_context_to_canvas([
         ((min[0] + max[0] - side) * 0.5 / w) as f32,
         ((min[1] + max[1] - side) * 0.5 / h) as f32,
         (side / w) as f32,
         (side / h) as f32,
-    ])
+    ]))
+}
+
+fn fit_context_to_canvas(mut region: [f32; 4]) -> [f32; 4] {
+    // Keep the physical square intact, shifting it onto known content on each
+    // axis where it fits. Oversized contexts still extend outside the canvas.
+    for axis in 0..2 {
+        if region[axis + 2] <= 1. {
+            region[axis] = region[axis].clamp(0., 1. - region[axis + 2]);
+        }
+    }
+    region
 }
 
 pub fn context_mask(
@@ -354,54 +455,118 @@ pub fn context_mask(
         .collect()
 }
 
-/// Inspect each corner independently and add square, physical-pixel context.
-pub fn gap_contexts(probe: &Rendered, width: usize, height: usize) -> Vec<[f32; 4]> {
-    let mut regions = Vec::new();
-    for qy in 0..2 {
-        for qx in 0..2 {
-            let mut bounds: Option<[usize; 4]> = None;
-            for y in qy * probe.height / 2..(qy + 1) * probe.height / 2 {
-                for x in qx * probe.width / 2..(qx + 1) * probe.width / 2 {
-                    if probe.pixels[y * probe.width + x][3] >= 1. {
-                        continue;
-                    }
-                    if let Some(b) = &mut bounds {
-                        b[0] = b[0].min(x);
-                        b[1] = b[1].min(y);
-                        b[2] = b[2].max(x + 1);
-                        b[3] = b[3].max(y + 1);
-                    } else {
-                        bounds = Some([x, y, x + 1, y + 1]);
-                    }
-                }
-            }
-            if let Some(b) = bounds {
-                let min = [
-                    b[0] as f64 / probe.width as f64 * width as f64,
-                    b[1] as f64 / probe.height as f64 * height as f64,
-                ];
-                let max = [
-                    b[2] as f64 / probe.width as f64 * width as f64,
-                    b[3] as f64 / probe.height as f64 * height as f64,
-                ];
-                let side = ((max[0] - min[0]).max(max[1] - min[1]) * 1.6).max(128.);
-                let mut region = [
-                    ((min[0] + max[0] - side) * 0.5 / width as f64) as f32,
-                    ((min[1] + max[1] - side) * 0.5 / height as f64) as f32,
-                    (side / width as f64) as f32,
-                    (side / height as f64) as f32,
-                ];
-                // Move context into the corrected canvas where it fits. Centering
-                // it on a corner needlessly masked most of the input with empty
-                // space outside the canvas, starving outpainting of known pixels.
-                for axis in 0..2 {
-                    if region[axis + 2] <= 1. {
-                        region[axis] = region[axis].clamp(0., 1. - region[axis + 2]);
-                    }
-                }
-                regions.push(region);
-            }
+/// Inspect a coarse interior and every output perimeter pixel without a photo raster.
+pub fn gap_contexts(
+    width: usize,
+    height: usize,
+    mut alpha: impl FnMut([f32; 2]) -> f32,
+) -> Vec<[f32; 4]> {
+    if width == 0 || height == 0 {
+        return vec![];
+    }
+    let mut bounds: [Option<[usize; 4]>; 4] = [None; 4];
+    let mut include = |cell: [usize; 4], pixel: [usize; 2]| {
+        if alpha(output_uv(pixel, width, height)) >= 1. {
+            return;
+        }
+        let quadrant = usize::from(pixel[1] >= height.div_ceil(2)) * 2
+            + usize::from(pixel[0] >= width.div_ceil(2));
+        if let Some(b) = &mut bounds[quadrant] {
+            b[0] = b[0].min(cell[0]);
+            b[1] = b[1].min(cell[1]);
+            b[2] = b[2].max(cell[2]);
+            b[3] = b[3].max(cell[3]);
+        } else {
+            bounds[quadrant] = Some(cell);
+        }
+    };
+    let (cols, rows) = (width.min(128), height.min(128));
+    for y in 0..rows {
+        for x in 0..cols {
+            // Wider intermediates avoid an artificial image dimension limit.
+            let cell = [
+                (x as u128 * width as u128 / cols as u128) as usize,
+                (y as u128 * height as u128 / rows as u128) as usize,
+                (((x + 1) as u128 * width as u128).div_ceil(cols as u128)) as usize,
+                (((y + 1) as u128 * height as u128).div_ceil(rows as u128)) as usize,
+            ];
+            include(
+                cell,
+                [
+                    cell[0] + (cell[2] - cell[0]) / 2,
+                    cell[1] + (cell[3] - cell[1]) / 2,
+                ],
+            );
         }
     }
-    regions
+    for [x, y] in boundary_pixels(width, height) {
+        include([x, y, x + 1, y + 1], [x, y]);
+    }
+    bounds
+        .into_iter()
+        .flatten()
+        .map(|b| {
+            let side = ((b[2] - b[0]).max(b[3] - b[1]) as f64 * 1.6).max(128.);
+            fit_context_to_canvas([
+                ((b[0] as f64 + b[2] as f64 - side) * 0.5 / width as f64) as f32,
+                ((b[1] as f64 + b[3] as f64 - side) * 0.5 / height as f64) as f32,
+                (side / width as f64) as f32,
+                (side / height as f64) as f32,
+            ])
+        })
+        .collect()
+}
+
+fn output_uv(pixel: [usize; 2], width: usize, height: usize) -> [f32; 2] {
+    [
+        (pixel[0] as f32 + 0.5) / width as f32,
+        (pixel[1] as f32 + 0.5) / height as f32,
+    ]
+}
+
+fn boundary_pixels(width: usize, height: usize) -> impl Iterator<Item = [usize; 2]> {
+    (0..width)
+        .flat_map(move |x| [[x, 0], [x, height - 1]])
+        .chain((0..height).flat_map(move |y| [[0, y], [width - 1, y]]))
+}
+
+/// Carry narrow output-edge gaps into Moebius's 8-pixel latent mask cells.
+pub fn cover_boundary_gaps(
+    mask: &mut [f32],
+    size: [usize; 2],
+    region: [f32; 4],
+    canvas: [usize; 2],
+    mut alpha: impl FnMut([f32; 2]) -> f32,
+) -> Result<()> {
+    const STRIDE: usize = 8;
+    ensure!(
+        mask.len() == pixel_count(size[0], size[1], 1)?,
+        "Invalid gap mask dimensions"
+    );
+    ensure!(
+        size.iter().all(|n| n.is_multiple_of(STRIDE)),
+        "Gap mask must match latent cells"
+    );
+    ensure!(canvas.iter().all(|n| *n > 0), "Invalid output dimensions");
+    ensure!(
+        region.iter().all(|v| v.is_finite()) && region[2] > 0. && region[3] > 0.,
+        "Invalid gap context"
+    );
+    for pixel in boundary_pixels(canvas[0], canvas[1]) {
+        let uv = output_uv(pixel, canvas[0], canvas[1]);
+        let local = [
+            (uv[0] - region[0]) / region[2],
+            (uv[1] - region[1]) / region[3],
+        ];
+        if !local.iter().all(|v| (0.0..=1.0).contains(v)) || alpha(uv) >= 1. {
+            continue;
+        }
+        let cell = std::array::from_fn::<_, 2, _>(|axis| {
+            ((local[axis] * size[axis] as f32) as usize).min(size[axis] - 1) / STRIDE * STRIDE
+        });
+        for y in cell[1]..cell[1] + STRIDE {
+            mask[y * size[0] + cell[0]..y * size[0] + cell[0] + STRIDE].fill(1.);
+        }
+    }
+    Ok(())
 }

@@ -235,9 +235,7 @@ fn main() -> Result<()> {
                 ));
             }
             if fill_gaps {
-                let probe =
-                    renderer.render_region(image.clone(), &edits, [0., 0., 1., 1.], 128, 128)?;
-                for region in rawpuppy::synthesis::gap_contexts(&probe, w, h) {
+                for region in renderer.gap_contexts(image.clone(), &edits)? {
                     regions.push((region, vec![], true));
                 }
             }

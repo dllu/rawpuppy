@@ -36,8 +36,8 @@ modules, checks source checkpoint hashes, verifies graph outputs against the
 original network, and records a manifest with graph checksums. Weight-folding
 optimizations are disabled because they measurably changed denoiser output.
 Prepared device literals use the input tensor's device. CPU/CUDA/MPS selection
-is performed in Rust. The same CUDA-prepared graphs have been executed on both
-CUDA and CPU; MPS and Windows runtime validation remain outstanding.
+is performed in Rust. Real graphs have executed natively on CUDA, Linux/Windows
+CPU and macOS MPS. The desktop CI matrix also checks an explicit CPU case.
 
 The native-learning CI matrix now prepares real 512-pixel graphs independently
 on Linux, macOS and Windows, using matching PyTorch 2.13 and pinned preparation
@@ -48,7 +48,12 @@ without importing the unused teacher or Python image-pipeline aggregators.
 Tests use `RAWPUPPY_TEST_MOEBIUS_GRAPH` to select these scratch graphs; macOS must
 actually sample on MPS with CPU operator fallback disabled. An explicit CPU
 case also runs on every platform. Only graph provenance is retained in CI.
-Execution results must still be observed before marking Windows/MPS verified.
+CI run `37980551392` passed all six jobs. Its macOS sampling log explicitly
+selects `Mps` with CPU operator fallback disabled; both MPS and explicit CPU
+cases passed finite-output, filled-selection and exact unselected-sample checks.
+These validate execution and integrity, not general photographic quality or
+physical display colorimetry. Cached graphs from older exporters should be
+regenerated for MPS as described below.
 
 Frozen graphs can serialize wrapped `0.5`/`1.0` scalar constants as float64
 tensors, which MPS rejects while loading an otherwise float32 network. The
@@ -67,6 +72,18 @@ are never stretched. “Fill geometric corners” computes a separate region for
 corner containing missing pixels, shifting the square inward where it fits to
 retain more photographic context. Sampling count and seed control regeneration.
 Generation runs on the photo worker, and ordinary preview updates remain separate.
+Brush context also shifts inward at canvas edges wherever the physical square
+fits, retaining more photographic content without stretching or dropping the
+selected part inside the canvas.
+
+Corner detection checks every perimeter pixel at the full output dimensions,
+alongside a sparse interior grid. Narrow edge gaps therefore survive even when
+the overview misses them. Missing perimeter samples are also projected into
+8-pixel inference blocks so they remain represented in the model's smaller
+latent mask. Final composition still selects only missing output pixels. Saved
+layer coverage is resolved once for these samples, avoiding redundant generation
+over already filled pixels. This uses a bounded interior grid plus work
+proportional to the perimeter, without allocating a full-resolution probe raster.
 
 ```sh
 target/release/rawpuppy inpaint photo.raf result.png \
@@ -93,6 +110,12 @@ image and offers regeneration; export rejects stale fills. A loaded layer can be
 rendered without loading the model, and the editor can regenerate the same masks
 with new steps/seed. Generated-layer caches are bounded and offscreen layers are
 culled. Unreferenced immutable assets are retained for undo/recovery.
+
+Regeneration replans brush context for the current canvas dimensions and detects
+geometric corners again from the base photograph. It preserves painted selections,
+adds each current corner once, and removes obsolete corner references if cropping
+or geometry changes leave no gaps. That gap-free update does not load the model
+or old assets. Save the updated recipe to retain the new layer references.
 
 Visible layer assets are resolved and validated before compositing changes any
 output pixel. A missing or corrupt later asset therefore leaves the entire input
