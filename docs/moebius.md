@@ -72,6 +72,10 @@ are never stretched. “Fill geometric corners” computes a separate region for
 corner containing missing pixels, shifting the square inward where it fits to
 retain more photographic context. Sampling count and seed control regeneration.
 Generation runs on the photo worker, and ordinary preview updates remain separate.
+Recoverable tensor-operation panics are converted to generation errors inside
+the serialized sampler. Temporary tensors and gradient state unwind before the
+RNG guard is released, preserving the worker and allowing another seeded attempt.
+The editor's existing scoped error handling reports the failed operation.
 Brush context also shifts inward at canvas edges wherever the physical square
 fits, retaining more photographic content without stretching or dropping the
 selected part inside the canvas.

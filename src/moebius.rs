@@ -195,15 +195,14 @@ impl Moebius {
                 pixels: image.pixels.clone(),
             });
         }
-        // LibTorch's RNG is process-local and global; serialize our seeded sampler calls.
-        let _lock = SAMPLER_LOCK
-            .lock()
-            .map_err(|_| anyhow::anyhow!("Diffusion sampler lock poisoned"))?;
-        let _no_grad = tch::no_grad_guard();
+        with_seeded_sampler(settings.seed, || self.sample_512(image, mask, settings))
+    }
+
+    fn sample_512(&self, image: &Rendered, mask: &[f32], settings: &Sampling) -> Result<Rendered> {
+        const N: usize = 512 * 512;
         // Graphs were frozen and numerically verified during preparation. Runtime
         // profiling/fusion can alter those numerics and adds a long first-call stall.
         tch::jit::f_set_graph_executor_optimize(false)?;
-        tch::manual_seed(settings.seed);
         let mut rgb = vec![0f32; 3 * N];
         for (i, pixel) in image.pixels.iter().enumerate() {
             for c in 0..3 {
@@ -293,6 +292,31 @@ impl Moebius {
     }
 }
 
+fn with_seeded_sampler<T>(seed: i64, sample: impl FnOnce() -> Result<T>) -> Result<T> {
+    // LibTorch's RNG is process-local and global; serialize our seeded sampler calls.
+    let _lock = SAMPLER_LOCK
+        .lock()
+        .map_err(|_| anyhow::anyhow!("Diffusion sampler lock poisoned"))?;
+    // tch's convenient tensor operators unwrap recoverable LibTorch errors.
+    // Catch their Rust panics before the guard is dropped, keeping the photo
+    // worker alive and preventing the process-wide RNG mutex from poisoning.
+    // Model weights and input slices are immutable during inference; all
+    // temporary tensors and the thread-local gradient guard unwind here.
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _no_grad = tch::no_grad_guard();
+        tch::manual_seed(seed);
+        sample()
+    }))
+    .unwrap_or_else(|payload| {
+        let message = payload
+            .downcast_ref::<String>()
+            .map(String::as_str)
+            .or_else(|| payload.downcast_ref::<&str>().copied())
+            .unwrap_or("Unknown tensor operation failure");
+        Err(anyhow::anyhow!("Moebius sampling failed: {message}"))
+    })
+}
+
 fn timesteps(settings: &Sampling) -> Vec<usize> {
     let stride = 1000 / settings.steps;
     let start = settings.steps - (settings.steps as f64 * settings.strength).floor() as usize;
@@ -306,6 +330,40 @@ fn timesteps(settings: &Sampling) -> Vec<usize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn a_tensor_failure_returns_an_error_and_the_next_seeded_call_recovers() {
+        let random = || {
+            with_seeded_sampler(127, || {
+                Ok(Vec::<f32>::try_from(Tensor::randn(
+                    [8],
+                    (Kind::Float, Device::Cpu),
+                ))?)
+            })
+            .unwrap()
+        };
+        let before = random();
+        let failure = std::panic::catch_unwind(|| {
+            with_seeded_sampler(999, || {
+                // A recoverable real LibTorch error without exhausting memory
+                // or touching CUDA: two values cannot be reshaped into three.
+                let _invalid = Tensor::from_slice(&[1f32, 2.]).reshape([3]);
+                Ok(())
+            })
+        });
+        if failure.is_err() {
+            SAMPLER_LOCK.clear_poison();
+        }
+        let failure =
+            failure.expect("Tensor panic escaped the sampler and would stop the photo worker");
+        assert!(failure.unwrap_err().to_string().contains("invalid"));
+        assert!(!SAMPLER_LOCK.is_poisoned());
+        assert_eq!(before, random(), "The next call did not reset its seed");
+        let leaf = Tensor::from_slice(&[1f32]).set_requires_grad(true);
+        assert!(
+            (&leaf + 1.).requires_grad(),
+            "No-grad state leaked out of the sampler"
+        );
+    }
     #[test]
     fn scheduler_matches_leading_ddim_with_img2img_strength() {
         assert_eq!(
