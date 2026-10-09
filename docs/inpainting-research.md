@@ -11,8 +11,8 @@ until broader photography and alternative-model comparisons are complete.
 
 | Model | Release / licensing | Current evidence |
 | --- | --- | --- |
-| [Moebius](https://github.com/hustvl/Moebius) | June 2026; authors explicitly license code and pretrained weights Apache-2.0. Hugging Face metadata says MIT; both notices should be retained when integrating. | Downloaded scene checkpoint and VAE, verified hashes, ran actual GPU inference. Leading integration candidate; more photography and corner-fill comparisons needed. |
-| [Qwen Image 2.1](https://qwen.ai/blog?id=qwen-image-2.1) | September 20, 2026; [research license](https://huggingface.co/Qwen/Qwen-Image-2.1/blob/main/LICENSE) limits use to research/evaluation without separate commercial permission. | Verified architecture and file inventory: about 33.1 GB of model artifacts. No local quality benchmark yet. Suitable comparison reference; do not assume earlier Qwen Apache terms apply. |
+| [Moebius](https://github.com/hustvl/Moebius) | June 2026; authors explicitly license code and pretrained weights Apache-2.0. Hugging Face metadata says MIT; both notices should be retained when integrating. | Native compact pilot with verified scene checkpoint and VAE. Tested removal invents detail; broader photography and corner-fill comparisons needed before final selection. |
+| [Qwen Image 2.1](https://qwen.ai/blog?id=qwen-image-2.1) | September 20, 2026; [research license](https://huggingface.co/Qwen/Qwen-Image-2.1/blob/main/LICENSE) limits use to research/evaluation without separate commercial permission. | Pinned and checksum-verified all seven checkpoints; actual GB10 comparison on identical image/mask. Promising 512-pixel removal, 13.72 s warm and 32.98 GiB allocation; unmasked changes and a failed 1024-pixel RGBA trial need further diagnosis. See [measurements](inpainting-comparison.md). |
 | [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) | January 2026; Apache-2.0 4B model. | Additional modern editing candidate; not benchmarked yet. |
 | [LLaDA-Image / Turbo](https://github.com/inclusionAI/LLaDA-Image) | September 4, 2026; [model card](https://huggingface.co/inclusionAI/LLaDA-Image) identifies Apache-2.0. | Recent 6B image generation/editing family; Turbo uses four sampling steps. Publisher evidence only; local inpainting, detail and runtime comparisons pending. |
 | [OSOR](https://github.com/Zhouqm-Git/osor) | June 2026; MIT code, but FLUX-Fill checkpoints are non-commercial and SDXL checkpoints use CreativeML Open RAIL++-M. | One-step object removal with learned shadow/reflection masks. Not benchmarked. Its mask expansion would need explicit handling alongside Rawpuppy's exact unpainted-pixel preservation. |
@@ -21,6 +21,8 @@ until broader photography and alternative-model comparisons are complete.
 Publisher benchmark claims are not Rawpuppy benchmarks. The Moebius paper compares
 the specialist to larger general models, but it does not prove this is the best
 model for the user's photographs or compare directly with September's Qwen 2.1.
+Our own same-input comparison is one removal example and also does not establish
+a general winner.
 
 ## Moebius measurements
 
@@ -69,7 +71,8 @@ controlled attribution of the improvement. Opaque output is an integrity check,
 not a quality metric. This example is not evidence of production-quality
 large-gap extrapolation or full-resolution detail.
 
-The next controlled comparison should use identical original context and masks
+The first same-input Qwen/Moebius comparison is recorded in
+[inpainting-comparison.md](inpainting-comparison.md). Extend it with identical original context and masks
 for small distraction removal, associated shadows/reflections, textured surfaces,
 fine structures and geometric gaps. Record visual artifacts at actual pixels,
 boundary consistency, sampling settings, elapsed time and peak memory. Native

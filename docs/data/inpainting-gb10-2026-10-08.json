@@ -1,0 +1,260 @@
+{
+  "device": "NVIDIA GB10 shared workstation",
+  "scope": "One public removal example; not a general quality ranking",
+  "moebius_512": [
+    {
+      "iteration": 0,
+      "seconds": 3.566527548013255,
+      "peak_gpu_bytes": 2309303808,
+      "result_size": [
+        512,
+        512
+      ],
+      "steps": 20
+    },
+    {
+      "iteration": 1,
+      "seconds": 2.914222049061209,
+      "peak_gpu_bytes": 2309303808,
+      "result_size": [
+        512,
+        512
+      ],
+      "steps": 20
+    },
+    {
+      "iteration": 2,
+      "seconds": 2.932807480916381,
+      "peak_gpu_bytes": 2309303808,
+      "result_size": [
+        512,
+        512
+      ],
+      "steps": 20
+    }
+  ],
+  "qwen-21-512": {
+    "purpose": "research/evaluation only; Qwen research license",
+    "model": "~/.cache/rawpuppy/models/qwen-image-2.1-evaluation",
+    "model_revision_from_download_metadata": "d26bb61231c349cf6b7896fa83353113880e1ba3",
+    "model_file_sha256": {
+      "text_encoder/model-00001-of-00004.safetensors": "dde00291b5f7fb92013895310a3da0ddba78674df9f10d505d375243dc01fc6f",
+      "text_encoder/model-00002-of-00004.safetensors": "9047faccc0a6d98496a52d55f27be1c94a9c259d1e283fbea0128d054a948d42",
+      "text_encoder/model-00003-of-00004.safetensors": "8c54187654c0176b73ae73785bf791dc9a14c9df7fb4310083a09d42048cb57e",
+      "text_encoder/model-00004-of-00004.safetensors": "5311532aaaeae3259eb6a7b2c600636be1159adf7ded35f53579f7d0e7d43cdd",
+      "transformer/diffusion_pytorch_model-00001-of-00002.safetensors": "9e6bc2d641e67bf277895ea8777141044a38f3edb7101bc469b2961dd7c36b4b",
+      "transformer/diffusion_pytorch_model-00002-of-00002.safetensors": "3aaf234dcbe128530479735854a346b5e3e66283b7c11db56f836bbd1c13ebaa",
+      "vae/diffusion_pytorch_model.safetensors": "a07a1b7c4ee2966a1b3bdc37de9b4f983d56937e46619f709a80b6e490675417"
+    },
+    "pipeline_direct_url": {
+      "url": "https://github.com/huggingface/diffusers",
+      "vcs_info": {
+        "vcs": "git",
+        "commit_id": "d961a388fd02e4db38d17350c8dd9b8abe642e05",
+        "requested_revision": "d961a388fd02e4db38d17350c8dd9b8abe642e05"
+      }
+    },
+    "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+    "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+    "prompt": "Image 1 is the original photograph. Image 2 is a mask: white pixels identify the area to edit, and black pixels identify the area to preserve. Remove the seated man from the white masked area of image 1, and reconstruct the background behind him. Continue the circular opening, distant trees and buildings, and the straight concrete wall naturally through the removed area. Keep the framing, geometry, colors, lighting and all unmasked content of image 1 unchanged. Return the edited photograph, without a mask or annotations.",
+    "versions": {
+      "torch": "2.14.0+cu130",
+      "diffusers": "0.41.0.dev0",
+      "transformers": "5.17.0",
+      "accelerate": "1.15.0"
+    },
+    "device": "NVIDIA GB10",
+    "dtype": "bfloat16",
+    "reference_order": [
+      "original RGB image",
+      "white-on-black mask RGB image"
+    ],
+    "steps": 40,
+    "seed": 42,
+    "output_resolution": 512,
+    "use_kv_cache": true,
+    "true_cfg_scale": 1.0,
+    "runs": [
+      {
+        "iteration": 0,
+        "seconds": 17.3900081620086,
+        "peak_gpu_allocated_bytes": 35409909760,
+        "peak_gpu_reserved_bytes": 36251369472,
+        "process_peak_rss_bytes": 11894738944,
+        "output_size": [
+          512,
+          512
+        ],
+        "outside_raw_mean_absolute_8bit_channel_change": 7.183766084167277,
+        "outside_raw_p95_absolute_8bit_channel_change": 52.0,
+        "outside_composed_max_absolute_8bit_channel_change": 0
+      },
+      {
+        "iteration": 1,
+        "seconds": 13.724472893984057,
+        "peak_gpu_allocated_bytes": 35409737728,
+        "peak_gpu_reserved_bytes": 36251369472,
+        "process_peak_rss_bytes": 11894738944,
+        "output_size": [
+          512,
+          512
+        ],
+        "outside_raw_mean_absolute_8bit_channel_change": 7.183766084167277,
+        "outside_raw_p95_absolute_8bit_channel_change": 52.0,
+        "outside_composed_max_absolute_8bit_channel_change": 0
+      }
+    ],
+    "load_seconds": 200.5578859350644,
+    "output_sha256": {
+      "0-composed.png": "d898d70fdd588e44523146d09287a41bab11c8f3c36803f00e59db114b9a522c",
+      "0-raw.png": "29250fb0c6a39ae9674abc7972db5121e05af3ea99b6d4d3de5a15d45cc49ae7",
+      "1-composed.png": "d898d70fdd588e44523146d09287a41bab11c8f3c36803f00e59db114b9a522c",
+      "1-raw.png": "29250fb0c6a39ae9674abc7972db5121e05af3ea99b6d4d3de5a15d45cc49ae7"
+    }
+  },
+  "qwen-21-1024": {
+    "purpose": "research/evaluation only; Qwen research license",
+    "model": "~/.cache/rawpuppy/models/qwen-image-2.1-evaluation",
+    "model_revision_from_download_metadata": "d26bb61231c349cf6b7896fa83353113880e1ba3",
+    "model_file_sha256": {
+      "text_encoder/model-00001-of-00004.safetensors": "dde00291b5f7fb92013895310a3da0ddba78674df9f10d505d375243dc01fc6f",
+      "text_encoder/model-00002-of-00004.safetensors": "9047faccc0a6d98496a52d55f27be1c94a9c259d1e283fbea0128d054a948d42",
+      "text_encoder/model-00003-of-00004.safetensors": "8c54187654c0176b73ae73785bf791dc9a14c9df7fb4310083a09d42048cb57e",
+      "text_encoder/model-00004-of-00004.safetensors": "5311532aaaeae3259eb6a7b2c600636be1159adf7ded35f53579f7d0e7d43cdd",
+      "transformer/diffusion_pytorch_model-00001-of-00002.safetensors": "9e6bc2d641e67bf277895ea8777141044a38f3edb7101bc469b2961dd7c36b4b",
+      "transformer/diffusion_pytorch_model-00002-of-00002.safetensors": "3aaf234dcbe128530479735854a346b5e3e66283b7c11db56f836bbd1c13ebaa",
+      "vae/diffusion_pytorch_model.safetensors": "a07a1b7c4ee2966a1b3bdc37de9b4f983d56937e46619f709a80b6e490675417"
+    },
+    "pipeline_direct_url": {
+      "url": "https://github.com/huggingface/diffusers",
+      "vcs_info": {
+        "vcs": "git",
+        "commit_id": "d961a388fd02e4db38d17350c8dd9b8abe642e05",
+        "requested_revision": "d961a388fd02e4db38d17350c8dd9b8abe642e05"
+      }
+    },
+    "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+    "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+    "prompt": "Image 1 is the original photograph. Image 2 is a mask: white pixels identify the area to edit, and black pixels identify the area to preserve. Remove the seated man from the white masked area of image 1, and reconstruct the background behind him. Continue the circular opening, distant trees and buildings, and the straight concrete wall naturally through the removed area. Keep the framing, geometry, colors, lighting and all unmasked content of image 1 unchanged. Return the edited photograph, without a mask or annotations.",
+    "versions": {
+      "torch": "2.14.0+cu130",
+      "diffusers": "0.41.0.dev0",
+      "transformers": "5.17.0",
+      "accelerate": "1.15.0"
+    },
+    "device": "NVIDIA GB10",
+    "dtype": "bfloat16",
+    "reference_order": [
+      "original RGB image",
+      "white-on-black mask RGB image"
+    ],
+    "steps": 40,
+    "seed": 42,
+    "output_resolution": 1024,
+    "use_kv_cache": true,
+    "true_cfg_scale": 1.0,
+    "runs": [
+      {
+        "iteration": 0,
+        "seconds": 67.86277683300432,
+        "peak_gpu_allocated_bytes": 43924267520,
+        "peak_gpu_reserved_bytes": 47544532992,
+        "process_peak_rss_bytes": 11902738432,
+        "output_size": [
+          1024,
+          1024
+        ],
+        "native_mode": "RGBA",
+        "native_min_alpha": 0,
+        "outside_raw_mean_absolute_8bit_channel_change": 32.64761445165582,
+        "outside_raw_p95_absolute_8bit_channel_change": 126.0,
+        "outside_composed_max_absolute_8bit_channel_change": 0
+      }
+    ],
+    "load_seconds": 190.22137140808627,
+    "output_sha256": {
+      "0-composed.png": "e7352c4f3dc4f5fbd9d9fb0500baa656b900eb24f399365c81726c760307aee8",
+      "0-native.png": "4b4eb59265c6d0a98aa14a239aadd4e3bc93f61b5bb6171ecb2ced6d662770d1",
+      "0-raw.png": "b6dcc471368e1b825cf2d5945490810d406ab4e9fd9797066e033c4b9b6c0092"
+    },
+    "derived_native_target_alpha": {
+      "min": 0,
+      "zero_pixels": 2432,
+      "target_pixels": 70492,
+      "method": "Native PNG alpha in positive nearest-neighbour-resized original mask"
+    }
+  },
+  "qwen-21-512-direct": {
+    "purpose": "research/evaluation only; Qwen research license",
+    "model": "~/.cache/rawpuppy/models/qwen-image-2.1-evaluation",
+    "model_revision_from_download_metadata": "d26bb61231c349cf6b7896fa83353113880e1ba3",
+    "model_file_sha256": {
+      "text_encoder/model-00001-of-00004.safetensors": "dde00291b5f7fb92013895310a3da0ddba78674df9f10d505d375243dc01fc6f",
+      "text_encoder/model-00002-of-00004.safetensors": "9047faccc0a6d98496a52d55f27be1c94a9c259d1e283fbea0128d054a948d42",
+      "text_encoder/model-00003-of-00004.safetensors": "8c54187654c0176b73ae73785bf791dc9a14c9df7fb4310083a09d42048cb57e",
+      "text_encoder/model-00004-of-00004.safetensors": "5311532aaaeae3259eb6a7b2c600636be1159adf7ded35f53579f7d0e7d43cdd",
+      "transformer/diffusion_pytorch_model-00001-of-00002.safetensors": "9e6bc2d641e67bf277895ea8777141044a38f3edb7101bc469b2961dd7c36b4b",
+      "transformer/diffusion_pytorch_model-00002-of-00002.safetensors": "3aaf234dcbe128530479735854a346b5e3e66283b7c11db56f836bbd1c13ebaa",
+      "vae/diffusion_pytorch_model.safetensors": "a07a1b7c4ee2966a1b3bdc37de9b4f983d56937e46619f709a80b6e490675417"
+    },
+    "pipeline_direct_url": {
+      "url": "https://github.com/huggingface/diffusers",
+      "vcs_info": {
+        "vcs": "git",
+        "commit_id": "d961a388fd02e4db38d17350c8dd9b8abe642e05",
+        "requested_revision": "d961a388fd02e4db38d17350c8dd9b8abe642e05"
+      }
+    },
+    "image_sha256": "25b87deec1bd2a25774395e9b4adb43308b059332ccb08a1028f96e8d8712880",
+    "mask_sha256": "6d104d8029084009ff6629013c0f272d49d54cf765a8ac6d446c795e33777f2c",
+    "prompt": "Image 1 is the original photograph. Image 2 is a mask: white pixels identify the area to edit, and black pixels identify the area to preserve. Remove the seated man from the white masked area of image 1, and reconstruct the background behind him. Continue the circular opening, distant trees and buildings, and the straight concrete wall naturally through the removed area. Keep the framing, geometry, colors, lighting and all unmasked content of image 1 unchanged. Return the edited photograph, without a mask or annotations.",
+    "versions": {
+      "torch": "2.14.0+cu130",
+      "diffusers": "0.41.0.dev0",
+      "transformers": "5.17.0",
+      "accelerate": "1.15.0"
+    },
+    "device": "NVIDIA GB10",
+    "dtype": "bfloat16",
+    "reference_order": [
+      "original RGB image",
+      "white-on-black mask RGB image"
+    ],
+    "steps": 40,
+    "seed": 42,
+    "output_resolution": 512,
+    "use_kv_cache": true,
+    "true_cfg_scale": 1.0,
+    "loader": "device_map=cuda",
+    "runs": [
+      {
+        "iteration": 0,
+        "seconds": 14.459263699012809,
+        "peak_gpu_allocated_bytes": 35396737024,
+        "peak_gpu_reserved_bytes": 36066820096,
+        "process_peak_rss_bytes": 18519126016,
+        "output_size": [
+          512,
+          512
+        ],
+        "native_mode": "RGBA",
+        "native_min_alpha": 253,
+        "outside_raw_mean_absolute_8bit_channel_change": 7.183766084167277,
+        "outside_raw_p95_absolute_8bit_channel_change": 52.0,
+        "outside_composed_max_absolute_8bit_channel_change": 0
+      }
+    ],
+    "load_seconds": 199.37700620805845,
+    "output_sha256": {
+      "0-composed.png": "d898d70fdd588e44523146d09287a41bab11c8f3c36803f00e59db114b9a522c",
+      "0-native.png": "1669cd082cda4bc1bcfd4aabc41e54b3515c87ba2fc47146de6b7f7126d4a239",
+      "0-raw.png": "29250fb0c6a39ae9674abc7972db5121e05af3ea99b6d4d3de5a15d45cc49ae7"
+    },
+    "derived_native_target_alpha": {
+      "min": 254,
+      "zero_pixels": 0,
+      "target_pixels": 17623,
+      "method": "Native PNG alpha in positive nearest-neighbour-resized original mask"
+    }
+  }
+}
