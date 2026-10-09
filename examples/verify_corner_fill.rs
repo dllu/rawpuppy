@@ -20,6 +20,8 @@ fn main() -> anyhow::Result<()> {
         rotation: f32,
         #[arg(long, default_value_t = 20)]
         steps: usize,
+        #[arg(long, default_value_t = 1.)]
+        scale: f32,
     }
     let args = Args::parse();
     ensure!(!args.output.exists(), "Choose a new output directory");
@@ -48,6 +50,7 @@ fn main() -> anyhow::Result<()> {
     let mut edits = Edits::for_image(&source);
     edits.lens = Default::default();
     edits.geometry.rotation = args.rotation;
+    edits.geometry.scale = args.scale;
     let mut renderer = Renderer::new(Backend::Cpu);
     renderer.set_document(original.clone());
     let (w, h) = renderer.dimensions(source.clone(), &edits, None)?;
@@ -76,12 +79,17 @@ fn main() -> anyhow::Result<()> {
     );
     let start = Instant::now();
     let mut times = Vec::new();
+    let mut skipped = 0;
     for region in regions {
         let started = Instant::now();
         let fill =
             renderer.generate_fill(source.clone(), &edits, region, vec![], true, &settings)?;
         times.push(started.elapsed().as_secs_f64());
-        edits.display.synthesis.push(fill);
+        if let Some(fill) = fill {
+            edits.display.synthesis.push(fill);
+        } else {
+            skipped += 1;
+        }
     }
     sidecar::save(&sidecar::path_for(&original), &edits)?;
     let loaded = sidecar::load(&sidecar::path_for(&original))?;
@@ -121,7 +129,8 @@ fn main() -> anyhow::Result<()> {
     let receipt = serde_json::json!({
         "purpose": "real-model output-perimeter conformance; not a perceptual quality benchmark",
         "build_profile": if cfg!(debug_assertions) { "debug" } else { "release" },
-        "dimensions": [w, h], "rotation": args.rotation, "settings": settings,
+        "dimensions": [w, h], "rotation": args.rotation, "scale": args.scale, "settings": settings,
+        "skipped_completed_contexts": skipped,
         "input_sha256": source_hash,
         "cuda_available": tch::Cuda::is_available(),
         "graph_manifest": serde_json::from_slice::<serde_json::Value>(&std::fs::read(graph)?)?,

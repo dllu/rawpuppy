@@ -341,16 +341,17 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                         seed,
                         ..Default::default()
                     };
-                    let fill = renderer.generate_fill(
+                    if let Some(fill) = renderer.generate_fill(
                         image.clone(),
                         &current,
                         job.region,
                         job.dabs,
                         job.fill_gaps,
                         &settings,
-                    )?;
-                    current.display.synthesis.push(fill.clone());
-                    fills.push(fill);
+                    )? {
+                        current.display.synthesis.push(fill.clone());
+                        fills.push(fill);
+                    }
                     ctx.request_repaint();
                 }
                 Ok(Reply::Generated {
@@ -973,7 +974,7 @@ impl Editor {
                         == Some(&recipe_hash)
                     {
                         let previous = self.edits.clone();
-                        let cleared_gaps = replace && fills.is_empty();
+                        let empty = fills.is_empty();
                         if replace {
                             self.edits.display.synthesis.clear();
                         }
@@ -981,8 +982,10 @@ impl Editor {
                         self.remember(previous);
                         self.mask.clear();
                         self.tool = Tool::View;
-                        self.status = if cleared_gaps {
+                        self.status = if empty && replace {
                             "No geometric gaps remain; save edits to keep the update".into()
+                        } else if empty {
+                            "No geometric gaps remain".into()
                         } else {
                             "Generated fill ready; save edits to keep it".into()
                         };

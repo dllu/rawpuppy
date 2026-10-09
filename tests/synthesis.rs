@@ -192,6 +192,180 @@ fn context_shape_remains_square_on_portrait_and_extremely_wide_images() {
 }
 
 #[test]
+fn empty_padding_is_model_context_but_not_a_canvas_target() {
+    let region = [-1., -1., 3., 3.];
+    let image = Rendered {
+        width: 16,
+        height: 16,
+        pixels: (0..16 * 16)
+            .map(|i| {
+                let uv = [
+                    -1. + 3. * ((i % 16) as f32 + 0.5) / 16.,
+                    -1. + 3. * ((i / 16) as f32 + 0.5) / 16.,
+                ];
+                let alpha = if uv.iter().all(|v| (0.0..=1.0).contains(v)) {
+                    1.
+                } else {
+                    0.
+                };
+                [0.18, 0.18, 0.18, alpha]
+            })
+            .collect(),
+    };
+    let model_mask = synthesis::context_mask(&image, region, &[], true, 1.);
+    assert!(
+        model_mask.contains(&1.),
+        "Empty padding must remain unknown to the model"
+    );
+    let mut targets = model_mask.clone();
+    synthesis::clip_mask_to_canvas(&mut targets, [16, 16], region).unwrap();
+    assert!(
+        targets.iter().all(|v| *v == 0.),
+        "Covered photo still has targets in its empty padding"
+    );
+    assert!(model_mask.contains(&1.));
+    // Preserve fractional selection weights inside the canvas.
+    let mut fractional = vec![0.25; 64];
+    synthesis::clip_mask_to_canvas(&mut fractional, [8, 8], [0., 0., 2., 2.]).unwrap();
+    for (i, v) in fractional.iter().enumerate() {
+        assert_eq!(*v, if i % 8 < 4 && i / 8 < 4 { 0.25 } else { 0. });
+    }
+}
+
+#[test]
+fn resampling_an_opaque_fill_keeps_every_output_sample_exactly_opaque() {
+    let directory = tempfile::tempdir().unwrap();
+    let original = directory.path().join("photo.raw");
+    std::fs::write(&original, b"immutable source").unwrap();
+    let mut layers = Layers::new(original);
+    let (asset, sha256) = layers
+        .store(&Rendered {
+            width: 2,
+            height: 2,
+            pixels: vec![[0.7, 0.2, 0.1, 1.]; 4],
+        })
+        .unwrap();
+    let mut edits = Edits::default();
+    edits.display.synthesis.push(GeneratedFill {
+        region: [0., 0., 1., 1.],
+        dabs: vec![],
+        fill_gaps: true,
+        steps: 20,
+        seed: 0,
+        asset,
+        sha256,
+        source_sha256: layers.source_hash().unwrap().into(),
+        source_color_revision: 0,
+        recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        model: "moebius-scene-2026-v1".into(),
+    });
+    let mut output = Rendered {
+        width: 127,
+        height: 113,
+        pixels: vec![[0.; 4]; 127 * 113],
+    };
+    layers.apply(&edits, &mut output, [0., 0., 1., 1.]).unwrap();
+    for pixel in output.pixels {
+        assert_eq!(
+            pixel[3], 1.,
+            "Opaque fill became partially transparent after interpolation"
+        );
+        for (actual, expected) in pixel[..3].iter().zip([0.7, 0.2, 0.1]) {
+            assert!((*actual - expected).abs() < 1e-6);
+        }
+    }
+}
+
+#[cfg(feature = "moebius")]
+#[test]
+fn a_completed_overlapping_corner_skips_inference_and_creates_no_asset() {
+    use rawpuppy::{
+        input::SensorImage,
+        moebius::Sampling,
+        render::{Backend, Renderer},
+    };
+    use std::sync::Arc;
+    let directory = tempfile::tempdir().unwrap();
+    let original = directory.path().join("photo.raw");
+    std::fs::write(&original, b"immutable source").unwrap();
+    let source =
+        Arc::new(SensorImage::from_rgb(100_003, 17, vec![0.18; 100_003 * 17 * 3]).unwrap());
+    let mut edits = Edits::default();
+    edits.geometry.scale = 0.99;
+    let mut renderer = Renderer::new(Backend::Cpu);
+    renderer.set_document(original.clone());
+    let regions = renderer.gap_contexts(source.clone(), &edits).unwrap();
+    assert_eq!(regions.len(), 4);
+    let mut layers = Layers::new(original.clone());
+    let (asset, sha256) = layers
+        .store(&Rendered {
+            width: 2,
+            height: 2,
+            pixels: vec![[0.7, 0.2, 0.1, 1.]; 4],
+        })
+        .unwrap();
+    edits.display.synthesis.push(GeneratedFill {
+        region: regions[0],
+        dabs: vec![],
+        fill_gaps: true,
+        steps: 20,
+        seed: 0,
+        asset,
+        sha256,
+        source_sha256: layers.source_hash().unwrap().into(),
+        source_color_revision: 0,
+        recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        model: "moebius-scene-2026-v1".into(),
+    });
+    // The first top-left fill also covers the bottom-left output gap, while
+    // the model crop still contains unknown padding outside the narrow photo.
+    let context = renderer
+        .render_region(source.clone(), &edits, regions[2], 512, 512)
+        .unwrap();
+    let model_mask = synthesis::context_mask(&context, regions[2], &[], true, 17. / 100_003.);
+    assert!(model_mask.contains(&1.));
+    let before = std::fs::read_dir(synthesis::asset_directory(&original))
+        .unwrap()
+        .count();
+    assert!(
+        renderer
+            .generate_fill(
+                source.clone(),
+                &edits,
+                regions[2],
+                vec![],
+                true,
+                &Sampling::default()
+            )
+            .unwrap()
+            .is_none()
+    );
+    assert_eq!(
+        std::fs::read_dir(synthesis::asset_directory(&original))
+            .unwrap()
+            .count(),
+        before
+    );
+    assert!(!rawpuppy::sidecar::path_for(&original).exists());
+    assert_eq!(std::fs::read(original).unwrap(), b"immutable source");
+    assert!(
+        renderer
+            .generate_fill(
+                source,
+                &edits,
+                regions[2],
+                vec![],
+                true,
+                &Sampling {
+                    steps: 1,
+                    ..Default::default()
+                }
+            )
+            .is_err()
+    );
+}
+
+#[test]
 fn edge_brush_context_uses_available_canvas_and_covers_the_selection() {
     for (width, height) in [(11648, 8736), (8736, 11648), (100_003, 17)] {
         for center in [[0.01, 0.01], [0.99, 0.01], [0.01, 0.99], [0.99, 0.99]] {

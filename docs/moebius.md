@@ -134,6 +134,20 @@ adds each current corner once, and removes obsolete corner references if croppin
 or geometry changes leave no gaps. That gap-free update does not load the model
 or old assets. Save the updated recipe to retain the new layer references.
 
+Overlapping corner jobs also check which canvas targets remain after earlier
+fills. A completed region is skipped without inference or a new asset. Empty
+padding outside the photograph remains unknown model context, but it cannot
+alone cause another generation. Interpolated layer alpha is normalized so an
+opaque fill stays exactly opaque instead of creating tiny false gaps.
+
+The CUDA verifier exercises this on a 100003×17 synthetic fixture scaled to 0.99:
+two contexts generated fills, two completed contexts were skipped, and save/reload
+filled 2,034 missing perimeter samples while preserving 198,006 opaque samples
+exactly. A repeat on the real GFX copy retained its 8,918 / 31,850 conformance
+counts. See [wide](data/overlapping-corners-wide-gb10-2026-10-09.json) and
+[GFX](data/overlapping-corners-gfx-gb10-2026-10-09.json) receipts. These are integrity
+checks, with duplicated edge-strip corner samples, rather than quality rankings.
+
 Visible layer assets are resolved and validated before compositing changes any
 output pixel. A missing or corrupt later asset therefore leaves the entire input
 raster unchanged. The persistent cache remains limited to 16 entries; one apply

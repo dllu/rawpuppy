@@ -382,6 +382,7 @@ impl Renderer {
     }
 
     #[cfg(feature = "moebius")]
+    /// Generate current canvas targets, or skip a geometric region already covered.
     pub fn generate_fill(
         &mut self,
         image: Arc<SensorImage>,
@@ -390,8 +391,9 @@ impl Renderer {
         dabs: Vec<crate::synthesis::MaskDab>,
         fill_gaps: bool,
         settings: &crate::moebius::Sampling,
-    ) -> Result<crate::synthesis::GeneratedFill> {
+    ) -> Result<Option<crate::synthesis::GeneratedFill>> {
         ensure_region(region)?;
+        settings.validate()?;
         let image = self.prepare_source(image, edits)?;
         let (w, h) = Pipeline::compile(&image, edits)?.dimensions(None);
         let color_revision = image.metadata.color_revision;
@@ -403,13 +405,21 @@ impl Renderer {
         let context = self.render_region(image.clone(), &context_edits, region, 512, 512)?;
         let mut mask =
             crate::synthesis::context_mask(&context, region, &dabs, fill_gaps, h as f32 / w as f32);
+        let mut targets = mask.clone();
+        crate::synthesis::clip_mask_to_canvas(&mut targets, [512, 512], region)?;
         if fill_gaps {
-            self.cover_gap_mask(image, &context_edits, region, &mut mask, [512, 512])?;
+            self.cover_gap_mask(image, &context_edits, region, &mut targets, [512, 512])?;
+        }
+        if !targets.iter().any(|v| *v > 0.) && fill_gaps {
+            return Ok(None);
         }
         anyhow::ensure!(
-            mask.iter().any(|v| *v > 0.),
+            targets.iter().any(|v| *v > 0.),
             "No painted pixels or geometric gaps in this region"
         );
+        for (mask, target) in mask.iter_mut().zip(targets) {
+            *mask = mask.max(target);
+        }
         if self.moebius.is_none() {
             let path = crate::models::cache_dir()?.join("models/moebius/torchscript");
             self.moebius = Some(crate::moebius::Moebius::open(
@@ -434,7 +444,7 @@ impl Renderer {
             .ok_or_else(|| anyhow::anyhow!("Set the original path before generating a fill"))?;
         let source = layers.source_hash()?.to_owned();
         let (asset, sha256) = layers.store(&generated)?;
-        Ok(crate::synthesis::GeneratedFill {
+        Ok(Some(crate::synthesis::GeneratedFill {
             region,
             dabs,
             fill_gaps,
@@ -446,7 +456,7 @@ impl Renderer {
             source_color_revision: color_revision,
             recipe_sha256: crate::synthesis::recipe_hash(edits)?,
             model: "moebius-scene-2026-v1".into(),
-        })
+        }))
     }
 }
 

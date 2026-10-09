@@ -375,7 +375,9 @@ fn sample_layer(image: &Rendered, u: f32, v: f32) -> [f32; 4] {
         tx * ty,
     ];
     let mut out = [0.; 4];
+    let mut weight_sum = 0.;
     for (p, w) in [a, b, c, d].into_iter().zip(weights) {
+        weight_sum += w;
         for i in 0..3 {
             out[i] += p[i] * p[3] * w;
         }
@@ -387,6 +389,9 @@ fn sample_layer(image: &Rendered, u: f32, v: f32) -> [f32; 4] {
             *v /= alpha;
         }
     }
+    // Floating-point bilinear weights can sum just below one. Normalize alpha
+    // as well as premultiplied RGB so an opaque layer cannot leave false gaps.
+    out[3] /= weight_sum;
     out
 }
 
@@ -453,6 +458,24 @@ pub fn context_mask(
             }
         })
         .collect()
+}
+
+/// Clip target membership while leaving the separate model context mask intact.
+pub fn clip_mask_to_canvas(mask: &mut [f32], size: [usize; 2], region: [f32; 4]) -> Result<()> {
+    ensure!(
+        mask.len() == pixel_count(size[0], size[1], 1)?,
+        "Invalid target mask dimensions"
+    );
+    for (i, value) in mask.iter_mut().enumerate() {
+        let uv = [
+            region[0] + region[2] * ((i % size[0]) as f32 + 0.5) / size[0] as f32,
+            region[1] + region[3] * ((i / size[0]) as f32 + 0.5) / size[1] as f32,
+        ];
+        if !uv.iter().all(|v| (0.0..=1.0).contains(v)) {
+            *value = 0.;
+        }
+    }
+    Ok(())
 }
 
 /// Inspect a coarse interior and every output perimeter pixel without a photo raster.

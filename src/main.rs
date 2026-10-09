@@ -248,9 +248,11 @@ fn main() -> Result<()> {
             settings.validate()?;
             let start = Instant::now();
             for (region, dabs, gaps) in regions {
-                let fill =
-                    renderer.generate_fill(image.clone(), &edits, region, dabs, gaps, &settings)?;
-                edits.display.synthesis.push(fill);
+                if let Some(fill) =
+                    renderer.generate_fill(image.clone(), &edits, region, dabs, gaps, &settings)?
+                {
+                    edits.display.synthesis.push(fill);
+                }
             }
             let rendered = renderer.render(image, &edits, max_edge)?;
             export::write(&output, &rendered, color_space, overwrite)?;
