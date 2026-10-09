@@ -1,0 +1,155 @@
+{
+  "cuda_available": true,
+  "dimensions": [
+    8736,
+    11648
+  ],
+  "exactly_preserved_opaque_perimeter_samples": 31850,
+  "filled_perimeter_samples": 8918,
+  "filled_rgb_range": [
+    0.001624621800146997,
+    0.35682442784309387
+  ],
+  "generated_layers": [
+    {
+      "asset": "24924989ade83002a2d1cdcc934c0c338e3009d68096079a489c4f3acf45cf53.exr",
+      "dabs": [],
+      "fill_gaps": true,
+      "model": "moebius-scene-2026-v1",
+      "recipe_sha256": "d4582d274f4b82eb3f5a620f73596b96bec731e3332d32a33618345871fff75d",
+      "region": [
+        0.0,
+        0.0,
+        0.2749084234237671,
+        0.20618131756782532
+      ],
+      "seed": 0,
+      "sha256": "24924989ade83002a2d1cdcc934c0c338e3009d68096079a489c4f3acf45cf53",
+      "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "steps": 20
+    },
+    {
+      "asset": "e67695ad77b154f7f12550183114e34a02fb0bec1f5e30c0a658490aae362970.exr",
+      "dabs": [],
+      "fill_gaps": true,
+      "model": "moebius-scene-2026-v1",
+      "recipe_sha256": "d4582d274f4b82eb3f5a620f73596b96bec731e3332d32a33618345871fff75d",
+      "region": [
+        0.45879119634628296,
+        0.0,
+        0.541208803653717,
+        0.4059065878391266
+      ],
+      "seed": 0,
+      "sha256": "e67695ad77b154f7f12550183114e34a02fb0bec1f5e30c0a658490aae362970",
+      "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "steps": 20
+    },
+    {
+      "asset": "f8d8d31f1c887898990f4e3898711acf006c4f6f3a4d7f265ca9377864130532.exr",
+      "dabs": [],
+      "fill_gaps": true,
+      "model": "moebius-scene-2026-v1",
+      "recipe_sha256": "d4582d274f4b82eb3f5a620f73596b96bec731e3332d32a33618345871fff75d",
+      "region": [
+        0.0,
+        0.5936813354492188,
+        0.5417582392692566,
+        0.40631869435310364
+      ],
+      "seed": 0,
+      "sha256": "f8d8d31f1c887898990f4e3898711acf006c4f6f3a4d7f265ca9377864130532",
+      "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "steps": 20
+    },
+    {
+      "asset": "ad793d70108f33a368839c160388a4c3cec3aba75f197948a80ee1f2baed6d58.exr",
+      "dabs": [],
+      "fill_gaps": true,
+      "model": "moebius-scene-2026-v1",
+      "recipe_sha256": "d4582d274f4b82eb3f5a620f73596b96bec731e3332d32a33618345871fff75d",
+      "region": [
+        0.7252746820449829,
+        0.7939560413360596,
+        0.2747252881526947,
+        0.20604395866394043
+      ],
+      "seed": 0,
+      "sha256": "ad793d70108f33a368839c160388a4c3cec3aba75f197948a80ee1f2baed6d58",
+      "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "steps": 20
+    }
+  ],
+  "generation_seconds_per_context": [
+    67.539795579,
+    3.5022111540000003,
+    3.474355288,
+    3.461643877
+  ],
+  "graph_manifest": {
+    "cpu_threads": 2,
+    "modules": {
+      "decoder": {
+        "file": "decoder.pt",
+        "float64_scalar_constants_converted": [
+          1.0
+        ],
+        "max_abs_error": 8.791685104370117e-06,
+        "max_trace_error": 0.0,
+        "sha256": "944f5cc151ca05d941262ab6677faed5a6c58c9ea6ef336c0a004b3bc0856c3d"
+      },
+      "denoiser": {
+        "file": "denoiser.pt",
+        "float64_scalar_constants_converted": [
+          1.0
+        ],
+        "max_abs_error": 0.0,
+        "max_trace_error": 0.0,
+        "sha256": "a0458f3d2076a8060acf8861eafa53cc4b3c73e286ff1bf59ec5bff07f366696"
+      },
+      "encoder": {
+        "file": "encoder.pt",
+        "float64_scalar_constants_converted": [
+          0.5,
+          1.0
+        ],
+        "max_abs_error": 8.106231689453125e-06,
+        "max_trace_error": 0.0,
+        "sha256": "d7b7091ec4af56658dd82ff431f611871398dd730dc24b3bffe54825d89e4cc4"
+      }
+    },
+    "preparation_versions": {
+      "accelerate": "1.15.0",
+      "diffusers": "0.41.0",
+      "einops": "0.8.2",
+      "pyyaml": "6.0.3",
+      "timm": "1.0.26",
+      "torch": "2.13.0+cpu",
+      "torchvision": "0.28.0+cpu",
+      "transformers": "5.17.0"
+    },
+    "scaling_factor": 0.13025,
+    "size": 512,
+    "source_hashes": {
+      "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+      "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+      "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+    },
+    "source_revision": "b88d462bacb9af6e7128a3b4cc4a07418bedfd61",
+    "torch_version": "2.13.0+cpu",
+    "version": 1
+  },
+  "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+  "purpose": "real-model output-perimeter conformance; not a perceptual quality benchmark",
+  "rotation": 0.009999999776482582,
+  "save_reload_verified": true,
+  "settings": {
+    "guidance": 2.0,
+    "noise_offset": 0.0357,
+    "seed": 0,
+    "steps": 20,
+    "strength": 0.99
+  },
+  "total_seconds_after_planning": 93.724084344,
+  "build_profile": "debug"
+}

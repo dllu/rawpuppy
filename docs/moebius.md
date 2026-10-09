@@ -85,6 +85,23 @@ layer coverage is resolved once for these samples, avoiding redundant generation
 over already filled pixels. This uses a bounded interior grid plus work
 proportional to the perimeter, without allocating a full-resolution probe raster.
 
+A real GFX 8736×11648 image rotated by 0.01 degrees has been exercised through
+native CUDA generation and saved-layer reload: all 8,918 missing perimeter
+samples became opaque, and all 31,850 originally opaque perimeter samples stayed
+exactly unchanged. Input hashes also stayed unchanged. These edge counts include
+the duplicated corner samples of the four edge strips; they are not a check of
+every interior pixel or a perceptual quality score. The checked-in
+[`verify_corner_fill` example](../examples/verify_corner_fill.rs) makes an owned
+input copy, retains assets/XMP and records graph identities and timings in a new
+output directory. See [the local data record](data/narrow-corner-gb10-2026-10-09.json).
+The release build repeated those checks successfully: first-context generation
+took 7.74 seconds, subsequent contexts about 2.93 seconds, and generation plus
+save/reload verification took 17.08 seconds after planning. See the
+[release receipt](data/narrow-corner-gb10-release-2026-10-09.json). The debug build
+took 67.54 seconds for its first context and about 3.5 seconds thereafter. These
+observations include context preparation and do not isolate loader/startup cost
+or guarantee latency on another workload.
+
 ```sh
 target/release/rawpuppy inpaint photo.raf result.png \
   --erase 0.4,0.3,0.04 --steps 20 --seed 0 --save-edits
