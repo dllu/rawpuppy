@@ -1,0 +1,33 @@
+{
+  "hardware": "NVIDIA GB10",
+  "capabilities": {
+    "integrated": 1,
+    "pageable_access": 1,
+    "host_page_tables": 1,
+    "concurrent_managed_access": 1
+  },
+  "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+  "source_float_bytes": 413468928,
+  "page_bytes": 4096,
+  "huge_page_bytes": 2097152,
+  "sequential_runs": {
+    "system": "decode_ms=405.53\niteration=0 render_ms=400.901 checksum=163.623367 backend=cuda (system memory)\niteration=1 render_ms=4.606 checksum=178.640109 backend=cuda (system memory)\niteration=2 render_ms=4.519 checksum=194.758829 backend=cuda (system memory)\niteration=3 render_ms=5.071 checksum=211.950749 backend=cuda (system memory)\niteration=4 render_ms=4.538 checksum=230.314528 backend=cuda (system memory)\niteration=5 render_ms=4.509 checksum=249.854985 backend=cuda (system memory)\niteration=6 render_ms=4.459 checksum=270.513771 backend=cuda (system memory)\niteration=7 render_ms=4.630 checksum=292.373450 backend=cuda (system memory)\nwarm_mean_ms=4.619\n",
+    "copy": "decode_ms=400.04\niteration=0 render_ms=942.855 checksum=163.623367 backend=cuda\niteration=1 render_ms=12.264 checksum=178.640109 backend=cuda\niteration=2 render_ms=12.461 checksum=194.758829 backend=cuda\niteration=3 render_ms=12.365 checksum=211.950749 backend=cuda\niteration=4 render_ms=12.060 checksum=230.314528 backend=cuda\niteration=5 render_ms=12.133 checksum=249.854985 backend=cuda\niteration=6 render_ms=12.131 checksum=270.513771 backend=cuda\niteration=7 render_ms=12.114 checksum=292.373450 backend=cuda\nwarm_mean_ms=12.218\n"
+  },
+  "profile_reports": {
+    "baseline_log": "decode_ms=424.31\niteration=0 render_ms=1081.991 checksum=163.623367 backend=cuda\niteration=1 render_ms=12.029 checksum=178.640109 backend=cuda\niteration=2 render_ms=11.930 checksum=194.758829 backend=cuda\nwarm_mean_ms=11.980\nCollecting data...\nGenerating '/tmp/nsys-report-825d.qdstrm'\n\n[1/1] [0%                          ] baseline.nsys-rep\n[1/1] [0%                          ] baseline.nsys-rep\n[1/1] [5%                          ] baseline.nsys-rep\n[1/1] [===========50%              ] baseline.nsys-rep\n[1/1] [=======================96%  ] baseline.nsys-rep\n[1/1] [========================97% ] baseline.nsys-rep\n[1/1] [========================100%] baseline.nsys-rep\n[1/1] [========================100%] baseline.nsys-rep\nGenerated:\n\t/tmp/rawpuppy-validation/memory/baseline.nsys-rep\n",
+    "system_report": "Generating SQLite file /tmp/rawpuppy-validation/memory/system-final.sqlite from /tmp/rawpuppy-validation/memory/system-final.nsys-rep\nProcessing [/tmp/rawpuppy-validation/memory/system-final.sqlite] with [/opt/nvidia/nsight-systems/2025.3.2/host-linux-armv8/reports/cuda_gpu_kern_sum.py]... \nTime (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name\n100.0,8385184,3,2795061.3,2782432.0,2770112,2832640,33121.9,render\n\nProcessing [/tmp/rawpuppy-validation/memory/system-final.sqlite] with [/opt/nvidia/nsight-systems/2025.3.2/host-linux-armv8/reports/cuda_gpu_mem_size_sum.py]... \nSKIPPED: /tmp/rawpuppy-validation/memory/system-final.sqlite does not contain GPU memory data.\n\n"
+  },
+  "full_export": {
+    "shape": [
+      11648,
+      8736,
+      4
+    ],
+    "dtype": "uint16",
+    "different_channel_samples": 580,
+    "max_absolute_16bit_channel_difference": 1,
+    "minimum_alpha": 65535
+  },
+  "scope": "One source and shared-workstation measurements; not generic bounds. No bit-identical full-export claim."
+}

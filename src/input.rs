@@ -229,22 +229,26 @@ impl SensorImage {
             let w = white[channel.min(white.len() - 1)];
             (v - b) / (w - b)
         };
-        let data = match &raw.data {
+        let mut data = Vec::new();
+        data.try_reserve_exact(count)?;
+        #[cfg(feature = "cuda")]
+        crate::gpu::advise_sensor_allocation(data.spare_capacity_mut());
+        match &raw.data {
             RawImageData::Integer(v) => {
                 ensure!(v.len() == count, "Incomplete sensor data");
                 v.par_iter()
                     .enumerate()
                     .map(|(i, v)| normalize(i, *v as f32))
-                    .collect()
+                    .collect_into_vec(&mut data);
             }
             RawImageData::Float(v) => {
                 ensure!(v.len() == count, "Incomplete sensor data");
                 v.par_iter()
                     .enumerate()
                     .map(|(i, v)| normalize(i, *v))
-                    .collect()
+                    .collect_into_vec(&mut data);
             }
-        };
+        }
         let (lens_profile, lens_profile_error) = match crate::lens::read_raf(&source) {
             Ok(profile) => (profile, None),
             Err(error) => (None, Some(format!("{error:#}"))),

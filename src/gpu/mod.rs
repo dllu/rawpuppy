@@ -1,5 +1,12 @@
 //! Persistent sensor residency, bounded output tiles, and a shared composed Rust kernel.
 mod kernel;
+#[cfg(feature = "cuda")]
+mod system_cuda;
+
+#[cfg(feature = "cuda")]
+pub(crate) fn advise_sensor_allocation(spare: &[std::mem::MaybeUninit<f32>]) {
+    system_cuda::advise_owned(spare, false);
+}
 use crate::{
     edits::{Edits, RawEdits, ToneMapper},
     input::{SensorImage, pixel_count},
@@ -9,12 +16,14 @@ use anyhow::{Result, ensure};
 use cubecl::{prelude::*, server::Handle};
 use std::sync::Arc;
 
-pub use crate::render::Backend;
+pub use crate::render::{Backend, CudaMemoryMode};
 
 pub enum GpuRenderer {
     Wgpu(Session<cubecl::wgpu::WgpuRuntime>),
     #[cfg(feature = "cuda")]
     Cuda(Session<cubecl::cuda::CudaRuntime>),
+    #[cfg(feature = "cuda")]
+    CudaSystem(Box<system_cuda::SystemCuda>),
 }
 
 pub struct Session<R: Runtime> {
@@ -28,6 +37,9 @@ pub struct Session<R: Runtime> {
 
 impl GpuRenderer {
     pub fn new(backend: Backend) -> Result<Self> {
+        Self::with_cuda_memory(backend, CudaMemoryMode::Auto)
+    }
+    pub fn with_cuda_memory(backend: Backend, mode: CudaMemoryMode) -> Result<Self> {
         match backend {
             Backend::Cpu => anyhow::bail!("CPU is not a GPU backend"),
             Backend::Cuda => {
@@ -40,22 +52,33 @@ impl GpuRenderer {
                             .is_some_and(|n| n >= 32 * 1024 * 1024),
                         "CUDA compilation needs RUST_MIN_STACK=33554432 for the compiler worker; the Rawpuppy executable configures this at startup"
                     );
+                    if mode != CudaMemoryMode::Copy {
+                        if let Some(session) = system_cuda::SystemCuda::try_new()? {
+                            return Ok(Self::CudaSystem(Box::new(session)));
+                        }
+                        ensure!(
+                            mode != CudaMemoryMode::System,
+                            "This CUDA device lacks coherent integrated system-memory access"
+                        );
+                    }
                     Ok(Self::Cuda(Session::new(cubecl::cuda::CudaRuntime::client(
                         &Default::default(),
                     ))))
                 }
                 #[cfg(not(feature = "cuda"))]
                 {
+                    let _ = mode;
                     anyhow::bail!("CUDA support requires cargo build --release --features cuda")
                 }
             }
             Backend::Auto => {
                 #[cfg(feature = "cuda")]
                 {
-                    Self::new(Backend::Cuda)
+                    Self::with_cuda_memory(Backend::Cuda, mode)
                 }
                 #[cfg(not(feature = "cuda"))]
                 {
+                    let _ = mode;
                     Ok(Self::Wgpu(Session::new(cubecl::wgpu::WgpuRuntime::client(
                         &Default::default(),
                     ))))
@@ -79,6 +102,8 @@ impl GpuRenderer {
             Self::Wgpu(s) => cubecl::wgpu::WgpuRuntime::name(&s.client),
             #[cfg(feature = "cuda")]
             Self::Cuda(_) => "cuda",
+            #[cfg(feature = "cuda")]
+            Self::CudaSystem(_) => "cuda (system memory)",
         }
     }
     pub fn render(
@@ -103,7 +128,110 @@ impl GpuRenderer {
             Self::Wgpu(s) => s.render(image, edits, region, width, height),
             #[cfg(feature = "cuda")]
             Self::Cuda(s) => s.render(image, edits, region, width, height),
+            #[cfg(feature = "cuda")]
+            Self::CudaSystem(s) => s.render(image, edits, region, width, height),
         }
+    }
+}
+
+struct ShaderArguments {
+    params: Vec<f32>,
+    dims: Vec<u32>,
+    brushes: Vec<f32>,
+    index: Vec<u32>,
+}
+impl ShaderArguments {
+    fn new(pipeline: &Pipeline<'_>, edits: &Edits, region: [f32; 4], width: usize) -> Result<Self> {
+        let image = pipeline.source;
+        let g = &pipeline.geometry;
+        let s = &edits.scene;
+        let display = &edits.display;
+        let mut params: Vec<f32> = g
+            .homography
+            .into_iter()
+            .flatten()
+            .chain(pipeline.calibration.into_iter().flatten())
+            .collect();
+        params.extend(g.crop);
+        params.push(g.aspect);
+        params.extend(g.distortion);
+        params.extend(g.ca);
+        params.push(s.exposure);
+        params.extend(s.vignette);
+        params.extend([
+            s.graduated.exposure,
+            pipeline.gradient[0],
+            pipeline.gradient[1],
+            s.graduated.center[0],
+            s.graduated.center[1],
+            s.graduated.width,
+            edits.tone.saturation,
+            edits.raw.denoise,
+            display.split_strength,
+        ]);
+        params.extend(display.shadows);
+        params.extend(display.highlights);
+        params.extend(region);
+        params.extend(crate::agx::TO_REC2020.into_iter().flatten());
+        params.extend(crate::agx::TO_SRGB.into_iter().flatten());
+        assert_eq!(params.len(), 67);
+        params.extend([g.lens.distortion as u8 as f32, g.lens.vignette as u8 as f32]);
+        params.extend(g.lens.lut.iter().flatten().copied());
+        let (transpose, fx, fy) = image.orientation.to_flips();
+        let mut dims = vec![
+            image.metadata.sensor_width as u32,
+            image.metadata.sensor_height as u32,
+            image.cpp as u32,
+            image.origin[0] as u32,
+            image.origin[1] as u32,
+            image.active[0] as u32,
+            image.active[1] as u32,
+            transpose as u32,
+            fx as u32,
+            fy as u32,
+            2,
+            2,
+        ];
+        for y in 0..2 {
+            for x in 0..2 {
+                dims.push(image.cfa.as_ref().map_or(0, |c| c.color_at(y, x)) as u32);
+            }
+        }
+        dims.extend([
+            edits.raw.hot_pixels as u32,
+            match edits.tone.mapper {
+                ToneMapper::Linear => 0,
+                ToneMapper::Agx => 1,
+                ToneMapper::AgxSdr => 2,
+            },
+            (display.curve != [[0., 0.], [1., 1.]]) as u32,
+            width as u32,
+            0,
+        ]);
+        let mut brushes: Vec<f32> = Vec::new();
+        for (i, b) in display.retouch.iter().enumerate() {
+            brushes.extend(b.source);
+            brushes.extend(b.target);
+            brushes.extend([b.radius, b.feather, b.opacity]);
+            brushes.extend(pipeline.heal_offsets[i]);
+        }
+        if brushes.is_empty() {
+            brushes.push(0.);
+        }
+        let mut index = vec![0u32; 4097];
+        let mut references = Vec::new();
+        for (i, cell) in pipeline.retouch_index.iter().enumerate() {
+            index[i] = u32::try_from(references.len())?;
+            references.extend(cell.iter().map(|i| *i as u32));
+        }
+        index[4096] = u32::try_from(references.len())?;
+        index.extend(references);
+        Ok(Self {
+            params,
+            dims,
+            brushes,
+            index,
+        })
     }
 }
 
@@ -170,71 +298,12 @@ impl<R: Runtime> Session<R> {
             );
             self.source = Some(image.clone());
         }
-        let g = &pipeline.geometry;
-        let s = &edits.scene;
-        let display = &edits.display;
-        let mut params: Vec<f32> = g
-            .homography
-            .into_iter()
-            .flatten()
-            .chain(pipeline.calibration.into_iter().flatten())
-            .collect();
-        params.extend(g.crop);
-        params.push(g.aspect);
-        params.extend(g.distortion);
-        params.extend(g.ca);
-        params.push(s.exposure);
-        params.extend(s.vignette);
-        params.extend([
-            s.graduated.exposure,
-            pipeline.gradient[0],
-            pipeline.gradient[1],
-            s.graduated.center[0],
-            s.graduated.center[1],
-            s.graduated.width,
-            edits.tone.saturation,
-            edits.raw.denoise,
-            display.split_strength,
-        ]);
-        params.extend(display.shadows);
-        params.extend(display.highlights);
-        params.extend(region);
-        params.extend(crate::agx::TO_REC2020.into_iter().flatten());
-        params.extend(crate::agx::TO_SRGB.into_iter().flatten());
-        assert_eq!(params.len(), 67);
-        params.extend([g.lens.distortion as u8 as f32, g.lens.vignette as u8 as f32]);
-        params.extend(g.lens.lut.iter().flatten().copied());
-        let (transpose, fx, fy) = image.orientation.to_flips();
-        let mut dims = vec![
-            image.metadata.sensor_width as u32,
-            image.metadata.sensor_height as u32,
-            image.cpp as u32,
-            image.origin[0] as u32,
-            image.origin[1] as u32,
-            image.active[0] as u32,
-            image.active[1] as u32,
-            transpose as u32,
-            fx as u32,
-            fy as u32,
-            2,
-            2,
-        ];
-        for y in 0..2 {
-            for x in 0..2 {
-                dims.push(image.cfa.as_ref().map_or(0, |c| c.color_at(y, x)) as u32);
-            }
-        }
-        dims.extend([
-            edits.raw.hot_pixels as u32,
-            match edits.tone.mapper {
-                ToneMapper::Linear => 0,
-                ToneMapper::Agx => 1,
-                ToneMapper::AgxSdr => 2,
-            },
-            (display.curve != [[0., 0.], [1., 1.]]) as u32,
-            width as u32,
-            0,
-        ]);
+        let ShaderArguments {
+            mut params,
+            mut dims,
+            brushes,
+            index,
+        } = ShaderArguments::new(&pipeline, edits, region, width)?;
         if mosaic && (edits.raw.hot_pixels || edits.raw.denoise > 0.) {
             if self.prepared.is_none() || self.preparation != edits.raw {
                 self.prepared = None;
@@ -265,24 +334,6 @@ impl<R: Runtime> Session<R> {
         } else {
             self.prepared = None;
         }
-        let mut brushes: Vec<f32> = Vec::new();
-        for (i, b) in display.retouch.iter().enumerate() {
-            brushes.extend(b.source);
-            brushes.extend(b.target);
-            brushes.extend([b.radius, b.feather, b.opacity]);
-            brushes.extend(pipeline.heal_offsets[i]);
-        }
-        if brushes.is_empty() {
-            brushes.push(0.);
-        }
-        let mut index = vec![0u32; 4097];
-        let mut references = Vec::new();
-        for (i, cell) in pipeline.retouch_index.iter().enumerate() {
-            index[i] = u32::try_from(references.len())?;
-            references.extend(cell.iter().map(|i| *i as u32));
-        }
-        index[4096] = u32::try_from(references.len())?;
-        index.extend(references);
         let lut = self
             .client
             .create_from_slice(bytemuck::cast_slice(&pipeline.curve));

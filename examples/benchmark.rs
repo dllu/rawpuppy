@@ -4,7 +4,7 @@ use clap::Parser;
 use rawpuppy::{
     edits::Edits,
     input::SensorImage,
-    render::{Backend, Renderer},
+    render::{Backend, CudaMemoryMode, Renderer},
 };
 use std::{path::PathBuf, sync::Arc, time::Instant};
 
@@ -19,6 +19,8 @@ struct Args {
     iterations: usize,
     #[arg(long)]
     no_camera_corrections: bool,
+    #[arg(long, value_enum, default_value = "auto")]
+    cuda_memory: CudaMemoryMode,
 }
 fn main() -> Result<()> {
     #[cfg(feature = "cuda")]
@@ -35,7 +37,7 @@ fn main() -> Result<()> {
     let start = Instant::now();
     let source = Arc::new(SensorImage::open(&args.input)?);
     println!("decode_ms={:.2}", start.elapsed().as_secs_f64() * 1000.);
-    let mut renderer = Renderer::new(args.backend);
+    let mut renderer = Renderer::with_cuda_memory(args.backend, args.cuda_memory);
     let mut edits = if args.no_camera_corrections {
         Edits::default()
     } else {

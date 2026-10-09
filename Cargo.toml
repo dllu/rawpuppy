@@ -24,10 +24,12 @@ cubecl = { version = "0.10", optional = true, default-features = false, features
 ort = { version = "=2.0.0-rc.13", optional = true, default-features = false, features = ["std", "download-binaries", "tls-rustls", "copy-dylibs", "api-27"] }
 tch = { version = "0.26", optional = true }
 libloading = { version = "0.8", optional = true }
+cudarc = { version = "0.19.10", optional = true, default-features = false, features = ["std", "driver", "nvrtc", "fallback-dynamic-loading", "cuda-version-from-build-system", "fallback-latest"] }
 sha2 = "0.10"
 ureq = { version = "3", default-features = false, features = ["rustls"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
+libc = { version = "0.2", optional = true }
 x11rb = { version = "0.13", features = ["randr", "xinerama"] }
 wayland-client = "0.31"
 zbus = { version = "5.19", features = ["blocking-api"] }
@@ -44,7 +46,7 @@ windows-sys = { version = "0.61", features = ["Win32_Graphics_Gdi", "Win32_UI_Wi
 [features]
 default = ["gpu"]
 gpu = ["dep:cubecl"]
-cuda = ["gpu", "cubecl/cuda"]
+cuda = ["gpu", "cubecl/cuda", "dep:cudarc", "dep:libc"]
 neural = ["dep:ort"]
 moebius = ["dep:tch", "dep:libloading"]
 

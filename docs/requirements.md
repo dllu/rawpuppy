@@ -18,6 +18,6 @@ from verification; the project is not complete merely because core tests pass.
 | Fixed order / minimal rasterization | Explicit order, compiled geometry/color, direct sparse previews, fused GPU output kernel, cached sensor preparation and bounded output tiles |
 | Display profiles and X11/Wayland/macOS | Cached RGBA ICC conversion and asynchronous native profile policy implemented; X11 discovery/live updates, legacy Wayland UI/fallback, and macOS layer tagging verified; desktop CI passes including Windows native lookup builds; physical/multi-monitor/managed Wayland colorimetry pending |
 | Output spaces and HDR | Matching ICC integer exports; float EXR imports respect chromaticities/white points and exports tag primaries; HDR/negative and adaptation tests; native HDR display integration pending |
-| 100 MP and >100,000-pixel width | GFX CPU/CUDA/Vulkan full 102 MP export; warm GPU previews around 11–13 ms; 100,003-pixel CPU/GPU test and viewport equivalence; GPU unified-memory optimization remains |
+| 100 MP and >100,000-pixel width | GFX full export and 100,003-pixel CPU/GPU checks; coherent GB10 CUDA source/output sharing removes application transfers; measured previews ~4.6 ms warm vs copied ~12.2 ms, full corrected TIFF verified; more allocation/device coverage pending |
 | No database; non-destructive XMP | Separate namespace and suffix; atomic writes; Darktable sidecar isolation test |
 | README / progress journal / commits and push | Documentation present; update journal and push each verified milestone |

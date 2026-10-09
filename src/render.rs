@@ -17,8 +17,18 @@ pub enum Backend {
     Cuda,
 }
 
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum)]
+pub enum CudaMemoryMode {
+    #[default]
+    Auto,
+    Copy,
+    System,
+}
+
 pub struct Renderer {
     backend: Backend,
+    #[cfg(feature = "gpu")]
+    cuda_memory: CudaMemoryMode,
     initialized: bool,
     #[cfg(feature = "gpu")]
     gpu: Option<crate::gpu::GpuRenderer>,
@@ -29,8 +39,15 @@ pub struct Renderer {
 }
 impl Renderer {
     pub fn new(backend: Backend) -> Self {
+        Self::with_cuda_memory(backend, CudaMemoryMode::Auto)
+    }
+    pub fn with_cuda_memory(backend: Backend, cuda_memory: CudaMemoryMode) -> Self {
+        #[cfg(not(feature = "gpu"))]
+        let _ = cuda_memory;
         Self {
             backend,
+            #[cfg(feature = "gpu")]
+            cuda_memory,
             initialized: false,
             #[cfg(feature = "gpu")]
             gpu: None,
@@ -53,8 +70,10 @@ impl Renderer {
         self.initialized = true;
         #[cfg(feature = "gpu")]
         {
-            let result = std::panic::catch_unwind(|| crate::gpu::GpuRenderer::new(self.backend))
-                .map_err(|_| anyhow::anyhow!("GPU initialization failed"))?;
+            let result = std::panic::catch_unwind(|| {
+                crate::gpu::GpuRenderer::with_cuda_memory(self.backend, self.cuda_memory)
+            })
+            .map_err(|_| anyhow::anyhow!("GPU initialization failed"))?;
             match result {
                 Ok(gpu) => {
                     self.label = gpu.name().into();

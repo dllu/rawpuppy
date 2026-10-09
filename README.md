@@ -31,6 +31,8 @@ by export; the CLI defaults to eight CPU workers to share the workstation.
 `--backend auto|cpu|cuda|vulkan|metal` selects photo compute. Auto falls back to
 CPU for unsupported sources or device limits; GPU sources stay resident between
 edits. `cargo build --no-default-features` omits photo compute acceleration.
+Eligible coherent CUDA devices share the existing sensor/output allocations;
+[system-memory.md](docs/system-memory.md) describes selection and GB10 measurements.
 
 In the editor: drop a photo to open it, scroll to zoom, drag to pan, `F` to fit,
 `1` for actual pixels, and `B` to compare. Save with `Ctrl/Cmd S`; undo with

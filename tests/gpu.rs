@@ -1,7 +1,7 @@
 #![cfg(feature = "gpu")]
 use rawpuppy::{
     edits::{Edits, Retouch, RetouchMode},
-    gpu::{Backend, GpuRenderer},
+    gpu::{Backend, CudaMemoryMode, GpuRenderer},
     input::SensorImage,
     pipeline::Pipeline,
 };
@@ -15,7 +15,67 @@ fn composed_gpu_matches_cpu_for_rgb_bayer_orientation_and_local_edits() {
     } else {
         Backend::Auto
     };
-    let mut gpu = GpuRenderer::new(backend).unwrap();
+    check_backend(backend, CudaMemoryMode::Auto);
+}
+
+#[cfg(feature = "cuda")]
+#[test]
+#[ignore = "requires a working CUDA device"]
+fn copied_cuda_matches_cpu_for_the_same_composed_cases() {
+    check_backend(Backend::Cuda, CudaMemoryMode::Copy);
+}
+
+#[cfg(feature = "cuda")]
+#[test]
+#[ignore = "requires coherent integrated CUDA system memory"]
+fn system_memory_rebuilds_cleanup_and_releases_retired_sources() {
+    let mut gpu = GpuRenderer::with_cuda_memory(Backend::Cuda, CudaMemoryMode::System).unwrap();
+    let mut image = SensorImage::from_rgb(37, 41, vec![0.1; 37 * 41 * 3]).unwrap();
+    image.cpp = 1;
+    image.cfa = Some(rawler::CFA::new("RGGB"));
+    image.data = (0..37 * 41)
+        .map(|i| 0.1 + (i % 31) as f32 * 0.0003)
+        .collect();
+    image.data[400] = 0.95;
+    let image = Arc::new(image);
+    let original = image.data.clone();
+    let retired = Arc::downgrade(&image);
+    for (hot_pixels, denoise) in [
+        (false, 0.),
+        (true, 0.),
+        (true, 0.01),
+        (false, 0.),
+        (true, 0.),
+    ] {
+        let mut edits = Edits::default();
+        edits.raw.hot_pixels = hot_pixels;
+        edits.raw.denoise = denoise;
+        edits.tone.mapper = rawpuppy::edits::ToneMapper::Linear;
+        let expected = Pipeline::compile(&image, &edits)
+            .unwrap()
+            .render(None)
+            .unwrap();
+        let actual = gpu.render(image.clone(), &edits, None).unwrap();
+        for (a, b) in actual.pixels.iter().zip(expected.pixels) {
+            assert!(a.iter().zip(b).all(|(a, b)| (*a - b).abs() < 0.0003));
+        }
+        assert_eq!(image.data, original);
+    }
+    drop(image);
+    assert!(
+        retired.upgrade().is_some(),
+        "The session must retain its current immutable source"
+    );
+    let replacement = Arc::new(SensorImage::from_rgb(3, 7, vec![0.2; 3 * 7 * 3]).unwrap());
+    gpu.render(replacement, &Edits::default(), None).unwrap();
+    assert!(
+        retired.upgrade().is_none(),
+        "Retired input remained allocated after replacement"
+    );
+}
+
+fn check_backend(backend: Backend, memory: CudaMemoryMode) {
+    let mut gpu = GpuRenderer::with_cuda_memory(backend, memory).unwrap();
     for mosaic in [false, true] {
         for orientation in 1..=8 {
             let (width, height) = (19, 23);
@@ -61,6 +121,7 @@ fn composed_gpu_matches_cpu_for_rgb_bayer_orientation_and_local_edits() {
                 });
             }
             let image = Arc::new(image);
+            let original = image.data.clone();
             let mut edits = Edits::for_image(&image);
             edits.raw.hot_pixels = true;
             edits.raw.denoise = 0.012;
@@ -119,6 +180,10 @@ fn composed_gpu_matches_cpu_for_rgb_bayer_orientation_and_local_edits() {
                     "GPU mismatch {largest} with mosaic={mosaic}, orientation={orientation}"
                 );
             }
+            assert_eq!(
+                image.data, original,
+                "GPU rendering modified the original sensor"
+            );
         }
     }
     let wide = Arc::new(SensorImage::from_rgb(100_003, 2, vec![0.18; 100_003 * 2 * 3]).unwrap());

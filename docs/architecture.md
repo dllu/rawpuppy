@@ -64,6 +64,11 @@ AgX, retouch, curve and split toning run in the output kernel. GPU retouch uses 
 same spatial index and precomputed heal offsets as CPU. Source/device addressing
 and binding limits select CPU fallback in auto mode and never limit the core image
 representation. GPU X-Trans currently selects CPU.
+On eligible coherent integrated CUDA devices, a driver adapter launches the same
+Rust kernel using owned system allocations, avoiding sensor duplication and
+preview readback. Capability checks, synchronized borrows and local page hints
+are described in [system-memory.md](system-memory.md). Other devices use copied
+buffers through the existing runtime.
 Saved synthesis currently uses sparse CPU composition after GPU readback, with
 bounded layer caches and viewport culling. It does not create another full-image
 raster; fusing layer sampling into the GPU kernel remains an optimization.

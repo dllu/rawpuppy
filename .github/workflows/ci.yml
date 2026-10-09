@@ -29,6 +29,9 @@ jobs:
       - run: cargo test --locked
       - name: Optional neural inference builds
         run: cargo check --features neural --locked
+      - name: CUDA adapter compilation without requiring a GPU
+        if: runner.os == 'Linux'
+        run: cargo check --features cuda --all-targets --locked
       - name: Vulkan compute parity on software GPU
         if: runner.os == 'Linux'
         env:
