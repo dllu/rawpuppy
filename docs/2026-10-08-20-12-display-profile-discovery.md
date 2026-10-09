@@ -21,3 +21,7 @@ implemented policies in [display-color.md](display-color.md).
 
 All test assets and display configuration changes remain under the isolated test
 session and `/tmp/rawpuppy-validation`. No contents of `~/pictures/raw` changed.
+
+macOS CI passed the native layer test and actual Metal compute parity. Linux
+linking crashed before tests could execute; CI now disables large debug-info
+payloads and limits concurrent compilation/linking while retaining the checks.

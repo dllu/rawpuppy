@@ -6,7 +6,7 @@ from verification; the project is not complete merely because core tests pass.
 | Requirement | Current evidence / remaining work |
 | --- | --- |
 | Rust, cross-platform egui single-photo UI | Native egui editor implemented; X11 GFX editing/save/reload/zoom and isolated Wayland synthesis/save/undo verified; desktop CI passes; macOS/Windows GUI runtime validation pending |
-| CUDA / Vulkan / Metal acceleration | Shared Rust compute kernel; CUDA and Vulkan parity, real GFX previews/full exports verified; Metal native runtime verification pending |
+| CUDA / Vulkan / Metal acceleration | Shared Rust compute kernel; CUDA and Vulkan parity, real GFX previews/full exports verified; native Metal parity passed on macOS CI; more physical platform coverage pending |
 | Real RAW decoding including GFX100S | Rawler integration; actual 103 MP sensor decoded; more real files to verify |
 | Demosaicing, denoise, hot pixels | MHC and sensor bilateral baseline, tests; quality comparison and ML upgrade research ongoing |
 | Chromatic aberration | Composed radial red/blue resampling implemented; real lens validation pending |
