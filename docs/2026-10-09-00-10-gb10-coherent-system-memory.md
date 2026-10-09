@@ -31,3 +31,7 @@ memory settings or other projects. All test inputs, outputs, traces and private
 display configuration stayed under `/tmp/rawpuppy-validation`; owned UI/display
 processes exited after inspection. See [system-memory.md](system-memory.md) for
 ownership invariants, selection, profiling, and measurement limitations.
+
+[Implementation CI](https://github.com/dllu/rawpuppy/actions/runs/37898172763)
+passed all desktop and native Moebius jobs. Linux's CUDA adapter compilation step
+passed without a GPU; the native macOS Metal parity step also passed explicitly.
