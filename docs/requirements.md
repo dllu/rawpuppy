@@ -16,7 +16,7 @@ from verification; the project is not complete merely because core tests pass.
 | Clone/heal, curve, split toning | Core and GUI implemented; retouch spatial index; clone and monotone-curve tests; more interaction checks pending |
 | Neural synthesis | Native Rust Moebius sampler/graphs, GUI masks/corners/regeneration, EXR assets and XMP identities implemented; native CUDA/CPU, X11/Wayland workflows, reload and opaque corner composition verified; model/platform/quality comparisons pending |
 | Fixed order / minimal rasterization | Explicit order, compiled geometry/color, direct sparse previews, fused GPU output kernel, cached sensor preparation and bounded output tiles |
-| Display profiles and X11/Wayland/macOS | Cached RGBA ICC conversion and asynchronous native profile policy implemented; X11 discovery/live updates verified; macOS layer tagging and Windows lookup await desktop CI; physical/multi-monitor/managed Wayland colorimetry pending |
+| Display profiles and X11/Wayland/macOS | Cached RGBA ICC conversion and asynchronous native profile policy implemented; X11 discovery/live updates and macOS layer tagging verified; Windows lookup awaits desktop CI; physical/multi-monitor/managed Wayland colorimetry pending |
 | Output spaces and HDR | Matching ICC integer exports; float EXR imports respect chromaticities/white points and exports tag primaries; HDR/negative and adaptation tests; native HDR display integration pending |
 | 100 MP and >100,000-pixel width | GFX CPU/CUDA/Vulkan full 102 MP export; warm GPU previews around 11–13 ms; 100,003-pixel CPU/GPU test and viewport equivalence; GPU unified-memory optimization remains |
 | No database; non-destructive XMP | Separate namespace and suffix; atomic writes; Darktable sidecar isolation test |

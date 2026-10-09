@@ -34,6 +34,12 @@ jobs:
         env:
           RAWPUPPY_TEST_ISOLATED_DISPLAY: '1'
         run: xvfb-run -a -s "-screen 0 1440x960x24" cargo test --test display -- --ignored
+      - name: Probe native Metal compute parity
+        if: runner.os == 'macOS'
+        continue-on-error: true
+        env:
+          RUST_MIN_STACK: '33554432'
+        run: cargo test --test gpu -- --ignored --nocapture
   native-moebius:
     runs-on: ubuntu-latest
     env:
