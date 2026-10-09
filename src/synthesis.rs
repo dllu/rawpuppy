@@ -179,7 +179,7 @@ impl Layers {
         self.cache(fill.sha256.clone(), image.clone());
         Ok(image)
     }
-    /// All identities are checked before any pixels are composited.
+    /// Resolve all visible immutable layer snapshots before changing any output pixel.
     pub fn apply(&mut self, edits: &Edits, image: &mut Rendered, viewport: [f32; 4]) -> Result<()> {
         if edits.display.synthesis.is_empty() {
             return Ok(());
@@ -202,6 +202,8 @@ impl Layers {
                 "Generated fills need regeneration after changing the preceding edits"
             );
         }
+        let mut prepared = Vec::new();
+        prepared.try_reserve(edits.display.synthesis.len())?;
         for fill in &edits.display.synthesis {
             let x0 = ((fill.region[0] - viewport[0]) / viewport[2] * image.width as f32)
                 .floor()
@@ -221,6 +223,11 @@ impl Layers {
                 continue;
             }
             let layer = self.load(fill)?;
+            prepared.push((fill, [x0, y0, x1, y1], layer));
+        }
+        // No fallible asset operation remains once compositing begins. Only
+        // visible context snapshots are retained, never a rollback photo raster.
+        for (fill, [x0, y0, x1, y1], layer) in prepared {
             let aspect = (image.height as f32 / viewport[3]) / (image.width as f32 / viewport[2]);
             for y in y0..y1 {
                 for x in x0..x1 {

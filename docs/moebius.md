@@ -67,6 +67,13 @@ rendered without loading the model, and the editor can regenerate the same masks
 with new steps/seed. Generated-layer caches are bounded and offscreen layers are
 culled. Unreferenced immutable assets are retained for undo/recovery.
 
+Visible layer assets are resolved and validated before compositing changes any
+output pixel. A missing or corrupt later asset therefore leaves the entire input
+raster unchanged. The persistent cache remains limited to 16 entries; one apply
+call temporarily retains its visible immutable context snapshots until completion.
+That temporary memory scales with visible contexts, not a rollback copy of the
+full photograph. Offscreen contexts remain culled.
+
 Model selection remains provisional: generation can invent structures or details.
 Large-gap outpainting can retain dark wedges even when all output alpha is opaque.
 Native CUDA/CPU execution and save/reload have been exercised, but more photography,

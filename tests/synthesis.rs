@@ -110,6 +110,72 @@ fn stale_or_corrupt_synthesis_is_rejected_without_changing_output() {
 }
 
 #[test]
+fn a_later_bad_asset_leaves_the_entire_raster_unchanged_and_offscreen_assets_are_culled() {
+    let dir = tempfile::tempdir().unwrap();
+    let original = dir.path().join("photo.raw");
+    std::fs::write(&original, b"immutable").unwrap();
+    let mut store = Layers::new(original.clone());
+    let layer = Rendered {
+        width: 2,
+        height: 2,
+        pixels: vec![[0.8, 0.2, 0.1, 1.]; 4],
+    };
+    let (asset, hash) = store.store(&layer).unwrap();
+    let mut edits = Edits::default();
+    let valid = GeneratedFill {
+        region: [0., 0., 1., 1.],
+        dabs: vec![MaskDab {
+            center: [0.5; 2],
+            radius: 1.,
+        }],
+        fill_gaps: false,
+        steps: 10,
+        seed: 0,
+        asset,
+        sha256: hash,
+        source_sha256: store.source_hash().unwrap().into(),
+        source_color_revision: 0,
+        recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        model: "moebius-scene-2026-v1".into(),
+    };
+    let missing_hash = "0".repeat(64);
+    let mut missing = valid.clone();
+    missing.asset = format!("{missing_hash}.exr");
+    missing.sha256 = missing_hash;
+    edits.display.synthesis = vec![valid, missing];
+    let baseline = vec![[0.18, 0.3, 0.5, 1.]; 16];
+    let mut raster = Rendered {
+        width: 4,
+        height: 4,
+        pixels: baseline.clone(),
+    };
+    let mut reload = Layers::new(original.clone());
+    assert!(reload.apply(&edits, &mut raster, [0., 0., 1., 1.]).is_err());
+    assert_eq!(
+        raster.pixels, baseline,
+        "First layer changed pixels before the later load failed"
+    );
+    // A corrupt but hash-matching asset reaches decode validation, not just checksum rejection.
+    let bytes = b"not an EXR";
+    use sha2::Digest;
+    let hash = format!("{:x}", sha2::Sha256::digest(bytes));
+    let asset = format!("{hash}.exr");
+    std::fs::write(synthesis::asset_directory(&original).join(&asset), bytes).unwrap();
+    edits.display.synthesis[1].asset = asset;
+    edits.display.synthesis[1].sha256 = hash;
+    assert!(reload.apply(&edits, &mut raster, [0., 0., 1., 1.]).is_err());
+    assert_eq!(raster.pixels, baseline);
+    edits.display.synthesis[1].region = [2., 2., 1., 1.];
+    reload.apply(&edits, &mut raster, [0., 0., 1., 1.]).unwrap();
+    assert!(raster.pixels.iter().all(|p| {
+        p.iter()
+            .zip([0.8, 0.2, 0.1, 1.])
+            .all(|(a, b)| (*a - b).abs() < 1e-6)
+    }));
+    assert_eq!(std::fs::read(original).unwrap(), b"immutable");
+}
+
+#[test]
 fn context_shape_remains_square_on_portrait_and_extremely_wide_images() {
     for (w, h) in [(8736, 11648), (100_003, 17)] {
         let region = synthesis::brush_context(
