@@ -39,6 +39,10 @@ changes primaries and applies the correct transfer function. Little CMS generate
 matching ICC profiles and interprets embedded RGB input profiles.
 EXR input chromaticities and white points also determine color interpretation;
 exports carry explicit linear-sRGB chromaticities.
+EXR input decodes the first non-deep RGB layer directly into its owned RGB
+allocation. Display/data-window offsets are retained, pixels outside the display
+window are cropped, missing pixels remain black, and nonfinite working RGB is
+rejected. No intermediate full RGBA raster or conversion copy is retained.
 
 Sidecars use their own `https://rawpuppy.org/ns/1.0/` XMP namespace and full
 original filenames plus `.rawpuppy.xmp`. They contain a versioned JSON recipe in

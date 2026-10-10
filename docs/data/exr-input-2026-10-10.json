@@ -1,0 +1,107 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "8217432a81c465aaab96121556d7e6860e420d5f",
+  "scope": "Native EXR input decoding directly into a single owned RGB allocation, preserving display/data windows, RGB layer selection, chromaticities and signed/HDR samples; rejecting nonfinite RGB and missing RGB layers.",
+  "measurement_method": "Separate release processes with eight Rayon workers. EXR generation completed before baseline/native measurements. /usr/bin/time -v measures peak process RSS; the decode timer excludes source/component hashing. Shared machine, one observation per completed configuration.",
+  "baseline_40mp": {
+    "build_profile": "release",
+    "color_revision": 0,
+    "data_sha256": "5f3865b77bf7d5dadd2bbc4cde76b9d6bbc513c51530586eea6b794c5dd70173",
+    "decode_seconds": 0.658989057,
+    "decoded_rgb_bytes": 480014400,
+    "dimensions": [
+      100003,
+      400
+    ],
+    "input_sha256": "35c652709152dfa6eeff7657d495f4c2edc7d0448f2de5894bb47bd8b5ef8263",
+    "input_unchanged": true,
+    "max_absolute_error": 2.384185791015625e-07,
+    "scope": "All decoded components of an owned constant signed/HDR RGBA EXR fixture; process RSS is measured separately, not by this receipt.",
+    "maximum_process_rss_kib": 1262624,
+    "time_exit_status": 0
+  },
+  "native_40mp": {
+    "build_profile": "release",
+    "color_revision": 0,
+    "data_sha256": "5f3865b77bf7d5dadd2bbc4cde76b9d6bbc513c51530586eea6b794c5dd70173",
+    "decode_seconds": 0.285533337,
+    "decoded_rgb_bytes": 480014400,
+    "dimensions": [
+      100003,
+      400
+    ],
+    "input_sha256": "35c652709152dfa6eeff7657d495f4c2edc7d0448f2de5894bb47bd8b5ef8263",
+    "input_unchanged": true,
+    "max_absolute_error": 2.384185791015625e-07,
+    "scope": "All decoded components of an owned constant signed/HDR RGBA EXR fixture; process RSS is measured separately, not by this receipt.",
+    "maximum_process_rss_kib": 481592,
+    "time_exit_status": 0
+  },
+  "rss_reduction_fraction": 0.6185784524925868,
+  "rgb_components_byte_identical_to_baseline": true,
+  "native_101mp": {
+    "build_profile": "release",
+    "color_revision": 0,
+    "data_sha256": "c3c5fa99ba731e1a8ba05d3d92f88449971daaa03ced28ad192b927b083624a3",
+    "decode_seconds": 0.707642866,
+    "decoded_rgb_bytes": 1221636648,
+    "dimensions": [
+      100003,
+      1018
+    ],
+    "input_sha256": "d16e213dad79b0a039cf2879f52b2afc865ebb6783b7b99208c99f52ba143578",
+    "input_unchanged": true,
+    "max_absolute_error": 2.384185791015625e-07,
+    "scope": "All decoded components of an owned constant signed/HDR RGBA EXR fixture; process RSS is measured separately, not by this receipt.",
+    "maximum_process_rss_kib": 1205344,
+    "time_exit_status": 0
+  },
+  "fixture_samples": [
+    1.5,
+    -0.125,
+    0.625,
+    1.0
+  ],
+  "regressions": [
+    "First RGB layer after a depth layer; half-float signed/HDR with positive and negative window offsets and clipping.",
+    "Distant legal display/data window origins clip all source pixels without imposing a coordinate cap.",
+    "NaN and positive/negative infinity RGB samples are rejected with immutable input bytes.",
+    "A depth-only EXR fails both pixel import and metadata-only color-revision lookup.",
+    "Existing Rec.2020 chromaticities, source revisions and saved-layer compatibility checks pass.",
+    "Existing oriented float TIFF to Vulkan/coherent CUDA to EXR round trips preserve signed/HDR values through the new input path."
+  ],
+  "checks": {
+    "standard": {
+      "log": "/tmp/rawpuppy-validation/exr-input-standard-final-2026-10-10.log",
+      "sha256": "c91892c40eca3d8f971fd0088f9480929e1b8333fa24faee559e8f29302ccdf9",
+      "passed": 86,
+      "failed": 0,
+      "ignored": 12
+    },
+    "clippy": {
+      "log": "/tmp/rawpuppy-validation/exr-input-clippy-final-state-2026-10-10.log",
+      "sha256": "3cb69f4510a5462a4ea68f050e457615163ce6fc0969d50e29ef96ea0ba63c1a",
+      "passed": true
+    },
+    "vulkan_hdr": {
+      "log": "/tmp/rawpuppy-validation/exr-input-vulkan-hdr-2026-10-10.log",
+      "sha256": "f5e7dc8d3708b673bce545b7ab2cef2d46a5d106836a09a43226310a5af20a95",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "cuda_hdr": {
+      "log": "/tmp/rawpuppy-validation/exr-input-cuda-hdr-2026-10-10.log",
+      "sha256": "b00b7aa2b15a26919d6f3ed6dbe33ccf7ba2945c1282bcd73e50cb994936f7b8",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "discarded_measurement": "An initial 101MP decode overlapped fixture generation and correctly failed the input immutability check. It is excluded from the completed measurements; generation then finished and the final run passed.",
+  "limits": [
+    "Peak RSS is process memory, not an aggregate GB10 system-memory measurement.",
+    "These are generated constant fixtures and targeted window/color/invalid-data controls, not a general photographic-quality or latency guarantee.",
+    "Existing RGB input behavior ignores alpha and crops/pads to the EXR display window; deep data and non-RGB channels remain outside this input path."
+  ]
+}

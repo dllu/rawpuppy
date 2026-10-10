@@ -82,11 +82,25 @@ fn color_revision_inner(path: &Path) -> Result<u32> {
         return Ok(0);
     }
     let metadata = exr::meta::MetaData::read_from_file(path, false)?;
-    Ok(metadata
-        .headers
-        .first()
-        .and_then(|h| h.shared_attributes.chromaticities)
+    Ok(exr_rgb_header(&metadata.headers)?
+        .shared_attributes
+        .chromaticities
         .is_some_and(|c| c != crate::export::SRGB_CHROMATICITIES) as u32)
+}
+
+fn exr_rgb_header(headers: &[exr::meta::header::Header]) -> Result<&exr::meta::header::Header> {
+    headers
+        .iter()
+        .find(|header| {
+            !header.deep
+                && ["R", "G", "B"].iter().all(|channel| {
+                    header
+                        .channels
+                        .find_index_of_channel(&exr::meta::attribute::Text::from(*channel))
+                        .is_some()
+                })
+        })
+        .context("EXR contains no non-deep RGB layer")
 }
 
 fn decode_boundary<T>(path: &Path, decode: impl FnOnce() -> Result<T>) -> Result<T> {
@@ -397,6 +411,12 @@ impl SensorImage {
         {
             return Self::open_tiff(path);
         }
+        if path
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("exr"))
+        {
+            return Self::open_exr(path);
+        }
         let mut reader = image::ImageReader::open(path)?.with_guessed_format()?;
         reader.no_limits();
         let mut decoder = reader.into_decoder()?;
@@ -413,34 +433,12 @@ impl SensorImage {
             / decoder.color_type().channel_count() as usize;
         let mut image = image::DynamicImage::from_decoder(decoder)?;
         image.apply_orientation(orientation);
-        let linear = path
-            .extension()
-            .is_some_and(|e| e.eq_ignore_ascii_case("exr"));
         let image = image.to_rgb32f();
         let (width, height) = (image.width() as usize, image.height() as usize);
         pixel_count(width, height, 3)?;
         let mut data = image.into_raw();
-        let mut color_revision = 0;
         if let Some(icc) = icc {
             convert_input_icc(&mut data, &icc, grayscale)?;
-        } else if linear {
-            let metadata = exr::meta::MetaData::read_from_file(path, false)?;
-            if let Some(chroma) = metadata
-                .headers
-                .first()
-                .and_then(|h| h.shared_attributes.chromaticities)
-            {
-                color_revision = (chroma != crate::export::SRGB_CHROMATICITIES) as u32;
-                let xy = |v: exr::math::Vec2<f32>| [v.x(), v.y()];
-                let m = color::rgb_primaries_to_working(
-                    [xy(chroma.red), xy(chroma.green), xy(chroma.blue)],
-                    xy(chroma.white),
-                )?;
-                data.par_chunks_exact_mut(3).for_each(|p| {
-                    let rgb = color::apply(m, [p[0], p[1], p[2]]);
-                    p.copy_from_slice(&rgb);
-                });
-            }
         } else {
             data.par_iter_mut()
                 .for_each(|v| *v = color::srgb_decode(*v));
@@ -453,7 +451,7 @@ impl SensorImage {
             width,
             height,
             bits,
-            color_revision,
+            color_revision: 0,
             pattern: "RGB".into(),
             as_shot: [1.; 3],
             camera_to_working: color::IDENTITY,
@@ -475,6 +473,69 @@ impl SensorImage {
             raw_integer: false,
             clipping_offset: None,
         })
+    }
+
+    fn open_exr(path: &Path) -> Result<Self> {
+        use exr::prelude::*;
+        // Reuse the initialized file reader for metadata and pixel decoding.
+        // The image adapter retains a second full raster during decode, then
+        // converting RGBA to RGB allocates another one. Read directly into our
+        // owned RGB allocation instead, retaining display-window placement.
+        let chunks = exr::block::read(std::io::BufReader::new(std::fs::File::open(path)?), false)?;
+        let header = exr_rgb_header(chunks.headers())?;
+        let window = header.shared_attributes.display_window;
+        let chromaticities = header.shared_attributes.chromaticities;
+        let (width, height) = (window.size.width(), window.size.height());
+        let count = pixel_count(width, height, 3)?;
+        // EXR window positions are signed 32-bit integers. Widen before
+        // subtracting so opposite-sign origins cannot overflow their offsets.
+        let offset = [
+            i64::from(header.own_attributes.layer_position.x()) - i64::from(window.position.x()),
+            i64::from(header.own_attributes.layer_position.y()) - i64::from(window.position.y()),
+        ];
+        let decoded = read()
+            .no_deep_data()
+            .largest_resolution_level()
+            .rgb_channels(
+                move |_, _| -> anyhow::Result<Vec<f32>> {
+                    let mut data = Vec::new();
+                    data.try_reserve_exact(count)
+                        .context("Allocating EXR input pixels")?;
+                    data.resize(count, 0.);
+                    Ok(data)
+                },
+                move |data: &mut anyhow::Result<Vec<f32>>, position, (r, g, b): (f32, f32, f32)| {
+                    if let Ok(data) = data {
+                        let x = position.x() as i64 + offset[0];
+                        let y = position.y() as i64 + offset[1];
+                        if x >= 0 && y >= 0 && x < width as i64 && y < height as i64 {
+                            let start = (y as usize * width + x as usize) * 3;
+                            data[start..start + 3].copy_from_slice(&[r, g, b]);
+                        }
+                    }
+                },
+            )
+            .first_valid_layer()
+            .all_attributes()
+            .from_chunks(chunks)?;
+        let mut data = decoded.layer_data.channel_data.pixels?;
+        let mut revision = 0;
+        if let Some(chroma) = chromaticities {
+            revision = (chroma != crate::export::SRGB_CHROMATICITIES) as u32;
+            let xy = |v: exr::math::Vec2<f32>| [v.x(), v.y()];
+            let matrix = color::rgb_primaries_to_working(
+                [xy(chroma.red), xy(chroma.green), xy(chroma.blue)],
+                xy(chroma.white),
+            )?;
+            data.par_chunks_exact_mut(3).for_each(|pixel| {
+                let rgb = color::apply(matrix, [pixel[0], pixel[1], pixel[2]]);
+                pixel.copy_from_slice(&rgb);
+            });
+        }
+        let mut image = Self::from_rgb(width, height, data)?;
+        image.metadata.model = "RGB image".into();
+        image.metadata.color_revision = revision;
+        Ok(image)
     }
 
     fn open_tiff(path: &Path) -> Result<Self> {
