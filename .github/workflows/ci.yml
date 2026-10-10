@@ -70,9 +70,8 @@ jobs:
         env:
           RAWPUPPY_TEST_ISOLATED_DISPLAY: '1'
         run: xvfb-run -a -s "-screen 0 1440x960x24" cargo test --test display x11_ -- --ignored --test-threads=1
-      - name: Probe native Metal compute parity
+      - name: Metal compute parity on native GPU
         if: runner.os == 'macOS'
-        continue-on-error: true
         env:
           RUST_MIN_STACK: '33554432'
         run: |

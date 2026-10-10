@@ -1,0 +1,670 @@
+{
+  "date_utc": "2026-10-10",
+  "audited_implementation_commit": "95d5c1f49f87fa2d7cd2b0f76a29a9d167670448",
+  "prompt_sha256": "9d765d4dd956bf0e2abc3d972c2811aaddb5092805ec064453a1cb065581a95a",
+  "scope": "Full explicit prompt requirement mapping; implementation and measured evidence are distinguished from universal/physical quality claims. Completion is not declared by this record.",
+  "requirements": [
+    {
+      "id": "rust_native_ui",
+      "requirement": "Rust native minimal egui single-photo editor",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "Cargo.toml",
+          "sha256": "5ea44b5b91fc7d6653c5d16efafef55e7d642b33140bef9ebe06a938b8da024b"
+        },
+        {
+          "file": "src/gui.rs",
+          "sha256": "a650280a242a60e14f3bff77a6c792d0b8938890244df2968300c063dfedb33c"
+        },
+        {
+          "file": "src/main.rs",
+          "sha256": "792bd2e18f789d63cfc42a2ff153b9f8d923a73aa2ff1d7d5e3d8711c94162a9"
+        },
+        {
+          "file": "docs/data/native-gfx-workflow-2026-10-10.json",
+          "sha256": "9d36f5e21321dfecf08925768a7c4545a5317b4fd88bf55085130a4947a809e5",
+          "scope": "Actual release native X11 editor, current combined CUDA/raw-ml/moebius build; owned GFX100S copy, private Xvfb and model caches; screenshot checks are display-resolution evidence, not physical colorimetry."
+        },
+        {
+          "file": "docs/data/native-error-status-2026-10-10.json",
+          "sha256": "c338f65237098b6e5a99fe83b49fcb0b94da25a75bdc9a2232577be6f79af9f5",
+          "scope": null
+        }
+      ]
+    },
+    {
+      "id": "cuda_vulkan_metal",
+      "requirement": "Rust CUDA, Vulkan and Metal acceleration",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/gpu/kernel.rs",
+          "sha256": "c1d4029710daee859a40dd24fb12664fe3b8884b11de7dcda3e44e3c2ee1d4a3"
+        },
+        {
+          "file": "src/gpu/mod.rs",
+          "sha256": "976b3ad4ffb32bcb7dda04c29343a0236e0c13f073500e0a1fc5170ec1654c14"
+        },
+        {
+          "file": "src/gpu/system_cuda.rs",
+          "sha256": "7c1e7fb937eda20f398fb77cdf22807049cd9d7c55c3682b7f33ea7f376ca278"
+        },
+        {
+          "file": ".github/workflows/ci.yml",
+          "sha256": "f02a65d9a737269fa23b704ac3280c06593079254d00e4875e518c3c306509e1"
+        },
+        {
+          "file": "docs/data/gpu-flat-tiles-2026-10-10.json",
+          "sha256": "f189161bb3113744df3444ee4270e52ea036588be1e4dc2dc41e892a696ee0de",
+          "scope": "Strictly bounded GPU output bindings, global viewport sampling independent of tile layout, and reduced fractional-coordinate roundoff. Source storage/addressing limits retain existing automatic CPU fallback."
+        },
+        {
+          "file": "docs/data/wide-dng-2026-10-10.json",
+          "sha256": "ae4c96478ead0ae05600760f2be36a50f608a9da95cf28711a556b6b3234dee2",
+          "scope": "Actual file-level 100003-pixel-wide integer Bayer DNG decoding, normalized RAW addressing, hot-pixel correction beyond x=65535, full-width CPU/GPU row agreement and generated constant/noisy color controls with full float EXR export. Not a general camera-format or physical-quality claim."
+        },
+        {
+          "file": "docs/data/gb10-system-memory-2026-10-09.json",
+          "sha256": "a7e9cda17d3e2fb3851518b2f6e4e4c0f9597b629aaae9c6821b373be4b12eed",
+          "scope": "One source and shared-workstation measurements; not generic bounds. No bit-identical full-export claim."
+        }
+      ]
+    },
+    {
+      "id": "raw_input",
+      "requirement": "RAW decoding and GFX100S support",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/input.rs",
+          "sha256": "272eb9593d75bfc2d9c76d33b1e069d8cba599ed9ad78aafed5971a63e71205a"
+        },
+        {
+          "file": "docs/data/gfx-input-diversity-gb10-2026-10-09.json",
+          "sha256": "46b1ad8dedf7eed692a7476587806f2610ec4822a5e11939d940126fc8637f02",
+          "scope": "eight owned GFX copies; finite, framing, orientation and CPU/GPU checks; not an independent optical/color oracle"
+        },
+        {
+          "file": "docs/data/canon-sony-camera-2026-10-10.json",
+          "sha256": "00230902206e33b9b06098e5196cb9a5a1324980086db009b505180534ef0c97",
+          "scope": "Four real Canon/Sony Bayer RAWs: immutable decoding, framing and CPU/CUDA/Vulkan previews; linear output oracle and explicit signed-noise/crop controls; not a universal camera/color ranking."
+        },
+        {
+          "file": "docs/data/wide-dng-2026-10-10.json",
+          "sha256": "ae4c96478ead0ae05600760f2be36a50f608a9da95cf28711a556b6b3234dee2",
+          "scope": "Actual file-level 100003-pixel-wide integer Bayer DNG decoding, normalized RAW addressing, hot-pixel correction beyond x=65535, full-width CPU/GPU row agreement and generated constant/noisy color controls with full float EXR export. Not a general camera-format or physical-quality claim."
+        }
+      ]
+    },
+    {
+      "id": "raw_detail",
+      "requirement": "Demosaicing, denoising and hot-pixel correction",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/input.rs",
+          "sha256": "272eb9593d75bfc2d9c76d33b1e069d8cba599ed9ad78aafed5971a63e71205a"
+        },
+        {
+          "file": "src/raw_ml.rs",
+          "sha256": "fbe4529113c829a10b1665c143ba17f1f7860f460bf3726a0b0026b2033d9279"
+        },
+        {
+          "file": "docs/data/raw-reconstruction-2026-10-09.json",
+          "sha256": "6e8d5d3c066aeb84b2d67554c6bd12de17d2cf028462db287fdf9cee164becf7",
+          "scope": "Native joint Bayer ROI pilot; two held-out scene regions, not full-frame or general quality validation"
+        },
+        {
+          "file": "docs/data/raw-reconstruction-detail-2026-10-09.json",
+          "sha256": "51004bf29e3d4acaf5611fa7b3583bcc501ae7943c7b8b818b12799026fe6c5a",
+          "scope": "six preselected sensor ROIs on two held-out scenes; fixed baseline settings; camera-linear MHC reference with estimated alignment"
+        },
+        {
+          "file": "docs/data/wide-dng-2026-10-10.json",
+          "sha256": "ae4c96478ead0ae05600760f2be36a50f608a9da95cf28711a556b6b3234dee2",
+          "scope": "Actual file-level 100003-pixel-wide integer Bayer DNG decoding, normalized RAW addressing, hot-pixel correction beyond x=65535, full-width CPU/GPU row agreement and generated constant/noisy color controls with full float EXR export. Not a general camera-format or physical-quality claim."
+        }
+      ]
+    },
+    {
+      "id": "ca",
+      "requirement": "Chromatic aberration correction",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/lens.rs",
+          "sha256": "64c7593c144a40bb393b42b0919fcd87fa8b96bdf52f75cd35a47056c926e633"
+        },
+        {
+          "file": "src/geometry.rs",
+          "sha256": "104b811fdd36d0ed93a0b58f37d4639f70edde9c3dfc2a2f9c6ea8e38ea9c003"
+        },
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "docs/data/lens-ca-gfx-oracle-2026-10-09.json",
+          "sha256": "3d9aae13db4daadbcfe63695787dedf11a7ec2d8a35a1a24cbed7a9487185850",
+          "scope": "One GFX100S/GF55mmF1.7 capture; amplified metadata verifies CA units and sign, not identical rendering or universal optical accuracy"
+        }
+      ]
+    },
+    {
+      "id": "geometry",
+      "requirement": "Embedded/manual barrel and pincushion, crop, rotation and pinhole perspective",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/geometry.rs",
+          "sha256": "104b811fdd36d0ed93a0b58f37d4639f70edde9c3dfc2a2f9c6ea8e38ea9c003"
+        },
+        {
+          "file": "src/lens.rs",
+          "sha256": "64c7593c144a40bb393b42b0919fcd87fa8b96bdf52f75cd35a47056c926e633"
+        },
+        {
+          "file": "tests/core.rs",
+          "sha256": "362609068cb77c0ca0950045cc1e0a55ed15a3bb3f4ce4123d8fb6491f1c0c7a"
+        },
+        {
+          "file": "tests/lens.rs",
+          "sha256": "7d7b9d471e33d8d756b61a232a5a0fd6d36d2785af7d04e5272000c31e13d0a3"
+        },
+        {
+          "file": "docs/data/lens-gfx-oracle-2026-10-08.json",
+          "sha256": "93dcec6a46a74372c511a455deac5a864f5148021f3ca0317e9e138a4f748baa",
+          "scope": "One photograph/lens/aperture, not general accuracy or latency guarantees; geometric hypotheses fit a free uniform frame scale and translation."
+        },
+        {
+          "file": "docs/data/gfx-input-diversity-gb10-2026-10-09.json",
+          "sha256": "46b1ad8dedf7eed692a7476587806f2610ec4822a5e11939d940126fc8637f02",
+          "scope": "eight owned GFX copies; finite, framing, orientation and CPU/GPU checks; not an independent optical/color oracle"
+        }
+      ]
+    },
+    {
+      "id": "intensity_calibration",
+      "requirement": "Embedded/manual vignetting, graduated ND, exposure and one color calibration",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "src/camera_profiles.rs",
+          "sha256": "b627b5a5b13f9804b5341ebd4539628138155368e53edc53ea5b5c2e67078b62"
+        },
+        {
+          "file": "src/dng_profiles.rs",
+          "sha256": "cdb1054e0b08acc80080c0b0be1a11089aebfd8b9f3f5cc8e5a114f082c0b368"
+        },
+        {
+          "file": "docs/data/lens-gfx-oracle-2026-10-08.json",
+          "sha256": "93dcec6a46a74372c511a455deac5a864f5148021f3ca0317e9e138a4f748baa",
+          "scope": "One photograph/lens/aperture, not general accuracy or latency guarantees; geometric hypotheses fit a free uniform frame scale and translation."
+        },
+        {
+          "file": "docs/data/raw-color-fixture-2026-10-10.json",
+          "sha256": "de14e00523717d51bac705ffa035d25223c8d30f464367d8555a48532bc1a435",
+          "scope": "Synthetic Bayer DNG calibration and signed-noise controls; normalized equivalent of one Sony camera matrix, not its original complete camera profile."
+        },
+        {
+          "file": "docs/data/dng-calibration-2026-10-10.json",
+          "sha256": "6e09d2cae807bf47c5670a5d028a46aab08eabed9847fae3705a978939af1a73",
+          "scope": "Basic one/two-illuminant, three-channel DNG linear calibration; reciprocal-CCT selection with analog balance, matching-signature camera calibration and optional forward matrices. Physical camera/colorimetric accuracy is not established by these fixtures."
+        },
+        {
+          "file": "docs/data/extended-dng-2026-10-10.json",
+          "sha256": "2bbcd375d730006aa6f570c568df2e19adf60cf2afa71ef585d846ed4ada2cd9",
+          "scope": "Synthetic DNG 1.6 linear profile selection: three slots and custom xy/spectra, active source revisions and CPU/CUDA/Vulkan parity; no physical camera calibration claim."
+        },
+        {
+          "file": "docs/data/dng-white-xy-2026-10-10.json",
+          "sha256": "5f80a6dfb120c5807c1af7b30c04167a5c360b260ed067118e149eab4b7ad96d",
+          "scope": "Synthetic DNG AsShotWhiteXY calibration controls for warm dual and third/custom profile; no physical camera/colorimetry claim."
+        }
+      ]
+    },
+    {
+      "id": "agx",
+      "requirement": "Photographic AgX and permitted independent Darktable oracle",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/agx.rs",
+          "sha256": "0696018febea14942d921bfe6f96c59cb338239086a7674068372f7f4ae6c667"
+        },
+        {
+          "file": "src/data/agx-rec2020-97.json",
+          "sha256": "f711c1176e7a7cf7b515f4a3c1a06679acf2571cb616eec393e9670ed21d1941"
+        },
+        {
+          "file": "tools/bake_agx.py",
+          "sha256": "772e00ca85e32f96a3c8e57b1503ca4da195b4c7499b57ee742444616acda048"
+        },
+        {
+          "file": "tests/color.rs",
+          "sha256": "d76c951310c91927c95331133f3ff94547cd387dcaf7d048566a642dd8b4979f"
+        }
+      ]
+    },
+    {
+      "id": "display_edits",
+      "requirement": "Clone/heal, tone curve and split toning",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "src/gui.rs",
+          "sha256": "a650280a242a60e14f3bff77a6c792d0b8938890244df2968300c063dfedb33c"
+        },
+        {
+          "file": "tests/core.rs",
+          "sha256": "362609068cb77c0ca0950045cc1e0a55ed15a3bb3f4ce4123d8fb6491f1c0c7a"
+        }
+      ]
+    },
+    {
+      "id": "modern_synthesis",
+      "requirement": "Recent licensed neural removal and corner filling; consider Qwen 2.1 and alternatives",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/moebius.rs",
+          "sha256": "93cf100e517ffba6d1b28b5b79c5d21ad4752aa0408c5b891ad9b8666aa4bbde"
+        },
+        {
+          "file": "src/synthesis.rs",
+          "sha256": "eaf4b051d77eb3c706c71804c73f7e4b4e7ee265a8a5b13dd080fa5505f68dd1"
+        },
+        {
+          "file": "src/render.rs",
+          "sha256": "917fd52d786ff3d8ba76d93dbd3e8c6e763d4ca292e1c947923e74266e5f3fca"
+        },
+        {
+          "file": "docs/inpainting-research.md",
+          "sha256": "b1c7b05f7a308ff3cf5b26b340c9fbace356b750ec8b43d5504abdefd1f55c2b"
+        },
+        {
+          "file": "docs/inpainting-comparison.md",
+          "sha256": "1b0150bae32cf6ff990e7a6d087cc7ad5129c05710723575546b5f5c1cf90cf3"
+        },
+        {
+          "file": "docs/data/inpainting-gb10-2026-10-08.json",
+          "sha256": "b6949f26f1efa5966d647a55933bfdb9e3ad331db1fcca7d18117f4e7a21fb01",
+          "scope": "One public removal example; not a general quality ranking"
+        },
+        {
+          "file": "docs/data/qwen-controlnet-gb10-2026-10-09.json",
+          "sha256": "381b08b1bc31bff15b28a90c7ad4919dd4f7e5641ebf29f1c81fe19b7df3d95a",
+          "scope": "research/evaluation only; explicit-mask Qwen 2.1 adapter follow-up"
+        },
+        {
+          "file": "docs/data/llada-turbo-gb10-2026-10-10.json",
+          "sha256": "8abed7ad44c970edc3bd115c8d84fb9d6d8b0e3492ddeade99cd7ad941ca6b1c",
+          "scope": "Pinned LLaDA-Image-Turbo BF16 reference editing on GB10, on the same encoded 512-pixel GFX context and complete target used in the Moebius selection diagnosis. Whole edited output retained and final target composition preserves unselected pixels exactly. No application backend or model-weight redistribution."
+        },
+        {
+          "file": "docs/data/narrow-corner-gb10-release-2026-10-09.json",
+          "sha256": "4be54d5966621222f3ed1b83fd7c9afab8e1f01ef3ab9de85db58e6e3996ae61",
+          "scope": "real-model output-perimeter conformance; not a perceptual quality benchmark"
+        },
+        {
+          "file": "docs/data/moebius-selection-diagnosis-2026-10-10.json",
+          "sha256": "7e89c671793a327ecd7c57cf899ba13de53bd17c28846605345135e137d7122a",
+          "scope": "Controlled native Moebius diagnosis on the exact float context of the saved GFX painted fill; distinguish graph cache, incomplete committed selection and inference padding. No change to production sampling defaults or saved targets."
+        },
+        {
+          "file": "docs/data/inward-synthesis-blend-2026-10-10.json",
+          "sha256": "3454ac4de1e6c20ab9395e6433589fb7c837f06f75971c581a209e1ed107cad6",
+          "scope": "Inward-only linear-RGB blending of new painted synthesis layers, with legacy-zero serialization, exact unpainted/core preservation, viewport consistency, full geometric-gap opacity and real GFX save/cold-reload conformance."
+        }
+      ]
+    },
+    {
+      "id": "composition_order",
+      "requirement": "Fixed opinionated order, composed coordinates/scalar/color transforms, sparse original previews, fused GPU output",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "src/geometry.rs",
+          "sha256": "104b811fdd36d0ed93a0b58f37d4639f70edde9c3dfc2a2f9c6ea8e38ea9c003"
+        },
+        {
+          "file": "src/gpu/kernel.rs",
+          "sha256": "c1d4029710daee859a40dd24fb12664fe3b8884b11de7dcda3e44e3c2ee1d4a3"
+        },
+        {
+          "file": "src/render.rs",
+          "sha256": "917fd52d786ff3d8ba76d93dbd3e8c6e763d4ca292e1c947923e74266e5f3fca"
+        },
+        {
+          "file": "docs/architecture.md",
+          "sha256": "e5730590b3211aaa77cf40b9f849e5fae2fa04177b62f70f6646c4f9d7d387bd"
+        },
+        {
+          "file": "docs/data/gpu-flat-tiles-2026-10-10.json",
+          "sha256": "f189161bb3113744df3444ee4270e52ea036588be1e4dc2dc41e892a696ee0de",
+          "scope": "Strictly bounded GPU output bindings, global viewport sampling independent of tile layout, and reduced fractional-coordinate roundoff. Source storage/addressing limits retain existing automatic CPU fallback."
+        },
+        {
+          "file": "docs/data/gb10-system-memory-2026-10-09.json",
+          "sha256": "a7e9cda17d3e2fb3851518b2f6e4e4c0f9597b629aaae9c6821b373be4b12eed",
+          "scope": "One source and shared-workstation measurements; not generic bounds. No bit-identical full-export claim."
+        }
+      ]
+    },
+    {
+      "id": "research_joint",
+      "requirement": "Research OIDN/classical methods and superior joint ML path",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "docs/research.md",
+          "sha256": "4f603c3757e45a4cd6c678992d6326d00a8d494e4126c21059807e644c3d804a"
+        },
+        {
+          "file": "docs/learned-reconstruction.md",
+          "sha256": "ae0b87729c183c09bcbb0a23adc4be688bf3a5392eed121d41be1ad57436ab9e"
+        },
+        {
+          "file": "tools/export_rawnind.py",
+          "sha256": "ec7f1a8c88234addfb0df6e79ae92b3fe41a84c9afaf3498fc816aa4e0a7d127"
+        },
+        {
+          "file": "src/raw_ml.rs",
+          "sha256": "fbe4529113c829a10b1665c143ba17f1f7860f460bf3726a0b0026b2033d9279"
+        },
+        {
+          "file": "docs/data/raw-reconstruction-2026-10-09.json",
+          "sha256": "6e8d5d3c066aeb84b2d67554c6bd12de17d2cf028462db287fdf9cee164becf7",
+          "scope": "Native joint Bayer ROI pilot; two held-out scene regions, not full-frame or general quality validation"
+        },
+        {
+          "file": "docs/data/raw-reconstruction-detail-2026-10-09.json",
+          "sha256": "51004bf29e3d4acaf5611fa7b3583bcc501ae7943c7b8b818b12799026fe6c5a",
+          "scope": "six preselected sensor ROIs on two held-out scenes; fixed baseline settings; camera-linear MHC reference with estimated alignment"
+        },
+        {
+          "file": "docs/data/full-reconstruction-provenance-2026-10-10.json",
+          "sha256": "11fbadf8fec00bedd82896fc4b7e53a92673e6e77e58de1165ab094b132d580d",
+          "scope": "current full-frame native learned reconstruction, cached CUDA previews and full TIFF export on one owned GFX photo; performance/integrity rather than general quality"
+        }
+      ]
+    },
+    {
+      "id": "color_profiles",
+      "requirement": "Working/input/output/display color spaces on X11, Wayland and macOS",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/color.rs",
+          "sha256": "90139b8ad23225c7d1828a66da968950996bbd56e4ac3ff25be174573ad510c9"
+        },
+        {
+          "file": "src/export.rs",
+          "sha256": "2cd3014bc031c4dd543496bd93fdbe7e36fff522a91217e0532947b4360cbfd1"
+        },
+        {
+          "file": "src/display.rs",
+          "sha256": "c5a213af486e0c4f727eeda63b5de024df709df55ef4d8641b5618ecb7626c2b"
+        },
+        {
+          "file": "src/display/platform/linux.rs",
+          "sha256": "4881a9bb2a198eaea68eddc793bb6f79f7ec82e14ad7608b3493befface454ad"
+        },
+        {
+          "file": "src/display/platform/mac.rs",
+          "sha256": "6df038b687fdc13d308508f26f8a7ac7934d9b2f8302eb26c446bf96c1d2f08a"
+        },
+        {
+          "file": "src/display/wayland_surface.rs",
+          "sha256": "509d555bbe02175238b89ea9c6b319d74c2cc8fdbe8cd13d65f47d0bf3a11c49"
+        },
+        {
+          "file": "tests/color.rs",
+          "sha256": "d76c951310c91927c95331133f3ff94547cd387dcaf7d048566a642dd8b4979f"
+        },
+        {
+          "file": "tests/display.rs",
+          "sha256": "08e9c6d2f56f5a0e00ed8a58a292341f41f951aa4fdea353a043347e6df3e606"
+        },
+        {
+          "file": "docs/data/wayland-surface-2026-10-09.json",
+          "sha256": "7a1be4ab88d9a49d5c8597583e341b87b20022818b51170e183252b0276868e0",
+          "scope": "Native SDR surface protocol validation in isolated compositors; physical monitor/HDR colorimetry unverified"
+        },
+        {
+          "file": "docs/data/full-saved-synthesis-export-2026-10-10.json",
+          "sha256": "014713f92c71b83479eeeecf355e49d118eb60f67126904068f0500c5ef6554e",
+          "scope": "Every full-size output pixel is finite, changes are contained in declared paint, alpha and immutable source/recipe/sensor hashes remain exact, and every exported Display P3 RGBA16 component/profile is decoded and checked on one real owned GFX photo."
+        }
+      ]
+    },
+    {
+      "id": "hdr",
+      "requirement": "HDR images and display consideration",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/display/hdr.rs",
+          "sha256": "be212a13ccc60972869cccf1316a7e053293b11943828423fbcb5905ebe0748b"
+        },
+        {
+          "file": "vendor/egui-wgpu/RAWPUPPY.md",
+          "sha256": "761d1ea5f234d1dd349b28324457737904e9c7ef3ea4ded675030a1c9f98a883"
+        },
+        {
+          "file": "tests/hdr.rs",
+          "sha256": "258e647661e4ba5671bc82bbe38164f7e75a512b1205b4ba613dcf30b85c9052"
+        },
+        {
+          "file": "examples/editor_signal_probe.rs",
+          "sha256": "b97d9b6fa59b6f2e0c3c21cc8cd0cdbdc6d6792af3a7843b10850855acf43d37"
+        },
+        {
+          "file": "docs/data/hdr-editor-gb10-2026-10-09.json",
+          "sha256": "ee6c146197c4d2eb3cbd3166c4ee1e03c60483775c5dcde8febc8ee2ecb79c46",
+          "scope": "Actual native editor signal readback and source/recipe invariance, not physical-monitor colorimetry"
+        },
+        {
+          "file": "docs/data/hdr-native-gb10-2026-10-09.json",
+          "sha256": "cfdd9c0b733f5efc9c45e97588617c6f7cfdd0e610edc595863ad791a3c91620",
+          "scope": "FP16 texture and native extended-linear signal validation; editor integration and physical HDR colorimetry not complete"
+        },
+        {
+          "file": "docs/data/exr-input-2026-10-10.json",
+          "sha256": "11c1e215be20ec80d1650a4644effffe226b9cdd8872f9de673f23c14ce5b965",
+          "scope": "Native EXR input decoding directly into a single owned RGB allocation, preserving display/data windows, RGB layer selection, chromaticities and signed/HDR samples; rejecting nonfinite RGB and missing RGB layers."
+        }
+      ]
+    },
+    {
+      "id": "large_files",
+      "requirement": "100 MP, >100000-wide indices, no arbitrary application raster limit beyond format/memory",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/input.rs",
+          "sha256": "272eb9593d75bfc2d9c76d33b1e069d8cba599ed9ad78aafed5971a63e71205a"
+        },
+        {
+          "file": "src/export.rs",
+          "sha256": "2cd3014bc031c4dd543496bd93fdbe7e36fff522a91217e0532947b4360cbfd1"
+        },
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "src/synthesis.rs",
+          "sha256": "eaf4b051d77eb3c706c71804c73f7e4b4e7ee265a8a5b13dd080fa5505f68dd1"
+        },
+        {
+          "file": "docs/data/wide-dng-2026-10-10.json",
+          "sha256": "ae4c96478ead0ae05600760f2be36a50f608a9da95cf28711a556b6b3234dee2",
+          "scope": "Actual file-level 100003-pixel-wide integer Bayer DNG decoding, normalized RAW addressing, hot-pixel correction beyond x=65535, full-width CPU/GPU row agreement and generated constant/noisy color controls with full float EXR export. Not a general camera-format or physical-quality claim."
+        },
+        {
+          "file": "docs/data/bigtiff-export-2026-10-10.json",
+          "sha256": "b6292cca191fdd369426ed87f72df9dda4fd26ade972fba8874959d5686a1ce0",
+          "scope": "Synthetic linear RGBA source; all source pixels verified unchanged; first/middle/last encoded strips decoded, not every encoded strip; process RSS includes the full float source; this measures export, not full RAW reconstruction/rendering."
+        },
+        {
+          "file": "docs/data/png-export-2026-10-10.json",
+          "sha256": "a2e0b5cead6f699e9502ba6cf73f33cec4fcb76bf7c1ec34a846c2049cf32200",
+          "scope": "Synthetic rendered RGBA; all source/decoded pixels checked. RSS includes the full float source and row verifier. Timings include sync but exclude RAW decode/reconstruction/render. Measurements are single runs; other project workloads were not changed."
+        },
+        {
+          "file": "docs/data/large-layer-2026-10-10.json",
+          "sha256": "2544104b686d55ba038d73563c0c0c7856c8dae51b779c87fa7c2c5b7226c070",
+          "scope": "Owned synthetic source and 100003x336 float RGBA EXR layer, stored through Layers, XMP roundtrip, fresh cache, full composition; not neural inference or photographic quality."
+        },
+        {
+          "file": "docs/data/exr-input-2026-10-10.json",
+          "sha256": "11c1e215be20ec80d1650a4644effffe226b9cdd8872f9de673f23c14ce5b965",
+          "scope": "Native EXR input decoding directly into a single owned RGB allocation, preserving display/data windows, RGB layer selection, chromaticities and signed/HDR samples; rejecting nonfinite RGB and missing RGB layers."
+        },
+        {
+          "file": "docs/data/full-saved-synthesis-export-2026-10-10.json",
+          "sha256": "014713f92c71b83479eeeecf355e49d118eb60f67126904068f0500c5ef6554e",
+          "scope": "Every full-size output pixel is finite, changes are contained in declared paint, alpha and immutable source/recipe/sensor hashes remain exact, and every exported Display P3 RGBA16 component/profile is decoded and checked on one real owned GFX photo."
+        }
+      ]
+    },
+    {
+      "id": "unified_memory",
+      "requirement": "Embrace GB10 coherent memory and avoid redundant GPU transfers",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/gpu/system_cuda.rs",
+          "sha256": "7c1e7fb937eda20f398fb77cdf22807049cd9d7c55c3682b7f33ea7f376ca278"
+        },
+        {
+          "file": "src/input.rs",
+          "sha256": "272eb9593d75bfc2d9c76d33b1e069d8cba599ed9ad78aafed5971a63e71205a"
+        },
+        {
+          "file": "docs/system-memory.md",
+          "sha256": "16944f9331b304f1e2fe654b1e8e24d4cf953ff31807f52f8408412ab49aab3a"
+        },
+        {
+          "file": "docs/data/gb10-system-memory-2026-10-09.json",
+          "sha256": "a7e9cda17d3e2fb3851518b2f6e4e4c0f9597b629aaae9c6821b373be4b12eed",
+          "scope": "One source and shared-workstation measurements; not generic bounds. No bit-identical full-export claim."
+        }
+      ]
+    },
+    {
+      "id": "cooperation",
+      "requirement": "Protect original photograph folders, bound resource use, leave other projects/processes alone",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/export.rs",
+          "sha256": "2cd3014bc031c4dd543496bd93fdbe7e36fff522a91217e0532947b4360cbfd1"
+        },
+        {
+          "file": "src/main.rs",
+          "sha256": "792bd2e18f789d63cfc42a2ff153b9f8d923a73aa2ff1d7d5e3d8711c94162a9"
+        },
+        {
+          "file": "src/ml_runtime.rs",
+          "sha256": "afb3c90bcabc3fcb77aa16683799131e7b4b5301736e35178e400b581841ec4d"
+        },
+        {
+          "file": "tests/cli.rs",
+          "sha256": "c5838b833dec37ab8ccab1c04c1ff97432fcee379a502c46ed5bb3d6ed164145"
+        },
+        {
+          "file": "docs/data/cuda-inference-budget-2026-10-10.json",
+          "sha256": "79dc6067527faece84cef905054a551f71e1a85b79ceb75450207608ea1e7abf",
+          "scope": "64 MiB caching-allocator cap in one owned process; not device-wide exhaustion"
+        },
+        {
+          "file": "docs/data/reconstruction-memory-2026-10-09.json",
+          "sha256": "4f2427e18d597725d2908a0ea8821e88708ed2561c57d8c50465d7edb6589a73",
+          "scope": "owned-process virtual address-space rejection, not system-wide memory exhaustion"
+        },
+        {
+          "file": "docs/data/native-error-status-2026-10-10.json",
+          "sha256": "c338f65237098b6e5a99fe83b49fcb0b94da25a75bdc9a2232577be6f79af9f5",
+          "scope": null
+        },
+        {
+          "file": "docs/data/full-saved-synthesis-export-2026-10-10.json",
+          "sha256": "014713f92c71b83479eeeecf355e49d118eb60f67126904068f0500c5ef6554e",
+          "scope": "Every full-size output pixel is finite, changes are contained in declared paint, alpha and immutable source/recipe/sensor hashes remain exact, and every exported Display P3 RGBA16 component/profile is decoded and checked on one real owned GFX photo."
+        }
+      ]
+    },
+    {
+      "id": "xmp_no_db",
+      "requirement": "Single photo, no global database, isolated atomic XMP and CLI",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "src/gui.rs",
+          "sha256": "a650280a242a60e14f3bff77a6c792d0b8938890244df2968300c063dfedb33c"
+        },
+        {
+          "file": "src/sidecar.rs",
+          "sha256": "f2fe468b52a2c98e71e4550e389ec96c80b0c0ba0881145e5eab4a6cd026f8bc"
+        },
+        {
+          "file": "src/main.rs",
+          "sha256": "792bd2e18f789d63cfc42a2ff153b9f8d923a73aa2ff1d7d5e3d8711c94162a9"
+        },
+        {
+          "file": "tests/cli.rs",
+          "sha256": "c5838b833dec37ab8ccab1c04c1ff97432fcee379a502c46ed5bb3d6ed164145"
+        },
+        {
+          "file": "tests/core.rs",
+          "sha256": "362609068cb77c0ca0950045cc1e0a55ed15a3bb3f4ce4123d8fb6491f1c0c7a"
+        }
+      ]
+    },
+    {
+      "id": "docs_delivery",
+      "requirement": "Concise README, progress journals, commit and push milestones",
+      "implementation_present": true,
+      "evidence": [
+        {
+          "file": "README.md",
+          "sha256": "532c4a3e67177b5a553fa8483ec80db9a605be2e89f6a017b24be8d98ba4716c"
+        },
+        {
+          "file": "PROMPT.md",
+          "sha256": "9d765d4dd956bf0e2abc3d972c2811aaddb5092805ec064453a1cb065581a95a"
+        },
+        {
+          "file": "AGENTS.md",
+          "sha256": "45642f117ed5f3fdd8f7cbd11cf1813f4d58a4baa20461349e5298ef1aa59de2"
+        },
+        {
+          "file": "docs/requirements.md",
+          "sha256": "667bd81ac877948a5d2f51ff5ae603dd29ba7082ba3fab8b5b97578616f52641"
+        }
+      ]
+    }
+  ],
+  "new_gate": "Native macOS Metal parity must fail CI when it fails; the former continue-on-error override is removed.",
+  "completion_unproven": [
+    "The current head CI is live; the changed mandatory Metal gate has not completed on its new commit.",
+    "Joint reconstruction/model quality evidence shows gains and losses on limited captures; a universal superiority or final model ranking is not proven.",
+    "Physical colorimetry and broader camera/display quality are not inferred from protocol/frame/numeric tests."
+  ],
+  "status": "audit in progress; goal stays active"
+}
