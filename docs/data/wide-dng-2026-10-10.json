@@ -1,0 +1,899 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "944ce85cfca9f01a76fdc08287fd8b098d431deb",
+  "scope": "Actual file-level 100003-pixel-wide integer Bayer DNG decoding, normalized RAW addressing, hot-pixel correction beyond x=65535, full-width CPU/GPU row agreement and generated constant/noisy color controls with full float EXR export. Not a general camera-format or physical-quality claim.",
+  "hot_pixel_control": {
+    "dimensions": [
+      100003,
+      24
+    ],
+    "bits_per_sample": 16,
+    "cfa": "RGGB",
+    "black": 512,
+    "white": 15360,
+    "hot_pixel": [
+      70000,
+      12
+    ],
+    "encoded_hot_value": 15360,
+    "normalized_hot_value": 1.0,
+    "uncorrected_reconstructed_red": 1.0,
+    "corrected_expected_red": 0.02,
+    "analytical_pixel_tolerance": 5e-06,
+    "analytically_checked_row_pixels": 99985,
+    "excluded_row_pixels": 18,
+    "exclusion_reason": "Three pixels at either side of each constant patch avoid expected MHC/bilinear cross-patch color mixing. GPU comparison includes every row pixel.",
+    "gpu_compared_row_pixels": 100003,
+    "gpu_pixel_tolerance": 0.0003,
+    "input_and_sensor_unchanged": true
+  },
+  "constant_patch_maximum_mean_error": 2.9802322387695312e-08,
+  "independent_exiftool": [
+    {
+      "SourceFile": "/tmp/rawpuppy-validation/wide-dng-controls-2026-10-10/constant.dng",
+      "ImageWidth": 100003,
+      "ImageHeight": 24,
+      "BitsPerSample": 16,
+      "PhotometricInterpretation": "Color Filter Array",
+      "CFAPattern": "[Red,Green][Green,Blue]",
+      "BlackLevel": 512,
+      "WhiteLevel": 15360
+    },
+    {
+      "SourceFile": "/tmp/rawpuppy-validation/wide-dng-controls-2026-10-10/noisy.dng",
+      "ImageWidth": 100003,
+      "ImageHeight": 24,
+      "BitsPerSample": 16,
+      "PhotometricInterpretation": "Color Filter Array",
+      "CFAPattern": "[Red,Green][Green,Blue]",
+      "BlackLevel": 512,
+      "WhiteLevel": 15360
+    }
+  ],
+  "controls": {
+    "as_shot": [
+      1.7999999523162842,
+      1.0,
+      2.4000000953674316
+    ],
+    "black": 512,
+    "block_size": null,
+    "camera_source_sha256": null,
+    "camera_to_working": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "dimensions": [
+      100003,
+      24
+    ],
+    "fixtures": [
+      {
+        "fixture": "constant",
+        "metadata": {
+          "aperture": null,
+          "as_shot": [
+            1.7999985218048096,
+            1.0,
+            2.3999979496002197
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              0.9999997615814209,
+              4.0978193283081055e-08,
+              1.7881393432617188e-07
+            ],
+            [
+              2.9453065764073472e-08,
+              0.9999998807907104,
+              1.0058281674218961e-07
+            ],
+            [
+              3.725287456290971e-08,
+              1.4901154088420299e-08,
+              1.0
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": null,
+          "height": 24,
+          "lens_model": null,
+          "lens_profile": null,
+          "lens_profile_error": null,
+          "make": "Rawpuppy",
+          "model": "Controlled Bayer Fixture",
+          "pattern": "RGGB",
+          "sensor_height": 24,
+          "sensor_width": 100003,
+          "width": 100003
+        },
+        "patches": [
+          {
+            "clipped_camera_mean": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "expected_working_mean": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "measured_camera_mean": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "patch": 0,
+            "rawpuppy_mean": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "reference_mean": null,
+            "region": [
+              32,
+              2,
+              33271,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.004983836319297552,
+              0.004983836319297552,
+              0.004983836319297552
+            ],
+            "expected_working_mean": [
+              0.008970897644758224,
+              0.004983837716281414,
+              0.011961196549236774
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.004999999888241291,
+              0.004999999888241291,
+              0.004999999888241291
+            ],
+            "measured_camera_mean": [
+              0.004983836319297552,
+              0.004983836319297552,
+              0.004983836319297552
+            ],
+            "patch": 1,
+            "rawpuppy_mean": [
+              0.008970897877588868,
+              0.00498383748345077,
+              0.011961197247728705
+            ],
+            "reference_mean": null,
+            "region": [
+              33367,
+              2,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.0200026948004961,
+              0.0200026948004961,
+              0.0200026948004961
+            ],
+            "expected_working_mean": [
+              0.036004822701215744,
+              0.02000270038843155,
+              0.04800642654299736
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.019999999552965164,
+              0.019999999552965164,
+              0.019999999552965164
+            ],
+            "measured_camera_mean": [
+              0.0200026948004961,
+              0.0200026948004961,
+              0.0200026948004961
+            ],
+            "patch": 2,
+            "rawpuppy_mean": [
+              0.036004820838570595,
+              0.020002701319754124,
+              0.04800642840564251
+            ],
+            "reference_mean": null,
+            "region": [
+              66701,
+              2,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.18002425134181976,
+              0.18002425134181976,
+              0.18002425134181976
+            ],
+            "expected_working_mean": [
+              0.3240433931350708,
+              0.18002429604530334,
+              0.43205782771110535
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.18000000715255737,
+              0.18000000715255737,
+              0.18000000715255737
+            ],
+            "measured_camera_mean": [
+              0.18002425134181976,
+              0.18002425134181976,
+              0.18002425134181976
+            ],
+            "patch": 3,
+            "rawpuppy_mean": [
+              0.3240433931350708,
+              0.18002428859472275,
+              0.43205782771110535
+            ],
+            "reference_mean": null,
+            "region": [
+              32,
+              10,
+              33271,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.18002425134181976,
+              0.0400053896009922,
+              0.0200026948004961
+            ],
+            "expected_working_mean": [
+              0.32404330372810364,
+              0.0400054007768631,
+              0.048006437718868256
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.18000000715255737,
+              0.03999999910593033,
+              0.019999999552965164
+            ],
+            "measured_camera_mean": [
+              0.18002425134181976,
+              0.0400053896009922,
+              0.0200026948004961
+            ],
+            "patch": 4,
+            "rawpuppy_mean": [
+              0.32404331862926483,
+              0.0400054007768631,
+              0.04800643678754568
+            ],
+            "reference_mean": null,
+            "region": [
+              33367,
+              10,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.0200026948004961,
+              0.18002425134181976,
+              0.0400053896009922
+            ],
+            "expected_working_mean": [
+              0.036004841327667236,
+              0.18002425134181976,
+              0.09601286053657532
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.019999999552965164,
+              0.18000000715255737,
+              0.03999999910593033
+            ],
+            "measured_camera_mean": [
+              0.0200026948004961,
+              0.18002425134181976,
+              0.0400053896009922
+            ],
+            "patch": 5,
+            "rawpuppy_mean": [
+              0.036004841327667236,
+              0.18002424761652946,
+              0.09601286612451077
+            ],
+            "reference_mean": null,
+            "region": [
+              66701,
+              10,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.0400053896009922,
+              0.0200026948004961,
+              0.18002425134181976
+            ],
+            "expected_working_mean": [
+              0.07200970500707626,
+              0.020002737641334534,
+              0.43205782771110535
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.03999999910593033,
+              0.019999999552965164,
+              0.18000000715255737
+            ],
+            "measured_camera_mean": [
+              0.0400053896009922,
+              0.0200026948004961,
+              0.18002425134181976
+            ],
+            "patch": 6,
+            "rawpuppy_mean": [
+              0.0720096956939065,
+              0.020002737641334534,
+              0.43205782771110535
+            ],
+            "reference_mean": null,
+            "region": [
+              32,
+              18,
+              33271,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.0,
+              0.004983836319297552,
+              0.0
+            ],
+            "expected_working_mean": [
+              -0.0179417934268713,
+              0.004983833990991116,
+              -0.011961197480559349
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              -0.009999999776482582,
+              0.004999999888241291,
+              -0.004999999888241291
+            ],
+            "measured_camera_mean": [
+              -0.009967672638595104,
+              0.004983836319297552,
+              -0.004983836319297552
+            ],
+            "patch": 7,
+            "rawpuppy_mean": [
+              -0.0179417934268713,
+              0.004983833990991116,
+              -0.011961198877543211
+            ],
+            "reference_mean": null,
+            "region": [
+              33367,
+              18,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.2999730706214905,
+              0.2999730706214905,
+              0.2999730706214905
+            ],
+            "expected_working_mean": [
+              0.5399510860443115,
+              0.29997313022613525,
+              0.7199347615242004
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.30000001192092896,
+              0.30000001192092896,
+              0.30000001192092896
+            ],
+            "measured_camera_mean": [
+              0.2999730706214905,
+              0.2999730706214905,
+              0.2999730706214905
+            ],
+            "patch": 8,
+            "rawpuppy_mean": [
+              0.5399510562419891,
+              0.29997313022613525,
+              0.719934731721878
+            ],
+            "reference_mean": null,
+            "region": [
+              66701,
+              18,
+              33270,
+              4
+            ]
+          }
+        ],
+        "sha256": "0dbd351da26f75b2f066be93b00a95676862c52a32c4b015339c00659f32f489"
+      },
+      {
+        "fixture": "noisy",
+        "metadata": {
+          "aperture": null,
+          "as_shot": [
+            1.7999985218048096,
+            1.0,
+            2.3999979496002197
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              0.9999997615814209,
+              4.0978193283081055e-08,
+              1.7881393432617188e-07
+            ],
+            [
+              2.9453065764073472e-08,
+              0.9999998807907104,
+              1.0058281674218961e-07
+            ],
+            [
+              3.725287456290971e-08,
+              1.4901154088420299e-08,
+              1.0
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": null,
+          "height": 24,
+          "lens_model": null,
+          "lens_profile": null,
+          "lens_profile_error": null,
+          "make": "Rawpuppy",
+          "model": "Controlled Bayer Fixture",
+          "pattern": "RGGB",
+          "sensor_height": 24,
+          "sensor_width": 100003,
+          "width": 100003
+        },
+        "patches": [
+          {
+            "clipped_camera_mean": [
+              0.007478717714548111,
+              0.007554665673524141,
+              0.007582553196698427
+            ],
+            "expected_working_mean": [
+              -0.0002317882899660617,
+              2.3125146981328726e-05,
+              0.00018935960542876273
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "measured_camera_mean": [
+              -0.00012877142580691725,
+              2.312513970537111e-05,
+              7.889990956755355e-05
+            ],
+            "patch": 0,
+            "rawpuppy_mean": [
+              -0.00018329765316126248,
+              2.1612744475183363e-05,
+              0.00012182656350702627
+            ],
+            "reference_mean": null,
+            "region": [
+              32,
+              2,
+              33271,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.010070009157061577,
+              0.010080566629767418,
+              0.00999460369348526
+            ],
+            "expected_working_mean": [
+              0.009065577760338783,
+              0.005052308086305857,
+              0.011815367266535759
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.004999999888241291,
+              0.004999999888241291,
+              0.004999999888241291
+            ],
+            "measured_camera_mean": [
+              0.005036436021327972,
+              0.005052306689321995,
+              0.0049230740405619144
+            ],
+            "patch": 1,
+            "rawpuppy_mean": [
+              0.009072490106096646,
+              0.0050467834070775305,
+              0.011905348349221528
+            ],
+            "reference_mean": null,
+            "region": [
+              33367,
+              2,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.01998455636203289,
+              0.020006321370601654,
+              0.02005438692867756
+            ],
+            "expected_working_mean": [
+              0.035972170531749725,
+              0.020006326958537102,
+              0.04813048616051674
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.019999999552965164,
+              0.019999999552965164,
+              0.019999999552965164
+            ],
+            "measured_camera_mean": [
+              0.01998455636203289,
+              0.020006321370601654,
+              0.02005438692867756
+            ],
+            "patch": 2,
+            "rawpuppy_mean": [
+              0.03596364462331934,
+              0.020002208567013586,
+              0.048092229007870316
+            ],
+            "reference_mean": null,
+            "region": [
+              66701,
+              2,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.17994625866413116,
+              0.18006369471549988,
+              0.18001970648765564
+            ],
+            "expected_working_mean": [
+              0.32390299439430237,
+              0.18006373941898346,
+              0.43204692006111145
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.18000000715255737,
+              0.18000000715255737,
+              0.18000000715255737
+            ],
+            "measured_camera_mean": [
+              0.17994625866413116,
+              0.18006369471549988,
+              0.18001970648765564
+            ],
+            "patch": 3,
+            "rawpuppy_mean": [
+              0.3238850827363431,
+              0.18006372324552886,
+              0.43201288337990895
+            ],
+            "reference_mean": null,
+            "region": [
+              32,
+              10,
+              33271,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.1799897849559784,
+              0.03997999429702759,
+              0.019998159259557724
+            ],
+            "expected_working_mean": [
+              0.32398125529289246,
+              0.03998000547289848,
+              0.04799555242061615
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.18000000715255737,
+              0.03999999910593033,
+              0.019999999552965164
+            ],
+            "measured_camera_mean": [
+              0.1799897849559784,
+              0.03997999429702759,
+              0.019998159259557724
+            ],
+            "patch": 4,
+            "rawpuppy_mean": [
+              0.32401805362581027,
+              0.03997940107805502,
+              0.04787669091669914
+            ],
+            "reference_mean": null,
+            "region": [
+              33367,
+              10,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.02010970748960972,
+              0.1799263060092926,
+              0.03995369374752045
+            ],
+            "expected_working_mean": [
+              0.03619746118783951,
+              0.1799263060092926,
+              0.09588879346847534
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.019999999552965164,
+              0.18000000715255737,
+              0.03999999910593033
+            ],
+            "measured_camera_mean": [
+              0.02010970748960972,
+              0.1799263060092926,
+              0.03995369374752045
+            ],
+            "patch": 5,
+            "rawpuppy_mean": [
+              0.03615026768931835,
+              0.17993047025120756,
+              0.09590032584027468
+            ],
+            "reference_mean": null,
+            "region": [
+              66701,
+              10,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.03998634219169617,
+              0.02001539058983326,
+              0.179897278547287
+            ],
+            "expected_working_mean": [
+              0.07197541743516922,
+              0.020015433430671692,
+              0.43175309896469116
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.03999999910593033,
+              0.019999999552965164,
+              0.18000000715255737
+            ],
+            "measured_camera_mean": [
+              0.03998634219169617,
+              0.02001539058983326,
+              0.179897278547287
+            ],
+            "patch": 6,
+            "rawpuppy_mean": [
+              0.0719877140361264,
+              0.020006349566895756,
+              0.43172396437072197
+            ],
+            "reference_mean": null,
+            "region": [
+              32,
+              18,
+              33271,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.002540036104619503,
+              0.010027480311691761,
+              0.005075780674815178
+            ],
+            "expected_working_mean": [
+              -0.018145844340324402,
+              0.004972497466951609,
+              -0.01178489625453949
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              -0.009999999776482582,
+              0.004999999888241291,
+              -0.004999999888241291
+            ],
+            "measured_camera_mean": [
+              -0.010081034153699875,
+              0.004972499795258045,
+              -0.004910377319902182
+            ],
+            "patch": 7,
+            "rawpuppy_mean": [
+              -0.018132645512781567,
+              0.004970819087778171,
+              -0.011802342442600314
+            ],
+            "reference_mean": null,
+            "region": [
+              33367,
+              18,
+              33270,
+              4
+            ]
+          },
+          {
+            "clipped_camera_mean": [
+              0.2999268174171448,
+              0.30006739497184753,
+              0.29996126890182495
+            ],
+            "expected_working_mean": [
+              0.5398678183555603,
+              0.3000674545764923,
+              0.7199064493179321
+            ],
+            "inferred_reference_camera_mean": null,
+            "input_camera_rgb": [
+              0.30000001192092896,
+              0.30000001192092896,
+              0.30000001192092896
+            ],
+            "measured_camera_mean": [
+              0.2999268174171448,
+              0.30006739497184753,
+              0.29996126890182495
+            ],
+            "patch": 8,
+            "rawpuppy_mean": [
+              0.5399058522399586,
+              0.3000604510625311,
+              0.7199071586414217
+            ],
+            "reference_mean": null,
+            "region": [
+              66701,
+              18,
+              33270,
+              4
+            ]
+          }
+        ],
+        "sha256": "d2cbb1e2e54cd7584621186804ba6aebf9395d9c8cea806eb331f74b219a5929"
+      }
+    ],
+    "scope": "synthetic Bayer DNG controls; equivalent normalized camera matrix, not a copy of the camera's original profile",
+    "white": 15360,
+    "xyz_to_camera": [
+      [
+        3.2409698963165283,
+        -1.5373830795288086,
+        -0.4986107647418976
+      ],
+      [
+        -0.9692435264587402,
+        1.8759675025939941,
+        0.041555050760507584
+      ],
+      [
+        0.055630069226026535,
+        -0.20397695899009705,
+        1.056971549987793
+      ]
+    ]
+  },
+  "checks": {
+    "dng_file_tests": {
+      "log": "/tmp/rawpuppy-validation/wide-dng-file-tests-2026-10-10.log",
+      "sha256": "afa2ff3903cbd7e75b719f3eed555bcbea5de2a9cb47060dbe8726e109123d77",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 1
+    },
+    "vulkan": {
+      "log": "/tmp/rawpuppy-validation/wide-dng-vulkan-test-2026-10-10.log",
+      "sha256": "71f7d938b7f2bf724aa553b78ee3a1861b180ae27effdcc583f1a2fb7d0a349b",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measurements": [
+        {
+          "backend": "wgpu<wgsl>",
+          "max_cpu_error_printed": "0.00000003",
+          "finite": true,
+          "alpha_exact": true,
+          "source_and_sensor_unchanged": true
+        }
+      ]
+    },
+    "cuda": {
+      "log": "/tmp/rawpuppy-validation/wide-dng-cuda-test-2026-10-10.log",
+      "sha256": "f3e6ede0991a5c8605ca5a74b5dce8ca5dac0404f67de29a8a5241580c5239a0",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measurements": [
+        {
+          "backend": "cuda",
+          "max_cpu_error_printed": "0.00000001",
+          "finite": true,
+          "alpha_exact": true,
+          "source_and_sensor_unchanged": true
+        },
+        {
+          "backend": "cuda (system memory)",
+          "max_cpu_error_printed": "0.00000001",
+          "finite": true,
+          "alpha_exact": true,
+          "source_and_sensor_unchanged": true
+        }
+      ]
+    },
+    "clippy": {
+      "log": "/tmp/rawpuppy-validation/wide-dng-clippy-final-2026-10-10.log",
+      "sha256": "60756cacee6a5a3bfbc857a1acfa5c24af372e313fa6833cfa049c5b361eb924",
+      "passed": true
+    }
+  },
+  "limits": [
+    "The 18-pixel minimum applies to this nine-patch validation fixture, not application input.",
+    "Local GPU evidence covers GB10 Vulkan, copied CUDA and coherent CUDA. CI includes the file tests on all three desktop platforms and the GPU row test on Linux Vulkan/macOS Metal.",
+    "These are controlled uncompressed DNG fixtures; other RAW encodings and cameras retain their separate evidence in the requirements audit."
+  ]
+}

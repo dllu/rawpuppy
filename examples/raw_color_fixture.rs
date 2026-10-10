@@ -22,6 +22,11 @@ use tiff::{
 #[derive(Parser)]
 struct Args {
     output: PathBuf,
+    /// Fixture width; the nine patch regions scale with the image dimensions.
+    #[arg(long, default_value_t = WIDTH)]
+    width: usize,
+    #[arg(long, default_value_t = HEIGHT)]
+    height: usize,
     /// Use an existing camera's equivalent normalized calibration and as-shot gains.
     #[arg(long)]
     like_camera: Option<PathBuf>,
@@ -129,9 +134,40 @@ fn write_dng_extended(
     secondary: Option<color::Matrix>,
     extra: Option<&ExtraTags>,
 ) -> Result<()> {
+    write_dng_sized(
+        path,
+        noisy,
+        xyz_to_camera,
+        gains,
+        secondary,
+        extra,
+        FixtureLayout {
+            dimensions: [WIDTH, HEIGHT],
+            hot_pixel: None,
+        },
+    )
+}
+
+struct FixtureLayout {
+    dimensions: [usize; 2],
+    hot_pixel: Option<[usize; 2]>,
+}
+
+fn write_dng_sized(
+    path: &Path,
+    noisy: bool,
+    xyz_to_camera: color::Matrix,
+    gains: [f32; 3],
+    secondary: Option<color::Matrix>,
+    extra: Option<&ExtraTags>,
+    layout: FixtureLayout,
+) -> Result<()> {
+    let [width, height] = layout.dimensions;
+    let count = rawpuppy::input::pixel_count(width, height, 1)?;
+    let (w, h) = (u32::try_from(width)?, u32::try_from(height)?);
     let mut writer = BufWriter::new(std::fs::File::create_new(path)?);
     let mut encoder = TiffEncoder::new(&mut writer)?;
-    let mut image = encoder.new_image::<Gray16>(WIDTH as u32, HEIGHT as u32)?;
+    let mut image = encoder.new_image::<Gray16>(w, h)?;
     let directory = image.encoder();
     directory.write_tag(Tag::Make, "Rawpuppy")?;
     directory.write_tag(Tag::Model, "Controlled Bayer Fixture")?;
@@ -154,11 +190,8 @@ fn write_dng_extended(
     )?;
     directory.write_tag(Tag::Unknown(50717), u32::from(WHITE))?;
     directory.write_tag(Tag::Unknown(50719), &[0u32, 0][..])?;
-    directory.write_tag(Tag::Unknown(50720), &[WIDTH as u32, HEIGHT as u32][..])?;
-    directory.write_tag(
-        Tag::Unknown(50829),
-        &[0u32, 0, HEIGHT as u32, WIDTH as u32][..],
-    )?;
+    directory.write_tag(Tag::Unknown(50720), &[w, h][..])?;
+    directory.write_tag(Tag::Unknown(50829), &[0u32, 0, h, w][..])?;
     directory.write_tag(Tag::Unknown(50778), 21u16)?; // D65
     let matrix: Vec<_> = xyz_to_camera
         .into_iter()
@@ -267,25 +300,29 @@ fn write_dng_extended(
         }
     }
     let mut state = 0x92d68ca2u32;
-    let values: Vec<_> = (0..WIDTH * HEIGHT)
-        .map(|i| {
-            let (x, y) = (i % WIDTH, i / WIDTH);
-            let channel = [0, 1, 1, 2][(y % 2) * 2 + x % 2];
-            let rgb = COLORS[(y / BLOCK) * 3 + x / BLOCK];
-            state ^= state << 13;
-            state ^= state >> 17;
-            state ^= state << 5;
-            // Equal-magnitude signed samples preserve the chosen mean in expectation.
-            let noise = if noisy {
-                if state & 1 == 0 { -224. } else { 224. }
-            } else {
-                0.
-            };
+    let mut values = Vec::new();
+    values.try_reserve_exact(count)?;
+    values.extend((0..count).map(|i| {
+        let (x, y) = (i % width, i / width);
+        let channel = [0, 1, 1, 2][(y % 2) * 2 + x % 2];
+        let rgb = COLORS[(y * 3 / height) * 3 + x * 3 / width];
+        state ^= state << 13;
+        state ^= state >> 17;
+        state ^= state << 5;
+        // Equal-magnitude signed samples preserve the chosen mean in expectation.
+        let noise = if noisy {
+            if state & 1 == 0 { -224. } else { 224. }
+        } else {
+            0.
+        };
+        if layout.hot_pixel == Some([x, y]) {
+            WHITE
+        } else {
             (f32::from(BLACK) + rgb[channel] * f32::from(WHITE - BLACK) + noise)
                 .round()
                 .clamp(0., 65535.) as u16
-        })
-        .collect();
+        }
+    }));
     image.write_data(&values)?;
     writer.flush()?;
     Ok(())
@@ -294,6 +331,11 @@ fn write_dng_extended(
 fn main() -> Result<()> {
     let args = Args::parse();
     ensure!(!args.output.exists(), "Choose a new output directory");
+    ensure!(
+        args.width >= 18 && args.height >= 18,
+        "The 3 × 3 Bayer controls need at least 18 pixels per fixture dimension"
+    );
+    let (width, height) = (args.width, args.height);
     rayon::ThreadPoolBuilder::new()
         .num_threads(8)
         .build_global()?;
@@ -389,7 +431,20 @@ fn main() -> Result<()> {
     for noisy in [false, true] {
         let name = if noisy { "noisy" } else { "constant" };
         let path = args.output.join(format!("{name}.dng"));
-        if let Some(extra) = &extended_tags {
+        if [width, height] != [WIDTH, HEIGHT] {
+            write_dng_sized(
+                &path,
+                noisy,
+                xyz_to_camera,
+                gains,
+                secondary,
+                extended_tags.as_ref(),
+                FixtureLayout {
+                    dimensions: [width, height],
+                    hot_pixel: None,
+                },
+            )?;
+        } else if let Some(extra) = &extended_tags {
             write_dng_extended(&path, noisy, xyz_to_camera, gains, secondary, Some(extra))?;
         } else if secondary.is_some() {
             write_dng_with_secondary(&path, noisy, xyz_to_camera, gains, secondary)?;
@@ -409,8 +464,8 @@ fn main() -> Result<()> {
         if let Some(reference) = &reference {
             ensure!(
                 reference.cpp == 3
-                    && reference.metadata.width == WIDTH
-                    && reference.metadata.height == HEIGHT,
+                    && reference.metadata.width == width
+                    && reference.metadata.height == height,
                 "Reference dimensions or channels differ"
             );
         }
@@ -422,24 +477,30 @@ fn main() -> Result<()> {
         )?;
         let mut patches = Vec::new();
         for (i, color) in COLORS.iter().enumerate() {
-            let x0 = (i % 3) * BLOCK + 32;
-            let y0 = (i / 3) * BLOCK + 32;
+            let bounds = |cell: usize, length: usize| {
+                let start = (cell * length).div_ceil(3);
+                let end = ((cell + 1) * length).div_ceil(3);
+                let margin = ((end - start) / 4).clamp(2, 32);
+                (start + margin, end - margin)
+            };
+            let (x0, x1) = bounds(i % 3, width);
+            let (y0, y1) = bounds(i / 3, height);
             let mut mean = [0f64; 3];
             let mut camera_sum = [0f64; 3];
             let mut clipped_camera_sum = [0f64; 3];
             let mut camera_count = [0usize; 3];
             let mut reference_sum = [0f64; 3];
-            for y in y0..y0 + BLOCK - 64 {
-                for x in x0..x0 + BLOCK - 64 {
+            for y in y0..y1 {
+                for x in x0..x1 {
                     for c in 0..3 {
-                        mean[c] += f64::from(output.pixels[y * WIDTH + x][c]);
+                        mean[c] += f64::from(output.pixels[y * width + x][c]);
                         if let Some(reference) = &reference {
-                            reference_sum[c] += f64::from(reference.data[(y * WIDTH + x) * 3 + c]);
+                            reference_sum[c] += f64::from(reference.data[(y * width + x) * 3 + c]);
                         }
                     }
                     let c = source.cfa.as_ref().unwrap().color_at(y, x);
-                    camera_sum[c] += f64::from(source.data[y * WIDTH + x]);
-                    clipped_camera_sum[c] += f64::from(source.data[y * WIDTH + x].max(0.));
+                    camera_sum[c] += f64::from(source.data[y * width + x]);
+                    clipped_camera_sum[c] += f64::from(source.data[y * width + x].max(0.));
                     camera_count[c] += 1;
                 }
             }
@@ -449,7 +510,7 @@ fn main() -> Result<()> {
                 source.metadata.camera_to_working,
                 std::array::from_fn(|c| measured_camera_mean[c] * source.metadata.as_shot[c]),
             );
-            let count = ((BLOCK - 64) * (BLOCK - 64)) as f64;
+            let count = ((x1 - x0) * (y1 - y0)) as f64;
             let mean = mean.map(|v| v / count);
             if !noisy {
                 ensure!(
@@ -471,7 +532,7 @@ fn main() -> Result<()> {
                 .map(|(v, g)| v / g)
                 .collect::<Vec<_>>()
             });
-            patches.push(serde_json::json!({ "patch":i,"input_camera_rgb":color,"measured_camera_mean":measured_camera_mean,"clipped_camera_mean":clipped_camera_mean,"expected_working_mean":expected_working_mean,"rawpuppy_mean":mean,"reference_mean":reference.as_ref().map(|_| reference_sum.map(|v| v / count)),"inferred_reference_camera_mean":inferred_reference_camera_mean,"region":[x0,y0,BLOCK-64,BLOCK-64]}));
+            patches.push(serde_json::json!({ "patch":i,"input_camera_rgb":color,"measured_camera_mean":measured_camera_mean,"clipped_camera_mean":clipped_camera_mean,"expected_working_mean":expected_working_mean,"rawpuppy_mean":mean,"reference_mean":reference.as_ref().map(|_| reference_sum.map(|v| v / count)),"inferred_reference_camera_mean":inferred_reference_camera_mean,"region":[x0,y0,x1-x0,y1-y0]}));
         }
         ensure!(
             models::sha256(&path)? == hash,
@@ -485,7 +546,7 @@ fn main() -> Result<()> {
             "Camera source bytes changed"
         );
     }
-    let receipt = serde_json::json!({"scope":"synthetic Bayer DNG controls; equivalent normalized camera matrix, not a copy of the camera's original profile","camera_source_sha256":source_hash,"camera_to_working":camera_matrix,"as_shot":gains,"xyz_to_camera":xyz_to_camera,"black":BLACK,"white":WHITE,"block_size":BLOCK,"fixtures":records});
+    let receipt = serde_json::json!({"scope":"synthetic Bayer DNG controls; equivalent normalized camera matrix, not a copy of the camera's original profile","camera_source_sha256":source_hash,"camera_to_working":camera_matrix,"as_shot":gains,"xyz_to_camera":xyz_to_camera,"black":BLACK,"white":WHITE,"dimensions":[width,height],"block_size":([width,height]==[WIDTH,HEIGHT]).then_some(BLOCK),"fixtures":records});
     std::fs::write(
         args.output.join("receipt.json"),
         serde_json::to_string_pretty(&receipt)? + "\n",
@@ -497,6 +558,150 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const WIDE: [usize; 2] = [100_003, 24];
+    const HOT: [usize; 2] = [70_000, 12];
+
+    fn wide_raw_control(path: &Path) -> SensorImage {
+        write_dng_sized(
+            path,
+            false,
+            color::inverse(color::SRGB_TO_XYZ).unwrap(),
+            [1.; 3],
+            None,
+            None,
+            FixtureLayout {
+                dimensions: WIDE,
+                hot_pixel: Some(HOT),
+            },
+        )
+        .unwrap();
+        let source = SensorImage::open(path).unwrap();
+        assert_eq!(
+            [source.metadata.sensor_width, source.metadata.sensor_height],
+            WIDE
+        );
+        assert_eq!([source.metadata.width, source.metadata.height], WIDE);
+        assert_eq!(source.cfa.as_ref().unwrap().name, "RGGB");
+        assert_eq!(source.cpp, 1);
+        assert!(source.raw_integer);
+        assert_eq!(source.data[HOT[1] * WIDE[0] + HOT[0]], 1.);
+        source
+    }
+
+    fn wide_row_region() -> [f32; 4] {
+        [0., HOT[1] as f32 / WIDE[1] as f32, 1., 1. / WIDE[1] as f32]
+    }
+
+    #[test]
+    fn wide_dng_decodes_and_corrects_a_hot_pixel_beyond_16_bit_coordinates() {
+        use sha2::Digest;
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("wide.dng");
+        let source = wide_raw_control(&path);
+        let input_hash = models::sha256(&path).unwrap();
+        let sensor_hash = sha2::Sha256::digest(bytemuck::cast_slice(&source.data));
+        let mut edits = Edits::default();
+        edits.tone.mapper = ToneMapper::Linear;
+        let uncorrected = source.reconstruct(HOT[0] as isize, HOT[1] as isize, &edits.raw);
+        assert_eq!(uncorrected[0], 1.);
+        edits.raw.hot_pixels = true;
+        let row = Pipeline::compile(&source, &edits)
+            .unwrap()
+            .render_region(wide_row_region(), WIDE[0], 1)
+            .unwrap();
+        let mut checked = 0;
+        for (x, pixel) in row.pixels.iter().enumerate() {
+            let patch = x * 3 / WIDE[0];
+            let start = (patch * WIDE[0]).div_ceil(3);
+            let end = ((patch + 1) * WIDE[0]).div_ceil(3);
+            // MHC and bilinear interpolation can mix colors at patch boundaries.
+            if x < start + 3 || x + 3 >= end {
+                continue;
+            }
+            let expected = COLORS[3 + patch].map(|v| {
+                ((f32::from(BLACK) + v * f32::from(WHITE - BLACK)).round() - f32::from(BLACK))
+                    / f32::from(WHITE - BLACK)
+            });
+            for c in 0..3 {
+                assert!(
+                    (pixel[c] - expected[c]).abs() < 0.000005,
+                    "Wide RAW mismatch at x={x}: {pixel:?} vs {expected:?}"
+                );
+            }
+            assert_eq!(pixel[3], 1.);
+            checked += 1;
+        }
+        assert_eq!(checked, WIDE[0] - 18);
+        assert_eq!(models::sha256(&path).unwrap(), input_hash);
+        assert_eq!(
+            sha2::Sha256::digest(bytemuck::cast_slice(&source.data)),
+            sensor_hash
+        );
+    }
+
+    #[cfg(feature = "gpu")]
+    #[test]
+    #[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
+    fn wide_dng_gpu_preserves_raw_coordinates_and_hot_pixel_cleanup() {
+        use rawpuppy::gpu::{Backend, CudaMemoryMode, GpuRenderer};
+        use sha2::Digest;
+        use std::sync::Arc;
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("wide-gpu.dng");
+        let source = Arc::new(wide_raw_control(&path));
+        let input_hash = models::sha256(&path).unwrap();
+        let sensor_hash = sha2::Sha256::digest(bytemuck::cast_slice(&source.data));
+        let mut edits = Edits::default();
+        edits.tone.mapper = ToneMapper::Linear;
+        edits.raw.hot_pixels = true;
+        let expected = Pipeline::compile(&source, &edits)
+            .unwrap()
+            .render_region(wide_row_region(), WIDE[0], 1)
+            .unwrap();
+        let modes = if std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {
+            vec![
+                (Backend::Cuda, CudaMemoryMode::Copy),
+                (Backend::Cuda, CudaMemoryMode::System),
+            ]
+        } else {
+            vec![(
+                if cfg!(target_os = "macos") {
+                    Backend::Metal
+                } else {
+                    Backend::Vulkan
+                },
+                CudaMemoryMode::Auto,
+            )]
+        };
+        for (backend, memory) in modes {
+            let mut gpu = GpuRenderer::with_cuda_memory(backend, memory).unwrap();
+            let actual = gpu
+                .render_region(source.clone(), &edits, wide_row_region(), WIDE[0], 1)
+                .unwrap();
+            assert_eq!((actual.width, actual.height), (WIDE[0], 1));
+            assert_eq!(actual.pixels.len(), expected.pixels.len());
+            let mut max_error = 0f32;
+            for (a, b) in actual.pixels.iter().zip(&expected.pixels) {
+                assert!(a.iter().all(|v| v.is_finite()));
+                for c in 0..3 {
+                    max_error = max_error.max((a[c] - b[c]).abs());
+                }
+                assert_eq!(a[3], b[3]);
+            }
+            assert!(max_error < 0.0003, "{} mismatch {max_error}", gpu.name());
+            assert!((actual.pixels[HOT[0]][0] - 0.02).abs() < 0.0001);
+            eprintln!(
+                "{}: 100003-pixel RAW row and hot pixel at x=70000 passed; max CPU error {max_error:.8}",
+                gpu.name()
+            );
+        }
+        assert_eq!(models::sha256(&path).unwrap(), input_hash);
+        assert_eq!(
+            sha2::Sha256::digest(bytemuck::cast_slice(&source.data)),
+            sensor_hash
+        );
+    }
 
     #[test]
     fn as_shot_white_xy_uses_the_selected_profile_for_camera_neutral() {
