@@ -378,6 +378,7 @@ fn tagged_hdr_exr_import_preserves_wide_gamut_and_unbounded_values() {
         }],
         fill_gaps: false,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 10,
         seed: 0,
         asset,

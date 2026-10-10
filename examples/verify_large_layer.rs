@@ -56,6 +56,7 @@ fn main() -> Result<()> {
         }],
         fill_gaps: false,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 2,
         seed: 0,
         asset,

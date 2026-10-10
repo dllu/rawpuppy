@@ -26,6 +26,7 @@ fn generated_layer_roundtrips_and_preserves_every_unpainted_pixel() {
         }],
         fill_gaps: false,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 10,
         seed: 0,
         asset,
@@ -69,6 +70,13 @@ fn saved_sampling_parameters_preserve_legacy_recipes_and_record_actual_settings(
     let old: Edits =
         serde_json::from_str(include_str!("data/legacy-synthesis-recipe.json")).unwrap();
     let fill = &old.display.synthesis[0];
+    assert_eq!(fill.harmonization, synthesis::Harmonization::None);
+    assert!(
+        serde_json::to_value(fill)
+            .unwrap()
+            .get("harmonization")
+            .is_none()
+    );
     assert_eq!(fill.feather, 0.);
     assert!(serde_json::to_value(fill).unwrap().get("feather").is_none());
     assert_eq!(fill.sampling, SamplingParameters::default());
@@ -81,12 +89,14 @@ fn saved_sampling_parameters_preserve_legacy_recipes_and_record_actual_settings(
     );
     assert_eq!(synthesis::recipe_hash(&old).unwrap(), fill.recipe_sha256);
     let mut current = fill.clone();
+    current.harmonization = synthesis::Harmonization::BoundaryPoissonV1;
     current.sampling = SamplingParameters {
         guidance: 3.,
         strength: 1.,
         noise_offset: 0.1,
     };
     let value = serde_json::to_value(&current).unwrap();
+    assert_eq!(value["harmonization"], "boundary_poisson_v1");
     assert_eq!(value["sampling"]["strength"], 1.);
     assert_eq!(
         serde_json::from_value::<GeneratedFill>(value).unwrap(),
@@ -134,6 +144,7 @@ fn stale_or_corrupt_synthesis_is_rejected_without_changing_output() {
         }],
         fill_gaps: false,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 10,
         seed: 0,
         asset: asset.clone(),
@@ -184,6 +195,7 @@ fn a_later_bad_asset_leaves_the_entire_raster_unchanged_and_offscreen_assets_are
         }],
         fill_gaps: false,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 10,
         seed: 0,
         asset,
@@ -307,6 +319,7 @@ fn resampling_an_opaque_fill_keeps_every_output_sample_exactly_opaque() {
         dabs: vec![],
         fill_gaps: true,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 20,
         seed: 0,
         asset,
@@ -367,6 +380,7 @@ fn a_completed_overlapping_corner_skips_inference_and_creates_no_asset() {
         dabs: vec![],
         fill_gaps: true,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 20,
         seed: 0,
         asset,
@@ -475,6 +489,7 @@ fn regeneration_replans_brushes_and_current_gaps_after_an_aspect_change() {
         dabs: dabs.clone(),
         fill_gaps: false,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 20,
         seed: 0,
         asset: format!("{hash}.exr"),
@@ -536,6 +551,7 @@ fn corner_fill_uses_output_resolution_membership_and_preserves_opaque_pixels() {
         dabs: vec![],
         fill_gaps: true,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 10,
         seed: 0,
         asset,
@@ -715,6 +731,7 @@ fn gap_planning_and_mask_coverage_respect_existing_saved_fills() {
         dabs: vec![],
         fill_gaps: true,
         feather: 0.,
+        harmonization: Default::default(),
         steps: 20,
         seed: 0,
         asset,
@@ -807,6 +824,7 @@ fn inward_blending_preserves_unpainted_hdr_and_matches_cropped_viewports() {
         }],
         fill_gaps: false,
         feather: 0.25,
+        harmonization: Default::default(),
         steps: 20,
         seed: 0,
         sampling: Default::default(),
@@ -894,6 +912,7 @@ fn inward_blending_never_reduces_geometric_gap_coverage() {
         }],
         fill_gaps: true,
         feather: 1.,
+        harmonization: Default::default(),
         steps: 20,
         seed: 0,
         sampling: Default::default(),
@@ -955,6 +974,7 @@ fn parallel_layers_preserve_overlap_order_gap_alpha_and_transparent_assets() {
             },
             fill_gaps: i != 0,
             feather: 0.,
+            harmonization: Default::default(),
             steps: 20,
             seed: 0,
             sampling: Default::default(),

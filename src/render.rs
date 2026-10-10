@@ -432,6 +432,11 @@ impl Renderer {
             .as_ref()
             .unwrap()
             .inpaint_512(&context, &mask, settings)?;
+        let harmonization = if fill_gaps {
+            crate::synthesis::Harmonization::None
+        } else {
+            crate::synthesis::harmonization::match_background_v1(&context, &mut generated, &mask)?
+        };
         // Exact target membership is evaluated at output resolution when applying
         // the layer. Keep context opaque so subpixel gaps and brush boundaries
         // can interpolate known/generated colors without leaving alpha holes.
@@ -449,6 +454,7 @@ impl Renderer {
             dabs,
             fill_gaps,
             feather: 0.15,
+            harmonization,
             steps: settings.steps,
             seed: settings.seed,
             sampling: settings.parameters(),

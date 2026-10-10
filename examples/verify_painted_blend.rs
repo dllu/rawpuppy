@@ -85,6 +85,10 @@ fn main() -> anyhow::Result<()> {
         fill.feather == 0.15,
         "New painted fill must record inward blending"
     );
+    ensure!(
+        fill.harmonization == synthesis::Harmonization::BoundaryPoissonV1,
+        "New painted fill must record background matching"
+    );
     let mut hard_edits = edits.clone();
     let mut hard_fill = fill.clone();
     hard_fill.feather = 0.;

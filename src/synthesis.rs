@@ -10,6 +10,21 @@ use std::{
     sync::Arc,
 };
 
+pub mod harmonization;
+
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum Harmonization {
+    #[default]
+    None,
+    BoundaryPoissonV1,
+}
+impl Harmonization {
+    fn is_none(&self) -> bool {
+        *self == Self::None
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct MaskDab {
@@ -69,6 +84,9 @@ pub struct GeneratedFill {
     /// Fraction of brush radius blended inward; zero preserves historical layers.
     #[serde(default, skip_serializing_if = "is_zero_f32")]
     pub feather: f32,
+    /// Baked into the saved asset; absent in historical layers.
+    #[serde(default, skip_serializing_if = "Harmonization::is_none")]
+    pub harmonization: Harmonization,
     pub steps: usize,
     pub seed: i64,
     #[serde(default, skip_serializing_if = "SamplingParameters::is_legacy")]
@@ -727,6 +745,7 @@ mod native_asset_tests {
             }],
             fill_gaps: false,
             feather: 0.,
+            harmonization: Default::default(),
             steps: 2,
             seed: 0,
             asset,

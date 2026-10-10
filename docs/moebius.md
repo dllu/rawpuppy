@@ -93,6 +93,16 @@ RGB and does not widen the selection. Missing geometric pixels retain full
 coverage. Legacy layers omit this field and retain zero blend. See the
 [inward-blend validation](2026-10-10-09-19-inward-synthesis-edge-blending.md).
 
+New painted generation also matches its linear-RGB background through a bounded
+harmonic correction. Anchors use only opaque, unpainted neighbors; selected source
+colors may contain the removed object and never guide the correction. Generated
+interior detail supplies the guidance. The result is baked into the EXR asset and
+records `harmonization: boundary_poisson_v1`, so reload does not run a solver or
+network. Historical layers omit that field and retain their saved pixels.
+Geometric fills keep their existing behavior; contexts without usable anchors
+keep their generated colors. This reduces observed tone seams, while structural
+and texture mismatches can remain.
+
 Corner detection checks every perimeter pixel at the full output dimensions,
 alongside a sparse interior grid. Narrow edge gaps therefore survive even when
 the overview misses them. Missing perimeter samples are also projected into

@@ -2827,6 +2827,7 @@ mod error_scope_tests {
                 dabs: vec![],
                 fill_gaps: true,
                 feather: 0.,
+                harmonization: Default::default(),
                 steps: 20,
                 seed: 42,
                 asset: format!("{hash}.exr"),

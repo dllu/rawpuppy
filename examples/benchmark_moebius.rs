@@ -263,6 +263,14 @@ fn main() -> anyhow::Result<()> {
     for iteration in 0..args.iterations {
         let started = Instant::now();
         let mut generated = model.inpaint_512(&input, &inference_mask, &settings)?;
+        if record["saved_context"]["fill"]["harmonization"].as_str() == Some("boundary_poisson_v1")
+        {
+            rawpuppy::synthesis::harmonization::match_background_v1(
+                &input,
+                &mut generated,
+                &inference_mask,
+            )?;
+        }
         let seconds = started.elapsed().as_secs_f64();
         let context_pixels_sha256 = format!(
             "{:x}",

@@ -59,6 +59,11 @@ New painted layers blend inward over 15% of brush radius in working linear RGB,
 retaining the generated core and every unpainted sample. Saved legacy layers use
 zero blend, and missing geometry always receives full coverage. The same sparse
 weights drive composition and gap-coverage checks without another photo raster.
+New painted generation first applies a versioned harmonic background correction
+within its bounded context. Only opaque unselected neighbors anchor the solve;
+selected original colors never enter its guidance. Corrected pixels and the
+method identity persist in the asset/XMP. Existing layers and geometric fills
+retain their previous behavior, and rendering saved layers runs no solver.
 Earlier edits invalidate their fills and require regeneration. Saved layers render without
 the model; inference runs only when explicitly requested. See [Moebius](moebius.md).
 

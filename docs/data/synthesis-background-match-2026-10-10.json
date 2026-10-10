@@ -1,0 +1,991 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "f0e9a8f7fca7d93b3dbf1853ef8412b12f8babc8",
+  "scope": "Versioned working-linear harmonic background matching for new painted generation, with boundary-only source guidance, legacy/gap preservation, recorded sampling plus matching reproduction, and full-size saved export conformance.",
+  "method": {
+    "name": "boundary_poisson_v1",
+    "application_screening": 0,
+    "application_iteration_guard": 2048,
+    "relative_residual_threshold": 1e-07,
+    "arithmetic": "float64 solve, finite float32 working RGB result",
+    "anchors": "Mean of opaque unselected four-connected neighbors at the selected inner rim; selected original RGB never guides the correction.",
+    "guidance": "Smooth additive correction to generated detail; no access to intact withheld target.",
+    "allocation": "Fallible context/scratch allocation, fixed four-neighbor stencils, reused iteration buffers; no whole-photograph correction raster."
+  },
+  "controls": {
+    "removal": {
+      "receipt": {
+        "dimensions": [
+          512,
+          512
+        ],
+        "input_files_unchanged": true,
+        "input_paths": [
+          "/tmp/rawpuppy-validation/moebius-current-wide-target-2026-10-10/input-context.exr",
+          "/tmp/rawpuppy-validation/moebius-current-wide-target-2026-10-10/0-context.exr",
+          "/tmp/rawpuppy-validation/moebius-current-wide-target-2026-10-10/target-mask.png"
+        ],
+        "input_sha256": [
+          "dea29a4e689216e89530d7bb1c83bdd0ac3a57e86c5a094891204ff4985ac7a0",
+          "641182248649fa21023d9bbe85ac41321eec0aac6eedd45678b61aee9de0bae2",
+          "e4df440045715fe7768c84f1f4ffb7cc577dc14ba568b631172a4c2af7b219cd"
+        ],
+        "maximum_rgb_correction": 0.06138458847999573,
+        "output_float_sha256": "8679e140723494ea0d1ee632244f49354ac3f55c123cb62bcc908936687733f5",
+        "scope": "Bounded saved-output comparison of harmonic and screened background matching; application generation uses unscreened boundary_poisson_v1 for new painted layers. These values are not a perceptual quality score.",
+        "seconds": 0.131429761,
+        "solve": {
+          "boundary_pixels": 949,
+          "iterations": 625,
+          "relative_residual": 9.780370219219867e-08,
+          "screening": 0.0,
+          "unknown_pixels": 48655
+        },
+        "unselected_pixels_exact": 212540
+      },
+      "path": "/tmp/rawpuppy-validation/background-match-final-removal-2026-10-10/receipt.json",
+      "sha256": "340777a5eaad5e19ad75167c954460789c084824eb3c01167478fc040c5c3172"
+    },
+    "texture": {
+      "receipt": {
+        "dimensions": [
+          512,
+          512
+        ],
+        "input_files_unchanged": true,
+        "input_paths": [
+          "/tmp/rawpuppy-validation/inpainting-texture/withheld.png",
+          "/tmp/rawpuppy-validation/moebius-texture-halo0-seed42/0-composed.png",
+          "/tmp/rawpuppy-validation/inpainting-texture/mask.png"
+        ],
+        "input_sha256": [
+          "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+          "bfa95982634d18fb1b7876dea1fc62a3f55b3ab1bab2e6a61590a543b6e93896",
+          "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810"
+        ],
+        "maximum_rgb_correction": 0.025845222175121307,
+        "output_float_sha256": "24e14feff7e529722e47cc2f194fa2097b9de6b05a21b83f63b8cb629429589a",
+        "scope": "Bounded saved-output comparison of harmonic and screened background matching; application generation uses unscreened boundary_poisson_v1 for new painted layers. These values are not a perceptual quality score.",
+        "seconds": 0.013582384,
+        "solve": {
+          "boundary_pixels": 380,
+          "iterations": 259,
+          "relative_residual": 9.722832345750835e-08,
+          "screening": 0.0,
+          "unknown_pixels": 8836
+        },
+        "unselected_pixels_exact": 252928
+      },
+      "path": "/tmp/rawpuppy-validation/background-match-final-texture-2026-10-10/receipt.json",
+      "sha256": "67438c4c45c307b8e37a9bf9cedf455a24ba26b91062dafa5b24d796d8e033e0"
+    }
+  },
+  "screened_alternative": {
+    "removal": {
+      "receipt": {
+        "dimensions": [
+          512,
+          512
+        ],
+        "input_files_unchanged": true,
+        "input_paths": [
+          "/tmp/rawpuppy-validation/moebius-current-wide-target-2026-10-10/input-context.exr",
+          "/tmp/rawpuppy-validation/moebius-current-wide-target-2026-10-10/0-context.exr",
+          "/tmp/rawpuppy-validation/moebius-current-wide-target-2026-10-10/target-mask.png"
+        ],
+        "input_sha256": [
+          "dea29a4e689216e89530d7bb1c83bdd0ac3a57e86c5a094891204ff4985ac7a0",
+          "641182248649fa21023d9bbe85ac41321eec0aac6eedd45678b61aee9de0bae2",
+          "e4df440045715fe7768c84f1f4ffb7cc577dc14ba568b631172a4c2af7b219cd"
+        ],
+        "maximum_rgb_correction": 0.06138458847999573,
+        "output_float_sha256": "b4c45231b0839d91b9d35209dfcccbed44a277963c6aa383148f8d5e387ae6a6",
+        "scope": "Bounded saved-output gradient-domain experiment, not an application default or perceptual quality score",
+        "seconds": 0.080188425,
+        "solve": {
+          "boundary_pixels": 949,
+          "iterations": 287,
+          "relative_residual": 9.631158371928637e-08,
+          "screening": 0.00390625,
+          "unknown_pixels": 48655
+        },
+        "unselected_pixels_exact": 212540
+      },
+      "path": "/tmp/rawpuppy-validation/synthesis-harmonization-outside-removal-screened-2026-10-10/receipt.json",
+      "sha256": "bf608e3c0c6153912c2bf311f27fde22cdbccbf3c53eac288733c20ad7cd0b33"
+    },
+    "texture": {
+      "receipt": {
+        "dimensions": [
+          512,
+          512
+        ],
+        "input_files_unchanged": true,
+        "input_paths": [
+          "/tmp/rawpuppy-validation/inpainting-texture/withheld.png",
+          "/tmp/rawpuppy-validation/moebius-texture-halo0-seed42/0-composed.png",
+          "/tmp/rawpuppy-validation/inpainting-texture/mask.png"
+        ],
+        "input_sha256": [
+          "20ccc1688cab559e0b78b1be7c20eca05a825ff7493374d79604ba9b0a22d958",
+          "bfa95982634d18fb1b7876dea1fc62a3f55b3ab1bab2e6a61590a543b6e93896",
+          "4e4fbe33544418fb44760350d8193fc7e83c4785cf95c7b49394f6a266fce810"
+        ],
+        "maximum_rgb_correction": 0.025845222175121307,
+        "output_float_sha256": "0d1befd61fd1284d660b511d63597539245794b5bd243324ce7afd82cad0e034",
+        "scope": "Bounded saved-output gradient-domain experiment, not an application default or perceptual quality score",
+        "seconds": 0.01286156,
+        "solve": {
+          "boundary_pixels": 380,
+          "iterations": 218,
+          "relative_residual": 8.93918905212866e-08,
+          "screening": 0.00390625,
+          "unknown_pixels": 8836
+        },
+        "unselected_pixels_exact": 252928
+      },
+      "path": "/tmp/rawpuppy-validation/synthesis-harmonization-outside-texture-screened-2026-10-10/receipt.json",
+      "sha256": "ba478efa4c83b761303e771f0df5d31eb58f242833f73e9e3bcb78cf98e97cf2"
+    }
+  },
+  "texture_assessment": {
+    "scope": "Known withheld texture assessment only; intact target is never passed to the harmonization solver. Perceptual quality is inspected separately. Outputs compare on 8-bit sRGB, harmonized PNG stores 16-bit samples.",
+    "rows": [
+      {
+        "variant": "baseline",
+        "selected_pixels": 9216,
+        "selected_rgb_mae_8bit": 4.634078414351852,
+        "selected_rgb_rmse_8bit": 5.556381232046028,
+        "unselected_max_difference_8bit": 0.0
+      },
+      {
+        "variant": "harmonic",
+        "selected_pixels": 9216,
+        "selected_rgb_mae_8bit": 2.7305049189814814,
+        "selected_rgb_rmse_8bit": 3.85510968193153,
+        "unselected_max_difference_8bit": 0.0
+      },
+      {
+        "variant": "screened",
+        "selected_pixels": 9216,
+        "selected_rgb_mae_8bit": 3.2021122685185186,
+        "selected_rgb_rmse_8bit": 4.266215321722088,
+        "unselected_max_difference_8bit": 0.0
+      },
+      {
+        "variant": "discarded_selected_source_anchors",
+        "selected_pixels": 9216,
+        "selected_rgb_mae_8bit": 38.3072193287037,
+        "selected_rgb_rmse_8bit": 48.42062579433288,
+        "unselected_max_difference_8bit": 0.0
+      }
+    ]
+  },
+  "texture_mae_reduction_fraction": 0.41077714383834285,
+  "discarded_selected_source_anchor_prototype": {
+    "reason": "The selected rim can contain a removed object or black withheld content. Its texture MAE was 38.3072, versus 4.6341 unmatched; its source guidance was rejected before production integration.",
+    "artifact": "/tmp/rawpuppy-validation/synthesis-harmonic-texture-2026-10-10"
+  },
+  "prototype_and_final_module_float_pixels_identical": true,
+  "native_generation": {
+    "receipt": {
+      "alpha_exact": true,
+      "cold_reload_pixels_exact": true,
+      "context": [
+        0.6183165311813354,
+        0.259646475315094,
+        0.38168349862098694,
+        0.2862626314163208
+      ],
+      "fill": {
+        "asset": "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726.exr",
+        "dabs": [
+          {
+            "center": [
+              0.9191918969154358,
+              0.3320707082748413
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9191032648086548,
+              0.3357921242713928
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9190146923065186,
+              0.3395135700702667
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9189260601997375,
+              0.34323498606681824
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9188374876976013,
+              0.34695640206336975
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9187488555908203,
+              0.35067781805992126
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9186602830886841,
+              0.35439926385879517
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9185716509819031,
+              0.3581206798553467
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9184830784797668,
+              0.3618420958518982
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9183944463729858,
+              0.3655635416507721
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9183058142662048,
+              0.3692849576473236
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9182172417640686,
+              0.3730063736438751
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9181286096572876,
+              0.37672778964042664
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9180400371551514,
+              0.38044923543930054
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9179514050483704,
+              0.38417065143585205
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9178628325462341,
+              0.38789206743240356
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9177742004394531,
+              0.39161351323127747
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9176856279373169,
+              0.395334929227829
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9175969958305359,
+              0.3990563452243805
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9175083637237549,
+              0.4027777910232544
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9174197912216187,
+              0.4064992070198059
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9173311591148376,
+              0.4102206230163574
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9172425866127014,
+              0.41394203901290894
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9171539545059204,
+              0.41766348481178284
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9170653820037842,
+              0.42138490080833435
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9169767498970032,
+              0.42510631680488586
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9168881773948669,
+              0.42882776260375977
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9167995452880859,
+              0.4325491786003113
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9167109727859497,
+              0.4362705945968628
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9166223406791687,
+              0.4399920105934143
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9165337085723877,
+              0.4437134563922882
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9164451360702515,
+              0.4474348723888397
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9163565039634705,
+              0.45115628838539124
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9162679314613342,
+              0.45487773418426514
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9161792993545532,
+              0.45859915018081665
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.916090726852417,
+              0.46232056617736816
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.916002094745636,
+              0.4660419821739197
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9159135222434998,
+              0.4697634279727936
+            ],
+            "radius": 0.05000000074505806
+          },
+          {
+            "center": [
+              0.9158248901367188,
+              0.4734848439693451
+            ],
+            "radius": 0.05000000074505806
+          }
+        ],
+        "feather": 0.15000000596046448,
+        "fill_gaps": false,
+        "harmonization": "boundary_poisson_v1",
+        "model": "moebius-scene-2026-v1",
+        "recipe_sha256": "56d0badb8afe3e5faf81e6f079e1fd95dbf6c10a2faef9fb6615d3ea92022686",
+        "region": [
+          0.6183165311813354,
+          0.259646475315094,
+          0.38168349862098694,
+          0.2862626314163208
+        ],
+        "sampling": {
+          "guidance": 2.0,
+          "noise_offset": 0.0357,
+          "strength": 1.0
+        },
+        "seed": 0,
+        "sha256": "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726",
+        "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+        "steps": 20
+      },
+      "generate_seconds": 7.25714975,
+      "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "inward_blended_pixels": 9020,
+      "max_hard_boundary_contribution": 0.03226172924041748,
+      "max_inward_boundary_contribution": 0.000662386417388916,
+      "original_recipe_sha256": "30d1dbd558f7a8e6a855bb7c1682c2388f9650269d003a69494b7eb16a9f51fe",
+      "radius_scale": 1.0,
+      "scope": "one real GFX painted fill; boundary contribution, exact unselected/core preservation, opaque output and cold reload, not universal quality",
+      "selected_core_pixels_exact": 39029,
+      "source_and_original_recipe_unchanged": true,
+      "source_dimensions": [
+        8736,
+        11648
+      ],
+      "unselected_pixels_exact": 214091
+    },
+    "path": "/tmp/rawpuppy-validation/background-match-native-gfx-2026-10-10/receipt.json",
+    "sha256": "3c559267b8a4774135d379804e2d3d9f87c070025a936d9853e58547396de2b0"
+  },
+  "native_generation_process": {
+    "path": "/tmp/rawpuppy-validation/background-match-native-gfx-time-2026-10-10.txt",
+    "sha256": "97521fa7955e0e30b59d3bb9c17c6682b1a73df2814de24b57ad1eaf04bbd3f6",
+    "maximum_process_rss_kib": 3327576,
+    "wall_time": "0:29.60",
+    "exit_status": 0
+  },
+  "reproduction": {
+    "path": "/tmp/rawpuppy-validation/background-match-reproduction-2026-10-10/measurement.json",
+    "sha256": "75a5aa9fc3fc92ab9cf389e66385a8b35a0e729562955f9b1e3d306cf63cfbbe",
+    "record": {
+      "composition_mask": "explicit target selection, without inference padding",
+      "device": "Cuda(0)",
+      "dtype": "float32",
+      "image_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "inference_mask_sha256": "fed36998a47b8290d0567bb21758cfe6d1c69c230a07d4008c93cb3506cd01b0",
+      "input_color": "exact saved-context display-linear working RGB, without an input PNG quantization round trip",
+      "input_context_sha256": "4a4cfa6657a2b366f4802d66ed6c9523b534b2c8ba02b88c159e68cafdd386a8",
+      "input_pixels_sha256": "7677a524912658fb315003e5bf36349a3a5b52528da4c34492a4ae594de0ad2a",
+      "input_size": [
+        512,
+        512
+      ],
+      "load_seconds": 3.390029909,
+      "mask_sha256": null,
+      "model": "Moebius scene checkpoint",
+      "model_manifest": {
+        "modules": {
+          "decoder": {
+            "file": "decoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "71d59b35a6505694a484c975c83849f9b556a63e1450ae99e4e986520f7d3d6a"
+          },
+          "denoiser": {
+            "file": "denoiser.pt",
+            "max_abs_error": 0.0,
+            "sha256": "0786ea80a3e69193ee171d52328ce6a87a2b36b40ca53669e36303d23db9fb1b"
+          },
+          "encoder": {
+            "file": "encoder.pt",
+            "max_abs_error": 0.0,
+            "sha256": "326c921d601b746390c1436f63f2d3f36543774ee1055c221373aae682764770"
+          }
+        },
+        "scaling_factor": 0.13025,
+        "size": 512,
+        "source_hashes": {
+          "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+          "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+          "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+        },
+        "torch_version": "2.14.0+cu130",
+        "version": 1
+      },
+      "model_mask_padding_pixels": 0,
+      "purpose": "native bounded-context image/mask comparison",
+      "reference_context_sha256": "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726",
+      "runs": [
+        {
+          "context_output_pixels_sha256": "afc96dbd7f40f3bb35077b44dd48447d0e555452d1bb3712cc6e48420c5a7b8a",
+          "context_output_sha256": "57e7706134951971595f91e81ee057eabd60051c151ed899dedaecfa9447b058",
+          "inferred_output_sha256": null,
+          "iteration": 0,
+          "output_sha256": "c6458b57d8b655bb3ff95065a38135bea76779563ede681de43c64a3687769ab",
+          "outside_composed_float_samples_exact": true,
+          "outside_composed_max_absolute_8bit_channel_change": 0,
+          "reference_context_comparison": {
+            "changed_pixels": 0,
+            "max_absolute_rgba_error": 0.0,
+            "mean_absolute_rgba_error": 0.0
+          },
+          "seconds": 3.453674565
+        }
+      ],
+      "runtime": "native Rust / LibTorch 2.13",
+      "saved_context": {
+        "canvas_dimensions": [
+          8736,
+          11648
+        ],
+        "fill": {
+          "asset": "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726.exr",
+          "dabs": [
+            {
+              "center": [
+                0.9191918969154358,
+                0.3320707082748413
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9191032648086548,
+                0.3357921242713928
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9190146923065186,
+                0.3395135700702667
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9189260601997375,
+                0.34323498606681824
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9188374876976013,
+                0.34695640206336975
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9187488555908203,
+                0.35067781805992126
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9186602830886841,
+                0.35439926385879517
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9185716509819031,
+                0.3581206798553467
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9184830784797668,
+                0.3618420958518982
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9183944463729858,
+                0.3655635416507721
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9183058142662048,
+                0.3692849576473236
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9182172417640686,
+                0.3730063736438751
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9181286096572876,
+                0.37672778964042664
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9180400371551514,
+                0.38044923543930054
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9179514050483704,
+                0.38417065143585205
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9178628325462341,
+                0.38789206743240356
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9177742004394531,
+                0.39161351323127747
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9176856279373169,
+                0.395334929227829
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9175969958305359,
+                0.3990563452243805
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9175083637237549,
+                0.4027777910232544
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9174197912216187,
+                0.4064992070198059
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9173311591148376,
+                0.4102206230163574
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9172425866127014,
+                0.41394203901290894
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9171539545059204,
+                0.41766348481178284
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9170653820037842,
+                0.42138490080833435
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9169767498970032,
+                0.42510631680488586
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9168881773948669,
+                0.42882776260375977
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9167995452880859,
+                0.4325491786003113
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9167109727859497,
+                0.4362705945968628
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9166223406791687,
+                0.4399920105934143
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9165337085723877,
+                0.4437134563922882
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9164451360702515,
+                0.4474348723888397
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9163565039634705,
+                0.45115628838539124
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9162679314613342,
+                0.45487773418426514
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9161792993545532,
+                0.45859915018081665
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.916090726852417,
+                0.46232056617736816
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.916002094745636,
+                0.4660419821739197
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9159135222434998,
+                0.4697634279727936
+              ],
+              "radius": 0.05000000074505806
+            },
+            {
+              "center": [
+                0.9158248901367188,
+                0.4734848439693451
+              ],
+              "radius": 0.05000000074505806
+            }
+          ],
+          "feather": 0.15000000596046448,
+          "fill_gaps": false,
+          "harmonization": "boundary_poisson_v1",
+          "model": "moebius-scene-2026-v1",
+          "recipe_sha256": "56d0badb8afe3e5faf81e6f079e1fd95dbf6c10a2faef9fb6615d3ea92022686",
+          "region": [
+            0.6183165311813354,
+            0.259646475315094,
+            0.38168349862098694,
+            0.2862626314163208
+          ],
+          "sampling": {
+            "guidance": 2.0,
+            "noise_offset": 0.0357,
+            "strength": 1.0
+          },
+          "seed": 0,
+          "sha256": "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726",
+          "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+          "steps": 20
+        },
+        "render_backend": "cuda (system memory)",
+        "sidecar_sha256": "2b7a82e6ba01b7b7aeaa9b85abdfcd11aa6bae8e9d521548bb546ba5ceb0b9c5"
+      },
+      "settings": {
+        "guidance": 2.0,
+        "noise_offset": 0.0357,
+        "seed": 0,
+        "steps": 20,
+        "strength": 1.0
+      },
+      "target_mask_padding_pixels": 0,
+      "target_mask_sha256": "fed36998a47b8290d0567bb21758cfe6d1c69c230a07d4008c93cb3506cd01b0"
+    }
+  },
+  "full_saved_export_without_moebius": {
+    "receipt": {
+      "all_rgba16_components_verified": 407027712,
+      "alpha_exact": true,
+      "backend": "cuda (system memory)",
+      "base_render_seconds": 0.190967189,
+      "changed_painted_pixels": 2037444,
+      "color_space": "display_p3",
+      "decode_verify_seconds": 2.081291215,
+      "dimensions": [
+        8736,
+        11648
+      ],
+      "export_seconds": 0.832645144,
+      "file_bytes": 814062462,
+      "icc_matches": true,
+      "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "pixels": 101756928,
+      "recipe_sha256": "2b7a82e6ba01b7b7aeaa9b85abdfcd11aa6bae8e9d521548bb546ba5ceb0b9c5",
+      "rendered_sha256": "7208ed2d039a2faea0b25a1cc3acc51fe4e39a7e552136ec746a17d24779db39",
+      "saved_layer_render_seconds": 0.271820948,
+      "scope": "Full saved painted-layer render and every RGBA16 TIFF sample/profile check on one owned source; numerical export conformance, not physical display colorimetry",
+      "sensor_and_rendered_hashes_unchanged": true,
+      "source_and_recipe_unchanged": true,
+      "straight_alpha": true,
+      "strips": 777,
+      "unpainted_pixels_exact": true
+    },
+    "path": "/tmp/rawpuppy-validation/background-match-full-export-2026-10-10/receipt.json",
+    "sha256": "9c24ff23f1f44823ad3d769ffb1674f900d4850370af5f755caa0ae943e50993"
+  },
+  "full_export_process": {
+    "path": "/tmp/rawpuppy-validation/background-match-full-export-time-2026-10-10.txt",
+    "sha256": "423de67a83112d98abd1db88077df62492f8bdd93687b9492350137b24f8edde",
+    "maximum_process_rss_kib": 6014416,
+    "wall_time": "0:32.63",
+    "exit_status": 0
+  },
+  "checks": {
+    "default": {
+      "path": "/tmp/rawpuppy-validation/synthesis-background-final-default-tests-2026-10-10.log",
+      "sha256": "d0214ed05ddb100050bad769664d45d5ec6e0378d367081782e165c7f7ad1852",
+      "passed": 94,
+      "failed": 0,
+      "ignored": 12
+    },
+    "combined": {
+      "path": "/tmp/rawpuppy-validation/synthesis-background-combined-tests-2026-10-10.log",
+      "sha256": "a6810a17a115fe651fb119bc31d80b696cc556611266202dad6e810dcc53b174",
+      "passed": 102,
+      "failed": 0,
+      "ignored": 26
+    },
+    "clippy": {
+      "path": "/tmp/rawpuppy-validation/synthesis-background-final-clippy-2026-10-10.log",
+      "sha256": "10769f6e1197ffadc47b225ff0bda71f1ee1a6c4b3019b6facfb3a12937793d2",
+      "passed": true
+    },
+    "release": {
+      "path": "/tmp/rawpuppy-validation/synthesis-background-final-build-2026-10-10.log",
+      "sha256": "b706c7e0cbdf5c4879c54082d08ffd805ebe60b0ff5e27055531a269369d3eb0",
+      "passed": true
+    }
+  },
+  "preceding_ci": {
+    "url": "https://github.com/dllu/rawpuppy/actions/runs/38075048971",
+    "jobs_successful": 6
+  },
+  "compatibility": {
+    "legacy_field_omitted": true,
+    "legacy_recipe_hash_preserved": true,
+    "geometric_fills_skip_matching": true,
+    "no_anchor_contexts_keep_generated_values": true,
+    "saved_assets_render_without_matching_or_model": true
+  },
+  "limitations": [
+    "Two saved photographic contexts and analytic controls do not establish universal perceptual quality or a model ranking.",
+    "Tone seams improve in inspected results; invented structure, geometry and texture can remain wrong.",
+    "Measured solve times are CPU postprocessing, not sampling latency guarantees.",
+    "Full-export peak RSS is a verifier holding two whole float rasters, not ordinary GUI/export or aggregate GB10 memory.",
+    "The optional comparator expects working-linear sRGB EXR or sRGB-encoded raster contexts; no network is rerun for those comparisons."
+  ]
+}
