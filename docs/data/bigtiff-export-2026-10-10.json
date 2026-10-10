@@ -1,0 +1,74 @@
+{
+  "machine": "NVIDIA GB10 workstation, shared system memory",
+  "threads": 8,
+  "small_export": {
+    "export_seconds": 0.007949224,
+    "file_bytes": 2400902,
+    "height": 3,
+    "icc_matches_linear_srgb": true,
+    "last_strip_offset": 1600640,
+    "rows_per_strip": 1,
+    "source_pixels_unchanged": true,
+    "straight_alpha": true,
+    "strips": 3,
+    "tiff_version": 42,
+    "verified_strips": [
+      0,
+      1,
+      2
+    ],
+    "width": 100003
+  },
+  "large_export": {
+    "export_seconds": 2.991334029,
+    "file_bytes": 4297015760,
+    "height": 5371,
+    "icc_matches_linear_srgb": true,
+    "last_strip_offset": 4296129464,
+    "rows_per_strip": 1,
+    "source_pixels_unchanged": true,
+    "straight_alpha": true,
+    "strips": 5371,
+    "tiff_version": 43,
+    "verified_strips": [
+      0,
+      2685,
+      5370
+    ],
+    "width": 100003
+  },
+  "independent_libtiff": {
+    "reader": "LIBTIFF, Version 4.5.1",
+    "width": 100003,
+    "height": 5371,
+    "rows_per_strip": 1,
+    "bigtiff": true,
+    "icc_bytes": 568,
+    "straight_alpha": true,
+    "last_strip_offset": 4296129464,
+    "strips": [
+      {
+        "strip": 0,
+        "pixels": 100003,
+        "max_rgb_error_u16": 0,
+        "alpha_exact": true
+      },
+      {
+        "strip": 2685,
+        "pixels": 100003,
+        "max_rgb_error_u16": 0,
+        "alpha_exact": true
+      },
+      {
+        "strip": 5370,
+        "pixels": 100003,
+        "max_rgb_error_u16": 0,
+        "alpha_exact": true
+      }
+    ]
+  },
+  "maximum_process_rss_kib": 8396736,
+  "whole_probe_wall_seconds": 5.48,
+  "scope": "Synthetic linear RGBA source; all source pixels verified unchanged; first/middle/last encoded strips decoded, not every encoded strip; process RSS includes the full float source; this measures export, not full RAW reconstruction/rendering.",
+  "libtiff_note": "System LibTIFF warned about tag 317 (Predictor=None on uncompressed output); dimensions, alpha, ICC, 64-bit offsets and selected pixels decoded successfully."
+}

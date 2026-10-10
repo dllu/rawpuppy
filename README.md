@@ -26,6 +26,7 @@ cargo test
 
 PNG/TIFF export is 16-bit; JPEG is 8-bit. `--color-space` selects sRGB,
 Display P3, Adobe RGB, Rec.2020, or linear sRGB, with embedded ICC profiles.
+TIFF automatically uses BigTIFF when its size requires 64-bit offsets.
 EXR stores floating-point linear sRGB with explicit primaries
 (`--color-space linear-srgb`); tagged HDR input chromaticities are respected.
 Use `--overwrite` to replace an existing export. Originals are never overwritten

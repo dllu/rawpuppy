@@ -10,6 +10,14 @@ RGBA, preserving negative values and highlights.
 RGBA16 TIFF exports explicitly identify their fourth channel as unassociated
 (straight) alpha, alongside the selected ICC profile. Transparent and partial
 alpha retain their independently stored RGB values.
+TIFF conversion reuses roughly 1 MiB of strip scratch (or one row if wider),
+instead of allocating a complete second raster. Small exports retain classic
+TIFF; a conservative bound including pixel data, ICC and strip metadata selects
+BigTIFF before classic 32-bit offsets overflow. Both variants preserve the same
+color conversion, quantization and straight-alpha metadata. A real
+100,003 × 5,371 RGBA16 export exceeded 4 GiB and passed selected-strip decoding
+with both Rust and system LibTIFF, including a strip offset beyond 32 bits; see
+[the large TIFF journal](2026-10-10-02-33-large-tiff-export.md).
 
 Grayscale PNG/TIFF ICC profiles use Little CMS's gray float input format before
 conversion to working RGB. Their declared tone curve and white point are honored.

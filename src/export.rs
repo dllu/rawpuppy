@@ -7,7 +7,10 @@ use anyhow::{Result, bail, ensure};
 use image::{ExtendedColorType, ImageEncoder};
 use lcms2::{CIExyY, CIExyYTRIPLE, Profile, ToneCurve};
 use rayon::prelude::*;
-use std::{io::BufWriter, path::Path};
+use std::{
+    io::{BufWriter, Seek, Write},
+    path::Path,
+};
 
 pub fn profile(space: OutputSpace) -> Result<Profile> {
     if space == OutputSpace::Srgb {
@@ -73,6 +76,63 @@ fn quantize16(x: f32) -> u16 {
     (x.clamp(0., 1.) * 65535. + 0.5) as u16
 }
 
+fn tiff_layout(width: u32, height: u32, icc_bytes: usize) -> (u32, bool) {
+    let row_bytes = u64::from(width) * 8;
+    // Bound conversion scratch to about 1 MiB, except when a single row is larger.
+    let rows = (1_048_576 / row_bytes).max(1).min(u64::from(height));
+    let strips = u64::from(height).div_ceil(rows);
+    // Both offset/count arrays, ICC data, and ample room for the small fixed IFD.
+    // Saturation selects BigTIFF even for dimensions whose byte count overflows u64.
+    let bound = row_bytes
+        .saturating_mul(u64::from(height))
+        .saturating_add(strips * 16)
+        .saturating_add(icc_bytes as u64)
+        .saturating_add(4096);
+    (rows as u32, bound > u64::from(u32::MAX))
+}
+
+fn write_tiff<K: tiff::encoder::TiffKind>(
+    writer: impl Write + Seek,
+    image: &Rendered,
+    space: OutputSpace,
+    icc: &[u8],
+    rows_per_strip: u32,
+) -> Result<()> {
+    let mut encoder = tiff::encoder::TiffEncoder::<_, K>::new_generic(writer)?;
+    let mut output = encoder.new_image::<tiff::encoder::colortype::RGBA16>(
+        u32::try_from(image.width)?,
+        u32::try_from(image.height)?,
+    )?;
+    output.rows_per_strip(rows_per_strip)?;
+    output
+        .encoder()
+        .write_tag(tiff::tags::Tag::IccProfile, icc)?;
+    output.encoder().write_tag(
+        tiff::tags::Tag::ExtraSamples,
+        &[tiff::tags::ExtraSamples::UnassociatedAlpha.to_u16()][..],
+    )?;
+    let strip_pixels = usize::try_from(output.next_strip_sample_count())? / 4;
+    let mut rgba = Vec::<[u16; 4]>::new();
+    rgba.try_reserve_exact(strip_pixels)?;
+    rgba.resize(strip_pixels, [0; 4]);
+    let matrix = space.matrix();
+    for pixels in image.pixels.chunks(strip_pixels) {
+        let values = &mut rgba[..pixels.len()];
+        values.par_iter_mut().zip(pixels).for_each(|(out, p)| {
+            let rgb = color::apply(matrix, [p[0], p[1], p[2]]);
+            *out = [
+                quantize16(space.encode(rgb[0])),
+                quantize16(space.encode(rgb[1])),
+                quantize16(space.encode(rgb[2])),
+                quantize16(p[3]),
+            ];
+        });
+        output.write_strip(bytemuck::cast_slice(values))?;
+    }
+    output.finish()?;
+    Ok(())
+}
+
 pub const SRGB_CHROMATICITIES: exr::meta::attribute::Chromaticities =
     exr::meta::attribute::Chromaticities {
         red: exr::math::Vec2(0.64, 0.33),
@@ -120,7 +180,7 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
     {
         let writer = BufWriter::new(temporary.as_file_mut());
         match extension.as_str() {
-            "png" | "tif" | "tiff" => {
+            "png" => {
                 let m = space.matrix();
                 let rgba: Vec<u16> = image
                     .pixels
@@ -137,22 +197,19 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                     .collect();
                 let bytes: &[u8] = bytemuck::cast_slice(&rgba);
                 let icc = profile(space)?.icc()?;
-                if extension == "png" {
-                    let mut encoder = image::codecs::png::PngEncoder::new(writer);
-                    encoder.set_icc_profile(icc)?;
-                    encoder.write_image(bytes, width, height, ExtendedColorType::Rgba16)?;
+                let mut encoder = image::codecs::png::PngEncoder::new(writer);
+                encoder.set_icc_profile(icc)?;
+                encoder.write_image(bytes, width, height, ExtendedColorType::Rgba16)?;
+            }
+            "tif" | "tiff" => {
+                let icc = profile(space)?.icc()?;
+                let (rows, big) = tiff_layout(width, height, icc.len());
+                if big {
+                    write_tiff::<tiff::encoder::TiffKindBig>(writer, image, space, &icc, rows)?;
                 } else {
-                    let mut encoder = tiff::encoder::TiffEncoder::new(writer)?;
-                    let mut output =
-                        encoder.new_image::<tiff::encoder::colortype::RGBA16>(width, height)?;
-                    output
-                        .encoder()
-                        .write_tag(tiff::tags::Tag::IccProfile, icc.as_slice())?;
-                    output.encoder().write_tag(
-                        tiff::tags::Tag::ExtraSamples,
-                        &[tiff::tags::ExtraSamples::UnassociatedAlpha.to_u16()][..],
+                    write_tiff::<tiff::encoder::TiffKindStandard>(
+                        writer, image, space, &icc, rows,
                     )?;
-                    output.write_data(&rgba)?;
                 }
             }
             "jpg" | "jpeg" => {
@@ -195,4 +252,85 @@ pub fn display_rgba8(image: &Rendered, monitor: Option<&Path>) -> Result<Vec<u8>
         .map(|path| crate::display::Icc::from_bytes(std::fs::read(path)?))
         .transpose()?;
     crate::display::Encoder::default().encode(image, profile.as_ref())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Cursor;
+    use tiff::{decoder::DecodingResult, encoder::TiffKind, tags::Tag};
+
+    #[test]
+    fn tiff_selects_64_bit_offsets_before_classic_size_overflows() {
+        assert!(!tiff_layout(8736, 11648, 4096).1);
+        assert!(!tiff_layout(100_003, 5368, 4096).1);
+        assert!(tiff_layout(100_003, 5369, 4096).1);
+        // An otherwise fitting raster must account for its ICC payload too.
+        assert!(tiff_layout(100_003, 5368, 1_048_576).1);
+        assert!(tiff_layout(u32::MAX, u32::MAX, 4096).1);
+    }
+
+    fn roundtrip<K: TiffKind>(width: usize, height: usize, version: u16) {
+        let image = Rendered {
+            width,
+            height,
+            pixels: (0..width * height)
+                .map(|i| {
+                    let t = (i % 257) as f32 / 256.;
+                    [t, 0.25, 1. - t, (i % 3) as f32 / 2.]
+                })
+                .collect(),
+        };
+        let space = OutputSpace::DisplayP3;
+        let icc = profile(space).unwrap().icc().unwrap();
+        let (rows, _) = tiff_layout(width as u32, height as u32, icc.len());
+        let mut file = Cursor::new(Vec::new());
+        write_tiff::<K>(&mut file, &image, space, &icc, rows).unwrap();
+        let bytes = file.into_inner();
+        let native_version = if &bytes[..2] == b"II" {
+            u16::from_le_bytes([bytes[2], bytes[3]])
+        } else {
+            assert_eq!(&bytes[..2], b"MM");
+            u16::from_be_bytes([bytes[2], bytes[3]])
+        };
+        assert_eq!(native_version, version);
+        let mut decoder = tiff::decoder::Decoder::new(Cursor::new(&bytes)).unwrap();
+        assert_eq!(decoder.dimensions().unwrap(), (width as u32, height as u32));
+        assert_eq!(decoder.get_tag_u8_vec(Tag::IccProfile).unwrap(), icc);
+        assert_eq!(decoder.get_tag_u16_vec(Tag::ExtraSamples).unwrap(), [2]);
+        assert_eq!(
+            decoder.get_tag_u64_vec(Tag::StripOffsets).unwrap().len(),
+            height.div_ceil(rows as usize)
+        );
+        let DecodingResult::U16(decoded) = decoder.read_image().unwrap() else {
+            panic!("Expected RGBA16");
+        };
+        assert_eq!(decoded.len(), image.pixels.len() * 4);
+        let matrix = space.matrix();
+        for (got, p) in decoded.as_chunks::<4>().0.iter().zip(&image.pixels) {
+            let rgb = color::apply(matrix, [p[0], p[1], p[2]]);
+            let expected = [
+                space.encode(rgb[0]),
+                space.encode(rgb[1]),
+                space.encode(rgb[2]),
+                p[3],
+            ]
+            .map(|v| (v.clamp(0., 1.) * 65535. + 0.5) as u16);
+            assert_eq!(*got, expected);
+        }
+        let independent =
+            image::ImageReader::with_format(Cursor::new(&bytes), image::ImageFormat::Tiff)
+                .decode()
+                .unwrap()
+                .to_rgba16();
+        assert_eq!(independent.as_raw(), &decoded);
+    }
+
+    #[test]
+    fn tiff_variants_preserve_wide_and_partial_strips_with_color_and_alpha() {
+        for (width, height) in [(3001, 100), (100_003, 3)] {
+            roundtrip::<tiff::encoder::TiffKindStandard>(width, height, 42);
+            roundtrip::<tiff::encoder::TiffKindBig>(width, height, 43);
+        }
+    }
 }
