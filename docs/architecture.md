@@ -42,7 +42,9 @@ exports carry explicit linear-sRGB chromaticities.
 
 Sidecars use their own `https://rawpuppy.org/ns/1.0/` XMP namespace and full
 original filenames plus `.rawpuppy.xmp`. They contain a versioned JSON recipe in
-an RDF property. Reads verify the namespace and reject unknown versions or invalid
+an RDF property. The CLI save command requires this suffix before reading
+or writing the recipe, preventing accidental replacement of a photo or another
+editor's sidecar. Reads verify the namespace and reject unknown versions or invalid
 parameters. Writes stage in the destination directory and rename atomically.
 
 Modern generation uses bounded 512-square context rendered directly from the

@@ -103,7 +103,7 @@ enum Command {
         #[arg(long)]
         overwrite: bool,
     },
-    /// Save a JSON recipe into a Rawpuppy XMP sidecar.
+    /// Save a JSON recipe into an output ending in .rawpuppy.xmp.
     Save { recipe: PathBuf, output: PathBuf },
 }
 fn main() -> Result<()> {
@@ -331,6 +331,12 @@ fn main() -> Result<()> {
             );
         }
         Command::Save { recipe, output } => {
+            ensure!(
+                output
+                    .file_name()
+                    .is_some_and(|name| name.as_encoded_bytes().ends_with(b".rawpuppy.xmp")),
+                "Edit sidecars must use the .rawpuppy.xmp suffix"
+            );
             let edits: Edits = serde_json::from_slice(&std::fs::read(recipe)?)?;
             sidecar::save(&output, &edits)?;
         }

@@ -4,6 +4,7 @@ A minimal, opinionated, non-destructive RAW photo editor in Rust. One photo,
 a fixed processing order, and edits saved as `photo.raf.rawpuppy.xmp` independently
 of other editors. Development is ongoing; current capabilities and remaining
 requirements are recorded in [docs](docs).
+The CLI `save` command requires the `.rawpuppy.xmp` suffix for its output.
 
 Requires a recent stable Rust toolchain and Little CMS 2 development libraries
 (`liblcms2-dev` on Debian/Ubuntu; `brew install little-cms2` on macOS).
