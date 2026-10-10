@@ -1,0 +1,157 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "9632bb4aae74eb670ff4b29a7f3a789b8ac362c6",
+  "scope": "Saved neural layers compose inside the shared GPU output kernel; copied/coherent CUDA and Vulkan parity, exact historical mask membership, persistent asset storage and real full-size saved GFX/export conformance. Native Metal execution is covered by the required CI gate after push.",
+  "implementation": {
+    "storage_bindings": 8,
+    "combined_parameters": "Curve and retouch values appended to the existing parameter array; generated pixels and small layer data reuse the released slots.",
+    "composition_order": "After retouch, curve and split toning; layers retain recipe order and evolving gap opacity.",
+    "selection": "Exact CPU-generated integer row spans for context bounds, outer paint and fully weighted core; binary boundary search, no photo-sized mask.",
+    "single_asset_coherent_cuda": "Borrow the existing Arc-owned RGBA allocation directly; no CPU/GPU pixel copy.",
+    "multiple_assets": "Deduplicate and pack distinct assets once, then retain host/device storage until the visible asset set changes.",
+    "unsupported_limits": "Keep existing parallel CPU composition if GPU storage or addressing does not permit fusion; core format/memory limits unchanged.",
+    "asset_errors": "Validate identities and load every visible immutable asset before output."
+  },
+  "gpu_parity": {
+    "variants": [
+      "Vulkan",
+      "copied CUDA",
+      "coherent system CUDA"
+    ],
+    "source_types": [
+      "RGB",
+      "Bayer"
+    ],
+    "views": [
+      "257x193 full",
+      "127x103 cropped",
+      "100003x3 wide"
+    ],
+    "cases": [
+      "signed/HDR generated RGB",
+      "partial and zero opacity",
+      "overlapping layers",
+      "geometric gaps",
+      "inward feather",
+      "exact unchanged output",
+      "repeated cached pixels"
+    ],
+    "maximum_observed_component_error": 4.5001507e-06,
+    "asserted_actual_fusion": true
+  },
+  "checks": {
+    "default": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-all-standard-final-2026-10-10.log",
+      "sha256": "d0da0ce7d4dbfc46c6c428df90bd06aeb92f3128304179d759132106cb5484d7",
+      "passed": 96,
+      "failed": 0,
+      "ignored": 13
+    },
+    "combined": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-combined-tests-2026-10-10.log",
+      "sha256": "59383ea6554cf8d37218a9fae78446a2c172bd7d8cc1a94e5a3ca4472f767b35",
+      "passed": 104,
+      "failed": 0,
+      "ignored": 27
+    },
+    "storage": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-storage-tests-2026-10-10.log",
+      "sha256": "55ac5873bf3bac4aadbcf2cf5b5f31f36051cc088bebc395516aada15419360d",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    "vulkan_fusion": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-confirmed-vulkan-2026-10-10.log",
+      "sha256": "7afb51318616f855bbe5766c68c34e3fb4b18bc1f054b342bf2a8db9837c3e6a",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "cuda_fusion": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-confirmed-cuda-2026-10-10.log",
+      "sha256": "4ace0f85dcdaca56327769987dd021da6895382dcdbddebe54391910f32bd3c4",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "vulkan_regressions": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-vulkan-regressions-2026-10-10.log",
+      "sha256": "99160d5c4cfab69196d9015240260adc5d4978bfa561e5974d1e3e8a62c2a7df",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0
+    },
+    "cuda_regressions": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-cuda-regressions-2026-10-10.log",
+      "sha256": "bf463fb20baae3e25cdf67b5df41f1bed03ab09a10330d6b5dc5a9896e3458a9",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0
+    },
+    "clippy": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-current-all-target-clippy-2026-10-10.log",
+      "sha256": "89e57533939fc60f2966adbe2816f8346a0975ea42e43dd35e640412cbbefde8",
+      "passed": true
+    },
+    "no_gpu": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-no-gpu-2026-10-10.log",
+      "sha256": "7dab03a6063075e0e371765d245cfe3befba3f1260577bc9099ed932bc10c81b",
+      "passed": true
+    },
+    "release_editor": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-editor-build-2026-10-10.log",
+      "sha256": "366395a9cd038b3bcc7122aedbe81ceb3ad6a8b13890953cb1df50d9a926be4c",
+      "passed": true
+    }
+  },
+  "full_gfx": {
+    "receipt": {
+      "all_rgba16_components_verified": 407027712,
+      "alpha_exact": true,
+      "backend": "cuda (system memory)",
+      "base_render_seconds": 0.18295776,
+      "changed_painted_pixels": 2037444,
+      "color_space": "display_p3",
+      "cpu_composition_comparison": {
+        "changed_pixels": 1388507,
+        "cpu_composition_float_sha256": "7208ed2d039a2faea0b25a1cc3acc51fe4e39a7e552136ec746a17d24779db39",
+        "max_absolute_rgba_error": 4.0531158447265625e-06,
+        "mean_absolute_rgba_error": 1.8542355128594059e-09
+      },
+      "decode_verify_seconds": 2.055011422,
+      "dimensions": [
+        8736,
+        11648
+      ],
+      "export_seconds": 0.830484403,
+      "file_bytes": 814062462,
+      "icc_matches": true,
+      "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "layers_on_gpu": true,
+      "pixels": 101756928,
+      "recipe_sha256": "2b7a82e6ba01b7b7aeaa9b85abdfcd11aa6bae8e9d521548bb546ba5ceb0b9c5",
+      "rendered_sha256": "b2eb582415704d6a2efc2888286cecfc2e43a772f68fa859759ec7e72ea83e16",
+      "saved_layer_render_seconds": 0.248693557,
+      "scope": "Full saved painted-layer render and every RGBA16 TIFF sample/profile check on one owned source; numerical export conformance, not physical display colorimetry",
+      "sensor_and_rendered_hashes_unchanged": true,
+      "source_and_recipe_unchanged": true,
+      "straight_alpha": true,
+      "strips": 777,
+      "unpainted_pixels_exact": true
+    },
+    "path": "/tmp/rawpuppy-validation/fused-layers-full-gfx-2026-10-10/receipt.json",
+    "sha256": "0a84ecea7512855420fe05ca4f3c68462191860c6283b096337dfda8c483e801",
+    "maximum_verifier_rss_kib": 7613728,
+    "total_wall_time": "0:32.84",
+    "exit_status": 0,
+    "moebius_cache_absent": true
+  },
+  "timing_scope": "One release-process observation on a shared machine, after local checks; saved-layer timer includes first asset validation, span generation, source rendering and fused composition, not an isolated kernel latency.",
+  "memory_scope": "Verifier temporarily holds base, expected CPU-composed and fused float rasters; not ordinary GUI/export or aggregate system memory.",
+  "limits": [
+    "Floating-point asset interpolation/blending is numerically close, not bit-identical to CPU composition; all unpainted samples and opacity remain exact on the full GFX control.",
+    "Native Metal gate must complete for this commit; local default/combined builds are not evidence of physical Metal execution.",
+    "One real full-size edit and targeted controls do not establish general photographic model quality or full objective completion."
+  ]
+}

@@ -33,6 +33,7 @@ pub struct Renderer {
     #[cfg(feature = "gpu")]
     gpu: Option<crate::gpu::GpuRenderer>,
     label: String,
+    layers_on_gpu: bool,
     layers: Option<crate::synthesis::Layers>,
     #[cfg(feature = "moebius")]
     moebius: Option<crate::moebius::Moebius>,
@@ -58,6 +59,7 @@ impl Renderer {
             #[cfg(feature = "gpu")]
             gpu: None,
             label: "CPU".into(),
+            layers_on_gpu: false,
             layers: None,
             #[cfg(feature = "moebius")]
             moebius: None,
@@ -71,6 +73,10 @@ impl Renderer {
     }
     pub fn label(&self) -> &str {
         &self.label
+    }
+    /// Whether the last completed full rendering composed saved layers in its GPU kernel.
+    pub fn layers_on_gpu(&self) -> bool {
+        self.layers_on_gpu
     }
     fn prepare_source(
         &mut self,
@@ -333,6 +339,34 @@ impl Renderer {
         width: usize,
         height: usize,
     ) -> Result<Rendered> {
+        self.layers_on_gpu = false;
+        #[cfg(feature = "gpu")]
+        if !edits.display.synthesis.is_empty() {
+            let prepared = self.prepare_source(image.clone(), edits)?;
+            let resolved = self
+                .layers
+                .as_mut()
+                .ok_or_else(|| anyhow::anyhow!("Saved fills need the original document path"))?
+                .resolved(edits, region)?;
+            if let Err(error) = self.initialize() {
+                if self.backend != Backend::Auto {
+                    return Err(error);
+                }
+                self.label = format!("CPU ({error})");
+            }
+            if let Some(gpu) = &mut self.gpu {
+                match gpu
+                    .render_region_with_layers(prepared, edits, region, width, height, &resolved)
+                {
+                    Ok(rendered) => {
+                        self.label = gpu.name().into();
+                        self.layers_on_gpu = true;
+                        return Ok(rendered);
+                    }
+                    Err(error) => self.label = format!("CPU ({error})"),
+                }
+            }
+        }
         let mut rendered = self.render_before_synthesis(image, edits, region, width, height)?;
         if !edits.display.synthesis.is_empty() {
             self.layers

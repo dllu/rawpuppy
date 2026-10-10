@@ -21,6 +21,12 @@ struct Args {
     backend: Backend,
     #[arg(long, value_enum, default_value = "display-p3")]
     color_space: OutputSpace,
+    /// Require the renderer to compose saved layers in its GPU kernel.
+    #[arg(long)]
+    require_fusion: bool,
+    /// Compare every output component with the existing CPU composition of the same GPU base.
+    #[arg(long)]
+    compare_cpu_composition: bool,
 }
 
 fn main() -> Result<()> {
@@ -67,6 +73,40 @@ fn main() -> Result<()> {
     let started = Instant::now();
     let rendered = renderer.render(source.clone(), &edits, None)?;
     let saved_layer_render_seconds = started.elapsed().as_secs_f64();
+    let layers_on_gpu = renderer.layers_on_gpu();
+    ensure!(
+        !args.require_fusion || layers_on_gpu,
+        "Saved layers fell back to CPU composition"
+    );
+    let cpu_composition_comparison = if args.compare_cpu_composition {
+        let mut expected = rawpuppy::pipeline::Rendered {
+            width,
+            height,
+            pixels: base.pixels.clone(),
+        };
+        rawpuppy::synthesis::Layers::new(args.input.clone()).apply(
+            &edits,
+            &mut expected,
+            [0., 0., 1., 1.],
+        )?;
+        let mut max = 0f32;
+        let mut sum = 0f64;
+        let mut changed = 0usize;
+        for (a, b) in rendered.pixels.iter().zip(&expected.pixels) {
+            changed += usize::from(a != b);
+            for c in 0..4 {
+                let error = (a[c] - b[c]).abs();
+                max = max.max(error);
+                sum += f64::from(error);
+            }
+        }
+        ensure!(max < 0.0003, "Fused/CPU composition differs by {max}");
+        Some(
+            serde_json::json!({"max_absolute_rgba_error":max,"mean_absolute_rgba_error":sum/(rendered.pixels.len()*4) as f64,"changed_pixels":changed,"cpu_composition_float_sha256":format!("{:x}",Sha256::digest(bytemuck::cast_slice(&expected.pixels)))}),
+        )
+    } else {
+        None
+    };
     ensure!(
         (rendered.width, rendered.height) == (width, height),
         "Full dimensions changed"
@@ -168,7 +208,7 @@ fn main() -> Result<()> {
         models::sha256(&args.input)? == original_hash && models::sha256(&recipe)? == recipe_hash,
         "Original or recipe changed"
     );
-    let record = serde_json::json!({"scope":"Full saved painted-layer render and every RGBA16 TIFF sample/profile check on one owned source; numerical export conformance, not physical display colorimetry","dimensions":[width,height],"pixels":verified,"all_rgba16_components_verified":verified*4,"changed_painted_pixels":changed,"unpainted_pixels_exact":true,"alpha_exact":true,"source_and_recipe_unchanged":true,"sensor_and_rendered_hashes_unchanged":true,"input_sha256":original_hash,"recipe_sha256":recipe_hash,"rendered_sha256":format!("{:x}",rendered_hash),"color_space":args.color_space,"icc_matches":true,"straight_alpha":true,"base_render_seconds":base_seconds,"saved_layer_render_seconds":saved_layer_render_seconds,"export_seconds":export_seconds,"decode_verify_seconds":decode_verify_seconds,"backend":renderer.label(),"file_bytes":output.metadata()?.len(),"strips":strips});
+    let record = serde_json::json!({"scope":"Full saved painted-layer render and every RGBA16 TIFF sample/profile check on one owned source; numerical export conformance, not physical display colorimetry","layers_on_gpu":layers_on_gpu,"cpu_composition_comparison":cpu_composition_comparison,"dimensions":[width,height],"pixels":verified,"all_rgba16_components_verified":verified*4,"changed_painted_pixels":changed,"unpainted_pixels_exact":true,"alpha_exact":true,"source_and_recipe_unchanged":true,"sensor_and_rendered_hashes_unchanged":true,"input_sha256":original_hash,"recipe_sha256":recipe_hash,"rendered_sha256":format!("{:x}",rendered_hash),"color_space":args.color_space,"icc_matches":true,"straight_alpha":true,"base_render_seconds":base_seconds,"saved_layer_render_seconds":saved_layer_render_seconds,"export_seconds":export_seconds,"decode_verify_seconds":decode_verify_seconds,"backend":renderer.label(),"file_bytes":output.metadata()?.len(),"strips":strips});
     std::fs::write(
         args.output.join("receipt.json"),
         serde_json::to_string_pretty(&record)? + "\n",

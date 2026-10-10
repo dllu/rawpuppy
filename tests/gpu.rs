@@ -9,6 +9,189 @@ use std::sync::Arc;
 
 #[test]
 #[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
+fn fused_saved_layers_match_cpu_composition_with_gaps_hdr_overlap_and_wide_tiles() {
+    use rawpuppy::{
+        edits::ToneMapper,
+        render::Renderer,
+        synthesis::{self, GeneratedFill, Layers, MaskDab},
+    };
+    let directory = tempfile::tempdir().unwrap();
+    let original = directory.path().join("photo.raw");
+    std::fs::write(&original, b"immutable fused-layer control").unwrap();
+    let mut store = Layers::new(original.clone());
+    let generated = rawpuppy::pipeline::Rendered {
+        width: 9,
+        height: 7,
+        pixels: (0..63)
+            .map(|i| {
+                [
+                    (i % 9) as f32 * 0.25 - 0.5,
+                    (i / 9) as f32 * 0.3,
+                    1.5,
+                    (i % 4) as f32 / 3.,
+                ]
+            })
+            .collect(),
+    };
+    let opaque = rawpuppy::pipeline::Rendered {
+        width: 3,
+        height: 5,
+        pixels: vec![[1.25, -0.125, 0.4, 1.]; 15],
+    };
+    let (a, ah) = store.store(&generated).unwrap();
+    let (b, bh) = store.store(&opaque).unwrap();
+    let modes = if std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {
+        vec![
+            (Backend::Cuda, CudaMemoryMode::Copy),
+            (Backend::Cuda, CudaMemoryMode::System),
+        ]
+    } else {
+        vec![(
+            if cfg!(target_os = "macos") {
+                Backend::Metal
+            } else {
+                Backend::Vulkan
+            },
+            CudaMemoryMode::Auto,
+        )]
+    };
+    for mosaic in [false, true] {
+        let mut source = SensorImage::from_rgb(
+            41,
+            37,
+            (0..41 * 37)
+                .flat_map(|i| [(i % 41) as f32 / 20. - 0.1, (i / 41) as f32 / 31., 0.5])
+                .collect(),
+        )
+        .unwrap();
+        if mosaic {
+            let cfa = rawler::CFA::new("RGGB");
+            source.data = source
+                .data
+                .as_chunks::<3>()
+                .0
+                .iter()
+                .enumerate()
+                .map(|(i, p)| p[cfa.color_at(i / 41, i % 41)])
+                .collect();
+            source.cpp = 1;
+            source.cfa = Some(cfa);
+        }
+        let source = Arc::new(source);
+        let raw_before = source.data.clone();
+        let mut edits = Edits::default();
+        edits.tone.mapper = ToneMapper::Linear;
+        edits.geometry.rotation = 11.;
+        edits.scene.exposure = 0.3;
+        edits.display.curve = vec![[0., 0.], [0.5, 0.56], [1., 1.]];
+        edits.display.split_strength = 0.12;
+        edits.raw.hot_pixels = mosaic;
+        edits.raw.denoise = if mosaic { 0.008 } else { 0. };
+        let identity = synthesis::recipe_hash(&edits).unwrap();
+        for (asset, hash, gaps, dabs, feather) in [
+            (a.clone(), ah.clone(), true, vec![], 0.),
+            (
+                b.clone(),
+                bh.clone(),
+                false,
+                vec![
+                    MaskDab {
+                        center: [0.52, 0.51],
+                        radius: 0.29,
+                    },
+                    MaskDab {
+                        center: [0.8, 0.3],
+                        radius: 0.1,
+                    },
+                ],
+                0.25,
+            ),
+            (b.clone(), bh.clone(), true, vec![], 0.),
+        ] {
+            edits.display.synthesis.push(GeneratedFill {
+                region: [-0.2, -0.1, 1.4, 1.2],
+                dabs,
+                fill_gaps: gaps,
+                feather,
+                harmonization: Default::default(),
+                steps: 20,
+                seed: 0,
+                sampling: Default::default(),
+                asset,
+                sha256: hash,
+                source_sha256: store.source_hash().unwrap().into(),
+                source_color_revision: 0,
+                recipe_sha256: identity.clone(),
+                model: "moebius-scene-2026-v1".into(),
+            });
+        }
+        for &(backend, memory) in &modes {
+            let mut renderer = Renderer::with_cuda_memory(backend, memory);
+            renderer.set_document(original.clone());
+            for (region, width, height) in [
+                ([0., 0., 1., 1.], 257, 193),
+                ([0.2, 0.1, 0.6, 0.7], 127, 103),
+                ([0., 0., 1., 1.], 100_003, 3),
+            ] {
+                let base = renderer
+                    .render_before_synthesis(source.clone(), &edits, region, width, height)
+                    .unwrap();
+                let mut expected = rawpuppy::pipeline::Rendered {
+                    width,
+                    height,
+                    pixels: base.pixels.clone(),
+                };
+                Layers::new(original.clone())
+                    .apply(&edits, &mut expected, region)
+                    .unwrap();
+                let actual = renderer
+                    .render_region(source.clone(), &edits, region, width, height)
+                    .unwrap();
+                assert!(
+                    renderer.layers_on_gpu(),
+                    "Layer fusion fell back: {}",
+                    renderer.label()
+                );
+                let repeated = renderer
+                    .render_region(source.clone(), &edits, region, width, height)
+                    .unwrap();
+                assert_eq!(
+                    actual.pixels, repeated.pixels,
+                    "Persistent layer reuse changed output"
+                );
+                let mut max = 0f32;
+                for (i, ((a, e), b)) in actual
+                    .pixels
+                    .iter()
+                    .zip(&expected.pixels)
+                    .zip(&base.pixels)
+                    .enumerate()
+                {
+                    for c in 0..4 {
+                        max = max.max((a[c] - e[c]).abs());
+                    }
+                    assert!(a.iter().all(|v| v.is_finite()));
+                    assert!((a[3] - e[3]).abs() < 1e-6, "Layer alpha differs at {i}");
+                    if e == b {
+                        assert_eq!(a, b, "Unselected output changed at {i}");
+                    }
+                }
+                eprintln!(
+                    "fused {backend:?}/{memory:?} mosaic={mosaic} {width}x{height}: max={max}"
+                );
+                assert!(max < 0.0003, "Fused layer parity failed: {max}");
+            }
+        }
+        assert_eq!(source.data, raw_before);
+    }
+    assert_eq!(
+        std::fs::read(original).unwrap(),
+        b"immutable fused-layer control"
+    );
+}
+
+#[test]
+#[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
 fn imported_float_hdr_keeps_signed_values_through_gpu_and_exr_export() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("hdr64.tiff");

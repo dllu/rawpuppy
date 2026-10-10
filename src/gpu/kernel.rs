@@ -628,10 +628,131 @@ fn decode(x: f32) -> f32 {
     }
 }
 #[cube]
-fn curve(lut: &Array<f32>, x: f32) -> f32 {
+fn curve(p: &Array<f32>, offset: u32, x: f32) -> f32 {
     let t = bounded(encode(x), 0., 1.) * 4095.;
     let i = u32::min(t as u32, 4094) as usize;
-    decode(lut[i] + (lut[i + 1] - lut[i]) * (t - i as f32))
+    let i = offset as usize + i;
+    decode(p[i] + (p[i + 1] - p[i]) * (t - (i - offset as usize) as f32))
+}
+
+#[cube]
+fn layer_texel(data: &Array<f32>, offset: u32, width: u32, x: u32, y: u32) -> Pixel {
+    let i = (offset + (y * width + x) * 4) as usize;
+    Pixel {
+        r: data[i],
+        g: data[i + 1],
+        b: data[i + 2],
+        a: data[i + 3],
+    }
+}
+#[cube]
+fn layer_sample(data: &Array<f32>, offset: u32, width: u32, height: u32, u: f32, v: f32) -> Pixel {
+    let x = bounded(u * width as f32 - 0.5, 0., (width - 1) as f32);
+    let y = bounded(v * height as f32 - 0.5, 0., (height - 1) as f32);
+    let ix = x.floor() as u32;
+    let iy = y.floor() as u32;
+    let tx = x - ix as f32;
+    let ty = y - iy as f32;
+    let a = layer_texel(data, offset, width, ix, iy);
+    let b = layer_texel(data, offset, width, u32::min(ix + 1, width - 1), iy);
+    let c = layer_texel(data, offset, width, ix, u32::min(iy + 1, height - 1));
+    let e = layer_texel(
+        data,
+        offset,
+        width,
+        u32::min(ix + 1, width - 1),
+        u32::min(iy + 1, height - 1),
+    );
+    let wa = (1. - tx) * (1. - ty);
+    let wb = tx * (1. - ty);
+    let wc = (1. - tx) * ty;
+    let we = tx * ty;
+    let alpha = a.a * wa + b.a * wb + c.a * wc + e.a * we;
+    let mut out = Pixel {
+        r: a.r * a.a * wa + b.r * b.a * wb + c.r * c.a * wc + e.r * e.a * we,
+        g: a.g * a.a * wa + b.g * b.a * wb + c.g * c.a * wc + e.g * e.a * we,
+        b: a.b * a.a * wa + b.b * b.a * wb + c.b * c.a * wc + e.b * e.a * we,
+        a: alpha / (wa + wb + wc + we),
+    };
+    if a.a == 1. && b.a == 1. && c.a == 1. && e.a == 1. {
+        out.a = 1.;
+    }
+    if alpha > 0. {
+        out.r /= alpha;
+        out.g /= alpha;
+        out.b /= alpha;
+    }
+    out
+}
+#[cube]
+fn compose_layers(
+    mut rgb: Pixel,
+    data: &Array<f32>,
+    info: &Array<f32>,
+    index: &Array<u32>,
+    d: &Array<u32>,
+    u: f32,
+    v: f32,
+    x: u32,
+    y: u32,
+) -> Pixel {
+    for layer in 0..d[30] {
+        let meta = (d[31] + layer * 12) as usize;
+        if x >= index[meta + 7]
+            && x < index[meta + 8]
+            && y >= index[meta + 9]
+            && y < index[meta + 10]
+        {
+            let f = index[meta + 3] as usize;
+            let mut weight = 0.;
+            if index[meta + 4] != 0 && rgb.a < 1. {
+                weight = 1.;
+            }
+            for dab in 0..index[meta + 5] {
+                if weight < 1. {
+                    let desc = (index[meta + 6] + dab * 3) as usize;
+                    let start_y = index[desc];
+                    let rows = index[desc + 1];
+                    if y >= start_y && y - start_y < rows {
+                        let row = (index[desc + 2] + (y - start_y) * 4) as usize;
+                        if x >= index[row] && x < index[row + 1] {
+                            let mut value = 1.;
+                            if info[f + 4] > 0. && !(x >= index[row + 2] && x < index[row + 3]) {
+                                let b = f + 6 + dab as usize * 3;
+                                let dx = u - info[b];
+                                let dy = (v - info[b + 1]) * info[f + 5];
+                                let t = bounded(
+                                    (1. - (dx * dx + dy * dy).sqrt() / info[b + 2]) / info[f + 4],
+                                    0.,
+                                    1.,
+                                );
+                                value = t * t * (3. - 2. * t);
+                            }
+                            weight = f32::max(weight, value);
+                        }
+                    }
+                }
+            }
+            if weight > 0. {
+                let sample = layer_sample(
+                    data,
+                    index[meta],
+                    index[meta + 1],
+                    index[meta + 2],
+                    (u - info[f]) / info[f + 2],
+                    (v - info[f + 1]) / info[f + 3],
+                );
+                let alpha = bounded(sample.a, 0., 1.) * weight;
+                if alpha > 0. {
+                    rgb.r += alpha * (sample.r - rgb.r);
+                    rgb.g += alpha * (sample.g - rgb.g);
+                    rgb.b += alpha * (sample.b - rgb.b);
+                    rgb.a += alpha * (1. - rgb.a);
+                }
+            }
+        }
+    }
+    rgb
 }
 
 #[cube(launch_unchecked)]
@@ -654,9 +775,9 @@ pub fn render(
     input: &Array<f32>,
     d: &Array<u32>,
     p: &Array<f32>,
-    lut: &Array<f32>,
+    layer_pixels: &Array<f32>,
     agx_lattice: &Array<f32>,
-    brushes: &Array<f32>,
+    layer_info: &Array<f32>,
     index: &Array<u32>,
     output: &mut Array<f32>,
     #[comptime] mosaic: bool,
@@ -688,44 +809,45 @@ pub fn render(
     let start = index[cell];
     let end = index[cell + 1];
     for j in start..end {
-        let brush = index[4097 + j as usize] as usize * 10;
-        let dx = (u - brushes[brush + 2]) * p[20];
-        let dy = (v - brushes[brush + 3]) * p[21] * p[22];
-        let distance = (dx * dx + dy * dy).sqrt() / brushes[brush + 4];
+        let brush = d[29] as usize + index[4097 + j as usize] as usize * 10;
+        let dx = (u - p[brush + 2]) * p[20];
+        let dy = (v - p[brush + 3]) * p[21] * p[22];
+        let distance = (dx * dx + dy * dy).sqrt() / p[brush + 4];
         if distance < 1. {
             let mut weight = 1.;
-            if brushes[brush + 5] > 0. {
-                let t = bounded((1. - distance) / brushes[brush + 5], 0., 1.);
+            if p[brush + 5] > 0. {
+                let t = bounded((1. - distance) / p[brush + 5], 0., 1.);
                 weight = t * t * (3. - 2. * t);
             }
-            weight *= brushes[brush + 6];
+            weight *= p[brush + 6];
             let mut replacement = base(
                 input,
                 d,
                 p,
                 agx_lattice,
-                u + brushes[brush] - brushes[brush + 2],
-                v + brushes[brush + 1] - brushes[brush + 3],
+                u + p[brush] - p[brush + 2],
+                v + p[brush + 1] - p[brush + 3],
                 mosaic,
                 detail,
             );
             if replacement.a != 0. {
-                replacement.r += brushes[brush + 7];
-                replacement.g += brushes[brush + 8];
-                replacement.b += brushes[brush + 9];
+                replacement.r += p[brush + 7];
+                replacement.g += p[brush + 8];
+                replacement.b += p[brush + 9];
                 rgb = blend(rgb, replacement, weight);
             }
         }
     }
     if d[18] != 0 {
-        rgb.r = curve(lut, rgb.r);
-        rgb.g = curve(lut, rgb.g);
-        rgb.b = curve(lut, rgb.b);
+        rgb.r = curve(p, d[28], rgb.r);
+        rgb.g = curve(p, d[28], rgb.g);
+        rgb.b = curve(p, d[28], rgb.b);
     }
     let l = bounded(luma(rgb), 0., 1.);
     rgb.r *= 1. + p[38] * ((1. - l) * p[39] + l * p[42] - 1.);
     rgb.g *= 1. + p[38] * ((1. - l) * p[40] + l * p[43] - 1.);
     rgb.b *= 1. + p[38] * ((1. - l) * p[41] + l * p[44] - 1.);
+    rgb = compose_layers(rgb, layer_pixels, layer_info, index, d, u, v, x, y);
     let i = pixel as usize * 4;
     output[i] = rgb.r;
     output[i + 1] = rgb.g;

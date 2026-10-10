@@ -209,6 +209,12 @@ pub struct Layers {
     loaded: HashMap<String, Arc<Rendered>>,
 }
 
+#[cfg(feature = "gpu")]
+pub(crate) struct ResolvedLayer<'a> {
+    pub fill: &'a GeneratedFill,
+    pub image: Arc<Rendered>,
+}
+
 pub(crate) struct LayerCoverage<'a> {
     layers: Vec<(&'a GeneratedFill, Arc<Rendered>)>,
     aspect: f32,
@@ -378,6 +384,31 @@ impl Layers {
             );
         }
         Ok(())
+    }
+    /// Validate all identities and resolve visible assets before GPU composition.
+    #[cfg(feature = "gpu")]
+    pub(crate) fn resolved<'a>(
+        &mut self,
+        edits: &'a Edits,
+        viewport: [f32; 4],
+    ) -> Result<Vec<ResolvedLayer<'a>>> {
+        self.validate_layers(edits)?;
+        let mut resolved = Vec::new();
+        resolved.try_reserve(edits.display.synthesis.len())?;
+        for fill in &edits.display.synthesis {
+            if fill.region[0] + fill.region[2] < viewport[0]
+                || fill.region[1] + fill.region[3] < viewport[1]
+                || fill.region[0] > viewport[0] + viewport[2]
+                || fill.region[1] > viewport[1] + viewport[3]
+            {
+                continue;
+            }
+            resolved.push(ResolvedLayer {
+                fill,
+                image: self.load(fill)?,
+            });
+        }
+        Ok(resolved)
     }
     /// Resolve immutable alpha coverage once for sparse output sampling.
     pub(crate) fn coverage<'a>(

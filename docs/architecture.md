@@ -107,13 +107,16 @@ Rust kernel using owned system allocations, avoiding sensor duplication and
 preview readback. Capability checks, synchronized borrows and local page hints
 are described in [system-memory.md](system-memory.md). Other devices use copied
 buffers through the existing runtime.
-Saved synthesis currently uses sparse CPU composition after GPU readback, with
-bounded layer caches and viewport culling. Disjoint rows of each visible layer
-composite in parallel, checking target membership before sampling the asset.
-Layers finish in recipe order so overlaps and evolving gap coverage remain
-deterministic. All visible assets resolve before any output changes. It does not
-create another full-image raster; fusing layer sampling into the GPU kernel
-remains an optimization.
+Visible saved synthesis layers now sample and composite in the final shared GPU
+photo kernel, after curve/split toning and before output conversion. It retains
+eight storage bindings by packing curve and retouch values with parameters.
+Generated pixels remain cached; coherent CUDA borrows a single asset's owned
+allocation directly. Multiple distinct assets pack once and reuse that storage.
+Exact integer row spans preserve historical paint/context membership independently
+of GPU coordinate rounding, without a full-photo mask. Layers retain recipe order,
+premultiplied interpolation, inward blend and evolving gap coverage. All visible
+assets resolve before output changes. Unsupported GPU addressing/storage limits
+retain parallel sparse CPU composition without limiting the core image format.
 
 The CUDA compiler worker requires a 32 MiB stack for the composed Bayer kernel.
 The executable sets `RUST_MIN_STACK` at process startup before threads exist;

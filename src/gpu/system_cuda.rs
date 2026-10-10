@@ -1,5 +1,6 @@
 //! CUDA driver adapter for coherent system allocations; kernels stay in the shared Rust DSL.
-use super::{ShaderArguments, kernel, output_tile_dimensions, output_tile_pixels};
+use super::{ShaderArguments, View, kernel, output_tile_dimensions, output_tile_pixels};
+use crate::synthesis::ResolvedLayer;
 use crate::{
     edits::{Edits, RawEdits, ToneMapper},
     input::{SensorImage, pixel_count},
@@ -41,6 +42,7 @@ pub struct SystemCuda {
     prepared: Option<Vec<f32>>,
     preparation: RawEdits,
     lattice_advised: bool,
+    layer_atlas: super::synthesis::Atlas,
 }
 
 struct HostArray<'a> {
@@ -185,6 +187,7 @@ impl SystemCuda {
             prepared: None,
             preparation: RawEdits::default(),
             lattice_advised: false,
+            layer_atlas: Default::default(),
         }))
     }
 
@@ -290,15 +293,19 @@ impl SystemCuda {
         Ok(())
     }
 
-    pub fn render(
+    pub(super) fn render(
         &mut self,
         image: Arc<SensorImage>,
         edits: &Edits,
-        region: [f32; 4],
-        width: usize,
-        height: usize,
-        tile_bytes: usize,
+        view: View,
+        layers: &[ResolvedLayer<'_>],
     ) -> Result<Rendered> {
+        let View {
+            region: _,
+            width,
+            height,
+            tile_bytes,
+        } = view;
         ensure!(
             image
                 .cfa
@@ -318,12 +325,23 @@ impl SystemCuda {
         );
         let count = pixel_count(width, height, 1)?;
         let pipeline = Pipeline::compile(&image, edits)?;
+        let changed = self.layer_atlas.update(layers, u32::MAX as usize * 4)?;
+        if changed {
+            advise_owned(self.layer_atlas.data(), true);
+        }
         let ShaderArguments {
             params,
             mut dims,
-            brushes,
+            layer_info,
             index,
-        } = ShaderArguments::new(&pipeline, edits, region, width, height)?;
+        } = ShaderArguments::new(
+            &pipeline,
+            edits,
+            view,
+            layers,
+            &self.layer_atlas.offsets,
+            u32::MAX as usize * 4,
+        )?;
         if self.source.as_ref().is_none_or(|s| !Arc::ptr_eq(s, &image)) {
             self.prepared = None;
             self.source = Some(image.clone());
@@ -361,32 +379,38 @@ impl SystemCuda {
             self.lattice_advised = true;
         }
         let mut pixels = uninitialized::<[f32; 4]>(count)?;
-        for start in (0..count).step_by(tile_pixels) {
-            let tile_count = tile_pixels.min(count - start);
-            ensure!(
-                tile_count <= u32::MAX as usize / 4,
-                "Output tile exceeds GPU addressing; use CPU"
-            );
-            output_tile_dimensions(&mut dims, width, height, start, tile_count);
-            let prepared = self.prepared.take();
-            let source = prepared.as_deref().unwrap_or(&image.data);
-            let result = self.launch(
-                Program::Render(mosaic),
-                &[
-                    HostArray::read(source),
-                    HostArray::read(&dims),
-                    HostArray::read(&params),
-                    HostArray::read(&pipeline.curve),
-                    HostArray::read(lattice),
-                    HostArray::read(&brushes),
-                    HostArray::read(&index),
-                    HostArray::write(&mut pixels[start..start + tile_count], 4),
-                ],
-                tile_count,
-            );
-            self.prepared = prepared;
-            result?;
-        }
+        let atlas = std::mem::take(&mut self.layer_atlas);
+        let result = (|| -> Result<()> {
+            for start in (0..count).step_by(tile_pixels) {
+                let tile_count = tile_pixels.min(count - start);
+                ensure!(
+                    tile_count <= u32::MAX as usize / 4,
+                    "Output tile exceeds GPU addressing; use CPU"
+                );
+                output_tile_dimensions(&mut dims, width, height, start, tile_count);
+                let prepared = self.prepared.take();
+                let source = prepared.as_deref().unwrap_or(&image.data);
+                let result = self.launch(
+                    Program::Render(mosaic),
+                    &[
+                        HostArray::read(source),
+                        HostArray::read(&dims),
+                        HostArray::read(&params),
+                        HostArray::read(atlas.data()),
+                        HostArray::read(lattice),
+                        HostArray::read(&layer_info),
+                        HostArray::read(&index),
+                        HostArray::write(&mut pixels[start..start + tile_count], 4),
+                    ],
+                    tile_count,
+                );
+                self.prepared = prepared;
+                result?;
+            }
+            Ok(())
+        })();
+        self.layer_atlas = atlas;
+        result?;
         // SAFETY: every tile writes all four channels of every pixel; every launch
         // completed before this allocation becomes a Vec of initialized pixels.
         let pixels = unsafe { initialized(pixels) };

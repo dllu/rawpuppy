@@ -1,5 +1,6 @@
 //! Persistent sensor residency, bounded output tiles, and a shared composed Rust kernel.
 mod kernel;
+mod synthesis;
 #[cfg(feature = "cuda")]
 mod system_cuda;
 
@@ -7,6 +8,7 @@ mod system_cuda;
 pub(crate) fn advise_sensor_allocation(spare: &[std::mem::MaybeUninit<f32>]) {
     system_cuda::advise_owned(spare, false);
 }
+use crate::synthesis::ResolvedLayer;
 use crate::{
     edits::{Edits, RawEdits, ToneMapper},
     input::{SensorImage, pixel_count},
@@ -15,6 +17,14 @@ use crate::{
 use anyhow::{Result, ensure};
 use cubecl::{prelude::*, server::Handle};
 use std::sync::{Arc, OnceLock};
+
+#[derive(Clone, Copy)]
+struct View {
+    region: [f32; 4],
+    width: usize,
+    height: usize,
+    tile_bytes: usize,
+}
 
 #[cfg(any(feature = "cuda", test))]
 fn prefer_gpu<T>(
@@ -52,6 +62,8 @@ pub struct Session<R: Runtime> {
     prepared: Option<Handle>,
     preparation: RawEdits,
     agx_lattice: Option<Handle>,
+    layer_atlas: synthesis::Atlas,
+    layer_pixels: Option<Handle>,
 }
 
 fn wgpu_client(backend: Backend) -> Result<ComputeClient<cubecl::wgpu::WgpuRuntime>> {
@@ -179,12 +191,52 @@ impl GpuRenderer {
         height: usize,
         tile_bytes: usize,
     ) -> Result<Rendered> {
+        self.render_layered(
+            image,
+            edits,
+            View {
+                region,
+                width,
+                height,
+                tile_bytes,
+            },
+            &[],
+        )
+    }
+    pub(crate) fn render_region_with_layers(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        region: [f32; 4],
+        width: usize,
+        height: usize,
+        layers: &[ResolvedLayer<'_>],
+    ) -> Result<Rendered> {
+        self.render_layered(
+            image,
+            edits,
+            View {
+                region,
+                width,
+                height,
+                tile_bytes: 64 * 1024 * 1024,
+            },
+            layers,
+        )
+    }
+    fn render_layered(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        view: View,
+        layers: &[ResolvedLayer<'_>],
+    ) -> Result<Rendered> {
         match self {
-            Self::Wgpu(s) => s.render(image, edits, region, width, height, tile_bytes),
+            Self::Wgpu(s) => s.render(image, edits, view, layers),
             #[cfg(feature = "cuda")]
-            Self::Cuda(s) => s.render(image, edits, region, width, height, tile_bytes),
+            Self::Cuda(s) => s.render(image, edits, view, layers),
             #[cfg(feature = "cuda")]
-            Self::CudaSystem(s) => s.render(image, edits, region, width, height, tile_bytes),
+            Self::CudaSystem(s) => s.render(image, edits, view, layers),
         }
     }
 }
@@ -212,17 +264,24 @@ fn output_tile_dimensions(
 struct ShaderArguments {
     params: Vec<f32>,
     dims: Vec<u32>,
-    brushes: Vec<f32>,
+    layer_info: Vec<f32>,
     index: Vec<u32>,
 }
 impl ShaderArguments {
     fn new(
         pipeline: &Pipeline<'_>,
         edits: &Edits,
-        region: [f32; 4],
-        width: usize,
-        height: usize,
+        view: View,
+        layers: &[ResolvedLayer<'_>],
+        offsets: &[u32],
+        max_bytes: usize,
     ) -> Result<Self> {
+        let View {
+            region,
+            width,
+            height,
+            ..
+        } = view;
         let image = pipeline.source;
         let g = &pipeline.geometry;
         let s = &edits.scene;
@@ -326,10 +385,28 @@ impl ShaderArguments {
         }
         index[4096] = u32::try_from(references.len())?;
         index.extend(references);
+        let curve_offset = u32::try_from(params.len())?;
+        params.extend_from_slice(&pipeline.curve);
+        let brush_offset = u32::try_from(params.len())?;
+        params.extend_from_slice(&brushes);
+        let metadata_offset = u32::try_from(index.len())?;
+        let layer_info = synthesis::arguments(
+            layers, offsets, region, width, height, &mut index, max_bytes,
+        )?;
+        dims.extend([
+            curve_offset,
+            brush_offset,
+            u32::try_from(layers.len())?,
+            metadata_offset,
+        ]);
+        ensure!(
+            params.len() * 4 <= max_bytes,
+            "Combined parameters exceed GPU storage binding; use CPU"
+        );
         Ok(Self {
             params,
             dims,
-            brushes,
+            layer_info,
             index,
         })
     }
@@ -344,17 +421,23 @@ impl<R: Runtime> Session<R> {
             prepared: None,
             preparation: RawEdits::default(),
             agx_lattice: None,
+            layer_atlas: Default::default(),
+            layer_pixels: None,
         }
     }
     fn render(
         &mut self,
         image: Arc<SensorImage>,
         edits: &Edits,
-        region: [f32; 4],
-        width: usize,
-        height: usize,
-        tile_bytes: usize,
+        view: View,
+        layers: &[ResolvedLayer<'_>],
     ) -> Result<Rendered> {
+        let View {
+            region: _,
+            width,
+            height,
+            tile_bytes,
+        } = view;
         let pipeline = Pipeline::compile(&image, edits)?;
         let mosaic = image.cfa.is_some();
         ensure!(
@@ -399,12 +482,30 @@ impl<R: Runtime> Session<R> {
             );
             self.source = Some(image.clone());
         }
+        let changed = self.layer_atlas.update(layers, page)?;
+        ensure!(
+            self.layer_atlas.data().len() * 4 <= page,
+            "Generated pixels exceed this GPU storage binding; use CPU"
+        );
+        if changed || self.layer_pixels.is_none() {
+            self.layer_pixels = Some(
+                self.client
+                    .create_from_slice(bytemuck::cast_slice(self.layer_atlas.data())),
+            );
+        }
         let ShaderArguments {
             params,
             mut dims,
-            brushes,
+            layer_info,
             index,
-        } = ShaderArguments::new(&pipeline, edits, region, width, height)?;
+        } = ShaderArguments::new(
+            &pipeline,
+            edits,
+            view,
+            layers,
+            &self.layer_atlas.offsets,
+            page,
+        )?;
         if mosaic && (edits.raw.hot_pixels || edits.raw.denoise > 0.) {
             if self.prepared.is_none() || self.preparation != edits.raw {
                 self.prepared = None;
@@ -435,9 +536,6 @@ impl<R: Runtime> Session<R> {
         } else {
             self.prepared = None;
         }
-        let lut = self
-            .client
-            .create_from_slice(bytemuck::cast_slice(&pipeline.curve));
         let (agx_lattice, agx_len) = if edits.tone.mapper == ToneMapper::AgxSdr {
             let data = crate::agx::lattice();
             ensure!(
@@ -451,9 +549,9 @@ impl<R: Runtime> Session<R> {
         } else {
             (self.client.create_from_slice(&[0; 4]), 1)
         };
-        let brush_buffer = self
+        let info_buffer = self
             .client
-            .create_from_slice(bytemuck::cast_slice(&brushes));
+            .create_from_slice(bytemuck::cast_slice(&layer_info));
         let index_buffer = self.client.create_from_slice(bytemuck::cast_slice(&index));
         let tile_pixels = output_tile_pixels(tile_bytes.min(page))?;
         let mut pixels: Vec<[f32; 4]> = Vec::new();
@@ -488,9 +586,12 @@ impl<R: Runtime> Session<R> {
                     ),
                     ArrayArg::from_raw_parts(dimensions.clone(), dims.len()),
                     ArrayArg::from_raw_parts(parameters.clone(), params.len()),
-                    ArrayArg::from_raw_parts(lut.clone(), pipeline.curve.len()),
+                    ArrayArg::from_raw_parts(
+                        self.layer_pixels.as_ref().unwrap().clone(),
+                        self.layer_atlas.data().len(),
+                    ),
                     ArrayArg::from_raw_parts(agx_lattice.clone(), agx_len),
-                    ArrayArg::from_raw_parts(brush_buffer.clone(), brushes.len()),
+                    ArrayArg::from_raw_parts(info_buffer.clone(), layer_info.len()),
                     ArrayArg::from_raw_parts(index_buffer.clone(), index.len()),
                     ArrayArg::from_raw_parts(output.clone(), tile_count * 4),
                     mosaic,
