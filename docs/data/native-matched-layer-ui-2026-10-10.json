@@ -1,0 +1,217 @@
+{
+  "date_utc": "2026-10-10",
+  "implementation_commit": "469cc0ff1606dedc1fc2cb46264f9e78b8c12837",
+  "scope": "Actual current release X11/egui saved matched-layer open, clear, keyboard undo/redo, explicit save, normal close and cold reopen; every displayed photo sample compared on one owned GFX100S copy. No inference/model-quality or physical-colorimetry claim.",
+  "binary_sha256": "ae05a5f69f78c22b9293c4c44c48164ba075175c94b8428733f983a8c510c543",
+  "features": [
+    "cuda",
+    "raw-ml",
+    "moebius"
+  ],
+  "libtorch": "2.13",
+  "initial_and_final_hashes": {
+    "photo.raf": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "photo.raf.rawpuppy.xmp": "2b7a82e6ba01b7b7aeaa9b85abdfcd11aa6bae8e9d521548bb546ba5ceb0b9c5"
+  },
+  "source_dimensions": [
+    8736,
+    11648
+  ],
+  "source_pixels": 101756928,
+  "raw_reconstruction": "raw_nind_v1",
+  "exposure": 1.8,
+  "saved_layer": {
+    "method": "boundary_poisson_v1",
+    "asset": "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726.exr",
+    "sha256": "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726",
+    "dabs": 39,
+    "feather": 0.15
+  },
+  "cache": {
+    "path": "/tmp/rawpuppy-validation/native-current-gfx-2026-10-10/reopen-cache",
+    "moebius_absent_for_both_windows": true,
+    "raw_model_manifest_sha256": "76fd292df7fb188aca71510de81ecda31c75220e29e7dd77cadf1f94668aa59a"
+  },
+  "actions": [
+    "open existing versioned matched-layer RAW/XMP/EXR",
+    "open AI panel",
+    "clear generated fills and Ctrl-S: zero layers",
+    "Ctrl-Z and Ctrl-S: initial matched layer restored",
+    "Ctrl-Shift-Z and Ctrl-S: cleared state restored",
+    "Ctrl-Z and Ctrl-S: initial sidecar byte-identical",
+    "normal WM_DELETE_WINDOW close: exit zero",
+    "fresh reopen with the Moebius cache still absent",
+    "every displayed photo pixel identical to pre-close restoration",
+    "normal close: exit zero"
+  ],
+  "recipe_states": {
+    "cleared": "zero layers",
+    "undo": "one matched layer",
+    "redo": "zero layers",
+    "restored": "one matched layer"
+  },
+  "frame_comparisons": {
+    "scope": "Actual native screenshot photo rectangle, display-resolution RGBA samples; no physical display measurement.",
+    "photo_rectangle": [
+      268,
+      116,
+      862,
+      908
+    ],
+    "photo_pixels": 470448,
+    "comparisons": {
+      "controls": {
+        "changed_pixels_from_loaded_fill": 0,
+        "max_channel_difference": 0
+      },
+      "cleared": {
+        "changed_pixels_from_loaded_fill": 9002,
+        "max_channel_difference": 167
+      },
+      "undo": {
+        "changed_pixels_from_loaded_fill": 0,
+        "max_channel_difference": 0
+      },
+      "redo": {
+        "changed_pixels_from_loaded_fill": 9002,
+        "max_channel_difference": 167
+      },
+      "restored": {
+        "changed_pixels_from_loaded_fill": 0,
+        "max_channel_difference": 0
+      }
+    },
+    "cleared_and_redone_pixels_identical": true,
+    "saved_assets": {
+      "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726.exr": "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726"
+    }
+  },
+  "reopen_comparison": {
+    "scope": "Every displayed RGBA pixel in the actual native photo rectangle; no full-resolution or physical-monitor claim.",
+    "photo_rectangle": [
+      268,
+      116,
+      862,
+      908
+    ],
+    "photo_pixels": 470448,
+    "changed_pixels": 0,
+    "max_channel_difference": 0,
+    "moebius_cache_absent": true
+  },
+  "original_and_final_sidecar_byte_identical": true,
+  "raw_and_assets_unchanged": true,
+  "processes": {
+    "initial": {
+      "editor_pid": 789005,
+      "xvfb_pid": 789002,
+      "editor_exit_status": 0
+    },
+    "reopened": {
+      "editor_pid": 789425,
+      "xvfb_pid": 789422,
+      "editor_exit_status": 0
+    },
+    "all_owned_pids_absent_after_cleanup": true
+  },
+  "artifacts": {
+    "directory": "/tmp/rawpuppy-validation/native-matched-layer-ui-2026-10-10",
+    "files": {
+      "undo.png": {
+        "bytes": 884475,
+        "sha256": "a01363442a5b1345a8787b095be25d8fe80bf03568e8b86d620ed922033382c7"
+      },
+      "restored.png": {
+        "bytes": 884475,
+        "sha256": "a01363442a5b1345a8787b095be25d8fe80bf03568e8b86d620ed922033382c7"
+      },
+      "ready.png": {
+        "bytes": 881969,
+        "sha256": "e89067f06a962abc92512c9e1362c240970435a75d43daa4186de453d5b34079"
+      },
+      "processes-initial.json": {
+        "bytes": 60,
+        "sha256": "4eace48d70a258bcea5358a4f34846735c061d976ac69e76fe197312cf0c4a11"
+      },
+      "initial-hashes.json": {
+        "bytes": 269,
+        "sha256": "b6774abe6e84887cc1a4fec166f8353548652020560a76af4eec0f85a9e1014c"
+      },
+      "restored-recipe.json": {
+        "bytes": 7756,
+        "sha256": "ae1e62cbb4a2596c83a1d126c8c04e9d5018e27061d8c350c0b84db5db10a5ce"
+      },
+      "redo.png": {
+        "bytes": 888332,
+        "sha256": "7c4ffa239d4fdc9617539654d74bbb144856ae4f782dc08e0ada4db0e561d50c"
+      },
+      "cleared.png": {
+        "bytes": 888332,
+        "sha256": "7c4ffa239d4fdc9617539654d74bbb144856ae4f782dc08e0ada4db0e561d50c"
+      },
+      "undo-recipe.json": {
+        "bytes": 7756,
+        "sha256": "ae1e62cbb4a2596c83a1d126c8c04e9d5018e27061d8c350c0b84db5db10a5ce"
+      },
+      "initial-frame-comparison.json": {
+        "bytes": 968,
+        "sha256": "563c30b0a091f343d03cb710122abc845cc33dad70352d39bf0ff8103fa7b2f2"
+      },
+      "opening.png": {
+        "bytes": 881969,
+        "sha256": "e89067f06a962abc92512c9e1362c240970435a75d43daa4186de453d5b34079"
+      },
+      "reopen-comparison.json": {
+        "bytes": 303,
+        "sha256": "64b76376bfff0ae48a22689550a58201e14ae626f379a217983765b00bec8df8"
+      },
+      "session.py": {
+        "bytes": 4989,
+        "sha256": "6dda86d5d5f69a3ee33bbe5d7340937433cfbee259087ad9bbf11e557c839998"
+      },
+      "xvfb.log": {
+        "bytes": 2348,
+        "sha256": "b987a262609a3720f450ab6815ed90b2069dd47b7b012959ca19c325aebf5d55"
+      },
+      "editor-initial.log": {
+        "bytes": 134,
+        "sha256": "76050053c4b02071888d4c96a42008c20783652c7d6b1762457f640578a0d413"
+      },
+      "redo-recipe.json": {
+        "bytes": 1428,
+        "sha256": "04fa0701e046a3aefbd789281e8d69ba481ede823f2c22fd2fa64912823d4dac"
+      },
+      "cleared-recipe.json": {
+        "bytes": 1428,
+        "sha256": "04fa0701e046a3aefbd789281e8d69ba481ede823f2c22fd2fa64912823d4dac"
+      },
+      "processes-reopened.json": {
+        "bytes": 60,
+        "sha256": "b05dbf5b936a3e1718d6df8c3984ef7940afa03ebd1e84caed6d82560ecd4181"
+      },
+      "controls.png": {
+        "bytes": 885165,
+        "sha256": "3a2f2e45207ea1dfbbc663c5ad165386ad8dfc45823fcb47547b926fd8972623"
+      },
+      "editor-reopened.log": {
+        "bytes": 134,
+        "sha256": "76050053c4b02071888d4c96a42008c20783652c7d6b1762457f640578a0d413"
+      },
+      "reopened.png": {
+        "bytes": 881970,
+        "sha256": "0c790a149bffa1f1c6db2a9a9eb2e7f959b9034bc6125301b5707b3f67b704cc"
+      }
+    }
+  },
+  "ci_at_recording": {
+    "url": "https://github.com/dllu/rawpuppy/actions/runs/38076701680",
+    "desktop_jobs_successful": 3,
+    "native_learning_jobs": "in progress"
+  },
+  "limits": [
+    "Photo comparisons cover 470448 display-resolution RGBA samples, not all full-resolution pixels; the new layer already has separate 101.8 MP export verification.",
+    "This exercises X11/CUDA on one actual saved edit, not every platform or user interaction.",
+    "Screenshots show the rendered application frame, not physical monitor colorimetry.",
+    "Sampling is not rerun and these checks do not establish general inpainting quality."
+  ]
+}
