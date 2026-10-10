@@ -1080,11 +1080,17 @@ impl Editor {
         }
     }
     fn perform_pending(&mut self, ctx: &egui::Context) {
+        self.close_after_save = false;
         match self.pending.take() {
             Some(Pending::Close) => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
             Some(Pending::Open(path)) => self.open(path),
             None => {}
         }
+    }
+
+    fn cancel_pending(&mut self) {
+        self.pending = None;
+        self.close_after_save = false;
     }
 
     fn toolbar(&mut self, ui: &mut egui::Ui) {
@@ -2036,7 +2042,7 @@ impl eframe::App for Editor {
                             self.perform_pending(&ctx);
                         }
                         if ui.button("Cancel").clicked() {
-                            self.pending = None;
+                            self.cancel_pending();
                         }
                     });
                 });
@@ -2547,6 +2553,76 @@ mod curve_interaction_tests {
 #[cfg(test)]
 mod error_scope_tests {
     use super::*;
+    #[test]
+    fn cancelling_save_continuation_keeps_a_later_open_request_pending() {
+        let ctx = egui::Context::default();
+        let mut app = Editor::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            None,
+            None,
+            Backend::Cpu,
+            false,
+        );
+        let (send, requests) = mpsc::channel();
+        let (responses, receive) = mpsc::channel();
+        app.tx = send;
+        app.rx = receive;
+        app.image = Some(Arc::new(
+            SensorImage::from_rgb(2, 2, vec![0.2; 12]).unwrap(),
+        ));
+        app.path = Some(PathBuf::from("owned-photo.png"));
+        app.edits.scene.exposure = 0.5;
+        app.pending = Some(Pending::Close);
+        app.close_after_save = true;
+        app.save();
+        let Work::Save {
+            load_id,
+            path,
+            edits,
+        } = requests.try_recv().unwrap()
+        else {
+            panic!("Expected saved snapshot");
+        };
+        app.cancel_pending();
+        let next = PathBuf::from("next-owned-photo.png");
+        app.request_open(next.clone());
+        responses
+            .send(Reply::Saved {
+                load_id,
+                path,
+                edits,
+            })
+            .unwrap();
+        app.poll(&ctx);
+        assert!(matches!(&app.pending,Some(Pending::Open(path)) if path==&next));
+        assert!(
+            requests.try_recv().is_err(),
+            "Delayed save implicitly approved a new open request"
+        );
+        // A fresh explicit Save decision must still continue once its matching
+        // current snapshot is durable.
+        app.edits.scene.exposure = 0.7;
+        app.close_after_save = true;
+        app.save();
+        let Work::Save {
+            load_id,
+            path,
+            edits,
+        } = requests.try_recv().unwrap()
+        else {
+            panic!("Expected current saved snapshot");
+        };
+        responses
+            .send(Reply::Saved {
+                load_id,
+                path,
+                edits,
+            })
+            .unwrap();
+        app.poll(&ctx);
+        assert!(matches!(requests.try_recv().unwrap(),Work::Open{path,..} if path==next));
+        assert!(app.pending.is_none() && !app.close_after_save);
+    }
     #[cfg(feature = "moebius")]
     #[test]
     fn regeneration_removes_obsolete_corner_fills_without_loading_assets_or_a_model() {
