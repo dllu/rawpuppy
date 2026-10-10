@@ -90,5 +90,9 @@ forward matrices participate in the same linear transform. Changed DNG color
 interpretation versions saved fills; single-matrix files without these extra tags
 retain their previous transform. See [DNG calibration](2026-10-10-04-27-dng-calibration.md)
 for tests and remaining profile scope.
+Custom illuminant chromaticities/spectra and three calibration slots are read
+directly from DNG metadata, including the third matrix that the decoder's ordinary
+matrix map omits. These source interpretations use color revision 2; see the
+[extended profile journal](2026-10-10-05-40-extended-dng-profiles.md).
 Float HDR interchange and SDR presentation on an HDR desktop are distinct
 capabilities.

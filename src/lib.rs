@@ -2,6 +2,7 @@ pub mod agx;
 mod camera_profiles;
 pub mod color;
 pub mod display;
+mod dng_profiles;
 pub mod edits;
 pub mod export;
 pub mod geometry;

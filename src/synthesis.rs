@@ -136,7 +136,7 @@ fn is_zero(value: &u32) -> bool {
 impl GeneratedFill {
     pub fn validate(&self) -> Result<()> {
         ensure!(
-            self.source_color_revision <= 1,
+            self.source_color_revision <= 2,
             "Unsupported source color decoding revision"
         );
         ensure!(

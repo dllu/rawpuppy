@@ -1,6 +1,7 @@
-Robertson (1968) isotherm numeric data from Colour Developers.
-Source: https://github.com/colour-science/colour/blob/develop/colour/temperature/robertson1968.py
-Only the tabulated data is used; the Rust interpolation implementation is independent.
+Published numerical data from Colour Developers:
+- Robertson (1968) isotherm data: https://github.com/colour-science/colour/blob/develop/colour/temperature/robertson1968.py
+- CIE 1931 2-degree standard observer: https://github.com/colour-science/colour/blob/develop/colour/colorimetry/datasets/cmfs.py
+Only numerical tables are included. The Rust interpolation and integration implementations are independent.
 
 Copyright 2013 Colour Developers
 

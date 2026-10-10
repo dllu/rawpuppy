@@ -31,6 +31,12 @@ struct Args {
     /// Add a distinct Standard-A matrix and select its known warm neutral.
     #[arg(long)]
     dual_warm: bool,
+    /// Add a third, custom-xy calibration with a distinct matrix and neutral.
+    #[arg(long, conflicts_with = "custom_spectrum")]
+    triple: bool,
+    /// Declare an equal-energy spectrum for the first calibration illuminant.
+    #[arg(long, conflicts_with_all=["triple","dual_warm"])]
+    custom_spectrum: bool,
 }
 
 const BLOCK: usize = 256;
@@ -75,6 +81,39 @@ struct ExtraTags {
     forward: Option<color::Matrix>,
     signature_match: bool,
     byte_signature: bool,
+    third: Option<(color::Matrix, [f32; 2])>,
+    custom_first: Option<Vec<u8>>,
+}
+
+struct Undefined<'a>(&'a [u8]);
+impl tiff::encoder::TiffValue for Undefined<'_> {
+    const BYTE_LEN: u8 = 1;
+    const FIELD_TYPE: tiff::tags::Type = tiff::tags::Type::UNDEFINED;
+    fn count(&self) -> usize {
+        self.0.len()
+    }
+    fn data(&self) -> std::borrow::Cow<'_, [u8]> {
+        std::borrow::Cow::Borrowed(self.0)
+    }
+}
+
+fn xy_illuminant(xy: [f32; 2]) -> Vec<u8> {
+    let mut bytes = Vec::new();
+    bytes.extend(0u16.to_ne_bytes());
+    for v in xy {
+        bytes.extend(((v * 1_000_000.).round() as u32).to_ne_bytes());
+        bytes.extend(1_000_000u32.to_ne_bytes());
+    }
+    bytes
+}
+
+fn equal_energy_illuminant() -> Vec<u8> {
+    let mut bytes = Vec::new();
+    bytes.extend(1u16.to_ne_bytes());
+    for v in [2u32, 360, 1, 470, 1, 1, 1, 1, 1] {
+        bytes.extend(v.to_ne_bytes());
+    }
+    bytes
 }
 
 fn write_dng_extended(
@@ -143,6 +182,26 @@ fn write_dng_extended(
     });
     directory.write_tag(Tag::Unknown(50728), &neutral[..])?;
     if let Some(extra) = extra {
+        if extra.third.is_some() || extra.custom_first.is_some() {
+            directory.write_tag(Tag::Unknown(50706), &[1u8, 6, 0, 0][..])?;
+        }
+        if let Some(data) = &extra.custom_first {
+            directory.write_tag(Tag::Unknown(50778), 255u16)?;
+            directory.write_tag(Tag::Unknown(52533), Undefined(data))?;
+        }
+        if let Some((cm, white)) = extra.third {
+            directory.write_tag(Tag::Unknown(52529), 255u16)?;
+            directory.write_tag(Tag::Unknown(52535), Undefined(&xy_illuminant(white)))?;
+            let matrix: Vec<_> = cm
+                .into_iter()
+                .flatten()
+                .map(|v| SRational {
+                    n: (v * 1_000_000.).round() as i32,
+                    d: 1_000_000,
+                })
+                .collect();
+            directory.write_tag(Tag::Unknown(52531), matrix.as_slice())?;
+        }
         let analog = extra.analog.map(|v| Rational {
             n: (v * 1_000_000.).round() as u32,
             d: 1_000_000,
@@ -237,7 +296,7 @@ fn main() -> Result<()> {
         color::inverse(camera_matrix)?,
         color::inverse(color::SRGB_TO_XYZ)?,
     );
-    let secondary = args.dual_warm.then(|| {
+    let secondary = (args.dual_warm || args.triple).then(|| {
         color::multiply(
             [[1.10, 0.02, -0.03], [0., 1., 0.], [-0.04, 0.02, 0.90]],
             xyz_to_camera,
@@ -247,12 +306,41 @@ fn main() -> Result<()> {
         let neutral = color::apply(warm_matrix, [1.09850, 1., 0.35585]);
         gains = neutral.map(|v| neutral[1] / v);
     }
+    let mut extended_tags = None;
+    if args.triple || args.custom_spectrum {
+        let third = args.triple.then(|| {
+            (
+                color::multiply(
+                    [[0.92, 0.04, 0.02], [0.03, 1.08, -0.02], [0.01, -0.03, 1.12]],
+                    xyz_to_camera,
+                ),
+                [0.38, 0.40],
+            )
+        });
+        let neutral = if let Some((matrix, [x, y])) = third {
+            color::apply(matrix, [x / y, 1., (1. - x - y) / y])
+        } else {
+            color::apply(xyz_to_camera, [1.; 3])
+        };
+        gains = neutral.map(|v| neutral[1] / v);
+        extended_tags = Some(ExtraTags {
+            analog: [1.; 3],
+            camera: color::IDENTITY,
+            forward: None,
+            signature_match: true,
+            byte_signature: false,
+            third,
+            custom_first: args.custom_spectrum.then(equal_energy_illuminant),
+        });
+    }
     std::fs::create_dir(&args.output)?;
     let mut records = Vec::new();
     for noisy in [false, true] {
         let name = if noisy { "noisy" } else { "constant" };
         let path = args.output.join(format!("{name}.dng"));
-        if secondary.is_some() {
+        if let Some(extra) = &extended_tags {
+            write_dng_extended(&path, noisy, xyz_to_camera, gains, secondary, Some(extra))?;
+        } else if secondary.is_some() {
             write_dng_with_secondary(&path, noisy, xyz_to_camera, gains, secondary)?;
         } else {
             write_dng(&path, noisy, xyz_to_camera, gains)?;
@@ -360,6 +448,131 @@ mod tests {
     use super::*;
 
     #[test]
+    fn custom_and_third_illuminant_dngs_use_the_declared_calibration() {
+        let directory = tempfile::tempdir().unwrap();
+        let daylight = color::inverse(color::SRGB_TO_XYZ).unwrap();
+        let warm = color::multiply(
+            [[1.10, 0.02, -0.03], [0., 1., 0.], [-0.04, 0.02, 0.90]],
+            daylight,
+        );
+        let third = color::multiply(
+            [[0.92, 0.04, 0.02], [0.03, 1.08, -0.02], [0.01, -0.03, 1.12]],
+            daylight,
+        );
+        for (name, target, cm, secondary, extra) in [
+            (
+                "custom-xy",
+                [0.36 / 0.42, 1., 0.22 / 0.42],
+                daylight,
+                None,
+                ExtraTags {
+                    analog: [1.; 3],
+                    camera: color::IDENTITY,
+                    forward: None,
+                    signature_match: true,
+                    byte_signature: false,
+                    third: None,
+                    custom_first: Some(xy_illuminant([0.36, 0.42])),
+                },
+            ),
+            (
+                "custom-spectrum",
+                [1.; 3],
+                daylight,
+                None,
+                ExtraTags {
+                    analog: [1.; 3],
+                    camera: color::IDENTITY,
+                    forward: None,
+                    signature_match: true,
+                    byte_signature: false,
+                    third: None,
+                    custom_first: Some(equal_energy_illuminant()),
+                },
+            ),
+            (
+                "third",
+                [0.38 / 0.40, 1., 0.22 / 0.40],
+                third,
+                Some(warm),
+                ExtraTags {
+                    analog: [1.; 3],
+                    camera: color::IDENTITY,
+                    forward: None,
+                    signature_match: true,
+                    byte_signature: false,
+                    third: Some((third, [0.38, 0.40])),
+                    custom_first: None,
+                },
+            ),
+        ] {
+            let neutral = color::apply(cm, target);
+            let gains = neutral.map(|v| neutral[1] / v);
+            let path = directory.path().join(format!("{name}.dng"));
+            write_dng_extended(&path, false, daylight, gains, secondary, Some(&extra)).unwrap();
+            let hash = models::sha256(&path).unwrap();
+            let source = SensorImage::open(&path).unwrap();
+            let mut expected = color::multiply(
+                cm,
+                color::multiply(
+                    color::adapt_white([0.95047, 1., 1.08883], target).unwrap(),
+                    color::SRGB_TO_XYZ,
+                ),
+            );
+            for row in &mut expected {
+                let sum: f32 = row.iter().sum();
+                for v in row {
+                    *v /= sum;
+                }
+            }
+            let expected = color::inverse(expected).unwrap();
+            let max = source
+                .metadata
+                .camera_to_working
+                .into_iter()
+                .flatten()
+                .zip(expected.into_iter().flatten())
+                .map(|(a, b)| (a - b).abs())
+                .fold(0., f32::max);
+            assert!(max < 0.00004, "{name} matrix mismatch {max}");
+            assert_eq!(source.metadata.color_revision, 2);
+            assert_eq!(rawpuppy::input::color_revision(&path).unwrap(), 2);
+            let mut layers = rawpuppy::synthesis::Layers::new(path.clone());
+            let image = rawpuppy::pipeline::Rendered {
+                width: 1,
+                height: 1,
+                pixels: vec![[0.18, 0.25, 0.3, 1.]],
+            };
+            let (asset, sha256) = layers.store(&image).unwrap();
+            let mut edits = Edits::default();
+            let fill = rawpuppy::synthesis::GeneratedFill {
+                region: [0., 0., 1., 1.],
+                dabs: vec![rawpuppy::synthesis::MaskDab {
+                    center: [0.5; 2],
+                    radius: 1.,
+                }],
+                fill_gaps: false,
+                steps: 2,
+                seed: 0,
+                asset,
+                sha256,
+                source_sha256: layers.source_hash().unwrap().into(),
+                source_color_revision: 1,
+                recipe_sha256: rawpuppy::synthesis::recipe_hash(&edits).unwrap(),
+                sampling: Default::default(),
+                model: "moebius-scene-2026-v1".into(),
+            };
+            edits.display.synthesis.push(fill);
+            let mut frame = image;
+            assert!(layers.apply(&edits, &mut frame, [0., 0., 1., 1.]).is_err());
+            edits.display.synthesis[0].source_color_revision = 2;
+            edits.validate().unwrap();
+            layers.apply(&edits, &mut frame, [0., 0., 1., 1.]).unwrap();
+            assert_eq!(models::sha256(path.as_path()).unwrap(), hash);
+        }
+    }
+
+    #[test]
     fn dng_analog_camera_and_forward_tags_follow_the_linear_transform() {
         let directory = tempfile::tempdir().unwrap();
         let cm = color::inverse(color::SRGB_TO_XYZ).unwrap();
@@ -384,6 +597,8 @@ mod tests {
                         forward: fm,
                         signature_match,
                         byte_signature,
+                        third: None,
+                        custom_first: None,
                     };
                     let reference_to_camera = color::multiply(
                         ab,

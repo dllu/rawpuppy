@@ -40,7 +40,7 @@ const ISOTHERMS: [[f64; 4]; 31] = [
     [600., 0.33724, 0.36051, -116.45],
 ];
 
-fn reciprocal_temperature(xyz: [f32; 3]) -> Result<f64> {
+pub(super) fn reciprocal_temperature(xyz: [f32; 3]) -> Result<f64> {
     ensure!(
         xyz.iter().all(|v| v.is_finite() && *v > 0.),
         "Invalid inferred camera white point"
@@ -68,7 +68,7 @@ fn reciprocal_temperature(xyz: [f32; 3]) -> Result<f64> {
     Ok(nearest * 1e-6)
 }
 
-fn white(illuminant: Illuminant) -> Option<[f32; 3]> {
+pub(super) fn white(illuminant: Illuminant) -> Option<[f32; 3]> {
     Some(match illuminant {
         Illuminant::A | Illuminant::Tungsten => [1.09850, 1., 0.35585],
         Illuminant::B => [0.99072, 1., 0.85223],
@@ -96,6 +96,7 @@ pub(crate) struct Calibration {
     pub xyz_to_camera: Matrix,
     pub white: [f32; 3],
     pub forward: Option<Matrix>,
+    pub revision: u32,
 }
 
 #[derive(Default)]
@@ -188,6 +189,9 @@ pub(crate) fn from_dng(
     matrices: &HashMap<Illuminant, FlatColorMatrix>,
     as_shot: [f32; 3],
 ) -> Result<Option<Calibration>> {
+    if let Some(profile) = crate::dng_profiles::from_source(source, as_shot)? {
+        return Ok(Some(profile));
+    }
     interpolate_with(matrices, as_shot, &read_extra(source)?)
 }
 
@@ -195,6 +199,9 @@ pub(crate) fn revision(
     source: &rawler::rawsource::RawSource,
     matrices: &HashMap<Illuminant, FlatColorMatrix>,
 ) -> Result<u32> {
+    if crate::dng_profiles::is_extended(source)? {
+        return Ok(2);
+    }
     let extra = read_extra(source)?;
     Ok(u32::from(
         supports_pair(matrices)
@@ -324,6 +331,7 @@ fn interpolate_with(
                 xyz_to_camera: matrix,
                 white: next,
                 forward,
+                revision: 1,
             }));
         }
         // Damping prevents a two-cycle for strongly distinct calibration matrices.

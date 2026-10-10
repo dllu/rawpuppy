@@ -269,7 +269,7 @@ impl SensorImage {
         } else {
             None
         };
-        let color_revision = u32::from(interpolated.is_some());
+        let color_revision = interpolated.as_ref().map_or(0, |profile| profile.revision);
         let forward_calibration = interpolated.as_ref().and_then(|profile| profile.forward);
         let (xyz_to_cam, white) = interpolated.map_or((xyz_to_cam, white), |profile| {
             (profile.xyz_to_camera, profile.white)
