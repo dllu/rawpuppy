@@ -1071,6 +1071,17 @@ impl Editor {
                 {
                     self.error = Some(message);
                     scope.finish_busy(&mut self.busy);
+                    if self.busy.is_none() {
+                        self.status = match scope {
+                            ErrorScope::Load(_) => "Could not open photo",
+                            ErrorScope::Preview(_) => "Could not render preview",
+                            ErrorScope::Save(_) => "Could not save edits",
+                            ErrorScope::Export(_) => "Could not export photo",
+                            #[cfg(feature = "moebius")]
+                            ErrorScope::Generate(_) => "Could not generate fill",
+                        }
+                        .into();
+                    }
                     if matches!(scope, ErrorScope::Save(id) if id == self.load_generation) {
                         self.close_after_save = false;
                     }
@@ -2665,6 +2676,66 @@ mod error_scope_tests {
         assert_eq!(std::fs::read(invalid).unwrap(), original_invalid);
         assert_eq!(std::fs::read(valid).unwrap(), original_valid);
     }
+    #[test]
+    fn failed_operations_replace_progress_without_clearing_unrelated_work() {
+        let ctx = egui::Context::default();
+        let mut app = Editor::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            None,
+            None,
+            Backend::Cpu,
+            false,
+        );
+        let (responses, receive) = mpsc::channel();
+        app.rx = receive;
+        app.load_generation = 4;
+        app.generation = 9;
+        let cases = vec![
+            (ErrorScope::Load(4), Some(Busy::Load(4)), "Opening photo…"),
+            (ErrorScope::Export(4), Some(Busy::Export(4)), "Exporting…"),
+            (ErrorScope::Save(4), None, "Saving edits…"),
+            (ErrorScope::Preview(9), None, "Rendering preview…"),
+        ];
+        #[cfg(feature = "moebius")]
+        let cases = cases.into_iter().chain([(
+            ErrorScope::Generate(4),
+            Some(Busy::Generate(4)),
+            "Generating local fill…",
+        )]);
+        for (scope, busy, progress) in cases {
+            app.busy = busy;
+            app.status = progress.into();
+            responses
+                .send(Reply::Error {
+                    scope,
+                    message: "Owned operation failed".into(),
+                })
+                .unwrap();
+            app.poll(&ctx);
+            assert_eq!(app.busy, None);
+            assert_ne!(
+                app.status, progress,
+                "Completed failure still reports progress"
+            );
+            assert_eq!(app.error.as_deref(), Some("Owned operation failed"));
+        }
+        app.load_generation = 5;
+        for scope in [ErrorScope::Save(4), ErrorScope::Export(4)] {
+            app.busy = Some(Busy::Load(5));
+            app.status = "Opening newer photo…".into();
+            responses
+                .send(Reply::Error {
+                    scope,
+                    message: "Older destination failed".into(),
+                })
+                .unwrap();
+            app.poll(&ctx);
+            assert_eq!(app.busy, Some(Busy::Load(5)));
+            assert_eq!(app.status, "Opening newer photo…");
+            assert_eq!(app.error.as_deref(), Some("Older destination failed"));
+        }
+    }
+
     #[test]
     fn cancelling_save_continuation_keeps_a_later_open_request_pending() {
         let ctx = egui::Context::default();

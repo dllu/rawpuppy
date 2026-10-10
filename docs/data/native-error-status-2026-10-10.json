@@ -1,0 +1,417 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "6806ee7e6dd845b3bcb22c2609f8a44dbd296201",
+  "production_change": "When an applicable error leaves no active operation, replace the progress status with an operation-specific failure. Preserve unrelated current busy state/status and the detailed error message.",
+  "features": [
+    "cuda",
+    "raw-ml",
+    "moebius"
+  ],
+  "libtorch": "2.13",
+  "checks": {
+    "default": {
+      "log": "/tmp/rawpuppy-validation/native-error-status-default-tests-2026-10-10.log",
+      "sha256": "8a7d3dd170447f20e6c6f9356d7d66e0c32318e4cce4db66a8c124491364df0f",
+      "passed": 87,
+      "failed": 0,
+      "ignored": 12
+    },
+    "combined": {
+      "log": "/tmp/rawpuppy-validation/native-error-status-final-tests-2026-10-10.log",
+      "sha256": "8eaa7327036f7e7f0c7412f970e2144749aec08028bb77163cdfd7787f0e1e9f",
+      "passed": 95,
+      "failed": 0,
+      "ignored": 26
+    },
+    "clippy": {
+      "log": "/tmp/rawpuppy-validation/native-error-status-final-clippy-2026-10-10.log",
+      "sha256": "fe509fe12957c4829f57553339e1ca67c73a779f16b5ee252463db31cfd11bb2",
+      "passed": true
+    }
+  },
+  "regression_before_fix": "The new poll-level test failed because an opening failure left the status as Opening photo\u2026. Native no-gap generation likewise left Generating local fill\u2026 after its error.",
+  "regression_scope": [
+    "Load, preview, save, export and generation failures stop reporting progress.",
+    "Delayed save/export failures still display their error without clearing a newer load or replacing its progress status."
+  ],
+  "native_session": {
+    "screen_dimensions": [
+      1440,
+      960
+    ],
+    "source": {
+      "dimensions": [
+        8736,
+        11648
+      ],
+      "pixels": 101756928,
+      "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "input_unchanged": true
+    },
+    "models": {
+      "rawnind": {
+        "manifest_sha256": "76fd292df7fb188aca71510de81ecda31c75220e29e7dd77cadf1f94668aa59a"
+      },
+      "moebius": {
+        "manifest_sha256": "c69724f8cb60538e3b0ea582c2db028a2c2f777d99ba51e2394c3e18f16d45ba"
+      }
+    },
+    "exposure_save_undo_redo": [
+      1.8,
+      0.0,
+      1.8
+    ],
+    "reconstruction": "raw_nind_v1",
+    "generated_fill": {
+      "region": [
+        0.61831653,
+        0.25964648,
+        0.3816835,
+        0.28626263
+      ],
+      "dabs": [
+        {
+          "center": [
+            0.9191919,
+            0.3320707
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91910326,
+            0.33579212
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9190147,
+            0.33951357
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91892606,
+            0.343235
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9188375,
+            0.3469564
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91874886,
+            0.35067782
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9186603,
+            0.35439926
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91857165,
+            0.35812068
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9184831,
+            0.3618421
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91839445,
+            0.36556354
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9183058,
+            0.36928496
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91821724,
+            0.37300637
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9181286,
+            0.3767278
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91804004,
+            0.38044924
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9179514,
+            0.38417065
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91786283,
+            0.38789207
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9177742,
+            0.3916135
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9176856,
+            0.39533493
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.917597,
+            0.39905635
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91750836,
+            0.4027778
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9174198,
+            0.4064992
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91733116,
+            0.41022062
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9172426,
+            0.41394204
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91715395,
+            0.41766348
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9170654,
+            0.4213849
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91697675,
+            0.42510632
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9168882,
+            0.42882776
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91679955,
+            0.43254918
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.916711,
+            0.4362706
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91662234,
+            0.439992
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9165337,
+            0.44371346
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91644514,
+            0.44743487
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9163565,
+            0.4511563
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.91626793,
+            0.45487773
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9161793,
+            0.45859915
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9160907,
+            0.46232057
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9160021,
+            0.46604198
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9159135,
+            0.46976343
+          ],
+          "radius": 0.025
+        },
+        {
+          "center": [
+            0.9158249,
+            0.47348484
+          ],
+          "radius": 0.025
+        }
+      ],
+      "fill_gaps": false,
+      "steps": 20,
+      "seed": 0,
+      "sampling": {
+        "guidance": 2.0,
+        "strength": 1.0,
+        "noise_offset": 0.0357
+      },
+      "asset": "b1e95b6a4fdb8fc71360f6e970a63e1aa605f5a21d41135831ac0989b076d0e9.exr",
+      "sha256": "b1e95b6a4fdb8fc71360f6e970a63e1aa605f5a21d41135831ac0989b076d0e9",
+      "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "recipe_sha256": "56d0badb8afe3e5faf81e6f079e1fd95dbf6c10a2faef9fb6615d3ea92022686",
+      "model": "moebius-scene-2026-v1"
+    },
+    "asset_bytes": 3717283,
+    "selection_comparison": {
+      "photo_rect": [
+        268,
+        116,
+        862,
+        908
+      ],
+      "pixels": 470448,
+      "changed_pixels": 4010,
+      "changed_outside_expanded_selection": 0,
+      "display_filter_margin_normalized_width": 0.004,
+      "scope": "Displayed native RGB pixels; exact output-resolution preservation has separate compositor regressions."
+    },
+    "reopen_comparison": {
+      "pixels": 470448,
+      "changed_pixels": 0,
+      "moebius_cache_absent": true,
+      "source_unchanged": true,
+      "sidecar_unchanged": true
+    },
+    "sidecar_sha256": "3355a5d14913f70e1ebcf5bd35fc54951ffd372ae47d71530023235dd2a27698",
+    "quality_observation": "The generated background still contains a recognizable person and a conspicuous mismatched vertical brown patch. This removal is a photographic quality failure despite valid sampling, exact selection composition and persistence. The current mask, exposure and graph cache differ from the earlier 1.2-EV workflow; no cause or model-wide conclusion is established.",
+    "no_gap_failure_before_fix_status": "Generating local fill\u2026",
+    "no_gap_failure_after_fix_status": "Could not generate fill",
+    "after_dismissal_status": "Could not generate fill",
+    "error_message": "No geometric gaps to fill",
+    "normal_editor_exit_codes": [
+      0,
+      0
+    ],
+    "owned_processes_cleaned": true,
+    "owned_process_ids": {
+      "initial": {
+        "display": ":0",
+        "xvfb_pid": 607798,
+        "editor_pid": 607801
+      },
+      "reopened": {
+        "display": ":0",
+        "xvfb_pid": 615497,
+        "editor_pid": 615500
+      }
+    },
+    "rss_samples_kib": [
+      3050252,
+      3106988
+    ],
+    "rss_scope": "Two samples of the first editor process, not a peak or aggregate system-memory measurement.",
+    "artifacts": "/tmp/rawpuppy-validation/native-current-gfx-2026-10-10"
+  },
+  "limitations": [
+    "Native UI evidence is one owned X11 GFX workflow, not a physical-display or all-platform interaction measurement.",
+    "The quality failure remains part of the complete project/model audit.",
+    "Photographs, screenshots and model artifacts are not committed."
+  ]
+}
