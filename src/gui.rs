@@ -2554,6 +2554,118 @@ mod curve_interaction_tests {
 mod error_scope_tests {
     use super::*;
     #[test]
+    fn malformed_raw_does_not_stop_the_editor_worker() {
+        let directory = tempfile::tempdir().unwrap();
+        let invalid = directory.path().join("invalid-cfa.dng");
+        let mut encoder =
+            tiff::encoder::TiffEncoder::new(std::fs::File::create(&invalid).unwrap()).unwrap();
+        let mut output = encoder
+            .new_image::<tiff::encoder::colortype::Gray16>(32, 32)
+            .unwrap();
+        let tags = output.encoder();
+        tags.write_tag(tiff::tags::Tag::Make, "Rawpuppy").unwrap();
+        tags.write_tag(tiff::tags::Tag::Model, "Invalid CFA Test")
+            .unwrap();
+        tags.write_tag(tiff::tags::Tag::PhotometricInterpretation, 32803u16)
+            .unwrap();
+        tags.write_tag(tiff::tags::Tag::Unknown(50706), &[1u8, 4, 0, 0][..])
+            .unwrap();
+        tags.write_tag(tiff::tags::Tag::Unknown(33421), &[2u16, 2][..])
+            .unwrap();
+        tags.write_tag(tiff::tags::Tag::Unknown(33422), &[0u8, 1, 1][..])
+            .unwrap();
+        tags.write_tag(tiff::tags::Tag::Unknown(50714), 512u32)
+            .unwrap();
+        tags.write_tag(tiff::tags::Tag::Unknown(50717), 15360u32)
+            .unwrap();
+        tags.write_tag(
+            tiff::tags::Tag::Unknown(50721),
+            &[1f32, 0., 0., 0., 1., 0., 0., 0., 1.][..],
+        )
+        .unwrap();
+        // Three CFA entries contradict the declared 2×2 repeat dimensions and
+        // currently trigger the dependency's unknown-CFA-size panic.
+        tags.write_tag(
+            tiff::tags::Tag::Unknown(50728),
+            &[const { tiff::encoder::Rational { n: 1, d: 1 } }; 3][..],
+        )
+        .unwrap();
+        output.write_data(&[4000u16; 32 * 32]).unwrap();
+        let original_invalid = std::fs::read(&invalid).unwrap();
+        let metadata_error = crate::input::color_revision(&invalid).unwrap_err();
+        assert!(format!("{metadata_error:#}").contains("Unknown CFA size"));
+        let valid = directory.path().join("valid.png");
+        image::RgbImage::from_pixel(2, 2, image::Rgb([40, 100, 180]))
+            .save(&valid)
+            .unwrap();
+        let original_valid = std::fs::read(&valid).unwrap();
+        let (send, requests) = mpsc::channel();
+        let (responses, receive) = mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            super::worker(requests, responses, egui::Context::default(), Backend::Cpu)
+        });
+        send.send(Work::Open {
+            id: 1,
+            path: invalid.clone(),
+        })
+        .unwrap();
+        send.send(Work::Open {
+            id: 2,
+            path: valid.clone(),
+        })
+        .unwrap();
+        let reply = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .expect("Decoder failure disconnected the editor worker");
+        let Reply::Error { scope, message } = reply else {
+            panic!("Malformed RAW must report an error");
+        };
+        assert_eq!(scope, ErrorScope::Load(1));
+        assert!(message.contains("Decoding"));
+        let Reply::Opened {
+            id,
+            path,
+            image,
+            edits,
+        } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Worker did not recover for the next photograph");
+        };
+        assert_eq!(id, 2);
+        assert_eq!(path, valid);
+        send.send(Work::Render {
+            id: 3,
+            image,
+            edits,
+            region: [0., 0., 1., 1.],
+            size: [2, 2],
+            profile: None,
+            hdr: false,
+        })
+        .unwrap();
+        let Reply::Preview {
+            id, size, pixels, ..
+        } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Recovered worker could not render the next photograph");
+        };
+        assert_eq!(id, 3);
+        assert_eq!(size, [2, 2]);
+        let PreviewPixels::Sdr(bytes) = pixels else {
+            panic!("Expected SDR preview");
+        };
+        assert_eq!(bytes.len(), 16);
+        assert!(bytes.as_chunks::<4>().0.iter().all(|p| p[3] == 255));
+        drop(send);
+        worker.join().unwrap();
+        assert_eq!(std::fs::read(invalid).unwrap(), original_invalid);
+        assert_eq!(std::fs::read(valid).unwrap(), original_valid);
+    }
+    #[test]
     fn cancelling_save_continuation_keeps_a_later_open_request_pending() {
         let ctx = egui::Context::default();
         let mut app = Editor::new(

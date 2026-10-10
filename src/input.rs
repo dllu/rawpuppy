@@ -60,6 +60,10 @@ pub fn pixel_count(width: usize, height: usize, channels: usize) -> Result<usize
 }
 
 pub fn color_revision(path: &Path) -> Result<u32> {
+    decode_boundary(path, || color_revision_inner(path))
+}
+
+fn color_revision_inner(path: &Path) -> Result<u32> {
     if path
         .extension()
         .is_some_and(|e| e.eq_ignore_ascii_case("dng"))
@@ -83,6 +87,21 @@ pub fn color_revision(path: &Path) -> Result<u32> {
         .first()
         .and_then(|h| h.shared_attributes.chromaticities)
         .is_some_and(|c| c != crate::export::SRGB_CHROMATICITIES) as u32)
+}
+
+fn decode_boundary<T>(path: &Path, decode: impl FnOnce() -> Result<T>) -> Result<T> {
+    // Foreign decoders sometimes panic on malformed metadata instead of
+    // returning an error. All decode buffers are owned within this boundary;
+    // unwinding must not disconnect the long-lived editor worker.
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(decode)).unwrap_or_else(|payload| {
+        let message = payload
+            .downcast_ref::<String>()
+            .map(String::as_str)
+            .or_else(|| payload.downcast_ref::<&str>().copied())
+            .unwrap_or("Unknown image decoder failure");
+        Err(anyhow::anyhow!("Image decoder failed: {message}"))
+            .with_context(|| format!("Decoding {}", path.display()))
+    })
 }
 
 fn convert_input_icc(data: &mut [f32], bytes: &[u8], grayscale: bool) -> Result<()> {
@@ -124,6 +143,10 @@ fn convert_input_icc(data: &mut [f32], bytes: &[u8], grayscale: bool) -> Result<
 
 impl SensorImage {
     pub fn open(path: &Path) -> Result<Self> {
+        decode_boundary(path, || Self::open_inner(path))
+    }
+
+    fn open_inner(path: &Path) -> Result<Self> {
         let ext = path
             .extension()
             .and_then(|s| s.to_str())
