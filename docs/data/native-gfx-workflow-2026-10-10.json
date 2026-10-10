@@ -1,0 +1,457 @@
+{
+  "scope": "Actual release native X11 editor, current combined CUDA/raw-ml/moebius build; owned GFX100S copy, private Xvfb and model caches; screenshot checks are display-resolution evidence, not physical colorimetry.",
+  "implementation_commit": "1bf2b68",
+  "features": [
+    "cuda",
+    "raw-ml",
+    "moebius"
+  ],
+  "libtorch": "2.13",
+  "source": {
+    "sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "bytes": 90097792,
+    "active_dimensions": [
+      8736,
+      11648
+    ]
+  },
+  "models": {
+    "rawnind_manifest_sha256": "76fd292df7fb188aca71510de81ecda31c75220e29e7dd77cadf1f94668aa59a",
+    "moebius_manifest_sha256": "09f9c4434f62e1d76d0a55ceea522581dbc21ededc8f1b992d5b6f54f9fc67bf"
+  },
+  "actions": [
+    "native RAW open on coherent CUDA",
+    "select Joint AI in the editor",
+    "observe explicitly temporary Standard preview during preparation",
+    "exposure slider to 1.2 EV and Ctrl-S",
+    "Ctrl-Z and Ctrl-S: 0 EV",
+    "Ctrl-Shift-Z and Ctrl-S: 1.2 EV",
+    "paint continuous removal stroke",
+    "generate 20 steps, seed zero, full strength",
+    "Ctrl-S: one generated layer",
+    "Ctrl-Z and Ctrl-S: zero layers",
+    "Ctrl-Shift-Z and Ctrl-S: original generated recipe restored",
+    "normal WM_DELETE_WINDOW close: exit zero",
+    "reopen with RawNIND graph available and Moebius directory absent",
+    "normal close: exit zero"
+  ],
+  "saved_recipe": {
+    "version": 1,
+    "raw": {
+      "reconstruction": "raw_nind_v1",
+      "hot_pixels": false,
+      "denoise": 0.0,
+      "recover_highlights": true
+    },
+    "lens": {
+      "mode": "embedded_v1",
+      "distortion": true,
+      "vignette": true,
+      "chromatic_aberration": true,
+      "auto_frame": true
+    },
+    "geometry": {
+      "distortion": [
+        0.0,
+        0.0
+      ],
+      "chromatic_aberration": [
+        0.0,
+        0.0
+      ],
+      "yaw": 0.0,
+      "pitch": 0.0,
+      "rotation": 0.0,
+      "field_of_view": 50.0,
+      "crop": [
+        0.0,
+        0.0,
+        1.0,
+        1.0
+      ],
+      "scale": 1.0
+    },
+    "scene": {
+      "exposure": 1.2,
+      "calibration": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "mixer": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "vignette": [
+        0.0,
+        0.0
+      ],
+      "graduated": {
+        "exposure": 0.0,
+        "angle": 0.0,
+        "center": [
+          0.5,
+          0.5
+        ],
+        "width": 0.3
+      }
+    },
+    "tone": {
+      "mapper": "agx_sdr_v1",
+      "saturation": 1.0
+    },
+    "display": {
+      "curve": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          1.0
+        ]
+      ],
+      "shadows": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "highlights": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "split_strength": 0.0,
+      "retouch": [],
+      "synthesis": [
+        {
+          "region": [
+            0.6479461,
+            0.267601,
+            0.35205385,
+            0.26404038
+          ],
+          "dabs": [
+            {
+              "center": [
+                0.9326599,
+                0.33585858
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9320346,
+                0.33950216
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9314093,
+                0.34314573
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.93078405,
+                0.34678933
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.93015873,
+                0.3504329
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9295334,
+                0.35407647
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9289081,
+                0.35772005
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9282828,
+                0.36136362
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.92765754,
+                0.36500722
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.92703223,
+                0.3686508
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9264069,
+                0.37229437
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9257816,
+                0.37593794
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9251563,
+                0.3795815
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.92453104,
+                0.3832251
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.92390573,
+                0.3868687
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9232804,
+                0.39051226
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9226551,
+                0.39415583
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9220298,
+                0.3977994
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.92140454,
+                0.401443
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9207792,
+                0.40508658
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9201539,
+                0.40873015
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9195286,
+                0.41237372
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9189033,
+                0.4160173
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.91827804,
+                0.4196609
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9176527,
+                0.42330447
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9170274,
+                0.42694804
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9164021,
+                0.4305916
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9157768,
+                0.4342352
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.91515154,
+                0.4378788
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9145262,
+                0.44152236
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9139009,
+                0.44516593
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9132756,
+                0.4488095
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9126503,
+                0.45245308
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.91202503,
+                0.45609668
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9113997,
+                0.45974025
+              ],
+              "radius": 0.025
+            },
+            {
+              "center": [
+                0.9107744,
+                0.46338382
+              ],
+              "radius": 0.025
+            }
+          ],
+          "fill_gaps": false,
+          "steps": 20,
+          "seed": 0,
+          "sampling": {
+            "guidance": 2.0,
+            "strength": 1.0,
+            "noise_offset": 0.0357
+          },
+          "asset": "b0580bcd658be94dcd1a4ff83ed7782a156cb7d79da6524888875976eef93696.exr",
+          "sha256": "b0580bcd658be94dcd1a4ff83ed7782a156cb7d79da6524888875976eef93696",
+          "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+          "recipe_sha256": "5ea48c60b78628c9a74e11e28a6c8b78069d724da496378d5bf12822ff499795",
+          "model": "moebius-scene-2026-v1"
+        }
+      ]
+    }
+  },
+  "native_unselected_comparison": {
+    "photo_pixels": 470448,
+    "changed_pixels": 3710,
+    "changed_outside_expanded_selection": 0,
+    "selection_expansion_normalized_width": 0.004,
+    "source": "native screenshot photo rectangles; includes display resampling boundary, not an exact original-resolution compositor test"
+  },
+  "reopen_comparison": {
+    "photo_rect_size": [
+      594,
+      792
+    ],
+    "all_photo_pixels_equal_after_reopen": true,
+    "photo_pixels_compared": 470448,
+    "source_unchanged": true,
+    "recipe_unchanged": true,
+    "moebius_cache_absent_during_reopen": true,
+    "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "sidecar_sha256": "a2fcb88c4378d8cb349d7d5c2fa1de00c540d61412661bf722063969cb6ada02"
+  },
+  "observed_status_labels": [
+    "Preparing Joint AI \u00b7 Standard preview",
+    "Preview 113 ms \u00b7 cuda (system memory)",
+    "Preview 8 ms \u00b7 cuda (system memory)"
+  ],
+  "rss_samples_kib": [
+    3056692,
+    3101100,
+    3547956,
+    3177468
+  ],
+  "rss_scope": "Process samples, not peak or complete device/driver allocations.",
+  "visual_observation": "Background person is replaced inside the painted region; a fence/stump-like patch and gray lump remain visible. Primary subjects stay unchanged outside selection. This checks native operation/persistence and records quality limits, not a universal removal-quality claim.",
+  "normal_exit_codes": [
+    0,
+    0
+  ],
+  "owned_processes_cleaned": true,
+  "photos_and_snapshots_committed": false
+}
