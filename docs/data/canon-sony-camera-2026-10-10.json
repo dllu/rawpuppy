@@ -1,0 +1,2563 @@
+{
+  "scope": "Four real Canon/Sony Bayer RAWs: immutable decoding, framing and CPU/CUDA/Vulkan previews; linear output oracle and explicit signed-noise/crop controls; not a universal camera/color ranking.",
+  "dataset": {
+    "doi": "10.14428/DVN/DEQCIM",
+    "metadata_sha256": "370f2b58b2d8f321a51c181239c09469c1620b7cde71972749c56d7e7fd065bc",
+    "umbrella_license": "CC-BY-SA-4.0",
+    "canonical_scene_permission": "MuseeL-Saint-Pierre-C500D: CC0, by Benoit Brummer",
+    "permission_file_sha256": "93f72823ef4ffa3960c8979cd9bba6a403e602a4a29b85e5cfcbdb3ea15e0270",
+    "scene_descriptor_sha256": "f9af6290fb94e4d64941cf789ea30e97a02e586f225a75e60722764d4a254fbc",
+    "selection": "Both Canon and Sony scenes are explicitly reserved in the evaluated checkpoint training arguments"
+  },
+  "camera_checks": [
+    {
+      "source": {
+        "file": "Bayer_TEST_MuseeL-Saint-Pierre-C500D_GT_ISO100_sha1=f71bff2d267cefbf243971b98beb973daeee84db.cr2",
+        "bytes": 20369667,
+        "sha1": "f71bff2d267cefbf243971b98beb973daeee84db",
+        "sha256": "bc8710ab9d9eb1362065045bf72b05655f887e19eb6d64fb3c77a466991640a7",
+        "exiftool": {
+          "Make": "Canon",
+          "Model": "Canon EOS 500D",
+          "ImageWidth": 4752,
+          "ImageHeight": 3168,
+          "Orientation": 1,
+          "LensModel": "EF-S18-135mm f/3.5-5.6 IS",
+          "FocalLength": 18,
+          "FNumber": 9,
+          "ISO": 100
+        }
+      },
+      "verification": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.479611015,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 3.8117170333862305e-05,
+            "mean_absolute_rgb_error": 2.1070794461245704e-08,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              341
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.002562292,
+              0.002524868
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 2.561634584,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 4.3064355850219727e-05,
+            "mean_absolute_rgb_error": 4.207772803632389e-08,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              341
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.008477854,
+              0.008575711
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.27738678,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.000635683536529541,
+            "mean_absolute_rgb_error": 2.3513291025102824e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              366
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.003702166,
+              0.003708391
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.071652251,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0007103979587554932,
+            "mean_absolute_rgb_error": 3.296302887365291e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              366
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.010493378,
+              0.010840162
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false,
+            "recover_highlights": true
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.172093767,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false,
+            "recover_highlights": true
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 15840,
+        "input_sha256": "bc8710ab9d9eb1362065045bf72b05655f887e19eb6d64fb3c77a466991640a7",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 9.0,
+          "as_shot": [
+            1.7058823108673096,
+            1.0,
+            1.6261860132217407
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              2.2436606884002686,
+              -1.4850836992263794,
+              0.24142305552959442
+            ],
+            [
+              -0.08914389461278915,
+              1.547242283821106,
+              -0.45809847116470337
+            ],
+            [
+              0.02403745986521244,
+              -0.6081724166870117,
+              1.5841349363327026
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 18.0,
+          "height": 3168,
+          "lens_model": "EF-S 18-135mm f/3.5-5.6 IS",
+          "lens_profile": null,
+          "lens_profile_error": null,
+          "make": "Canon",
+          "model": "EOS 500D",
+          "pattern": "RGGB",
+          "sensor_height": 3204,
+          "sensor_width": 4832,
+          "width": 4752
+        },
+        "orientation": 1,
+        "output_dimensions": [
+          4752,
+          3168
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      }
+    },
+    {
+      "source": {
+        "file": "Bayer_TEST_MuseeL-Saint-Pierre-C500D_ISO3200_sha1=4b71ad313b4fb8d70ba3c5d8cf5a5b9839f8ed80.cr2",
+        "bytes": 23927690,
+        "sha1": "4b71ad313b4fb8d70ba3c5d8cf5a5b9839f8ed80",
+        "sha256": "65db845046dd635a58a27c62417eb79df6905f219d75cbbd4737e4487131b891",
+        "exiftool": {
+          "Make": "Canon",
+          "Model": "Canon EOS 500D",
+          "ImageWidth": 4752,
+          "ImageHeight": 3168,
+          "Orientation": 1,
+          "LensModel": "EF-S18-135mm f/3.5-5.6 IS",
+          "FocalLength": 18,
+          "FNumber": 9,
+          "ISO": 3200
+        }
+      },
+      "verification": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.450625749,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 2.9474496841430664e-05,
+            "mean_absolute_rgb_error": 2.8215833315440114e-08,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              341
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.002483428,
+              0.0024153
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 2.754398755,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 5.441904067993164e-05,
+            "mean_absolute_rgb_error": 7.043992000706946e-08,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              341
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.008212942,
+              0.008294814
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.24890145,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.0009441003203392029,
+            "mean_absolute_rgb_error": 5.936678071190515e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              366
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.00367943,
+              0.003685271
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.063460365,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0014895796775817871,
+            "mean_absolute_rgb_error": 8.481545202787993e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              366
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.01045861,
+              0.010896466
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false,
+            "recover_highlights": true
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.170650997,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false,
+            "recover_highlights": true
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 15840,
+        "input_sha256": "65db845046dd635a58a27c62417eb79df6905f219d75cbbd4737e4487131b891",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 9.0,
+          "as_shot": [
+            1.707108974456787,
+            1.0,
+            1.6255924701690674
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              2.2436606884002686,
+              -1.4850836992263794,
+              0.24142305552959442
+            ],
+            [
+              -0.08914389461278915,
+              1.547242283821106,
+              -0.45809847116470337
+            ],
+            [
+              0.02403745986521244,
+              -0.6081724166870117,
+              1.5841349363327026
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 18.0,
+          "height": 3168,
+          "lens_model": "EF-S 18-135mm f/3.5-5.6 IS",
+          "lens_profile": null,
+          "lens_profile_error": null,
+          "make": "Canon",
+          "model": "EOS 500D",
+          "pattern": "RGGB",
+          "sensor_height": 3204,
+          "sensor_width": 4832,
+          "width": 4752
+        },
+        "orientation": 1,
+        "output_dimensions": [
+          4752,
+          3168
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      }
+    },
+    {
+      "source": {
+        "file": "Bayer_TEST_MuseeL-vases-A7C_GT_ISO50_sha1=3512b789004767165f4330b1e82c6fdce766b221.arw",
+        "bytes": 49128960,
+        "sha1": "3512b789004767165f4330b1e82c6fdce766b221",
+        "sha256": "1baafd7337bf357bf7004de1bdee727b5f1912ee9e9b438b230c3c88c1bfe694",
+        "exiftool": {
+          "Make": "SONY",
+          "Model": "ILCE-7C",
+          "ImageWidth": 6048,
+          "ImageHeight": 4024,
+          "Orientation": 1,
+          "LensModel": "E 28-200mm F2.8-5.6 A071",
+          "FocalLength": 32,
+          "FNumber": 8,
+          "ISO": 50
+        }
+      },
+      "verification": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.4525818,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 1.0728836059570312e-06,
+            "mean_absolute_rgb_error": 3.1534225050536625e-09,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              341
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.002532628,
+              0.002499988
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.667064279,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 2.063065767288208e-05,
+            "mean_absolute_rgb_error": 7.96411300615745e-09,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              341
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.008251262,
+              0.008271774
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.246373462,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.0013328418135643005,
+            "mean_absolute_rgb_error": 1.0659682977423531e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              366
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.003615462,
+              0.003607526
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.113002514,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0012630373239517212,
+            "mean_absolute_rgb_error": 1.627938497551016e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              366
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.010644914,
+              0.010514994
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false,
+            "recover_highlights": true
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.080867675,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false,
+            "recover_highlights": true
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 20000,
+        "input_sha256": "1baafd7337bf357bf7004de1bdee727b5f1912ee9e9b438b230c3c88c1bfe694",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 8.0,
+          "as_shot": [
+            1.81640625,
+            1.0,
+            2.4296875
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.6355528831481934,
+              -0.4220547080039978,
+              -0.2134982794523239
+            ],
+            [
+              -0.131061390042305,
+              1.5427645444869995,
+              -0.4117031693458557
+            ],
+            [
+              0.01142625231295824,
+              -0.41951775550842285,
+              1.408091425895691
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 32.0,
+          "height": 4000,
+          "lens_model": "28-200mm F2.8-5.6 Di III RXD",
+          "lens_profile": null,
+          "lens_profile_error": null,
+          "make": "Sony",
+          "model": "ILCE-7C",
+          "pattern": "RGGB",
+          "sensor_height": 4024,
+          "sensor_width": 6048,
+          "width": 6000
+        },
+        "orientation": 1,
+        "output_dimensions": [
+          6000,
+          4000
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      }
+    },
+    {
+      "source": {
+        "file": "Bayer_TEST_MuseeL-vases-A7C_ISO40000_sha1=bf6f7b3df7af7ab9152411a2bae3a4e7a68e08ca.arw",
+        "bytes": 49149440,
+        "sha1": "bf6f7b3df7af7ab9152411a2bae3a4e7a68e08ca",
+        "sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+        "exiftool": {
+          "Make": "SONY",
+          "Model": "ILCE-7C",
+          "ImageWidth": 6048,
+          "ImageHeight": 4024,
+          "Orientation": 1,
+          "LensModel": "E 28-200mm F2.8-5.6 A071",
+          "FocalLength": 32,
+          "FNumber": 8,
+          "ISO": 40000
+        }
+      },
+      "verification": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.439208337,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 9.238719940185547e-07,
+            "mean_absolute_rgb_error": 1.8270677235793674e-09,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              341
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.002332036,
+              0.002276595
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.686547849,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 3.667175769805908e-05,
+            "mean_absolute_rgb_error": 1.63735953902353e-08,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              341
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.008203454,
+              0.008470319
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.260970927,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.00083160400390625,
+            "mean_absolute_rgb_error": 3.712511536999481e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              366
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.003660646,
+              0.003634838
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.113690339,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0010156631469726562,
+            "mean_absolute_rgb_error": 5.620959793602105e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              366
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.010584754,
+              0.010564146
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false,
+            "recover_highlights": true
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.077756069,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false,
+            "recover_highlights": true
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 20000,
+        "input_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 8.0,
+          "as_shot": [
+            1.82421875,
+            1.0,
+            2.4296875
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.6355528831481934,
+              -0.4220547080039978,
+              -0.2134982794523239
+            ],
+            [
+              -0.131061390042305,
+              1.5427645444869995,
+              -0.4117031693458557
+            ],
+            [
+              0.01142625231295824,
+              -0.41951775550842285,
+              1.408091425895691
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 32.0,
+          "height": 4000,
+          "lens_model": "28-200mm F2.8-5.6 Di III RXD",
+          "lens_profile": null,
+          "lens_profile_error": null,
+          "make": "Sony",
+          "model": "ILCE-7C",
+          "pattern": "RGGB",
+          "sensor_height": 4024,
+          "sensor_width": 6048,
+          "width": 6000
+        },
+        "orientation": 1,
+        "output_dimensions": [
+          6000,
+          4000
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      }
+    }
+  ],
+  "oracle": {
+    "version": "darktable 5.5.0+1351~gd7c766cc19-dirty",
+    "executable_sha256": "b6a426274b441b6302008be020aa9e558909cce00f143fb5092addc8881592b4",
+    "workflow": "none",
+    "custom_presets": false,
+    "opencl": false,
+    "threads": 8,
+    "output": "32-bit EXR linear Rec.709",
+    "max_edge": 1800,
+    "isolated_config_cache_library": true,
+    "ordinary_sidecar_writes": false,
+    "history_probe_sidecar": "Only the separately copied capture-3 RAW was used to emit a diagnostic oracle history."
+  },
+  "initial_color_comparisons": [
+    {
+      "capture": "capture-0",
+      "dimensions": "dimensions: 1800x1200 versus 1800x1197",
+      "regions": [
+        {
+          "region": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "mean_rawpuppy": [
+            0.1265618552580087,
+            0.08261861922185822,
+            0.05640572642642168
+          ],
+          "mean_darktable": [
+            0.12616300068564223,
+            0.08235633987220559,
+            0.056372402405295015
+          ],
+          "ratio": [
+            1.0031614226849304,
+            1.0031846892426208,
+            1.0005911406948222
+          ]
+        },
+        {
+          "region": [
+            0.1,
+            0.1,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.040398046830559316,
+            0.02417108667761635,
+            0.014100710704122945
+          ],
+          "mean_darktable": [
+            0.03984428450817951,
+            0.02375612925586396,
+            0.013737028870959789
+          ],
+          "ratio": [
+            1.0138981620379235,
+            1.0174673835658627,
+            1.0264745627733216
+          ]
+        },
+        {
+          "region": [
+            0.4,
+            0.2,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.13626779193688116,
+            0.0779679436891564,
+            0.039048809056312674
+          ],
+          "mean_darktable": [
+            0.12354197243892553,
+            0.07084147184409192,
+            0.03578038490050757
+          ],
+          "ratio": [
+            1.103008064763146,
+            1.100597455975342,
+            1.0913468137610431
+          ]
+        },
+        {
+          "region": [
+            0.4,
+            0.4,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.2488948689478329,
+            0.12254977462783076,
+            0.05580704026666518
+          ],
+          "mean_darktable": [
+            0.24380155033328466,
+            0.12176207318674373,
+            0.055807444148058834
+          ],
+          "ratio": [
+            1.020891247851318,
+            1.00646918552281,
+            0.9999927629476708
+          ]
+        },
+        {
+          "region": [
+            0.3,
+            0.7,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.06744475216476496,
+            0.03650789928682907,
+            0.021894214244395225
+          ],
+          "mean_darktable": [
+            0.06143836689763702,
+            0.033314354989825344,
+            0.01996683895043277
+          ],
+          "ratio": [
+            1.0977627754516202,
+            1.0958609073469703,
+            1.0965288145383012
+          ]
+        },
+        {
+          "region": [
+            0.7,
+            0.7,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.050369687848571834,
+            0.032076961651241784,
+            0.01751930529586153
+          ],
+          "mean_darktable": [
+            0.05498055761081762,
+            0.035689782228809135,
+            0.02002003609122497
+          ],
+          "ratio": [
+            0.9161363586945764,
+            0.8987715712467685,
+            0.8750885970450601
+          ]
+        }
+      ]
+    },
+    {
+      "capture": "capture-1",
+      "dimensions": "dimensions: 1800x1200 versus 1800x1197",
+      "regions": [
+        {
+          "region": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "mean_rawpuppy": [
+            0.12680184622931642,
+            0.0813237260270939,
+            0.05243906096546624
+          ],
+          "mean_darktable": [
+            0.12543845197164105,
+            0.08199397170726899,
+            0.052060214535652814
+          ],
+          "ratio": [
+            1.0108690296814538,
+            0.9918256712509552,
+            1.0072770816100647
+          ]
+        },
+        {
+          "region": [
+            0.1,
+            0.1,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.04098733602598865,
+            0.02402507584944968,
+            0.012866951591968072
+          ],
+          "mean_darktable": [
+            0.04063476620315519,
+            0.023559959157500473,
+            0.012840139547844258
+          ],
+          "ratio": [
+            1.008676555958776,
+            1.0197418292977445,
+            1.0020881427358252
+          ]
+        },
+        {
+          "region": [
+            0.4,
+            0.2,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.1356911753754952,
+            0.07602655385309803,
+            0.03550067584650788
+          ],
+          "mean_darktable": [
+            0.12292933927257602,
+            0.06885946482280257,
+            0.032613922017095995
+          ],
+          "ratio": [
+            1.1038144040994302,
+            1.1040828453828195,
+            1.0885129310083794
+          ]
+        },
+        {
+          "region": [
+            0.4,
+            0.4,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.24613489273511935,
+            0.11842162150598921,
+            0.05065846677998134
+          ],
+          "mean_darktable": [
+            0.24035506366282114,
+            0.1173011161045347,
+            0.05053367538710526
+          ],
+          "ratio": [
+            1.0240470451681698,
+            1.0095523848251875,
+            1.002469469950882
+          ]
+        },
+        {
+          "region": [
+            0.3,
+            0.7,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.06835096648780328,
+            0.03661149866814985,
+            0.02061712931200679
+          ],
+          "mean_darktable": [
+            0.06240167406061152,
+            0.03335331150208853,
+            0.018743540923636663
+          ],
+          "ratio": [
+            1.0953386670590461,
+            1.0976870667207153,
+            1.0999591483809459
+          ]
+        },
+        {
+          "region": [
+            0.7,
+            0.7,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.05091736516532689,
+            0.031780032609178506,
+            0.015958988670449006
+          ],
+          "mean_darktable": [
+            0.05574020197888002,
+            0.03528762984270139,
+            0.018430435925903044
+          ],
+          "ratio": [
+            0.9134765099096608,
+            0.9005998065282822,
+            0.8659040260691532
+          ]
+        }
+      ]
+    },
+    {
+      "capture": "capture-2",
+      "dimensions": "dimensions: 1800x1200 versus 1800x1197",
+      "regions": [
+        {
+          "region": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "mean_rawpuppy": [
+            0.02136876117571835,
+            0.015799107460348693,
+            0.011925586574785159
+          ],
+          "mean_darktable": [
+            0.021165583143958545,
+            0.01570377734872438,
+            0.011812755810423398
+          ],
+          "ratio": [
+            1.0095994535268829,
+            1.0060705210923062,
+            1.0095516038909567
+          ]
+        },
+        {
+          "region": [
+            0.1,
+            0.1,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.003473035522314871,
+            0.002748094536848469,
+            0.0017300165355225573
+          ],
+          "mean_darktable": [
+            0.003234201651860834,
+            0.002554154565692712,
+            0.0016095040949565553
+          ],
+          "ratio": [
+            1.0738463139169512,
+            1.0759311804229663,
+            1.0748755103784031
+          ]
+        },
+        {
+          "region": [
+            0.4,
+            0.2,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.002135574623038068,
+            0.001613730822135511,
+            0.001191647754323505
+          ],
+          "mean_darktable": [
+            0.002145393180102541,
+            0.0016129638720788837,
+            0.0011964460344110934
+          ],
+          "ratio": [
+            0.9954234230091084,
+            1.0004754911563138,
+            0.9959895557763705
+          ]
+        },
+        {
+          "region": [
+            0.4,
+            0.4,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.009353966224508542,
+            0.006512272256230871,
+            0.004890124729158911
+          ],
+          "mean_darktable": [
+            0.010148688826125686,
+            0.007151555132067339,
+            0.0054260469078723905
+          ],
+          "ratio": [
+            0.9216920909456504,
+            0.9106092501517684,
+            0.9012315617957641
+          ]
+        },
+        {
+          "region": [
+            0.3,
+            0.7,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.02776324603004401,
+            0.021494637726840057,
+            0.016214702509116285
+          ],
+          "mean_darktable": [
+            0.028252190888854077,
+            0.021860579627997746,
+            0.01665471520418064
+          ],
+          "ratio": [
+            0.9826935595638013,
+            0.9832601922096791,
+            0.9735802930479468
+          ]
+        },
+        {
+          "region": [
+            0.7,
+            0.7,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.043160692824741866,
+            0.029930686596570822,
+            0.02387481626074797
+          ],
+          "mean_darktable": [
+            0.041149988477897956,
+            0.0282468173422226,
+            0.02268482076547638
+          ],
+          "ratio": [
+            1.0488628167641865,
+            1.0596127072989288,
+            1.0524577869745666
+          ]
+        }
+      ]
+    },
+    {
+      "capture": "capture-3",
+      "dimensions": "dimensions: 1800x1200 versus 1800x1197",
+      "regions": [
+        {
+          "region": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "mean_rawpuppy": [
+            0.011604013467277106,
+            0.008078454278160289,
+            0.006766441057547584
+          ],
+          "mean_darktable": [
+            0.013694587928466073,
+            0.008305910965297977,
+            0.009525755420648775
+          ],
+          "ratio": [
+            0.8473430181244503,
+            0.9726150824288871,
+            0.7103311767673686
+          ]
+        },
+        {
+          "region": [
+            0.1,
+            0.1,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.0018139604180417103,
+            0.0010389760843927366,
+            0.0007683997529665336
+          ],
+          "mean_darktable": [
+            0.0046360080262039804,
+            0.0014425031650511385,
+            0.004421563598402271
+          ],
+          "ratio": [
+            0.39127637566387113,
+            0.7202591367318792,
+            0.1737846207265218
+          ]
+        },
+        {
+          "region": [
+            0.4,
+            0.2,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.001364622005668305,
+            0.0007077705306903023,
+            0.0007055251650429869
+          ],
+          "mean_darktable": [
+            0.00431104531107185,
+            0.0011541340231574714,
+            0.004337553364713121
+          ],
+          "ratio": [
+            0.3165408635728351,
+            0.6132481293238274,
+            0.16265509740642678
+          ]
+        },
+        {
+          "region": [
+            0.4,
+            0.4,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.005580618699446136,
+            0.003250530760862735,
+            0.003200159719133644
+          ],
+          "mean_darktable": [
+            0.008222389686444937,
+            0.003811943836928388,
+            0.0063515614616853275
+          ],
+          "ratio": [
+            0.6787100724070636,
+            0.8527226265437237,
+            0.5038382669266513
+          ]
+        },
+        {
+          "region": [
+            0.3,
+            0.7,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.014730483115885193,
+            0.01086712609997904,
+            0.009023784399645077
+          ],
+          "mean_darktable": [
+            0.01652110700140548,
+            0.011029103458866736,
+            0.011601937666242968
+          ],
+          "ratio": [
+            0.8916159864246411,
+            0.9853136422655029,
+            0.7777825273015133
+          ]
+        },
+        {
+          "region": [
+            0.7,
+            0.7,
+            0.1,
+            0.1
+          ],
+          "mean_rawpuppy": [
+            0.02305491175360429,
+            0.01509977788143048,
+            0.013429409950926317
+          ],
+          "mean_darktable": [
+            0.023206291807534973,
+            0.014490173727465947,
+            0.014833728685496457
+          ],
+          "ratio": [
+            0.993476766767126,
+            1.0420701756535213,
+            0.9053293501354652
+          ]
+        }
+      ]
+    }
+  ],
+  "sony_high_iso_normalization": {
+    "active_size": [
+      6000,
+      4000
+    ],
+    "edits": {
+      "display": {
+        "curve": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "highlights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "retouch": [],
+        "shadows": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "split_strength": 0.0,
+        "synthesis": []
+      },
+      "geometry": {
+        "chromatic_aberration": [
+          0.0,
+          0.0
+        ],
+        "crop": [
+          0.0,
+          0.0,
+          1.0,
+          1.0
+        ],
+        "distortion": [
+          0.0,
+          0.0
+        ],
+        "field_of_view": 50.0,
+        "pitch": 0.0,
+        "rotation": 0.0,
+        "scale": 1.0,
+        "yaw": 0.0
+      },
+      "raw": {
+        "denoise": 0.0,
+        "hot_pixels": false
+      },
+      "scene": {
+        "calibration": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "exposure": 0.0,
+        "graduated": {
+          "angle": 0.0,
+          "center": [
+            0.5,
+            0.5
+          ],
+          "exposure": 0.0,
+          "width": 0.30000001192092896
+        },
+        "mixer": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "vignette": [
+          0.0,
+          0.0
+        ]
+      },
+      "tone": {
+        "mapper": "linear",
+        "saturation": 1.0
+      },
+      "version": 1
+    },
+    "input_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+    "input_unchanged": true,
+    "metadata": {
+      "aperture": 8.0,
+      "as_shot": [
+        1.82421875,
+        1.0,
+        2.4296875
+      ],
+      "bits": 16,
+      "camera_to_working": [
+        [
+          1.6355528831481934,
+          -0.4220547080039978,
+          -0.2134982794523239
+        ],
+        [
+          -0.131061390042305,
+          1.5427645444869995,
+          -0.4117031693458557
+        ],
+        [
+          0.01142625231295824,
+          -0.41951775550842285,
+          1.408091425895691
+        ]
+      ],
+      "color_revision": 0,
+      "focal_length_mm": 32.0,
+      "height": 4000,
+      "lens_model": "28-200mm F2.8-5.6 Di III RXD",
+      "lens_profile": null,
+      "lens_profile_error": null,
+      "make": "Sony",
+      "model": "ILCE-7C",
+      "pattern": "RGGB",
+      "sensor_height": 4024,
+      "sensor_width": 6048,
+      "width": 6000
+    },
+    "normalized_channels": [
+      {
+        "maximum": 1.0688982009887695,
+        "mean": 0.0055256315584215785,
+        "mean_after_zero_clipping": 0.006623719908419393,
+        "minimum": -0.03448275849223137,
+        "negative_samples": 2071289,
+        "samples": 6000000
+      },
+      {
+        "maximum": 1.0688982009887695,
+        "mean": 0.007986623325376146,
+        "mean_after_zero_clipping": 0.009079252034462797,
+        "minimum": -0.03448275849223137,
+        "negative_samples": 4018797,
+        "samples": 12000000
+      },
+      {
+        "maximum": 1.0688982009887695,
+        "mean": 0.002922304891567288,
+        "mean_after_zero_clipping": 0.0041073155542772095,
+        "minimum": -0.03448275849223137,
+        "negative_samples": 2326652,
+        "samples": 6000000
+      }
+    ],
+    "references": [
+      {
+        "file": "darktable.exr",
+        "sha256": "2de1f450b709967828f4790ff0b191320145c3ae3cdf20af8fc34d420fbf7538",
+        "statistics": {
+          "dimensions": [
+            1800,
+            1197
+          ],
+          "mean_rgb": [
+            0.013694587928466073,
+            0.008305910965297977,
+            0.009525755420648775
+          ],
+          "minimum_rgb": [
+            -0.08264479786157608,
+            -0.06141635775566101,
+            -0.13385695219039917
+          ],
+          "negative_fraction_rgb": [
+            0.057142393019586,
+            0.18619326093010302,
+            0.04647127076951638
+          ]
+        }
+      },
+      {
+        "file": "darktable-active.exr",
+        "sha256": "5ebce29af6f647d33e8e6731924a8497d5a4befd4d1dc70f6a5eac0bbd565cf3",
+        "statistics": {
+          "dimensions": [
+            1800,
+            1200
+          ],
+          "mean_rgb": [
+            0.013781168510944344,
+            0.008364189393493421,
+            0.009569308411604405
+          ],
+          "minimum_rgb": [
+            -0.11642912030220032,
+            -0.07233244180679321,
+            -0.1138479933142662
+          ],
+          "negative_fraction_rgb": [
+            0.05828194444444444,
+            0.18705185185185186,
+            0.047791203703703704
+          ]
+        }
+      }
+    ],
+    "scope": "signed sensor normalization and diagnostic-only zero clipping; not a production clipping policy",
+    "sensor_origin": [
+      12,
+      12
+    ],
+    "signed": {
+      "dimensions": [
+        1800,
+        1200
+      ],
+      "mean_rgb": [
+        0.011604014326375122,
+        0.008078452675755037,
+        0.006766440355587147
+      ],
+      "minimum_rgb": [
+        -0.2726019620895386,
+        -0.08947853744029999,
+        -0.3381534516811371
+      ],
+      "negative_fraction_rgb": [
+        0.3430898148148148,
+        0.3274328703703704,
+        0.40689722222222224
+      ]
+    },
+    "zero_clipped_sensor": {
+      "dimensions": [
+        1800,
+        1200
+      ],
+      "mean_rgb": [
+        0.013806421080863275,
+        0.008316401592870995,
+        0.010390198386258643
+      ],
+      "minimum_rgb": [
+        -0.2726019620895386,
+        -0.06599050015211105,
+        -0.3381534516811371
+      ],
+      "negative_fraction_rgb": [
+        0.20209305555555557,
+        0.25816064814814815,
+        0.22675
+      ]
+    }
+  },
+  "sony_high_iso_matched_crop": {
+    "left_top_right_bottom": [
+      12,
+      12,
+      36,
+      12
+    ],
+    "preset_sha256": "22940614b896890f1b1751f506367e01389ad1d726e2d278b3279493f7349fbd",
+    "comparisons": [
+      {
+        "rawpuppy_diagnostic": "signed",
+        "dimensions": "dimensions: 1800x1200 versus 1800x1200",
+        "regions": [
+          {
+            "region": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "mean_rawpuppy": [
+              0.011604013597159983,
+              0.00807845452720749,
+              0.006766441332626057
+            ],
+            "mean_darktable": [
+              0.013781168510944344,
+              0.008364189393493421,
+              0.009569308411604405
+            ],
+            "ratio": [
+              0.8420195709779349,
+              0.9658383074744569,
+              0.7070982605619234
+            ]
+          },
+          {
+            "region": [
+              0.1,
+              0.1,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.001813960140224764,
+              0.001038976461669076,
+              0.0007683998872397839
+            ],
+            "mean_darktable": [
+              0.004727065717385089,
+              0.0015062421848027149,
+              0.004470340300147104
+            ],
+            "ratio": [
+              0.383739141504512,
+              0.6897804829474746,
+              0.17188845493809463
+            ]
+          },
+          {
+            "region": [
+              0.4,
+              0.2,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.0013646234196667917,
+              0.0007077724838536697,
+              0.0007055294995909016
+            ],
+            "mean_darktable": [
+              0.004294932964343437,
+              0.0011609318394615797,
+              0.004328723964269133
+            ],
+            "ratio": [
+              0.31772868889826794,
+              0.6096589479205966,
+              0.16298787019329472
+            ]
+          },
+          {
+            "region": [
+              0.4,
+              0.4,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.005580618706068942,
+              0.003250530770072548,
+              0.003200159716102837
+            ],
+            "mean_darktable": [
+              0.007795899559634783,
+              0.0034605506812625253,
+              0.0060954953716080345
+            ],
+            "ratio": [
+              0.715840252094061,
+              0.9393102628644772,
+              0.5250040433151231
+            ]
+          },
+          {
+            "region": [
+              0.3,
+              0.7,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.014730483136094166,
+              0.010867126083695212,
+              0.009023784415213607
+            ],
+            "mean_darktable": [
+              0.01621799567000498,
+              0.01077615625318448,
+              0.01133427432461697
+            ],
+            "ratio": [
+              0.9082801251043645,
+              1.0084417698085855,
+              0.7961501686627437
+            ]
+          },
+          {
+            "region": [
+              0.7,
+              0.7,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.023054911725874132,
+              0.01509977791823394,
+              0.013429409953078451
+            ],
+            "mean_darktable": [
+              0.02426394613184792,
+              0.015378198132049081,
+              0.015471261691006632
+            ],
+            "ratio": [
+              0.950171567336821,
+              0.9818951341747316,
+              0.8680229331835878
+            ]
+          }
+        ]
+      },
+      {
+        "rawpuppy_diagnostic": "zero-clipped",
+        "dimensions": "dimensions: 1800x1200 versus 1800x1200",
+        "regions": [
+          {
+            "region": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "mean_rawpuppy": [
+              0.013806420419599627,
+              0.008316403570583787,
+              0.010390200175818242
+            ],
+            "mean_darktable": [
+              0.013781168510944344,
+              0.008364189393493421,
+              0.009569308411604405
+            ],
+            "ratio": [
+              1.0018323488777623,
+              0.9942868554666149,
+              1.0857838130933648
+            ]
+          },
+          {
+            "region": [
+              0.1,
+              0.1,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.0047916140634052745,
+              0.0014481878996237317,
+              0.005397381992147881
+            ],
+            "mean_darktable": [
+              0.004727065717385089,
+              0.0015062421848027149,
+              0.004470340300147104
+            ],
+            "ratio": [
+              1.0136550557744082,
+              0.9614575360026933,
+              1.2073760899075785
+            ]
+          },
+          {
+            "region": [
+              0.4,
+              0.2,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.004304843830408408,
+              0.0010997161141263162,
+              0.0052703853728514605
+            ],
+            "mean_darktable": [
+              0.004294932964343437,
+              0.0011609318394615797,
+              0.004328723964269133
+            ],
+            "ratio": [
+              1.002307571770561,
+              0.9472701813711524,
+              1.217537874060611
+            ]
+          },
+          {
+            "region": [
+              0.4,
+              0.4,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.007831943484886316,
+              0.0034172751037071887,
+              0.007056617349993283
+            ],
+            "mean_darktable": [
+              0.007795899559634783,
+              0.0034605506812625253,
+              0.0060954953716080345
+            ],
+            "ratio": [
+              1.0046234465921238,
+              0.9874945979581642,
+              1.157677419108875
+            ]
+          },
+          {
+            "region": [
+              0.3,
+              0.7,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.016325400399357214,
+              0.010808816358777167,
+              0.012105565514170817
+            ],
+            "mean_darktable": [
+              0.01621799567000498,
+              0.01077615625318448,
+              0.01133427432461697
+            ],
+            "ratio": [
+              1.0066225649295786,
+              1.0030307750579466,
+              1.0680494549067578
+            ]
+          },
+          {
+            "region": [
+              0.7,
+              0.7,
+              0.1,
+              0.1
+            ],
+            "mean_rawpuppy": [
+              0.024245935931084945,
+              0.015258971083542888,
+              0.016011650279503204
+            ],
+            "mean_darktable": [
+              0.02426394613184792,
+              0.015378198132049081,
+              0.015471261691006632
+            ],
+            "ratio": [
+              0.9992577381821939,
+              0.9922470079080515,
+              1.0349285403666009
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "interpretation": "The matched-crop high-ISO signed result differs materially from the oracle. Diagnostic sensor zero clipping accounts for much of the red/green mean difference but leaves an 8.6% blue mean difference. It does not prove an exact clipping stage in the oracle or establish calibration equality. Production signed-value handling was not changed."
+}

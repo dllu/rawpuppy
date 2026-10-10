@@ -75,6 +75,11 @@ probes is about 0.0079. The sampled sRGB-display Oklab distance ×100 has mean
 not universal perceptual bounds. A 129³ experiment improves most errors but
 requires more than twice the storage; the 97³ lattice is the current choice.
 
-Native HDR display presentation, automatic monitor profile discovery and
-camera-specific calibration comparisons remain outstanding. Float HDR
-interchange and SDR presentation on an HDR desktop are distinct capabilities.
+Native HDR presentation and automatic monitor profile discovery are implemented
+and have platform signal checks; physical colorimetry and display transitions
+remain to verify. GFX and further Canon/Sony camera comparisons are recorded in
+the journals, with crop/reconstruction/signed-noise limits on their interpretation.
+The [Canon/Sony check](2026-10-10-03-40-canon-sony-camera-validation.md) includes
+a reproducible normalization diagnostic and a high-ISO oracle discrepancy.
+Float HDR interchange and SDR presentation on an HDR desktop are distinct
+capabilities.
