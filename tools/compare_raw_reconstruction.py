@@ -91,18 +91,41 @@ def main():
         raise ValueError("Learned output checksum mismatch")
     learned = np.fromfile(learned_path, dtype="<f4").reshape(height, width, 3)
     methods.append(("RawNIND joint Bayer", learned, digest(learned_path)))
+    # Reference-only edge selection prevents noisy methods from choosing their
+    # own favorable pixels. Erosion keeps derivative support within valid data.
+    detail_valid = cv2.erode(valid.astype(np.uint8), np.ones((7, 7), np.uint8)).astype(bool)
+    if not detail_valid.any():
+        raise ValueError("No valid derivative support after erosion")
+    reference_green = aligned[:, :, 1].astype(np.float64)
+    reference_dx = cv2.Sobel(reference_green, cv2.CV_64F, 1, 0, ksize=3, scale=1 / 8)
+    reference_dy = cv2.Sobel(reference_green, cv2.CV_64F, 0, 1, ksize=3, scale=1 / 8)
+    reference_gradient = np.hypot(reference_dx, reference_dy)
+    edge_threshold = float(np.quantile(reference_gradient[detail_valid], 0.75))
+    edge_valid = detail_valid & (reference_gradient >= edge_threshold)
+    reference_highpass = reference_green - cv2.GaussianBlur(reference_green, (7, 7), 1)
     results = []
     for name, image, sha in methods:
         values = image[valid].astype(np.float64) * exposure
         target = aligned[valid].astype(np.float64)
         error = values - target
         mse = float(np.square(error).mean())
+        green = image[:, :, 1].astype(np.float64) * exposure
+        dx = cv2.Sobel(green, cv2.CV_64F, 1, 0, ksize=3, scale=1 / 8)
+        dy = cv2.Sobel(green, cv2.CV_64F, 0, 1, ksize=3, scale=1 / 8)
+        gradient_mse = float(((dx - reference_dx) ** 2 + (dy - reference_dy) ** 2)[edge_valid].mean())
+        highpass = green - cv2.GaussianBlur(green, (7, 7), 1)
+        hp = highpass[detail_valid]
+        ref_hp = reference_highpass[detail_valid]
+        correlation = (float(np.corrcoef(hp, ref_hp)[0, 1])
+                       if hp.std() > 0 and ref_hp.std() > 0 else None)
         results.append({
             "method": name, "input_sha256": sha,
             "camera_linear_rmse": math.sqrt(mse),
             "camera_linear_mae": float(np.abs(error).mean()),
             "camera_linear_psnr_reference_peak_one_db": -10 * math.log10(mse) if mse > 0 else None,
             "per_channel_mean_ratio": (values.mean(0) / target.mean(0)).tolist(),
+            "reference_edge_green_gradient_rmse": math.sqrt(gradient_mse),
+            "green_highpass_correlation": correlation,
         })
     record = {
         "reference_source_sha256": reference_metadata["source_sha256"],
@@ -115,6 +138,15 @@ def main():
         "shared_exposure_from_observed_cfa_samples": exposure,
         "excluded_border_pixels": 32,
         "valid_reference_pixels": int(valid.sum()),
+        "detail_valid_pixels": int(detail_valid.sum()),
+        "reference_edge_pixels": int(edge_valid.sum()),
+        "detail_metrics": {
+            "edge_selection": "top quartile of clean-reference green Sobel magnitude; 7x7 valid-mask erosion",
+            "edge_threshold_camera_linear": edge_threshold,
+            "gradient": "3x3 Sobel dx/dy, scale 1/8; RMSE on reference edges",
+            "highpass": "green minus 7x7 Gaussian sigma 1; Pearson correlation on eroded valid interior",
+            "limitation": "reference uses MHC and alignment interpolation; does not isolate demosaicing or resolve noise/detail tradeoffs by itself",
+        },
         "saturation_exclusion": "Reference camera-RGB maximum < 0.99",
         "scope": "One ROI; clean reference itself uses MHC; not publisher metrics or a general quality ranking",
         "results": results,

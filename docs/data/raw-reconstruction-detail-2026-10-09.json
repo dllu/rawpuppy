@@ -1,0 +1,634 @@
+{
+  "scope": "six preselected sensor ROIs on two held-out scenes; fixed baseline settings; camera-linear MHC reference with estimated alignment",
+  "cases": [
+    {
+      "name": "canon-0",
+      "camera": "canon",
+      "relative_center": 0.25,
+      "requested_crop": [
+        952,
+        544,
+        512,
+        512
+      ],
+      "exit_code": 0,
+      "comparison": {
+        "reference_source_sha256": "bc8710ab9d9eb1362065045bf72b05655f887e19eb6d64fb3c77a466991640a7",
+        "noisy_source_sha256": "65db845046dd635a58a27c62417eb79df6905f219d75cbbd4737e4487131b891",
+        "crop_xywh": [
+          952,
+          544,
+          512,
+          512
+        ],
+        "reference_alignment_to_noisy_xy": [
+          0.24890221473538077,
+          -1.184869395787814
+        ],
+        "phase_correlation_response": 0.2561162311467342,
+        "alignment_input": "Clean/noisy MHC green; Gaussian sigma 2, 9\u00d79 support",
+        "reference_resampling": "OpenCV linear interpolation, reference only",
+        "shared_exposure_from_observed_cfa_samples": 1.01671416915454,
+        "excluded_border_pixels": 32,
+        "valid_reference_pixels": 200704,
+        "detail_valid_pixels": 195364,
+        "reference_edge_pixels": 48841,
+        "detail_metrics": {
+          "edge_selection": "top quartile of clean-reference green Sobel magnitude; 7x7 valid-mask erosion",
+          "edge_threshold_camera_linear": 0.00190341679205899,
+          "gradient": "3x3 Sobel dx/dy, scale 1/8; RMSE on reference edges",
+          "highpass": "green minus 7x7 Gaussian sigma 1; Pearson correlation on eroded valid interior",
+          "limitation": "reference uses MHC and alignment interpolation; does not isolate demosaicing or resolve noise/detail tradeoffs by itself"
+        },
+        "saturation_exclusion": "Reference camera-RGB maximum < 0.99",
+        "scope": "One ROI; clean reference itself uses MHC; not publisher metrics or a general quality ranking",
+        "results": [
+          {
+            "method": "MHC",
+            "input_sha256": "9773e5208ab1f8a01756e2c9251d2f791488c202637343a9d6987b8ca9dd6c8e",
+            "camera_linear_rmse": 0.007587837381032753,
+            "camera_linear_mae": 0.005453336129840311,
+            "camera_linear_psnr_reference_peak_one_db": 42.3976397055803,
+            "per_channel_mean_ratio": [
+              1.0178069279344064,
+              1.0009516689358642,
+              0.9722378253883448
+            ],
+            "reference_edge_green_gradient_rmse": 0.007182295680875856,
+            "green_highpass_correlation": 0.050842797942375506
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.029999999329447746",
+            "input_sha256": "35f24f3b29b69b2919820d17045a7803d03a5ce247ed00e3bc3b9b7fcff519db",
+            "camera_linear_rmse": 0.004545683218025287,
+            "camera_linear_mae": 0.002747974328336386,
+            "camera_linear_psnr_reference_peak_one_db": 46.848016657998485,
+            "per_channel_mean_ratio": [
+              1.0170989786450524,
+              1.0003327142389038,
+              0.9719813391038735
+            ],
+            "reference_edge_green_gradient_rmse": 0.004829052686857795,
+            "green_highpass_correlation": 0.1916091250278457
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.10000000149011612",
+            "input_sha256": "6c7053992d6c5c8a4d1b7800b25f4b5fc7b9a5d3570899dc9ffbc248525358b5",
+            "camera_linear_rmse": 0.004363705809005989,
+            "camera_linear_mae": 0.0026881835591636614,
+            "camera_linear_psnr_reference_peak_one_db": 47.202890724607265,
+            "per_channel_mean_ratio": [
+              1.017705587283199,
+              1.0008423264548691,
+              0.972246019022504
+            ],
+            "reference_edge_green_gradient_rmse": 0.004359511209527584,
+            "green_highpass_correlation": 0.267078434725599
+          },
+          {
+            "method": "RawNIND joint Bayer",
+            "input_sha256": "42fc0bdb8827677cc7e42cdbc59786eff41b726e80f86dd9d33e28067dc96531",
+            "camera_linear_rmse": 0.003957250479599327,
+            "camera_linear_mae": 0.0020768773613310553,
+            "camera_linear_psnr_reference_peak_one_db": 48.0521291919754,
+            "per_channel_mean_ratio": [
+              1.0114839718960955,
+              1.0015200292825142,
+              0.9765594649572853
+            ],
+            "reference_edge_green_gradient_rmse": 0.004549267703898011,
+            "green_highpass_correlation": 0.32591156312453334
+          }
+        ]
+      }
+    },
+    {
+      "name": "canon-1",
+      "camera": "canon",
+      "relative_center": 0.5,
+      "requested_crop": [
+        2160,
+        1346,
+        512,
+        512
+      ],
+      "exit_code": 0,
+      "comparison": {
+        "reference_source_sha256": "bc8710ab9d9eb1362065045bf72b05655f887e19eb6d64fb3c77a466991640a7",
+        "noisy_source_sha256": "65db845046dd635a58a27c62417eb79df6905f219d75cbbd4737e4487131b891",
+        "crop_xywh": [
+          2160,
+          1346,
+          512,
+          512
+        ],
+        "reference_alignment_to_noisy_xy": [
+          1.3019186846657362,
+          -1.1594673298566818
+        ],
+        "phase_correlation_response": 0.6981406984850764,
+        "alignment_input": "Clean/noisy MHC green; Gaussian sigma 2, 9\u00d79 support",
+        "reference_resampling": "OpenCV linear interpolation, reference only",
+        "shared_exposure_from_observed_cfa_samples": 1.0336791328081627,
+        "excluded_border_pixels": 32,
+        "valid_reference_pixels": 200704,
+        "detail_valid_pixels": 195364,
+        "reference_edge_pixels": 48841,
+        "detail_metrics": {
+          "edge_selection": "top quartile of clean-reference green Sobel magnitude; 7x7 valid-mask erosion",
+          "edge_threshold_camera_linear": 0.006265334195011527,
+          "gradient": "3x3 Sobel dx/dy, scale 1/8; RMSE on reference edges",
+          "highpass": "green minus 7x7 Gaussian sigma 1; Pearson correlation on eroded valid interior",
+          "limitation": "reference uses MHC and alignment interpolation; does not isolate demosaicing or resolve noise/detail tradeoffs by itself"
+        },
+        "saturation_exclusion": "Reference camera-RGB maximum < 0.99",
+        "scope": "One ROI; clean reference itself uses MHC; not publisher metrics or a general quality ranking",
+        "results": [
+          {
+            "method": "MHC",
+            "input_sha256": "4276846ad6dcd5cb7cde3e86bd61827ba7827f04e702cb61443e3a5ef05bdd33",
+            "camera_linear_rmse": 0.012080297545977791,
+            "camera_linear_mae": 0.008753252326804595,
+            "camera_linear_psnr_reference_peak_one_db": 38.358447372269865,
+            "per_channel_mean_ratio": [
+              1.0160693078122611,
+              0.9973821731437081,
+              0.9721957729024311
+            ],
+            "reference_edge_green_gradient_rmse": 0.013707856248729345,
+            "green_highpass_correlation": 0.18080022232446832
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.029999999329447746",
+            "input_sha256": "fa71f810e4b69d758f3ff0b33856c9bd8155935d91735bc240a972f2d0f06d41",
+            "camera_linear_rmse": 0.008028747353272327,
+            "camera_linear_mae": 0.005121707210146408,
+            "camera_linear_psnr_reference_peak_one_db": 41.9070441629152,
+            "per_channel_mean_ratio": [
+              1.015609133418127,
+              0.9967208845400238,
+              0.97180922942777
+            ],
+            "reference_edge_green_gradient_rmse": 0.010563184154060067,
+            "green_highpass_correlation": 0.3072584417346458
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.10000000149011612",
+            "input_sha256": "8e4014c1912571aeecf31da82cefeaaef9a0ffba7fb100a879324b9db7f6e2f5",
+            "camera_linear_rmse": 0.007363307821830258,
+            "camera_linear_mae": 0.004825976766030546,
+            "camera_linear_psnr_reference_peak_one_db": 42.65854087073785,
+            "per_channel_mean_ratio": [
+              1.0159585476688533,
+              0.997239340619047,
+              0.9721136217437994
+            ],
+            "reference_edge_green_gradient_rmse": 0.00944874243049256,
+            "green_highpass_correlation": 0.4303020024192334
+          },
+          {
+            "method": "RawNIND joint Bayer",
+            "input_sha256": "032bea0e327223fd65784c3baa32722cdaa37f9ff14c51e2a2cce708e9448b38",
+            "camera_linear_rmse": 0.006979321615899799,
+            "camera_linear_mae": 0.004358723377365109,
+            "camera_linear_psnr_reference_peak_one_db": 43.12373576756313,
+            "per_channel_mean_ratio": [
+              0.9980099728409039,
+              1.0033437986989362,
+              0.9863635420776738
+            ],
+            "reference_edge_green_gradient_rmse": 0.009596764491945598,
+            "green_highpass_correlation": 0.4487045126388767
+          }
+        ]
+      }
+    },
+    {
+      "name": "canon-2",
+      "camera": "canon",
+      "relative_center": 0.75,
+      "requested_crop": [
+        3368,
+        2146,
+        512,
+        512
+      ],
+      "exit_code": 0,
+      "comparison": {
+        "reference_source_sha256": "bc8710ab9d9eb1362065045bf72b05655f887e19eb6d64fb3c77a466991640a7",
+        "noisy_source_sha256": "65db845046dd635a58a27c62417eb79df6905f219d75cbbd4737e4487131b891",
+        "crop_xywh": [
+          3368,
+          2146,
+          512,
+          512
+        ],
+        "reference_alignment_to_noisy_xy": [
+          1.0170626122209114,
+          -1.4024792351734163
+        ],
+        "phase_correlation_response": 0.3090310753323138,
+        "alignment_input": "Clean/noisy MHC green; Gaussian sigma 2, 9\u00d79 support",
+        "reference_resampling": "OpenCV linear interpolation, reference only",
+        "shared_exposure_from_observed_cfa_samples": 1.026420501048484,
+        "excluded_border_pixels": 32,
+        "valid_reference_pixels": 200704,
+        "detail_valid_pixels": 195364,
+        "reference_edge_pixels": 48841,
+        "detail_metrics": {
+          "edge_selection": "top quartile of clean-reference green Sobel magnitude; 7x7 valid-mask erosion",
+          "edge_threshold_camera_linear": 0.002716247834084817,
+          "gradient": "3x3 Sobel dx/dy, scale 1/8; RMSE on reference edges",
+          "highpass": "green minus 7x7 Gaussian sigma 1; Pearson correlation on eroded valid interior",
+          "limitation": "reference uses MHC and alignment interpolation; does not isolate demosaicing or resolve noise/detail tradeoffs by itself"
+        },
+        "saturation_exclusion": "Reference camera-RGB maximum < 0.99",
+        "scope": "One ROI; clean reference itself uses MHC; not publisher metrics or a general quality ranking",
+        "results": [
+          {
+            "method": "MHC",
+            "input_sha256": "03913e9ae83d6abe87cca2d8291db2514292939dc80571d725f6441fd2b31ee8",
+            "camera_linear_rmse": 0.01041439108367722,
+            "camera_linear_mae": 0.005669112717501433,
+            "camera_linear_psnr_reference_peak_one_db": 39.64732235249998,
+            "per_channel_mean_ratio": [
+              1.0200907430848085,
+              1.0004421462897843,
+              0.9630654868552436
+            ],
+            "reference_edge_green_gradient_rmse": 0.01326369849615356,
+            "green_highpass_correlation": 0.22984933520399592
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.029999999329447746",
+            "input_sha256": "aa25bc637212e78836d5006ede53b9c601265ca567f4c39cffe295265d5d3162",
+            "camera_linear_rmse": 0.008915298585859993,
+            "camera_linear_mae": 0.003449023861339983,
+            "camera_linear_psnr_reference_peak_one_db": 40.99728214226864,
+            "per_channel_mean_ratio": [
+              1.0172281769505571,
+              0.9981966704723825,
+              0.9612079918390946
+            ],
+            "reference_edge_green_gradient_rmse": 0.012142137730871265,
+            "green_highpass_correlation": 0.33232617956718385
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.10000000149011612",
+            "input_sha256": "f21ea9d51ac1134bb2c70a18769c7b4dfef533c14650694647bae117c971c76c",
+            "camera_linear_rmse": 0.008320962263253963,
+            "camera_linear_mae": 0.0033519987456068403,
+            "camera_linear_psnr_reference_peak_one_db": 41.59652895145375,
+            "per_channel_mean_ratio": [
+              1.0190743171427392,
+              0.9993642251607109,
+              0.9623958837864915
+            ],
+            "reference_edge_green_gradient_rmse": 0.010582027617696887,
+            "green_highpass_correlation": 0.43364537008546067
+          },
+          {
+            "method": "RawNIND joint Bayer",
+            "input_sha256": "b85176c401d9760ddac8e14636db811f6e0db301073aa2726269ca2465db5b9d",
+            "camera_linear_rmse": 0.007896093772554938,
+            "camera_linear_mae": 0.0030007415822365215,
+            "camera_linear_psnr_reference_peak_one_db": 42.051754054130754,
+            "per_channel_mean_ratio": [
+              1.014863491202163,
+              1.0000469289554883,
+              0.9676225126673776
+            ],
+            "reference_edge_green_gradient_rmse": 0.010963298980841097,
+            "green_highpass_correlation": 0.48837851717928193
+          }
+        ]
+      }
+    },
+    {
+      "name": "sony-0",
+      "camera": "sony",
+      "relative_center": 0.25,
+      "requested_crop": [
+        1256,
+        750,
+        512,
+        512
+      ],
+      "exit_code": 0,
+      "comparison": {
+        "reference_source_sha256": "1baafd7337bf357bf7004de1bdee727b5f1912ee9e9b438b230c3c88c1bfe694",
+        "noisy_source_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+        "crop_xywh": [
+          1256,
+          750,
+          512,
+          512
+        ],
+        "reference_alignment_to_noisy_xy": [
+          -0.03956207398863398,
+          0.06347383318171751
+        ],
+        "phase_correlation_response": 0.4996092524379492,
+        "alignment_input": "Clean/noisy MHC green; Gaussian sigma 2, 9\u00d79 support",
+        "reference_resampling": "OpenCV linear interpolation, reference only",
+        "shared_exposure_from_observed_cfa_samples": 1.9878038830413434,
+        "excluded_border_pixels": 32,
+        "valid_reference_pixels": 200704,
+        "detail_valid_pixels": 195364,
+        "reference_edge_pixels": 48841,
+        "detail_metrics": {
+          "edge_selection": "top quartile of clean-reference green Sobel magnitude; 7x7 valid-mask erosion",
+          "edge_threshold_camera_linear": 0.0014366041159078857,
+          "gradient": "3x3 Sobel dx/dy, scale 1/8; RMSE on reference edges",
+          "highpass": "green minus 7x7 Gaussian sigma 1; Pearson correlation on eroded valid interior",
+          "limitation": "reference uses MHC and alignment interpolation; does not isolate demosaicing or resolve noise/detail tradeoffs by itself"
+        },
+        "saturation_exclusion": "Reference camera-RGB maximum < 0.99",
+        "scope": "One ROI; clean reference itself uses MHC; not publisher metrics or a general quality ranking",
+        "results": [
+          {
+            "method": "MHC",
+            "input_sha256": "a8929de04602191067fb6b714c803437c21e6e1526af9546a8d66483fd078e01",
+            "camera_linear_rmse": 0.013447396353842955,
+            "camera_linear_mae": 0.009789934743270317,
+            "camera_linear_psnr_reference_peak_one_db": 37.427235887384576,
+            "per_channel_mean_ratio": [
+              1.0022539790950922,
+              0.9937798572158558,
+              1.0322370242570142
+            ],
+            "reference_edge_green_gradient_rmse": 0.013067551706308453,
+            "green_highpass_correlation": 0.06336953468046812
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.029999999329447746",
+            "input_sha256": "3de17e813581b051c8edb86666ecb9faee94fce66984ff4e5ad78093e539f5a1",
+            "camera_linear_rmse": 0.005332860840665262,
+            "camera_linear_mae": 0.0036221093241861585,
+            "camera_linear_psnr_reference_peak_one_db": 45.46079497895715,
+            "per_channel_mean_ratio": [
+              0.9970463805122826,
+              0.9855384604011104,
+              1.0227053443460457
+            ],
+            "reference_edge_green_gradient_rmse": 0.004830230925099801,
+            "green_highpass_correlation": 0.19399460981061803
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.10000000149011612",
+            "input_sha256": "123da88c792990f58567280b33818ecb59bb2268d03acdeda1a6c0912cc3e492",
+            "camera_linear_rmse": 0.00457084370547761,
+            "camera_linear_mae": 0.0034145338719168495,
+            "camera_linear_psnr_reference_peak_one_db": 46.80007257272187,
+            "per_channel_mean_ratio": [
+              1.0019927413325722,
+              0.9924761393124747,
+              1.0301192507508397
+            ],
+            "reference_edge_green_gradient_rmse": 0.003469293627219826,
+            "green_highpass_correlation": 0.3243820144472126
+          },
+          {
+            "method": "RawNIND joint Bayer",
+            "input_sha256": "af8099135ee362998f4d4edc0f41c07f86baed979338fd0040f6d489962dc2f5",
+            "camera_linear_rmse": 0.002120242159868513,
+            "camera_linear_mae": 0.001237902989855673,
+            "camera_linear_psnr_reference_peak_one_db": 53.472290680589374,
+            "per_channel_mean_ratio": [
+              1.0114458448285404,
+              0.9956317736634147,
+              1.0085024479038718
+            ],
+            "reference_edge_green_gradient_rmse": 0.002306961497790026,
+            "green_highpass_correlation": 0.6971189398537615
+          }
+        ]
+      }
+    },
+    {
+      "name": "sony-1",
+      "camera": "sony",
+      "relative_center": 0.5,
+      "requested_crop": [
+        2768,
+        1756,
+        512,
+        512
+      ],
+      "exit_code": 0,
+      "comparison": {
+        "reference_source_sha256": "1baafd7337bf357bf7004de1bdee727b5f1912ee9e9b438b230c3c88c1bfe694",
+        "noisy_source_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+        "crop_xywh": [
+          2768,
+          1756,
+          512,
+          512
+        ],
+        "reference_alignment_to_noisy_xy": [
+          -0.10709651516873464,
+          0.11507450584107914
+        ],
+        "phase_correlation_response": 0.7285819847602397,
+        "alignment_input": "Clean/noisy MHC green; Gaussian sigma 2, 9\u00d79 support",
+        "reference_resampling": "OpenCV linear interpolation, reference only",
+        "shared_exposure_from_observed_cfa_samples": 1.8451954008150526,
+        "excluded_border_pixels": 32,
+        "valid_reference_pixels": 200704,
+        "detail_valid_pixels": 195364,
+        "reference_edge_pixels": 48841,
+        "detail_metrics": {
+          "edge_selection": "top quartile of clean-reference green Sobel magnitude; 7x7 valid-mask erosion",
+          "edge_threshold_camera_linear": 0.00537394677817715,
+          "gradient": "3x3 Sobel dx/dy, scale 1/8; RMSE on reference edges",
+          "highpass": "green minus 7x7 Gaussian sigma 1; Pearson correlation on eroded valid interior",
+          "limitation": "reference uses MHC and alignment interpolation; does not isolate demosaicing or resolve noise/detail tradeoffs by itself"
+        },
+        "saturation_exclusion": "Reference camera-RGB maximum < 0.99",
+        "scope": "One ROI; clean reference itself uses MHC; not publisher metrics or a general quality ranking",
+        "results": [
+          {
+            "method": "MHC",
+            "input_sha256": "9b3f6266d3387990aba1980af93414c84beb858a6e54b166bea523335ea0fb16",
+            "camera_linear_rmse": 0.02026837191691205,
+            "camera_linear_mae": 0.013950108229099787,
+            "camera_linear_psnr_reference_peak_one_db": 33.86362270339534,
+            "per_channel_mean_ratio": [
+              0.9965000627366497,
+              1.001109722278898,
+              0.999638380967347
+            ],
+            "reference_edge_green_gradient_rmse": 0.019430761454327525,
+            "green_highpass_correlation": 0.25115530523993296
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.029999999329447746",
+            "input_sha256": "683d5c09b30997bbab8fc9686da1e731ad5b7f4bef438b668b18d5c77b3f106b",
+            "camera_linear_rmse": 0.010542612392136342,
+            "camera_linear_mae": 0.006537671305755512,
+            "camera_linear_psnr_reference_peak_one_db": 39.54103520768585,
+            "per_channel_mean_ratio": [
+              0.9922674911426447,
+              0.9971376458290043,
+              0.9956337975041952
+            ],
+            "reference_edge_green_gradient_rmse": 0.01118863901881449,
+            "green_highpass_correlation": 0.40282329098111624
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.10000000149011612",
+            "input_sha256": "2dc66b0933d556d996b815b2c9735bf7546a78d481ac31e7422267df2a045620",
+            "camera_linear_rmse": 0.007915799827185913,
+            "camera_linear_mae": 0.005384850134663273,
+            "camera_linear_psnr_reference_peak_one_db": 42.03010393319296,
+            "per_channel_mean_ratio": [
+              0.9956994331403386,
+              1.0000665774636772,
+              0.9989643854501474
+            ],
+            "reference_edge_green_gradient_rmse": 0.00851100778409239,
+            "green_highpass_correlation": 0.5759345526272617
+          },
+          {
+            "method": "RawNIND joint Bayer",
+            "input_sha256": "97bf9a1c7e09fa305f18cd7dc79291a9cd2cc53b88e13bfa303c9510615bc48b",
+            "camera_linear_rmse": 0.005513629503458798,
+            "camera_linear_mae": 0.0029623363126749618,
+            "camera_linear_psnr_reference_peak_one_db": 45.17124840627845,
+            "per_channel_mean_ratio": [
+              1.0115920342750901,
+              0.997300477614156,
+              0.9957802515111129
+            ],
+            "reference_edge_green_gradient_rmse": 0.007908236618832882,
+            "green_highpass_correlation": 0.6617634949063719
+          }
+        ]
+      }
+    },
+    {
+      "name": "sony-2",
+      "camera": "sony",
+      "relative_center": 0.75,
+      "requested_crop": [
+        4280,
+        2762,
+        512,
+        512
+      ],
+      "exit_code": 0,
+      "comparison": {
+        "reference_source_sha256": "1baafd7337bf357bf7004de1bdee727b5f1912ee9e9b438b230c3c88c1bfe694",
+        "noisy_source_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+        "crop_xywh": [
+          4280,
+          2762,
+          512,
+          512
+        ],
+        "reference_alignment_to_noisy_xy": [
+          -0.15923122997116934,
+          0.1592571276259207
+        ],
+        "phase_correlation_response": 0.7714135013520718,
+        "alignment_input": "Clean/noisy MHC green; Gaussian sigma 2, 9\u00d79 support",
+        "reference_resampling": "OpenCV linear interpolation, reference only",
+        "shared_exposure_from_observed_cfa_samples": 1.901954899997045,
+        "excluded_border_pixels": 32,
+        "valid_reference_pixels": 200704,
+        "detail_valid_pixels": 195364,
+        "reference_edge_pixels": 48841,
+        "detail_metrics": {
+          "edge_selection": "top quartile of clean-reference green Sobel magnitude; 7x7 valid-mask erosion",
+          "edge_threshold_camera_linear": 0.0010680910540577608,
+          "gradient": "3x3 Sobel dx/dy, scale 1/8; RMSE on reference edges",
+          "highpass": "green minus 7x7 Gaussian sigma 1; Pearson correlation on eroded valid interior",
+          "limitation": "reference uses MHC and alignment interpolation; does not isolate demosaicing or resolve noise/detail tradeoffs by itself"
+        },
+        "saturation_exclusion": "Reference camera-RGB maximum < 0.99",
+        "scope": "One ROI; clean reference itself uses MHC; not publisher metrics or a general quality ranking",
+        "results": [
+          {
+            "method": "MHC",
+            "input_sha256": "027162671e1e89eba968f5b42bf3d8e03f7d3d8678861aaeecfccbf55042e280",
+            "camera_linear_rmse": 0.014427609960767964,
+            "camera_linear_mae": 0.009827477350429992,
+            "camera_linear_psnr_reference_peak_one_db": 36.81611214018115,
+            "per_channel_mean_ratio": [
+              1.0149806154857943,
+              0.985508862593117,
+              1.051197047525003
+            ],
+            "reference_edge_green_gradient_rmse": 0.01688114780764888,
+            "green_highpass_correlation": 0.30770305043143104
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.029999999329447746",
+            "input_sha256": "3b65f764aa4c9de34c18c9f73428da32da7c748180374c71b4096e29113c5073",
+            "camera_linear_rmse": 0.007026595366550168,
+            "camera_linear_mae": 0.004090236795434213,
+            "camera_linear_psnr_reference_peak_one_db": 43.06510110040733,
+            "per_channel_mean_ratio": [
+              1.0089912188037606,
+              0.9792871061158143,
+              1.044679753547928
+            ],
+            "reference_edge_green_gradient_rmse": 0.009183654058936657,
+            "green_highpass_correlation": 0.5553003297810822
+          },
+          {
+            "method": "MHC + sensor bilateral sigma=0.10000000149011612",
+            "input_sha256": "d4aea18139e232f75ec074177477aba0435e64c90853e9561d3cb24708b4020d",
+            "camera_linear_rmse": 0.005971248126683737,
+            "camera_linear_mae": 0.0037648411884181688,
+            "camera_linear_psnr_reference_peak_one_db": 44.47869763913238,
+            "per_channel_mean_ratio": [
+              1.0133057743584126,
+              0.983382315786364,
+              1.049916190285398
+            ],
+            "reference_edge_green_gradient_rmse": 0.007667742475521061,
+            "green_highpass_correlation": 0.6734144505400385
+          },
+          {
+            "method": "RawNIND joint Bayer",
+            "input_sha256": "62c266d11b662aa61ccf68c5d441d3b33098508900888f21e84f3d54161120fd",
+            "camera_linear_rmse": 0.003963825495631643,
+            "camera_linear_mae": 0.0016338777862237902,
+            "camera_linear_psnr_reference_peak_one_db": 48.03770946492817,
+            "per_channel_mean_ratio": [
+              1.007017022879346,
+              0.9934681461023476,
+              1.0074626465032754
+            ],
+            "reference_edge_green_gradient_rmse": 0.006292779409939388,
+            "green_highpass_correlation": 0.7843043993801491
+          }
+        ]
+      }
+    }
+  ],
+  "model_provenance": {
+    "weights_sha256": "c1f7de3de24cb12f4803ee65e11cfb467e9a5b80c3cb7126746ef026106c15e0",
+    "graph_sha256": "f6a6fece6fe3b31035fe34d8460bb9204b83a976e153e89106af1a520c77b890",
+    "device": "Cpu",
+    "runtime": "native Rust / LibTorch 2.13"
+  },
+  "selection": {
+    "relative_sensor_centers": [
+      0.25,
+      0.5,
+      0.75
+    ],
+    "requested_patch_size": [
+      512,
+      512
+    ],
+    "baseline_sigmas": [
+      0.03,
+      0.1
+    ],
+    "fixed_before_new_results": true
+  },
+  "inputs_unchanged": true
+}

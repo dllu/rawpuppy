@@ -135,6 +135,32 @@ some true fine speckles and softens details. The Canon result also smooths fine
 surface variation. Display previews retain each capture's own exposure; the
 numeric comparison applies the documented shared exposure correction.
 
+### Additional preselected detail checks
+
+Six further 512×512 regions use fixed 25%, 50% and 75% diagonal sensor centers
+on those same held-out scenes. The bilateral settings were fixed at 0.03/0.1
+before seeing these results. Every region passed alignment, checksum and source
+immutability checks. The comparator now reports reference-edge green-gradient
+RMSE and high-frequency green correlation alongside the existing RGB errors.
+
+| Scene / region | Best fixed bilateral PSNR | RawNIND PSNR | Bilateral high-pass correlation | RawNIND correlation |
+| --- | ---: | ---: | ---: | ---: |
+| Canon / 25% | 47.20 | 48.05 | 0.267 | 0.326 |
+| Canon / 50% | 42.66 | 43.12 | 0.430 | 0.449 |
+| Canon / 75% | 41.60 | 42.05 | 0.434 | 0.488 |
+| Sony / 25% | 46.80 | 53.47 | 0.324 | 0.697 |
+| Sony / 50% | 42.03 | 45.17 | 0.576 | 0.662 |
+| Sony / 75% | 44.48 | 48.04 | 0.673 | 0.784 |
+
+The model has higher PSNR and high-pass correlation on all six, but Canon edge
+gradient error is 1.6–4.4% higher than bilateral 0.1. Sony edge error is 7.1–33.5%
+lower. Inspected, identically scaled green-channel figures show main patterns and
+numerals preserved, with some fine surface variation smoothed. Reference MHC,
+alignment interpolation and residual clean-capture noise limit these measures;
+they do not establish a universal winner. The [numeric record](data/raw-reconstruction-detail-2026-10-09.json)
+retains source/model hashes, coordinates, masks, alignment and every method's
+metrics. Derived figures and RAW data remain under `/tmp/rawpuppy-validation`.
+
 Full-float32 warm CUDA inference was around 130 ms per 512-pixel region on GB10,
 including preparation, padding, decoding and transfer, with a 1056×1056 context.
 The Canon CPU run took 283 ms warm with eight workers. A 513×517 region from the
