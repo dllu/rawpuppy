@@ -64,7 +64,12 @@ No Darktable source has been copied. Its local checkout can be used to generate
 comparison outputs as an independent oracle.
 
 The GPU path uses a composed CubeCL Rust kernel with persistent sensor residency
-and output tiles bounded to 64 MiB. CUDA is an optional build feature; Vulkan and
+and output tiles bounded to 64 MiB (or the device's smaller storage binding limit).
+Tiles can cross row boundaries, so a row wider than a tile does not impose an
+output allocation limit. Each tile retains global pixel coordinates in the full
+viewport. CPU and GPU share once-computed pixel steps and fused multiply-add;
+radial geometry adds displacement to the original point to preserve precision
+near image borders. CUDA is an optional build feature; Vulkan and
 Metal use the wgpu runtime. Sensor cleanup is a cached preparation kernel because
 it has a spatial neighborhood; geometry, reconstruction, intensity, calibration,
 AgX, retouch, curve and split toning run in the output kernel. GPU retouch uses the

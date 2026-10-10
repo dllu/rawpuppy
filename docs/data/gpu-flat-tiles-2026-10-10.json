@@ -1,0 +1,649 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "8e11e2be5ff0f027d07f94bb1dae67b9ef7ca6b8",
+  "scope": "Strictly bounded GPU output bindings, global viewport sampling independent of tile layout, and reduced fractional-coordinate roundoff. Source storage/addressing limits retain existing automatic CPU fallback.",
+  "output_tile_limit_bytes": 67108864,
+  "fixtures": {
+    "composed": {
+      "source_dimensions": [
+        19,
+        23
+      ],
+      "layouts": [
+        "RGB",
+        "RGGB Bayer"
+      ],
+      "output_dimensions": [
+        73,
+        41
+      ],
+      "region": [
+        0.03,
+        0.04,
+        0.91,
+        0.88
+      ],
+      "tile_pixels": 64,
+      "pixel_error_tolerance": 0.0003,
+      "alpha_exact": true,
+      "source_unchanged": true,
+      "tile_layouts_pixel_identical": true,
+      "edits": [
+        "sensor hot pixels and denoising",
+        "rotation",
+        "perspective pitch",
+        "crop",
+        "exposure",
+        "graduated density",
+        "clone"
+      ]
+    },
+    "wide": {
+      "dimensions": [
+        100003,
+        3
+      ],
+      "tile_pixels": 8192,
+      "row_bytes": 1600048,
+      "tile_bytes": 131072,
+      "source": "red periodic ramp with a sharp wrap every 257 pixels; green 0.18 and blue 0.4",
+      "pixel_error_tolerance": 0.0003,
+      "alpha_exact": true,
+      "tile_layouts_pixel_identical": true
+    },
+    "identity_geometry": {
+      "dimensions": [
+        [
+          100003,
+          3
+        ],
+        [
+          3,
+          100003
+        ]
+      ],
+      "positions": [
+        0.5,
+        2313.5,
+        4368.5,
+        99999.5
+      ],
+      "maximum_allowed_coordinate_error_pixels": 0.0001
+    }
+  },
+  "checks": {
+    "standard": {
+      "log": "/tmp/rawpuppy-validation/gpu-flat-tiles-standard-2026-10-10.log",
+      "sha256": "124c6a1394932776381afe6668adfeadae5c115822626af18f54a33fda939c52",
+      "passed": 82,
+      "failed": 0,
+      "ignored": 12
+    },
+    "dng": {
+      "log": "/tmp/rawpuppy-validation/gpu-flat-tiles-dng-2026-10-10.log",
+      "sha256": "34fcf8c4a7d339ece82a73ff401cf8a42ab422d8999c2aed21251cc34a607470",
+      "passed": 5,
+      "failed": 0,
+      "ignored": 0
+    },
+    "clippy": {
+      "log": "/tmp/rawpuppy-validation/gpu-flat-tiles-final-clippy-2026-10-10.log",
+      "sha256": "cf652c7ab8f8a24109217d2b9e9d741ba62decba7ef722af2eb5e0edc1e2660d",
+      "passed": true
+    },
+    "vulkan_tiles": {
+      "log": "/tmp/rawpuppy-validation/gpu-flat-tiles-final-vulkan-2026-10-10.log",
+      "sha256": "adf329506549f9456b83e086fcc69ca968d47d9d52f55c06c57d0703386104b7",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measurements": [
+        {
+          "backend": "wgpu<wgsl>",
+          "wide_max_cpu_error_printed": "0.00000012",
+          "tile_layouts_pixel_identical": true
+        }
+      ]
+    },
+    "cuda_tiles": {
+      "log": "/tmp/rawpuppy-validation/gpu-flat-tiles-final-cuda-2026-10-10.log",
+      "sha256": "18048d2347457278d1968f84dc6727eb1c01f4a0f7f6132a8eb45725f84340a8",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "measurements": [
+        {
+          "backend": "cuda",
+          "wide_max_cpu_error_printed": "0.00000012",
+          "tile_layouts_pixel_identical": true
+        },
+        {
+          "backend": "cuda (system memory)",
+          "wide_max_cpu_error_printed": "0.00000012",
+          "tile_layouts_pixel_identical": true
+        }
+      ]
+    },
+    "vulkan_regressions": {
+      "log": "/tmp/rawpuppy-validation/gpu-flat-tiles-final-vulkan-suite-2026-10-10.log",
+      "sha256": "f10d2ba61c580829116f427e92e65df839de9d3135797c0cc06372390f5c0830",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0
+    }
+  },
+  "gfx_release": {
+    "build_profile": "release",
+    "comparisons": [
+      {
+        "alpha_mismatches": 0,
+        "backend": "Cuda",
+        "cold_render_seconds": 0.432312338,
+        "device_label": "cuda (system memory)",
+        "max_absolute_rgb_error": 3.820657730102539e-05,
+        "mean_absolute_rgb_error": 2.1966393543632673e-08,
+        "passed": true,
+        "preview_dimensions": [
+          384,
+          512
+        ],
+        "recipe": "camera-defaults",
+        "warm_1800_preview_seconds": [
+          0.010570456,
+          0.01051084
+        ]
+      },
+      {
+        "alpha_mismatches": 0,
+        "backend": "Vulkan",
+        "cold_render_seconds": 2.933489644,
+        "device_label": "wgpu<wgsl>",
+        "max_absolute_rgb_error": 3.820657730102539e-05,
+        "mean_absolute_rgb_error": 3.4428288417684726e-08,
+        "passed": true,
+        "preview_dimensions": [
+          384,
+          512
+        ],
+        "recipe": "camera-defaults",
+        "warm_1800_preview_seconds": [
+          0.02067883,
+          0.020249246
+        ]
+      },
+      {
+        "alpha_mismatches": 0,
+        "backend": "Cuda",
+        "cold_render_seconds": 11.735802733,
+        "device_label": "cuda (system memory)",
+        "max_absolute_rgb_error": 0.0006947368383407593,
+        "mean_absolute_rgb_error": 2.0311147723154877e-06,
+        "passed": true,
+        "preview_dimensions": [
+          358,
+          512
+        ],
+        "recipe": "composed-edit",
+        "warm_1800_preview_seconds": [
+          0.010283944,
+          0.009678999
+        ]
+      },
+      {
+        "alpha_mismatches": 0,
+        "backend": "Vulkan",
+        "cold_render_seconds": 0.432798879,
+        "device_label": "wgpu<wgsl>",
+        "max_absolute_rgb_error": 0.0007596909999847412,
+        "mean_absolute_rgb_error": 3.977685837598932e-06,
+        "passed": true,
+        "preview_dimensions": [
+          358,
+          512
+        ],
+        "recipe": "composed-edit",
+        "warm_1800_preview_seconds": [
+          0.019424157,
+          0.019092222
+        ]
+      }
+    ],
+    "composed_edits": {
+      "display": {
+        "curve": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.5,
+            0.6000000238418579
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "highlights": [
+          1.100000023841858,
+          1.0199999809265137,
+          0.8500000238418579
+        ],
+        "retouch": [],
+        "shadows": [
+          0.8999999761581421,
+          0.949999988079071,
+          1.100000023841858
+        ],
+        "split_strength": 0.15000000596046448,
+        "synthesis": []
+      },
+      "geometry": {
+        "chromatic_aberration": [
+          0.00039999998989515007,
+          -0.0003000000142492354
+        ],
+        "crop": [
+          0.15000000596046448,
+          0.10000000149011612,
+          0.699999988079071,
+          0.75
+        ],
+        "distortion": [
+          -0.009999999776482582,
+          0.004999999888241291
+        ],
+        "field_of_view": 50.0,
+        "pitch": -1.0,
+        "rotation": 3.0,
+        "scale": 1.0,
+        "yaw": 2.0
+      },
+      "lens": {
+        "auto_frame": true,
+        "chromatic_aberration": true,
+        "distortion": true,
+        "mode": "embedded_v1",
+        "vignette": true
+      },
+      "raw": {
+        "denoise": 0.0,
+        "hot_pixels": false,
+        "recover_highlights": true
+      },
+      "scene": {
+        "calibration": [
+          1.0499999523162842,
+          0.949999988079071,
+          1.0
+        ],
+        "exposure": 0.699999988079071,
+        "graduated": {
+          "angle": 35.0,
+          "center": [
+            0.5,
+            0.5
+          ],
+          "exposure": 0.5,
+          "width": 0.30000001192092896
+        },
+        "mixer": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "vignette": [
+          0.0,
+          0.0
+        ]
+      },
+      "tone": {
+        "mapper": "agx_sdr_v1",
+        "saturation": 1.0
+      },
+      "version": 1
+    },
+    "decode_seconds": 0.395921609,
+    "default_edits": {
+      "display": {
+        "curve": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1.0,
+            1.0
+          ]
+        ],
+        "highlights": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "retouch": [],
+        "shadows": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "split_strength": 0.0,
+        "synthesis": []
+      },
+      "geometry": {
+        "chromatic_aberration": [
+          0.0,
+          0.0
+        ],
+        "crop": [
+          0.0,
+          0.0,
+          1.0,
+          1.0
+        ],
+        "distortion": [
+          0.0,
+          0.0
+        ],
+        "field_of_view": 50.0,
+        "pitch": 0.0,
+        "rotation": 0.0,
+        "scale": 1.0,
+        "yaw": 0.0
+      },
+      "lens": {
+        "auto_frame": true,
+        "chromatic_aberration": true,
+        "distortion": true,
+        "mode": "embedded_v1",
+        "vignette": true
+      },
+      "raw": {
+        "denoise": 0.0,
+        "hot_pixels": false,
+        "recover_highlights": true
+      },
+      "scene": {
+        "calibration": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "exposure": 0.0,
+        "graduated": {
+          "angle": 0.0,
+          "center": [
+            0.5,
+            0.5
+          ],
+          "exposure": 0.0,
+          "width": 0.30000001192092896
+        },
+        "mixer": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "vignette": [
+          0.0,
+          0.0
+        ]
+      },
+      "tone": {
+        "mapper": "agx_sdr_v1",
+        "saturation": 1.0
+      },
+      "version": 1
+    },
+    "default_missing_perimeter_samples": 0,
+    "default_perimeter_samples": 40768,
+    "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "input_unchanged": true,
+    "metadata": {
+      "aperture": 1.7000000476837158,
+      "as_shot": [
+        1.692052960395813,
+        1.0,
+        1.7814569473266602
+      ],
+      "bits": 16,
+      "camera_to_working": [
+        [
+          1.0725822448730469,
+          0.17127156257629395,
+          -0.24385379254817963
+        ],
+        [
+          -0.12670612335205078,
+          1.431113362312317,
+          -0.3044072091579437
+        ],
+        [
+          -0.009693307802081108,
+          -0.2934032380580902,
+          1.3030966520309448
+        ]
+      ],
+      "color_revision": 0,
+      "focal_length_mm": 55.0,
+      "height": 11648,
+      "lens_model": "GF55mmF1.7 R WR",
+      "lens_profile": {
+        "blue_ca": {
+          "knots": [
+            [
+              0.35356488823890686,
+              -6.103515625e-05
+            ],
+            [
+              0.5001828074455261,
+              -7.62939453125e-05
+            ],
+            [
+              0.6124314665794373,
+              -6.103515625e-05
+            ],
+            [
+              0.7071297764778137,
+              -4.57763671875e-05
+            ],
+            [
+              0.7904936075210571,
+              -3.0517578125e-05
+            ],
+            [
+              0.8661791682243347,
+              0.0
+            ],
+            [
+              0.935283362865448,
+              3.0517578125e-05
+            ],
+            [
+              1.0,
+              0.0001373291015625
+            ],
+            [
+              1.060694694519043,
+              0.000213623046875
+            ]
+          ],
+          "radius_pixels": 7280.0
+        },
+        "distortion": {
+          "knots": [
+            [
+              0.35356488823890686,
+              -0.2714385986328125
+            ],
+            [
+              0.5001828074455261,
+              -0.6280059814453125
+            ],
+            [
+              0.6124314665794373,
+              -0.9942169189453125
+            ],
+            [
+              0.7071297764778137,
+              -1.350799560546875
+            ],
+            [
+              0.7904936075210571,
+              -1.681671142578125
+            ],
+            [
+              0.8661791682243347,
+              -1.9739990234375
+            ],
+            [
+              0.935283362865448,
+              -2.2165374755859375
+            ],
+            [
+              1.0,
+              -2.409271240234375
+            ],
+            [
+              1.060694694519043,
+              -2.409271240234375
+            ]
+          ],
+          "radius_pixels": 7280.0
+        },
+        "red_ca": {
+          "knots": [
+            [
+              0.35356488823890686,
+              9.1552734375e-05
+            ],
+            [
+              0.5001828074455261,
+              0.0001220703125
+            ],
+            [
+              0.6124314665794373,
+              0.0001373291015625
+            ],
+            [
+              0.7071297764778137,
+              0.0001373291015625
+            ],
+            [
+              0.7904936075210571,
+              0.0001220703125
+            ],
+            [
+              0.8661791682243347,
+              0.0001220703125
+            ],
+            [
+              0.935283362865448,
+              9.1552734375e-05
+            ],
+            [
+              1.0,
+              1.52587890625e-05
+            ],
+            [
+              1.060694694519043,
+              -1.52587890625e-05
+            ]
+          ],
+          "radius_pixels": 7280.0
+        },
+        "vignette": {
+          "knots": [
+            [
+              0.35356488823890686,
+              87.59619140625
+            ],
+            [
+              0.5001828074455261,
+              79.44140625
+            ],
+            [
+              0.6124314665794373,
+              72.4951171875
+            ],
+            [
+              0.7071297764778137,
+              67.103515625
+            ],
+            [
+              0.7904936075210571,
+              62.09814453125
+            ],
+            [
+              0.8661791682243347,
+              57.78759765625
+            ],
+            [
+              0.935283362865448,
+              54.16552734375
+            ],
+            [
+              1.0,
+              51.19970703125
+            ],
+            [
+              1.060694694519043,
+              51.19970703125
+            ]
+          ],
+          "radius_pixels": 7280.0
+        }
+      },
+      "lens_profile_error": null,
+      "make": "Fujifilm",
+      "model": "GFX 100S",
+      "pattern": "RGGB",
+      "sensor_height": 8754,
+      "sensor_width": 11808,
+      "width": 8736
+    },
+    "orientation": 8,
+    "output_dimensions": [
+      8736,
+      11648
+    ],
+    "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+    "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+    "sensor_unchanged": true,
+    "tolerances": {
+      "alpha_mismatches": 0,
+      "max_absolute_rgb": 0.003,
+      "mean_absolute_rgb": 3e-05
+    }
+  },
+  "limits": [
+    "No new source tiling is implemented. Source buffers still must fit the GPU binding/addressing limits; Auto selects CPU when they do not.",
+    "The current local evidence covers NVIDIA GB10 Vulkan, copied CUDA and coherent CUDA. Linux software Vulkan and macOS GPU checks are included in CI.",
+    "The GFX verification checks finite opaque full-resolution perimeters and CPU/GPU previews, not every full-resolution output pixel or independent physical colorimetry.",
+    "Reported errors are observed numerical differences on these fixtures, not universal accuracy guarantees."
+  ]
+}

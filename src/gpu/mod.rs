@@ -168,14 +168,45 @@ impl GpuRenderer {
         width: usize,
         height: usize,
     ) -> Result<Rendered> {
+        self.render_region_tiled(image, edits, region, width, height, 64 * 1024 * 1024)
+    }
+    fn render_region_tiled(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        region: [f32; 4],
+        width: usize,
+        height: usize,
+        tile_bytes: usize,
+    ) -> Result<Rendered> {
         match self {
-            Self::Wgpu(s) => s.render(image, edits, region, width, height),
+            Self::Wgpu(s) => s.render(image, edits, region, width, height, tile_bytes),
             #[cfg(feature = "cuda")]
-            Self::Cuda(s) => s.render(image, edits, region, width, height),
+            Self::Cuda(s) => s.render(image, edits, region, width, height, tile_bytes),
             #[cfg(feature = "cuda")]
-            Self::CudaSystem(s) => s.render(image, edits, region, width, height),
+            Self::CudaSystem(s) => s.render(image, edits, region, width, height, tile_bytes),
         }
     }
+}
+
+fn output_tile_pixels(bytes: usize) -> Result<usize> {
+    let pixels = bytes.min(64 * 1024 * 1024) / 16;
+    ensure!(pixels > 0, "GPU output binding cannot hold one RGBA pixel");
+    Ok(pixels)
+}
+
+fn output_tile_dimensions(
+    dims: &mut [u32],
+    width: usize,
+    height: usize,
+    start: usize,
+    count: usize,
+) {
+    dims[19] = width as u32;
+    dims[20] = height as u32;
+    dims[25] = (start % width) as u32;
+    dims[26] = (start / width) as u32;
+    dims[27] = count as u32;
 }
 
 struct ShaderArguments {
@@ -185,7 +216,13 @@ struct ShaderArguments {
     index: Vec<u32>,
 }
 impl ShaderArguments {
-    fn new(pipeline: &Pipeline<'_>, edits: &Edits, region: [f32; 4], width: usize) -> Result<Self> {
+    fn new(
+        pipeline: &Pipeline<'_>,
+        edits: &Edits,
+        region: [f32; 4],
+        width: usize,
+        height: usize,
+    ) -> Result<Self> {
         let image = pipeline.source;
         let g = &pipeline.geometry;
         let s = &edits.scene;
@@ -215,7 +252,14 @@ impl ShaderArguments {
         ]);
         params.extend(display.shadows);
         params.extend(display.highlights);
-        params.extend(region);
+        // Match the CPU's once-computed pixel steps. Device floating-point
+        // division otherwise introduces subpixel drift on very wide outputs.
+        params.extend([
+            region[0],
+            region[1],
+            region[2] / width as f32,
+            region[3] / height as f32,
+        ]);
         params.extend(crate::agx::TO_REC2020.into_iter().flatten());
         params.extend(crate::agx::TO_SRGB.into_iter().flatten());
         assert_eq!(params.len(), 67);
@@ -260,6 +304,9 @@ impl ShaderArguments {
             image.raw_integer as u32,
             image.clipping_offset.is_some() as u32,
             image.clipping_offset.unwrap_or(0) as u32,
+            0,
+            0,
+            0,
         ]);
         let mut brushes: Vec<f32> = Vec::new();
         for (i, b) in display.retouch.iter().enumerate() {
@@ -306,6 +353,7 @@ impl<R: Runtime> Session<R> {
         region: [f32; 4],
         width: usize,
         height: usize,
+        tile_bytes: usize,
     ) -> Result<Rendered> {
         let pipeline = Pipeline::compile(&image, edits)?;
         let mosaic = image.cfa.is_some();
@@ -352,11 +400,11 @@ impl<R: Runtime> Session<R> {
             self.source = Some(image.clone());
         }
         let ShaderArguments {
-            mut params,
+            params,
             mut dims,
             brushes,
             index,
-        } = ShaderArguments::new(&pipeline, edits, region, width)?;
+        } = ShaderArguments::new(&pipeline, edits, region, width, height)?;
         if mosaic && (edits.raw.hot_pixels || edits.raw.denoise > 0.) {
             if self.prepared.is_none() || self.preparation != edits.raw {
                 self.prepared = None;
@@ -407,26 +455,16 @@ impl<R: Runtime> Session<R> {
             .client
             .create_from_slice(bytemuck::cast_slice(&brushes));
         let index_buffer = self.client.create_from_slice(bytemuck::cast_slice(&index));
-        let row_bytes = width
-            .checked_mul(16)
-            .ok_or_else(|| anyhow::anyhow!("Row byte size overflow"))?;
-        ensure!(
-            row_bytes <= page,
-            "Output row exceeds the GPU binding limit; use CPU"
-        );
-        let rows_per_tile = (page.min(64 * 1024 * 1024) / row_bytes).max(1).min(height);
+        let tile_pixels = output_tile_pixels(tile_bytes.min(page))?;
         let mut pixels: Vec<[f32; 4]> = Vec::new();
         pixels.try_reserve_exact(count)?;
-        for y in (0..height).step_by(rows_per_tile) {
-            let rows = rows_per_tile.min(height - y);
-            let tile_count = pixel_count(width, rows, 1)?;
+        for start in (0..count).step_by(tile_pixels) {
+            let tile_count = tile_pixels.min(count - start);
             ensure!(
                 tile_count <= u32::MAX as usize / 4,
                 "GPU tile indexing overflow"
             );
-            params[46] = region[1] + region[3] * y as f32 / height as f32;
-            params[48] = region[3] * rows as f32 / height as f32;
-            dims[20] = rows as u32;
+            output_tile_dimensions(&mut dims, width, height, start, tile_count);
             let parameters = self.client.create_from_slice(bytemuck::cast_slice(&params));
             let dimensions = self.client.create_from_slice(bytemuck::cast_slice(&dims));
             let output = self.client.empty(tile_count * 16);
@@ -532,5 +570,160 @@ mod selection_tests {
             );
         }
         assert!(source.data.iter().all(|v| *v == 0.2));
+    }
+}
+
+#[cfg(test)]
+mod tile_tests {
+    use super::*;
+    #[test]
+    fn output_budgets_are_strict_and_support_rows_larger_than_a_tile() {
+        assert_eq!(
+            output_tile_pixels(64 * 1024 * 1024 + 16).unwrap(),
+            4 * 1024 * 1024
+        );
+        assert_eq!(output_tile_pixels(35 * 16 + 7).unwrap(), 35);
+        assert!(output_tile_pixels(15).is_err());
+        let mut dims = vec![0; 28];
+        output_tile_dimensions(&mut dims, 100_003, 17, 100_003 + 91, 35);
+        assert_eq!(
+            (dims[19], dims[20], dims[25], dims[26], dims[27]),
+            (100_003, 17, 91, 1, 35)
+        );
+    }
+
+    #[test]
+    #[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
+    fn tiny_output_bindings_preserve_global_coordinates_and_composed_edits() {
+        use crate::edits::{Retouch, RetouchMode};
+        let modes = if std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {
+            vec![
+                (Backend::Cuda, CudaMemoryMode::Copy),
+                (Backend::Cuda, CudaMemoryMode::System),
+            ]
+        } else {
+            vec![(Backend::Auto, CudaMemoryMode::Auto)]
+        };
+        for (backend, memory) in modes {
+            let mut gpu = GpuRenderer::with_cuda_memory(backend, memory).unwrap();
+            for mosaic in [false, true] {
+                let mut source = SensorImage::from_rgb(
+                    19,
+                    23,
+                    (0..19 * 23)
+                        .flat_map(|i| [i as f32 / 400. - 0.1, (i % 31) as f32 / 31., 0.4])
+                        .collect(),
+                )
+                .unwrap();
+                if mosaic {
+                    let cfa = rawler::CFA::new("RGGB");
+                    source.data = (0..19 * 23)
+                        .map(|i| source.data[i * 3 + cfa.color_at(i / 19, i % 19)])
+                        .collect();
+                    source.cpp = 1;
+                    source.cfa = Some(cfa);
+                }
+                let source = Arc::new(source);
+                let original = source.data.clone();
+                let mut edits = Edits::default();
+                edits.tone.mapper = ToneMapper::Linear;
+                edits.raw.hot_pixels = true;
+                edits.raw.denoise = 0.012;
+                edits.geometry.rotation = 3.;
+                edits.geometry.pitch = 4.;
+                edits.geometry.crop = [0.05, 0.02, 0.9, 0.95];
+                edits.scene.exposure = 0.7;
+                edits.scene.graduated.exposure = -0.5;
+                edits.display.retouch.push(Retouch {
+                    source: [0.2, 0.3],
+                    target: [0.7, 0.6],
+                    radius: 0.15,
+                    feather: 0.4,
+                    opacity: 0.8,
+                    mode: RetouchMode::Clone,
+                });
+                let region = [0.03, 0.04, 0.91, 0.88];
+                let expected = Pipeline::compile(&source, &edits)
+                    .unwrap()
+                    .render_region(region, 73, 41)
+                    .unwrap();
+                let actual = gpu
+                    .render_region_tiled(source.clone(), &edits, region, 73, 41, 64 * 16)
+                    .unwrap();
+                let untiled = gpu
+                    .render_region_tiled(source.clone(), &edits, region, 73, 41, 64 * 1024 * 1024)
+                    .unwrap();
+                assert!(
+                    actual.pixels == untiled.pixels,
+                    "Output tile layout changed composed RGB/Bayer pixels"
+                );
+                assert_eq!((actual.width, actual.height), (73, 41));
+                for (a, b) in actual.pixels.iter().zip(&expected.pixels) {
+                    assert!(
+                        a.iter().zip(b).all(|(a, b)| (*a - b).abs() < 0.0003),
+                        "{} pixel mismatch {a:?} vs {b:?}",
+                        gpu.name()
+                    );
+                    assert_eq!(a[3], b[3]);
+                }
+                assert_eq!(source.data, original);
+            }
+            let source = Arc::new(
+                SensorImage::from_rgb(
+                    100_003,
+                    3,
+                    (0..100_003 * 3)
+                        .flat_map(|i| [(i % 257) as f32 / 256., 0.18, 0.4])
+                        .collect(),
+                )
+                .unwrap(),
+            );
+            let mut edits = Edits::default();
+            edits.tone.mapper = ToneMapper::Linear;
+            let expected = Pipeline::compile(&source, &edits)
+                .unwrap()
+                .render(None)
+                .unwrap();
+            let actual = gpu
+                .render_region_tiled(
+                    source.clone(),
+                    &edits,
+                    [0., 0., 1., 1.],
+                    100_003,
+                    3,
+                    8192 * 16,
+                )
+                .unwrap();
+            let untiled = gpu
+                .render_region_tiled(
+                    source.clone(),
+                    &edits,
+                    [0., 0., 1., 1.],
+                    100_003,
+                    3,
+                    64 * 1024 * 1024,
+                )
+                .unwrap();
+            assert!(
+                actual.pixels == untiled.pixels,
+                "Output tile layout changed rendered pixels"
+            );
+            let mut max_error = 0f32;
+            for (i, (a, b)) in actual.pixels.iter().zip(&expected.pixels).enumerate() {
+                assert!(
+                    a.iter().zip(b).all(|(a, b)| (*a - b).abs() < 0.0003),
+                    "{} wide pixel {i}: {a:?} vs CPU {b:?}",
+                    gpu.name()
+                );
+                for c in 0..3 {
+                    max_error = max_error.max((a[c] - b[c]).abs());
+                }
+                assert_eq!(a[3], b[3]);
+            }
+            eprintln!(
+                "{}: RGB/Bayer composed 64-pixel output tiles and 100003-pixel rows passed; wide max CPU error {max_error:.8}; all tile layouts pixel-identical",
+                gpu.name()
+            );
+        }
     }
 }

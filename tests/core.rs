@@ -112,6 +112,24 @@ fn pinhole_identity_crop_and_rotation_have_known_coordinates() {
 }
 
 #[test]
+fn identity_geometry_preserves_fractional_pixels_on_very_wide_and_tall_images() {
+    let edits = Edits::default();
+    for (width, height) in [(100_003, 3), (3, 100_003)] {
+        let geometry = Geometry::compile(&edits.geometry, width, height).unwrap();
+        for coordinate in [0.5, 2313.5, 4368.5, 99_999.5] {
+            let uv = if width > height {
+                [coordinate / width as f32, 0.5 / height as f32]
+            } else {
+                [0.5 / width as f32, coordinate / height as f32]
+            };
+            let mapped = geometry.map(uv, 1).unwrap();
+            close((mapped[0] - uv[0]) * width as f32, 0., 0.0001);
+            close((mapped[1] - uv[1]) * height as f32, 0., 0.0001);
+        }
+    }
+}
+
+#[test]
 fn camera_orientation_uses_all_eight_exif_transforms() {
     let mut image =
         SensorImage::from_rgb(3, 2, (0..6).flat_map(|i| [i as f32; 3]).collect()).unwrap();

@@ -1,5 +1,5 @@
 //! CUDA driver adapter for coherent system allocations; kernels stay in the shared Rust DSL.
-use super::{ShaderArguments, kernel};
+use super::{ShaderArguments, kernel, output_tile_dimensions, output_tile_pixels};
 use crate::{
     edits::{Edits, RawEdits, ToneMapper},
     input::{SensorImage, pixel_count},
@@ -297,6 +297,7 @@ impl SystemCuda {
         region: [f32; 4],
         width: usize,
         height: usize,
+        tile_bytes: usize,
     ) -> Result<Rendered> {
         ensure!(
             image
@@ -318,11 +319,11 @@ impl SystemCuda {
         let count = pixel_count(width, height, 1)?;
         let pipeline = Pipeline::compile(&image, edits)?;
         let ShaderArguments {
-            mut params,
+            params,
             mut dims,
             brushes,
             index,
-        } = ShaderArguments::new(&pipeline, edits, region, width)?;
+        } = ShaderArguments::new(&pipeline, edits, region, width, height)?;
         if self.source.as_ref().is_none_or(|s| !Arc::ptr_eq(s, &image)) {
             self.prepared = None;
             self.source = Some(image.clone());
@@ -349,9 +350,7 @@ impl SystemCuda {
         } else {
             self.prepared = None;
         }
-        let row_bytes = width.checked_mul(16).context("Output row size overflow")?;
-        // This bounds each launch's addressing; it does not cap the full image.
-        let rows_per_tile = (64 * 1024 * 1024 / row_bytes).max(1).min(height);
+        let tile_pixels = output_tile_pixels(tile_bytes)?;
         let lattice: &[f32] = if edits.tone.mapper == ToneMapper::AgxSdr {
             crate::agx::lattice()
         } else {
@@ -362,16 +361,13 @@ impl SystemCuda {
             self.lattice_advised = true;
         }
         let mut pixels = uninitialized::<[f32; 4]>(count)?;
-        for y in (0..height).step_by(rows_per_tile) {
-            let rows = rows_per_tile.min(height - y);
-            let tile_count = pixel_count(width, rows, 1)?;
+        for start in (0..count).step_by(tile_pixels) {
+            let tile_count = tile_pixels.min(count - start);
             ensure!(
                 tile_count <= u32::MAX as usize / 4,
                 "Output tile exceeds GPU addressing; use CPU"
             );
-            params[46] = region[1] + region[3] * y as f32 / height as f32;
-            params[48] = region[3] * rows as f32 / height as f32;
-            dims[20] = rows as u32;
+            output_tile_dimensions(&mut dims, width, height, start, tile_count);
             let prepared = self.prepared.take();
             let source = prepared.as_deref().unwrap_or(&image.data);
             let result = self.launch(
@@ -384,7 +380,7 @@ impl SystemCuda {
                     HostArray::read(lattice),
                     HostArray::read(&brushes),
                     HostArray::read(&index),
-                    HostArray::write(&mut pixels[y * width..y * width + tile_count], 4),
+                    HostArray::write(&mut pixels[start..start + tile_count], 4),
                 ],
                 tile_count,
             );

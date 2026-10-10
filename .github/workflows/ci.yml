@@ -63,6 +63,7 @@ jobs:
         run: |
           cargo test --test gpu --test hdr -- --ignored
           cargo test --lib gpu::selection_tests::unavailable_or_panicking_cuda_still_renders_on_native_gpu -- --ignored
+          cargo test --lib gpu::tile_tests::tiny_output_bindings_preserve_global_coordinates_and_composed_edits -- --ignored
       - name: Automatic ICC discovery on isolated X11 display
         if: runner.os == 'Linux'
         env:
@@ -76,6 +77,7 @@ jobs:
         run: |
           cargo test --test gpu --test hdr -- --ignored --nocapture
           cargo test --lib gpu::selection_tests::unavailable_or_panicking_cuda_still_renders_on_native_gpu -- --ignored --nocapture
+          cargo test --lib gpu::tile_tests::tiny_output_bindings_preserve_global_coordinates_and_composed_edits -- --ignored --nocapture
   native-learning:
     strategy:
       fail-fast: false

@@ -365,8 +365,10 @@ fn geometry(p: &Array<f32>, u: f32, v: f32, channel: u32) -> Pixel {
     if z <= 1e-6 {
         zero()
     } else {
-        let x = a / z - 0.5;
-        let y = (b / z - 0.5) * p[22];
+        let px = a / z;
+        let py = b / z;
+        let x = px - 0.5;
+        let y = (py - 0.5) * p[22];
         let r2 = 4. * (x * x + y * y) / (1. + p[22] * p[22]);
         let mut ca = 0.;
         if channel == 0 {
@@ -387,9 +389,10 @@ fn geometry(p: &Array<f32>, u: f32, v: f32, channel: u32) -> Pixel {
             camera = lens_value(p, r2, component);
         }
         let radial = (1. + p[23] * r2 + p[24] * r2 * r2) * (1. + ca) * camera;
+        let displacement = radial - 1.;
         Pixel {
-            r: x * radial + 0.5,
-            g: y * radial / p[22] + 0.5,
+            r: px + x * displacement,
+            g: py + (py - 0.5) * displacement,
             b: 0.,
             a: 1.,
         }
@@ -660,11 +663,24 @@ pub fn render(
     #[comptime] detail: bool,
 ) {
     let pixel = ABSOLUTE_POS as u32;
-    if pixel >= d[19] * d[20] {
+    if pixel >= d[27] {
         terminate!();
     }
-    let u = p[45] + p[47] * ((pixel % d[19]) as f32 + 0.5) / d[19] as f32;
-    let v = p[46] + p[48] * ((pixel / d[19]) as f32 + 0.5) / d[20] as f32;
+    // A flat tile may start/end within a row. Avoid adding two large u32
+    // coordinates: subtract the first-row remainder before wrapping.
+    let remaining = d[19] - d[25];
+    let x = if pixel < remaining {
+        d[25] + pixel
+    } else {
+        (pixel - remaining) % d[19]
+    };
+    let y = if pixel < remaining {
+        d[26]
+    } else {
+        d[26] + 1 + (pixel - remaining) / d[19]
+    };
+    let u = fma(p[47], x as f32 + 0.5, p[45]);
+    let v = fma(p[48], y as f32 + 0.5, p[46]);
     let mut rgb = base(input, d, p, agx_lattice, u, v, mosaic, detail);
     let cx = bounded((u * 64.).floor(), 0., 63.) as usize;
     let cy = bounded((v * 64.).floor(), 0., 63.) as usize;

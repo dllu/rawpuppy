@@ -235,6 +235,7 @@ impl<'a> Pipeline<'a> {
     /// Viewport rendering reads the original at every zoom level, including 1:1.
     pub fn render_region(&self, region: [f32; 4], width: usize, height: usize) -> Result<Rendered> {
         let count = pixel_count(width, height, 1)?;
+        let step = [region[2] / width as f32, region[3] / height as f32];
         let mut pixels = Vec::new();
         pixels.try_reserve_exact(count)?;
         pixels.resize(count, [0.; 4]);
@@ -244,8 +245,8 @@ impl<'a> Pipeline<'a> {
             .for_each(|(y, row)| {
                 for (x, p) in row.iter_mut().enumerate() {
                     *p = self.sample([
-                        region[0] + region[2] * (x as f32 + 0.5) / width as f32,
-                        region[1] + region[3] * (y as f32 + 0.5) / height as f32,
+                        step[0].mul_add(x as f32 + 0.5, region[0]),
+                        step[1].mul_add(y as f32 + 0.5, region[1]),
                     ]);
                 }
             });

@@ -56,8 +56,9 @@ impl Geometry {
         if p[2] <= 1e-6 {
             return None;
         }
-        let x = p[0] / p[2] - 0.5;
-        let y = (p[1] / p[2] - 0.5) * self.aspect;
+        let point = [p[0] / p[2], p[1] / p[2]];
+        let x = point[0] - 0.5;
+        let y = (point[1] - 0.5) * self.aspect;
         let r2 = 4. * (x * x + y * y) / (1. + self.aspect * self.aspect);
         let ca = match channel {
             0 => self.ca[0],
@@ -80,6 +81,13 @@ impl Geometry {
         };
         let radial =
             (1. + self.distortion[0] * r2 + self.distortion[1] * r2 * r2) * (1. + ca) * camera;
-        Some([x * radial + 0.5, y * radial / self.aspect + 0.5])
+        // Apply the radial displacement to the original normalized point.
+        // Centering and uncentering otherwise loses fractional pixels near
+        // image borders, especially for very wide images and tiny corrections.
+        let displacement = radial - 1.;
+        Some([
+            point[0] + x * displacement,
+            point[1] + (point[1] - 0.5) * displacement,
+        ])
     }
 }
