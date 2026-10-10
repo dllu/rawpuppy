@@ -7,6 +7,91 @@ use rawpuppy::{
 };
 use std::sync::Arc;
 
+#[test]
+#[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
+fn imported_float_hdr_keeps_signed_values_through_gpu_and_exr_export() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("hdr64.tiff");
+    let (width, height) = (19u32, 23u32);
+    let values: Vec<_> = (0..width * height)
+        .flat_map(|i| {
+            let x = f64::from(i % width) / f64::from(width);
+            let y = f64::from(i / width) / f64::from(height);
+            [x * 3. - 0.5, y * 2. + 0.125, (x + y) * 4.]
+        })
+        .collect();
+    let mut encoder =
+        tiff::encoder::TiffEncoder::new(std::fs::File::create(&path).unwrap()).unwrap();
+    let mut image = encoder
+        .new_image::<tiff::encoder::colortype::RGB64Float>(width, height)
+        .unwrap();
+    image
+        .encoder()
+        .write_tag(tiff::tags::Tag::Orientation, 6u16)
+        .unwrap();
+    image.write_data(&values).unwrap();
+    drop(encoder);
+    let original_file = std::fs::read(&path).unwrap();
+    let source = SensorImage::open(&path).unwrap();
+    assert_eq!(source.orientation, rawler::Orientation::Rotate90);
+    assert_eq!(
+        (source.metadata.width, source.metadata.height),
+        (height as usize, width as usize)
+    );
+    let source = Arc::new(source);
+    let original_data = source.data.clone();
+    let mut edits = Edits::for_image(&source);
+    edits.tone.mapper = rawpuppy::edits::ToneMapper::Linear;
+    edits.scene.exposure = 1.;
+    let expected = Pipeline::compile(&source, &edits)
+        .unwrap()
+        .render(None)
+        .unwrap();
+    let backend = if std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {
+        Backend::Cuda
+    } else {
+        Backend::Auto
+    };
+    let mut gpu = GpuRenderer::new(backend).unwrap();
+    let actual = gpu.render(source.clone(), &edits, None).unwrap();
+    eprintln!(
+        "HDR TIFF → {} → EXR: {} × {}",
+        gpu.name(),
+        actual.width,
+        actual.height
+    );
+    assert_eq!(
+        (actual.width, actual.height),
+        (expected.width, expected.height)
+    );
+    assert!(actual.pixels.iter().any(|p| p[0] < 0.));
+    assert!(actual.pixels.iter().any(|p| p[2] > 4.));
+    for (a, b) in actual.pixels.iter().zip(&expected.pixels) {
+        assert!(a.iter().zip(b).all(|(a, b)| (*a - b).abs() < 0.00001));
+        assert_eq!(a[3], 1.);
+    }
+    let exported = directory.path().join("gpu.exr");
+    rawpuppy::export::write(
+        &exported,
+        &actual,
+        rawpuppy::color::OutputSpace::LinearSrgb,
+        false,
+    )
+    .unwrap();
+    let reloaded = SensorImage::open(&exported).unwrap();
+    for (a, b) in reloaded
+        .data
+        .as_chunks::<3>()
+        .0
+        .iter()
+        .zip(&expected.pixels)
+    {
+        assert!(a.iter().zip(&b[..3]).all(|(a, b)| (*a - b).abs() < 0.00001));
+    }
+    assert_eq!(source.data, original_data);
+    assert_eq!(std::fs::read(path).unwrap(), original_file);
+}
+
 #[cfg(feature = "cuda")]
 #[test]
 #[ignore = "requires a working CUDA device"]

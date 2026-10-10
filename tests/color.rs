@@ -6,6 +6,220 @@ use rawpuppy::{
     pipeline::{Pipeline, Rendered},
 };
 
+struct RgbHalf;
+impl tiff::encoder::colortype::ColorType for RgbHalf {
+    // TIFF stores binary16 samples using their 16-bit representations.
+    type Inner = u16;
+    const TIFF_VALUE: tiff::tags::PhotometricInterpretation =
+        tiff::tags::PhotometricInterpretation::RGB;
+    const BITS_PER_SAMPLE: &'static [u16] = &[16; 3];
+    const SAMPLE_FORMAT: &'static [tiff::tags::SampleFormat] =
+        &[tiff::tags::SampleFormat::IEEEFP; 3];
+    fn horizontal_predict(_: &[u16], _: &mut Vec<u16>) {
+        unreachable!()
+    }
+}
+
+fn write_float_tiff(path: &std::path::Path, bits: u16, values: &[f32], icc: Option<&[u8]>) {
+    fn encode<C: tiff::encoder::colortype::ColorType>(
+        path: &std::path::Path,
+        values: &[C::Inner],
+        icc: Option<&[u8]>,
+    ) where
+        [C::Inner]: tiff::encoder::TiffValue,
+    {
+        let mut encoder =
+            tiff::encoder::TiffEncoder::new(std::fs::File::create(path).unwrap()).unwrap();
+        let mut image = encoder
+            .new_image::<C>((values.len() / 3) as u32, 1)
+            .unwrap();
+        if let Some(icc) = icc {
+            image
+                .encoder()
+                .write_tag(tiff::tags::Tag::IccProfile, icc)
+                .unwrap();
+        }
+        image.write_data(values).unwrap();
+    }
+    match bits {
+        16 => encode::<RgbHalf>(
+            path,
+            &values
+                .iter()
+                .map(|v| half::f16::from_f32(*v).to_bits())
+                .collect::<Vec<_>>(),
+            icc,
+        ),
+        32 => encode::<tiff::encoder::colortype::RGB32Float>(path, values, icc),
+        64 => encode::<tiff::encoder::colortype::RGB64Float>(
+            path,
+            &values.iter().map(|v| f64::from(*v)).collect::<Vec<_>>(),
+            icc,
+        ),
+        _ => unreachable!(),
+    }
+}
+
+#[test]
+fn float_tiff_hdr_survives_import_exposure_and_exr_export() {
+    let directory = tempfile::tempdir().unwrap();
+    let values = vec![-0.125, 0.25, 2., 4., 0.5, 0.0625, 0.18, 0.18, 0.18];
+    for bits in [16, 32, 64] {
+        let path = directory.path().join(format!("linear-{bits}.tiff"));
+        write_float_tiff(&path, bits, &values, None);
+        let original = std::fs::read(&path).unwrap();
+        let source = SensorImage::open(&path).unwrap();
+        let expected: Vec<_> = values
+            .iter()
+            .map(|v| {
+                if bits == 16 {
+                    half::f16::from_f32(*v).to_f32()
+                } else {
+                    *v
+                }
+            })
+            .collect();
+        assert_eq!(source.metadata.bits, bits as usize);
+        assert_eq!(source.data, expected);
+        assert!(!source.raw_integer);
+        let mut edits = Edits::for_image(&source);
+        edits.tone.mapper = ToneMapper::Linear;
+        edits.scene.exposure = 1.;
+        let output = Pipeline::compile(&source, &edits)
+            .unwrap()
+            .render(None)
+            .unwrap();
+        for (pixel, reference) in output.pixels.iter().zip(expected.as_chunks::<3>().0) {
+            for c in 0..3 {
+                assert!((pixel[c] - reference[c] * 2.).abs() < 0.000003);
+            }
+            assert_eq!(pixel[3], 1.);
+        }
+        let exported = directory.path().join(format!("edited-{bits}.exr"));
+        export::write(&exported, &output, color::OutputSpace::LinearSrgb, false).unwrap();
+        let reloaded = SensorImage::open(&exported).unwrap();
+        for (actual, reference) in reloaded.data.iter().zip(&expected) {
+            assert!((actual - reference * 2.).abs() < 0.000003);
+        }
+        let recipe = rawpuppy::sidecar::path_for(&path);
+        rawpuppy::sidecar::save(&recipe, &edits).unwrap();
+        let saved_recipe = std::fs::read(&recipe).unwrap();
+        let cli_export = directory.path().join(format!("cli-{bits}.exr"));
+        let result = std::process::Command::new(env!("CARGO_BIN_EXE_rawpuppy"))
+            .args(["--backend", "cpu", "export"])
+            .arg(&path)
+            .arg(&cli_export)
+            .args(["--color-space", "linear-srgb"])
+            .output()
+            .unwrap();
+        assert!(
+            result.status.success(),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        let cli = SensorImage::open(&cli_export).unwrap();
+        assert_eq!(cli.data, reloaded.data);
+        assert_eq!(std::fs::read(recipe).unwrap(), saved_recipe);
+        assert_eq!(std::fs::read(path).unwrap(), original);
+    }
+}
+
+#[test]
+fn float_tiff_rejects_nonfinite_or_unrepresentable_working_values() {
+    let directory = tempfile::tempdir().unwrap();
+    for bits in [16, 32, 64] {
+        for value in [f32::NAN, f32::INFINITY, f32::NEG_INFINITY] {
+            let path = directory.path().join("invalid.tiff");
+            write_float_tiff(&path, bits, &[value, 0.25, 0.5], None);
+            let original = std::fs::read(&path).unwrap();
+            let error = SensorImage::open(&path).err().unwrap();
+            assert!(error.to_string().contains("finite"));
+            assert_eq!(std::fs::read(&path).unwrap(), original);
+        }
+    }
+    let path = directory.path().join("overflow.tiff");
+    let mut encoder =
+        tiff::encoder::TiffEncoder::new(std::fs::File::create(&path).unwrap()).unwrap();
+    encoder
+        .write_image::<tiff::encoder::colortype::RGB64Float>(1, 1, &[f64::MAX, 0.25, 0.5])
+        .unwrap();
+    drop(encoder);
+    assert!(
+        SensorImage::open(path.as_path())
+            .err()
+            .unwrap()
+            .to_string()
+            .contains("finite")
+    );
+}
+
+#[test]
+fn grayscale_float_tiff_expands_linear_hdr_without_a_transfer_curve() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("gray-hdr.tiff");
+    let values = [-0.125f64, 0.25, 2., 0.18];
+    let mut encoder =
+        tiff::encoder::TiffEncoder::new(std::fs::File::create(&path).unwrap()).unwrap();
+    encoder
+        .write_image::<tiff::encoder::colortype::Gray64Float>(4, 1, &values)
+        .unwrap();
+    drop(encoder);
+    let source = SensorImage::open(&path).unwrap();
+    assert_eq!(source.metadata.bits, 64);
+    for (pixel, value) in source.data.as_chunks::<3>().0.iter().zip(values) {
+        assert_eq!(*pixel, [value as f32; 3]);
+    }
+}
+
+#[test]
+fn wide_gamut_float_tiff_icc_retains_signed_values_and_highlights() {
+    let directory = tempfile::tempdir().unwrap();
+    let xy = |x, y| lcms2::CIExyY { x, y, Y: 1. };
+    let primaries = lcms2::CIExyYTRIPLE {
+        Red: xy(0.708, 0.292),
+        Green: xy(0.170, 0.797),
+        Blue: xy(0.131, 0.046),
+    };
+    let curve = lcms2::ToneCurve::new(1.);
+    let icc = lcms2::Profile::new_rgb(&xy(0.3127, 0.329), &primaries, &[&curve; 3])
+        .unwrap()
+        .icc()
+        .unwrap();
+    let values = [0., 1., 0., 2., 0.25, -0.125, 0.18, 0.18, 0.18];
+    let matrix = color::multiply(
+        color::inverse(color::SRGB_TO_XYZ).unwrap(),
+        color::REC2020_TO_XYZ,
+    );
+    for bits in [16, 32, 64] {
+        let path = directory.path().join(format!("rec2020-{bits}.tiff"));
+        write_float_tiff(&path, bits, &values, Some(&icc));
+        let source = SensorImage::open(&path).unwrap();
+        for (p, actual) in values
+            .as_chunks::<3>()
+            .0
+            .iter()
+            .zip(source.data.as_chunks::<3>().0)
+        {
+            let p = p.map(|v| {
+                if bits == 16 {
+                    half::f16::from_f32(v).to_f32()
+                } else {
+                    v
+                }
+            });
+            let expected = color::apply(matrix, p);
+            for c in 0..3 {
+                assert!(
+                    (actual[c] - expected[c]).abs() < 0.0002,
+                    "{bits}-bit ICC: {actual:?} vs {expected:?}"
+                );
+            }
+        }
+        assert!(source.data.iter().any(|v| *v < 0.));
+        assert!(source.data.iter().any(|v| *v > 1.));
+    }
+}
+
 #[test]
 fn grayscale_icc_inputs_preserve_their_declared_tone_curve() {
     use image::ImageEncoder;

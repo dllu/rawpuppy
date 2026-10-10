@@ -7,6 +7,12 @@ chromaticities and white point; normalized primary matrices and Bradford
 adaptation convert them to the working basis. Untagged EXR defaults to linear
 sRGB. EXR export writes explicit sRGB chromaticities and full-precision linear
 RGBA, preserving negative values and highlights.
+TIFF import accepts 16-, 32- and 64-bit floating-point samples and converts them
+to the working float32 representation. Untagged float TIFFs assume linear sRGB;
+tagged TIFFs honor their ICC profile. Integer TIFFs keep the existing sRGB
+fallback. Signed values and highlights survive exposure editing and EXR export;
+non-finite or float32-overflowing values are rejected. Three-channel TIFF imports
+reuse their normalized RGB allocation instead of creating another full raster.
 RGBA16 TIFF exports explicitly identify their fourth channel as unassociated
 (straight) alpha, alongside the selected ICC profile. Transparent and partial
 alpha retain their independently stored RGB values.

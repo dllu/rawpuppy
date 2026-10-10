@@ -450,30 +450,43 @@ impl SensorImage {
             tiff::ColorType::GrayA(b) => (2, b),
             other => bail!("Unsupported TIFF color type {other:?}"),
         };
-        let samples: Vec<f32> = match decoder.read_image()? {
+        let decoded = decoder.read_image()?;
+        let floating = matches!(
+            &decoded,
+            DecodingResult::F16(_) | DecodingResult::F32(_) | DecodingResult::F64(_)
+        );
+        let samples: Vec<f32> = match decoded {
             DecodingResult::U8(v) => v.into_iter().map(|x| x as f32 / 255.).collect(),
             DecodingResult::U16(v) => v.into_iter().map(|x| x as f32 / 65535.).collect(),
+            DecodingResult::F16(v) => v.into_iter().map(|x| x.to_f32()).collect(),
             DecodingResult::F32(v) => v,
-            other => bail!("Unsupported TIFF sample type {other:?}"),
+            DecodingResult::F64(v) => v.into_iter().map(|x| x as f32).collect(),
+            _ => bail!(
+                "Unsupported TIFF sample format; expected 8/16-bit unsigned or floating-point data"
+            ),
         };
         let (width, height) = (w as usize, h as usize);
         ensure!(
             samples.len() == pixel_count(width, height, channels)?,
             "TIFF sample count disagrees with dimensions"
         );
-        let mut data: Vec<f32> = samples
-            .chunks_exact(channels)
-            .flat_map(|p| {
-                if channels <= 2 {
-                    [p[0]; 3]
-                } else {
-                    [p[0], p[1], p[2]]
-                }
-            })
-            .collect();
+        let mut data: Vec<f32> = if channels == 3 {
+            samples
+        } else {
+            samples
+                .chunks_exact(channels)
+                .flat_map(|p| {
+                    if channels <= 2 {
+                        [p[0]; 3]
+                    } else {
+                        [p[0], p[1], p[2]]
+                    }
+                })
+                .collect()
+        };
         if let Some(icc) = icc {
             convert_input_icc(&mut data, &icc, channels <= 2)?;
-        } else if bits != 32 {
+        } else if !floating {
             data.par_iter_mut()
                 .for_each(|v| *v = color::srgb_decode(*v));
         }
