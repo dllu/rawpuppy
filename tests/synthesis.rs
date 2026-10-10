@@ -922,3 +922,102 @@ fn inward_blending_never_reduces_geometric_gap_coverage() {
     assert_eq!(raster.pixels[0], base);
     assert_eq!(std::fs::read(original).unwrap(), b"immutable gap control");
 }
+
+#[test]
+fn parallel_layers_preserve_overlap_order_gap_alpha_and_transparent_assets() {
+    let directory = tempfile::tempdir().unwrap();
+    let original = directory.path().join("photo.raw");
+    std::fs::write(&original, b"immutable ordered layer control").unwrap();
+    let mut store = Layers::new(original.clone());
+    let mut edits = Edits::default();
+    let values = [
+        [1.5, -0.5, 0.25, 0.5],
+        [-0.25, 1.75, 2., 0.25],
+        [30., -4., 9., 0.],
+    ];
+    for (i, value) in values.into_iter().enumerate() {
+        let (asset, sha256) = store
+            .store(&Rendered {
+                width: 2,
+                height: 2,
+                pixels: vec![value; 4],
+            })
+            .unwrap();
+        edits.display.synthesis.push(GeneratedFill {
+            region: [0., 0., 1., 1.],
+            dabs: if i == 0 {
+                vec![MaskDab {
+                    center: [0.5; 2],
+                    radius: 2.,
+                }]
+            } else {
+                vec![]
+            },
+            fill_gaps: i != 0,
+            feather: 0.,
+            steps: 20,
+            seed: 0,
+            sampling: Default::default(),
+            asset,
+            sha256,
+            source_sha256: store.source_hash().unwrap().into(),
+            source_color_revision: 0,
+            recipe_sha256: synthesis::recipe_hash(&Edits::default()).unwrap(),
+            model: "moebius-scene-2026-v1".into(),
+        });
+    }
+    let path = rawpuppy::sidecar::path_for(&original);
+    rawpuppy::sidecar::save(&path, &edits).unwrap();
+    let loaded = rawpuppy::sidecar::load(&path).unwrap();
+    for (width, height) in [(257, 129), (100_003, 7)] {
+        let mut expected_pixels = None;
+        for threads in [1, 2, 8] {
+            let pool = rayon::ThreadPoolBuilder::new()
+                .num_threads(threads)
+                .build()
+                .unwrap();
+            let pixels = (0..width * height)
+                .map(|i| [2., -0.125, 0.625, [0., 0.25, 1.][i % 3]])
+                .collect();
+            let mut raster = Rendered {
+                width,
+                height,
+                pixels,
+            };
+            pool.install(|| {
+                Layers::new(original.clone()).apply(&loaded, &mut raster, [0., 0., 1., 1.])
+            })
+            .unwrap();
+            for (i, actual) in raster.pixels.iter().enumerate() {
+                let alpha = [0., 0.25, 1.][i % 3];
+                let base = [2., -0.125, 0.625];
+                for c in 0..3 {
+                    let first = base[c] + 0.5 * (values[0][c] - base[c]);
+                    let expected = if alpha < 1. {
+                        first + 0.25 * (values[1][c] - first)
+                    } else {
+                        first
+                    };
+                    assert!(
+                        (actual[c] - expected).abs() < 0.000001,
+                        "{threads} threads at {i}/{c}"
+                    );
+                }
+                assert_eq!(actual[3], [0.625, 0.71875, 1.][i % 3]);
+            }
+            if let Some(expected) = &expected_pixels {
+                assert_eq!(
+                    &raster.pixels, expected,
+                    "Worker count changed layer output"
+                );
+            } else {
+                expected_pixels = Some(raster.pixels);
+            }
+        }
+    }
+    assert_eq!(
+        std::fs::read(original).unwrap(),
+        b"immutable ordered layer control"
+    );
+    assert_eq!(rawpuppy::sidecar::load(&path).unwrap(), loaded);
+}

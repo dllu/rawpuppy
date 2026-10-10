@@ -103,8 +103,12 @@ preview readback. Capability checks, synchronized borrows and local page hints
 are described in [system-memory.md](system-memory.md). Other devices use copied
 buffers through the existing runtime.
 Saved synthesis currently uses sparse CPU composition after GPU readback, with
-bounded layer caches and viewport culling. It does not create another full-image
-raster; fusing layer sampling into the GPU kernel remains an optimization.
+bounded layer caches and viewport culling. Disjoint rows of each visible layer
+composite in parallel, checking target membership before sampling the asset.
+Layers finish in recipe order so overlaps and evolving gap coverage remain
+deterministic. All visible assets resolve before any output changes. It does not
+create another full-image raster; fusing layer sampling into the GPU kernel
+remains an optimization.
 
 The CUDA compiler worker requires a 32 MiB stack for the composed Bayer kernel.
 The executable sets `RUST_MIN_STACK` at process startup before threads exist;

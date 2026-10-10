@@ -1,6 +1,7 @@
 //! Cached generated layers, recipe identity, context crops, and exact mask composition.
 use crate::{edits::Edits, input::pixel_count, models, pipeline::Rendered};
 use anyhow::{Context, Result, ensure};
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
@@ -414,35 +415,43 @@ impl Layers {
         // No fallible asset operation remains once compositing begins. Only
         // visible context snapshots are retained, never a rollback photo raster.
         for (fill, [x0, y0, x1, y1], layer) in prepared {
-            let aspect = (image.height as f32 / viewport[3]) / (image.width as f32 / viewport[2]);
-            for y in y0..y1 {
-                for x in x0..x1 {
-                    let uv = [
-                        viewport[0] + viewport[2] * (x as f32 + 0.5) / image.width as f32,
-                        viewport[1] + viewport[3] * (y as f32 + 0.5) / image.height as f32,
-                    ];
-                    let u = (uv[0] - fill.region[0]) / fill.region[2];
-                    let v = (uv[1] - fill.region[1]) / fill.region[3];
-                    if !(0.0..=1.0).contains(&u) || !(0.0..=1.0).contains(&v) {
-                        continue;
+            let width = image.width;
+            let height = image.height;
+            let aspect = (height as f32 / viewport[3]) / (width as f32 / viewport[2]);
+            // Pixels within one layer are independent. Finish it before starting
+            // the next so overlap and evolving gap coverage retain recipe order.
+            image.pixels[y0 * width..y1 * width]
+                .par_chunks_mut(width)
+                .enumerate()
+                .for_each(|(row, pixels)| {
+                    let y = y0 + row;
+                    for (column, pixel) in pixels[x0..x1].iter_mut().enumerate() {
+                        let x = x0 + column;
+                        let uv = [
+                            viewport[0] + viewport[2] * (x as f32 + 0.5) / width as f32,
+                            viewport[1] + viewport[3] * (y as f32 + 0.5) / height as f32,
+                        ];
+                        let u = (uv[0] - fill.region[0]) / fill.region[2];
+                        let v = (uv[1] - fill.region[1]) / fill.region[3];
+                        if !(0.0..=1.0).contains(&u) || !(0.0..=1.0).contains(&v) {
+                            continue;
+                        }
+                        let weight = target_weight(fill, uv, aspect, pixel[3]);
+                        if weight == 0. {
+                            continue;
+                        }
+                        let sample = sample_layer(&layer, u, v);
+                        let alpha = sample[3].clamp(0., 1.);
+                        if alpha == 0. {
+                            continue;
+                        }
+                        let alpha = alpha * weight;
+                        for c in 0..3 {
+                            pixel[c] += alpha * (sample[c] - pixel[c]);
+                        }
+                        pixel[3] += alpha * (1. - pixel[3]);
                     }
-                    let sample = sample_layer(&layer, u, v);
-                    let alpha = sample[3].clamp(0., 1.);
-                    if alpha == 0. {
-                        continue;
-                    }
-                    let pixel = &mut image.pixels[y * image.width + x];
-                    let weight = target_weight(fill, uv, aspect, pixel[3]);
-                    if weight == 0. {
-                        continue;
-                    }
-                    let alpha = alpha * weight;
-                    for c in 0..3 {
-                        pixel[c] += alpha * (sample[c] - pixel[c]);
-                    }
-                    pixel[3] += alpha * (1. - pixel[3]);
-                }
-            }
+                });
         }
         Ok(())
     }

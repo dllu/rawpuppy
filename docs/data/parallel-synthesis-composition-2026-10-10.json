@@ -1,0 +1,135 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "282bd116cd65819a5cc93a9372abca5d8fb86dd9",
+  "scope": "Parallel in-place saved-synthesis composition after mask membership checks; recipe order, source values, all full-size output values and exported Display P3 TIFF components are preserved.",
+  "implementation": "Resolve every visible immutable asset first, then apply layers sequentially in recipe order with Rayon over disjoint rows. Check target weight before bilinear asset sampling. No rollback or composition raster.",
+  "measurement_method": "Separate release processes, eight Rayon workers, same owned GFX100S RAW, recipe, graphs and absent Moebius cache; no local build/test overlap with either timed probe. Shared machine; one completed run per implementation.",
+  "baseline": {
+    "all_rgba16_components_verified": 407027712,
+    "alpha_exact": true,
+    "backend": "cuda (system memory)",
+    "base_render_seconds": 0.191530299,
+    "changed_painted_pixels": 2037729,
+    "color_space": "display_p3",
+    "decode_verify_seconds": 2.074915088,
+    "dimensions": [
+      8736,
+      11648
+    ],
+    "export_seconds": 0.817935779,
+    "file_bytes": 814062462,
+    "icc_matches": true,
+    "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "pixels": 101756928,
+    "recipe_sha256": "30d1dbd558f7a8e6a855bb7c1682c2388f9650269d003a69494b7eb16a9f51fe",
+    "rendered_sha256": "2efdcf2ff526b53b2b8f6d5104afbe1063f1b382bd998f41f46ca19be637ebac",
+    "saved_layer_render_seconds": 0.590092847,
+    "scope": "Full saved painted-layer render and every RGBA16 TIFF sample/profile check on one owned source; numerical export conformance, not physical display colorimetry",
+    "sensor_and_rendered_hashes_unchanged": true,
+    "source_and_recipe_unchanged": true,
+    "straight_alpha": true,
+    "strips": 777,
+    "unpainted_pixels_exact": true,
+    "maximum_probe_rss_kib": 5985284,
+    "total_probe_wall_time": "0:36.90",
+    "process_exit_status": 0,
+    "log": "/tmp/rawpuppy-validation/synthesis-composition-baseline-2026-10-10.log",
+    "log_sha256": "9d1cac0e61ed78cc077b64d07563851ddf21626220bcf08293065603c88ceaa8",
+    "time_log": "/tmp/rawpuppy-validation/synthesis-composition-baseline-time-2026-10-10.txt",
+    "time_log_sha256": "bc8f62ed0f13f332ebbab4b2994d944b91681f5b195b696a93e736f68776a6de"
+  },
+  "parallel": {
+    "all_rgba16_components_verified": 407027712,
+    "alpha_exact": true,
+    "backend": "cuda (system memory)",
+    "base_render_seconds": 0.195611288,
+    "changed_painted_pixels": 2037729,
+    "color_space": "display_p3",
+    "decode_verify_seconds": 2.072402848,
+    "dimensions": [
+      8736,
+      11648
+    ],
+    "export_seconds": 0.809634856,
+    "file_bytes": 814062462,
+    "icc_matches": true,
+    "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "pixels": 101756928,
+    "recipe_sha256": "30d1dbd558f7a8e6a855bb7c1682c2388f9650269d003a69494b7eb16a9f51fe",
+    "rendered_sha256": "2efdcf2ff526b53b2b8f6d5104afbe1063f1b382bd998f41f46ca19be637ebac",
+    "saved_layer_render_seconds": 0.274828551,
+    "scope": "Full saved painted-layer render and every RGBA16 TIFF sample/profile check on one owned source; numerical export conformance, not physical display colorimetry",
+    "sensor_and_rendered_hashes_unchanged": true,
+    "source_and_recipe_unchanged": true,
+    "straight_alpha": true,
+    "strips": 777,
+    "unpainted_pixels_exact": true,
+    "maximum_probe_rss_kib": 6014964,
+    "total_probe_wall_time": "0:33.36",
+    "process_exit_status": 0,
+    "log": "/tmp/rawpuppy-validation/synthesis-composition-parallel-2026-10-10.log",
+    "log_sha256": "eda26cf24237e0471a6ffb77b374e4eff9462a96d5a2bbe40b5e1cec1771346e",
+    "time_log": "/tmp/rawpuppy-validation/synthesis-composition-parallel-time-2026-10-10.txt",
+    "time_log_sha256": "087f18818ecc93f5465405e24077398c1be1769e3184e2da965da5c4e687d897"
+  },
+  "saved_layer_render_time_reduction_fraction": 0.534262188743325,
+  "full_float_output_sha256_identical": true,
+  "moebius_cache_absent": true,
+  "raw_and_recipe_paths": {
+    "raw": "/tmp/rawpuppy-validation/inward-feather-real-gfx-2026-10-10/photo.raf",
+    "recipe": "/tmp/rawpuppy-validation/inward-feather-real-gfx-2026-10-10/photo.raf.rawpuppy.xmp"
+  },
+  "checks": {
+    "standard": {
+      "log": "/tmp/rawpuppy-validation/synthesis-composition-tests-2026-10-10.log",
+      "sha256": "b97a7cc025556da5601d30c1f5989e8ddbb1433e42b010fc62b1e862a281f14b",
+      "passed": 91,
+      "failed": 0,
+      "ignored": 12
+    },
+    "clippy": {
+      "log": "/tmp/rawpuppy-validation/synthesis-composition-clippy-2026-10-10.log",
+      "sha256": "baf635f9eebb9b60daf139244bde456e3e6f797a5b7c0b35d0076b7e184f6c76",
+      "passed": true,
+      "toolchain": "1.99.0",
+      "features": [
+        "cuda",
+        "raw-ml",
+        "moebius"
+      ],
+      "all_targets": true
+    }
+  },
+  "ordered_composition_control": {
+    "dimensions": [
+      [
+        257,
+        129
+      ],
+      [
+        100003,
+        7
+      ]
+    ],
+    "workers": [
+      1,
+      2,
+      8
+    ],
+    "all_output_values_identical_between_worker_counts": true,
+    "analytic_rgb_and_alpha": true,
+    "cases": [
+      "overlapping layers in recipe order",
+      "gap alpha after the preceding layer",
+      "transparent asset",
+      "signed/HDR RGB",
+      "cold assets after XMP reload",
+      "immutable original and recipe"
+    ]
+  },
+  "limits": [
+    "The saved-layer timer includes full GPU rendering and first layer validation/loading; it is not an isolated compositing or inference measurement.",
+    "Peak RSS is a full conformance probe holding base and rendered float rasters together, not ordinary GUI or aggregate GB10 memory.",
+    "These observed times and exact values cover one real saved edit and targeted controls; they do not establish universal latency or photographic synthesis quality."
+  ]
+}
