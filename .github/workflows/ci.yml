@@ -134,8 +134,11 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install little-cms2
       - name: Prepare verified real RAW graph
+        # Transient publisher outages must retain all pin/size checks.
         shell: bash
-        run: python tools/prepare_ci_raw_model.py "$RAWPUPPY_CI_MODEL_ROOT"
+        run: |
+          python tools/test_download_ci_artifact.py
+          python tools/prepare_ci_raw_model.py "$RAWPUPPY_CI_MODEL_ROOT"
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --features moebius,raw-ml --all-targets -j 2 -- -D warnings
       - name: Native scheduler and layer tests

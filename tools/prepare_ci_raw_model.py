@@ -2,13 +2,12 @@
 """Prepare the real, attributed RawNIND graph in a fresh CI scratch directory."""
 
 import argparse
-import hashlib
 import subprocess
 import sys
-import urllib.request
 from pathlib import Path
 
 from export_rawnind import ORACLE_REVISION, WEIGHT_SHA256
+from download_ci_artifact import download
 
 
 def main():
@@ -18,17 +17,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     weights = args.output / "weights.pt"
     url = "https://drive.google.com/uc?export=download&id=1dFTLeljWi9wwojcZUsam8bE31JdYy3oM"
-    hasher = hashlib.sha256()
-    length = 0
-    with urllib.request.urlopen(url, timeout=60) as response, weights.open("xb") as target:
-        while chunk := response.read(1024 * 1024):
-            length += len(chunk)
-            if length > 31_059_270:
-                raise ValueError("Published checkpoint has unexpected size")
-            hasher.update(chunk)
-            target.write(chunk)
-    if length != 31_059_270 or hasher.hexdigest() != WEIGHT_SHA256:
-        raise ValueError("Published checkpoint identity mismatch")
+    download(url, weights, WEIGHT_SHA256, 31_059_270)
     oracle = args.output / "oracle"
     subprocess.run(["git", "init", str(oracle)], check=True)
     # Windows Git commonly enables CRLF conversion. Preserve the exact pinned

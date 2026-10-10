@@ -227,7 +227,15 @@ address space; this does not exhaust shared system RAM or establish CUDA/MPS
 device-allocation recovery. [The record](data/reconstruction-memory-2026-10-09.json)
 retains the exact limit and failure. No partial reconstructed image is returned.
 
-More device/memory-pressure coverage and wider camera/illuminant quality
+An owned CUDA caching-allocator probe now also verifies allocation rejection
+and recovery with the real RawNIND and Moebius graphs. After a warm baseline,
+a process-local 64 MiB allocator budget rejects a 32 MiB RAW convolution request
+and a 128 MiB synthesis encoder request. Restoring the original limit permits
+identical RAW and seeded synthesis outputs on the same models, with unchanged
+input. This cap governs the test process's allocator; it does not exhaust the
+device or other processes. [The record](data/cuda-inference-budget-2026-10-10.json)
+retains model identities and scoped errors. More MPS/device-loss coverage and
+wider camera/illuminant quality
 remain outstanding. Full-frame execution does not establish HDR
 restoration quality.
 

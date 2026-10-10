@@ -2,13 +2,12 @@
 """Prepare verified real Moebius graphs in a fresh CI scratch directory."""
 
 import argparse
-import shutil
 import subprocess
 import sys
-import urllib.request
 from pathlib import Path
 
 from export_moebius import UPSTREAM_REVISION, digest
+from download_ci_artifact import download
 
 
 ARTIFACTS = [
@@ -35,8 +34,7 @@ def main():
         path = models / name
         if args.models is None:
             path.parent.mkdir(parents=True, exist_ok=True)
-            with urllib.request.urlopen(url, timeout=60) as response, path.open("xb") as target:
-                shutil.copyfileobj(response, target, length=1024 * 1024)
+            download(url, path, expected)
         if digest(path) != expected:
             raise ValueError("Pinned Moebius checkpoint identity mismatch: " + name)
     source = args.output / "source"
