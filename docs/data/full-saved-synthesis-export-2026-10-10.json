@@ -1,0 +1,54 @@
+{
+  "date_utc": "2026-10-10",
+  "implementation_commit": "9bcab99fe44b5b1944b576d56b317a3aae76dc77",
+  "features": [
+    "cuda",
+    "raw-ml",
+    "moebius"
+  ],
+  "libtorch": "2.13",
+  "scope": "Every full-size output pixel is finite, changes are contained in declared paint, alpha and immutable source/recipe/sensor hashes remain exact, and every exported Display P3 RGBA16 component/profile is decoded and checked on one real owned GFX photo.",
+  "receipt": {
+    "all_rgba16_components_verified": 407027712,
+    "alpha_exact": true,
+    "backend": "cuda (system memory)",
+    "base_render_seconds": 0.20670919,
+    "changed_painted_pixels": 2037729,
+    "color_space": "display_p3",
+    "decode_verify_seconds": 2.056211182,
+    "dimensions": [
+      8736,
+      11648
+    ],
+    "export_seconds": 0.824088103,
+    "file_bytes": 814062462,
+    "icc_matches": true,
+    "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "pixels": 101756928,
+    "recipe_sha256": "30d1dbd558f7a8e6a855bb7c1682c2388f9650269d003a69494b7eb16a9f51fe",
+    "rendered_sha256": "2efdcf2ff526b53b2b8f6d5104afbe1063f1b382bd998f41f46ca19be637ebac",
+    "saved_layer_render_seconds": 0.587720858,
+    "scope": "Full saved painted-layer render and every RGBA16 TIFF sample/profile check on one owned source; numerical export conformance, not physical display colorimetry",
+    "sensor_and_rendered_hashes_unchanged": true,
+    "source_and_recipe_unchanged": true,
+    "straight_alpha": true,
+    "strips": 777,
+    "unpainted_pixels_exact": true
+  },
+  "moebius_model_cache_absent": true,
+  "maximum_probe_process_rss_kib": 5984476,
+  "total_probe_wall_time": "0:36.23",
+  "process_exit_status": 0,
+  "memory_scope": "Peak of a verifier that holds base and rendered float rasters concurrently for all-pixel comparison; not ordinary editor/export RSS or complete GB10 memory.",
+  "timing_scope": "Initial RAW decode and full joint preparation precede render timers. Total probe time includes them, hashes, conformance scan, encoding and all-strip decode verification. Shared machine, single observation, no universal latency claim.",
+  "checks": {
+    "strict_combined_feature_all_target_clippy": true,
+    "format_and_diff_checks": true,
+    "actual_release_process_exit_zero": true
+  },
+  "artifact_directory": "/tmp/rawpuppy-validation/full-synthesis-export-2026-10-10",
+  "limits": [
+    "This verifies execution, exact target containment and encoded color/alpha conformance, not every camera/physical monitor or universal synthesis quality.",
+    "The export decoder is the TIFF crate; independent system LibTIFF large-offset verification has separate evidence in the existing large-TIFF record."
+  ]
+}
