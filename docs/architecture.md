@@ -54,8 +54,12 @@ parameters. Writes stage in the destination directory and rename atomically.
 Modern generation uses bounded 512-square context rendered directly from the
 original, with seeded Moebius sampling in Rust. Generated pixels persist in
 content-addressed float EXR assets beside the XMP, with source and preceding-recipe
-identities. Exact output-resolution masks preserve every unpainted pixel. Earlier
-edits invalidate their fills and require regeneration. Saved layers render without
+identities. Exact output-resolution masks preserve every unpainted pixel.
+New painted layers blend inward over 15% of brush radius in working linear RGB,
+retaining the generated core and every unpainted sample. Saved legacy layers use
+zero blend, and missing geometry always receives full coverage. The same sparse
+weights drive composition and gap-coverage checks without another photo raster.
+Earlier edits invalidate their fills and require regeneration. Saved layers render without
 the model; inference runs only when explicitly requested. See [Moebius](moebius.md).
 
 Dimensions and indices are `usize`; checked multiplication detects address-space

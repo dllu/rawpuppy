@@ -55,6 +55,7 @@ fn main() -> Result<()> {
             radius: 1.,
         }],
         fill_gaps: false,
+        feather: 0.,
         steps: 2,
         seed: 0,
         asset,

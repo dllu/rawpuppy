@@ -1,0 +1,373 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "3dae8288989351f0fc1f65af7e81de71b28bd52e",
+  "scope": "Inward-only linear-RGB blending of new painted synthesis layers, with legacy-zero serialization, exact unpainted/core preservation, viewport consistency, full geometric-gap opacity and real GFX save/cold-reload conformance.",
+  "new_painted_feather_fraction_of_dab_radius": 0.15,
+  "legacy_feather_fraction": 0.0,
+  "gap_policy": "Missing geometric samples retain weight one independently of brush feather.",
+  "implementation": "Smoothstep of normalized penetration inside each brush circle; maximum across overlapping dabs. Outside membership stays zero. Applied in the existing sparse compositor and coverage resolver without a full-frame scratch raster.",
+  "checks": {
+    "default": {
+      "log": "/tmp/rawpuppy-validation/inward-feather-standard-2026-10-10.log",
+      "sha256": "c8cca74347eb0ed25c865daeb87185dd92d171a598f182cce907481b1e344ab0",
+      "passed": 89,
+      "failed": 0,
+      "ignored": 12
+    },
+    "combined": {
+      "log": "/tmp/rawpuppy-validation/inward-feather-combined-tests-2026-10-10.log",
+      "sha256": "296e3a767d5fd1ddc3c1fe830bcf394569f90b9d313654d0707e80a4e631dde2",
+      "passed": 97,
+      "failed": 0,
+      "ignored": 26
+    },
+    "dng": {
+      "log": "/tmp/rawpuppy-validation/inward-feather-dng-2026-10-10.log",
+      "sha256": "5abadaf1f10c54ecc514f4838017277e74b4772c758af00f933eb38fe5d798a5",
+      "passed": 6,
+      "failed": 0,
+      "ignored": 1
+    },
+    "clippy": {
+      "log": "/tmp/rawpuppy-validation/inward-feather-clippy-validated-2026-10-10.log",
+      "sha256": "542675b11819a5a4a9e09637ca88a189b594c8f2c0c2ec2ebe06ada41f568da5",
+      "passed": true
+    },
+    "no_gpu": {
+      "log": "/tmp/rawpuppy-validation/inward-feather-no-gpu-2026-10-10.log",
+      "sha256": "61ba635151269a6ec9f8fccd811157a5446fa415608dda0dc6ccfabf5598ea10",
+      "passed": true
+    }
+  },
+  "real_model_control": {
+    "alpha_exact": true,
+    "cold_reload_pixels_exact": true,
+    "context": [
+      0.6183165311813354,
+      0.259646475315094,
+      0.38168349862098694,
+      0.2862626314163208
+    ],
+    "fill": {
+      "asset": "62479c9048876520de5a7d4d1f2cf181ed43e1081384904c4a7dae44d504f79b.exr",
+      "dabs": [
+        {
+          "center": [
+            0.9191918969154358,
+            0.3320707082748413
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9191032648086548,
+            0.3357921242713928
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9190146923065186,
+            0.3395135700702667
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9189260601997375,
+            0.34323498606681824
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9188374876976013,
+            0.34695640206336975
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9187488555908203,
+            0.35067781805992126
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9186602830886841,
+            0.35439926385879517
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9185716509819031,
+            0.3581206798553467
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9184830784797668,
+            0.3618420958518982
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9183944463729858,
+            0.3655635416507721
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9183058142662048,
+            0.3692849576473236
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9182172417640686,
+            0.3730063736438751
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9181286096572876,
+            0.37672778964042664
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9180400371551514,
+            0.38044923543930054
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9179514050483704,
+            0.38417065143585205
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9178628325462341,
+            0.38789206743240356
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9177742004394531,
+            0.39161351323127747
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9176856279373169,
+            0.395334929227829
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9175969958305359,
+            0.3990563452243805
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9175083637237549,
+            0.4027777910232544
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9174197912216187,
+            0.4064992070198059
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9173311591148376,
+            0.4102206230163574
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9172425866127014,
+            0.41394203901290894
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9171539545059204,
+            0.41766348481178284
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9170653820037842,
+            0.42138490080833435
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9169767498970032,
+            0.42510631680488586
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9168881773948669,
+            0.42882776260375977
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9167995452880859,
+            0.4325491786003113
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9167109727859497,
+            0.4362705945968628
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9166223406791687,
+            0.4399920105934143
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9165337085723877,
+            0.4437134563922882
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9164451360702515,
+            0.4474348723888397
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9163565039634705,
+            0.45115628838539124
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9162679314613342,
+            0.45487773418426514
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9161792993545532,
+            0.45859915018081665
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.916090726852417,
+            0.46232056617736816
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.916002094745636,
+            0.4660419821739197
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9159135222434998,
+            0.4697634279727936
+          ],
+          "radius": 0.05000000074505806
+        },
+        {
+          "center": [
+            0.9158248901367188,
+            0.4734848439693451
+          ],
+          "radius": 0.05000000074505806
+        }
+      ],
+      "feather": 0.15000000596046448,
+      "fill_gaps": false,
+      "model": "moebius-scene-2026-v1",
+      "recipe_sha256": "56d0badb8afe3e5faf81e6f079e1fd95dbf6c10a2faef9fb6615d3ea92022686",
+      "region": [
+        0.6183165311813354,
+        0.259646475315094,
+        0.38168349862098694,
+        0.2862626314163208
+      ],
+      "sampling": {
+        "guidance": 2.0,
+        "noise_offset": 0.0357,
+        "strength": 1.0
+      },
+      "seed": 0,
+      "sha256": "62479c9048876520de5a7d4d1f2cf181ed43e1081384904c4a7dae44d504f79b",
+      "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+      "steps": 20
+    },
+    "generate_seconds": 7.036035863,
+    "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "inward_blended_pixels": 9021,
+    "max_hard_boundary_contribution": 0.06417044997215271,
+    "max_inward_boundary_contribution": 0.0010781288146972656,
+    "original_recipe_sha256": "3355a5d14913f70e1ebcf5bd35fc54951ffd372ae47d71530023235dd2a27698",
+    "radius_scale": 2.0,
+    "scope": "one real GFX painted fill; boundary contribution, exact unselected/core preservation, opaque output and cold reload, not universal quality",
+    "selected_core_pixels_exact": 39029,
+    "source_and_original_recipe_unchanged": true,
+    "source_dimensions": [
+      8736,
+      11648
+    ],
+    "unselected_pixels_exact": 214091
+  },
+  "boundary_contribution_reduction_fraction": 0.9831989830963453,
+  "visual_observation": "The inward composition has a softer selection edge than the matched hard composition, with identical generated core. Background detail and structure mismatches still remain; blending does not repair those.",
+  "prototype_scope": "Six bounded, gamma-correct inward blends on prior Moebius/LLaDA controls were inspected before implementation. Moebius edges improved; LLaDA feature alignment remained visibly wrong.",
+  "limitations": [
+    "The real-model control explicitly doubles its diagnostic brush radius to cover the full object. Production paint is never widened.",
+    "Boundary contribution is the change added by synthesis across neighboring selected/unselected samples, not a universal perceptual-quality metric.",
+    "An incomplete mask may retain object fragments in the transition; the existing full-object/edge/shadow guidance still applies.",
+    "One real GFX case, seed zero, not universal seam-free synthesis."
+  ]
+}

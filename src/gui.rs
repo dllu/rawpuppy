@@ -2826,6 +2826,7 @@ mod error_scope_tests {
                 region: [0., 0., 0.25, 0.25],
                 dabs: vec![],
                 fill_gaps: true,
+                feather: 0.,
                 steps: 20,
                 seed: 42,
                 asset: format!("{hash}.exr"),

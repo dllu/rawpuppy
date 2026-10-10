@@ -25,6 +25,7 @@ fn generated_layer_roundtrips_and_preserves_every_unpainted_pixel() {
             radius: 0.2,
         }],
         fill_gaps: false,
+        feather: 0.,
         steps: 10,
         seed: 0,
         asset,
@@ -68,6 +69,8 @@ fn saved_sampling_parameters_preserve_legacy_recipes_and_record_actual_settings(
     let old: Edits =
         serde_json::from_str(include_str!("data/legacy-synthesis-recipe.json")).unwrap();
     let fill = &old.display.synthesis[0];
+    assert_eq!(fill.feather, 0.);
+    assert!(serde_json::to_value(fill).unwrap().get("feather").is_none());
     assert_eq!(fill.sampling, SamplingParameters::default());
     assert_eq!(fill.sampling.strength, 0.99);
     assert!(
@@ -88,6 +91,16 @@ fn saved_sampling_parameters_preserve_legacy_recipes_and_record_actual_settings(
     assert_eq!(
         serde_json::from_value::<GeneratedFill>(value).unwrap(),
         current
+    );
+    current.validate().unwrap();
+    for feather in [-0.1, 1.1, f32::NAN, f32::INFINITY] {
+        current.feather = feather;
+        assert!(current.validate().is_err());
+    }
+    current.feather = 0.15;
+    assert_eq!(
+        serde_json::to_value(&current).unwrap()["feather"].as_f64(),
+        Some(f64::from(current.feather))
     );
     current.validate().unwrap();
     current.sampling.strength = 0.01;
@@ -120,6 +133,7 @@ fn stale_or_corrupt_synthesis_is_rejected_without_changing_output() {
             radius: 1.,
         }],
         fill_gaps: false,
+        feather: 0.,
         steps: 10,
         seed: 0,
         asset: asset.clone(),
@@ -169,6 +183,7 @@ fn a_later_bad_asset_leaves_the_entire_raster_unchanged_and_offscreen_assets_are
             radius: 1.,
         }],
         fill_gaps: false,
+        feather: 0.,
         steps: 10,
         seed: 0,
         asset,
@@ -291,6 +306,7 @@ fn resampling_an_opaque_fill_keeps_every_output_sample_exactly_opaque() {
         region: [0., 0., 1., 1.],
         dabs: vec![],
         fill_gaps: true,
+        feather: 0.,
         steps: 20,
         seed: 0,
         asset,
@@ -350,6 +366,7 @@ fn a_completed_overlapping_corner_skips_inference_and_creates_no_asset() {
         region: regions[0],
         dabs: vec![],
         fill_gaps: true,
+        feather: 0.,
         steps: 20,
         seed: 0,
         asset,
@@ -457,6 +474,7 @@ fn regeneration_replans_brushes_and_current_gaps_after_an_aspect_change() {
         region: synthesis::brush_context(&dabs, 4096, 2048).unwrap(),
         dabs: dabs.clone(),
         fill_gaps: false,
+        feather: 0.,
         steps: 20,
         seed: 0,
         asset: format!("{hash}.exr"),
@@ -517,6 +535,7 @@ fn corner_fill_uses_output_resolution_membership_and_preserves_opaque_pixels() {
         region: [0., 0., 1., 1.],
         dabs: vec![],
         fill_gaps: true,
+        feather: 0.,
         steps: 10,
         seed: 0,
         asset,
@@ -695,6 +714,7 @@ fn gap_planning_and_mask_coverage_respect_existing_saved_fills() {
         region: [0., 0., 1., 1.],
         dabs: vec![],
         fill_gaps: true,
+        feather: 0.,
         steps: 20,
         seed: 0,
         asset,
@@ -763,4 +783,142 @@ fn real_photo_narrow_corner_planning_and_model_masks() {
         assert!((0..64).any(|y| (0..64).any(|x| mask[y * 8 * 512 + x * 8] == 1.)));
     }
     assert_eq!(rawpuppy::models::sha256(&path).unwrap(), hash);
+}
+
+#[test]
+fn inward_blending_preserves_unpainted_hdr_and_matches_cropped_viewports() {
+    let directory = tempfile::tempdir().unwrap();
+    let original = directory.path().join("photo.raw");
+    std::fs::write(&original, b"immutable feather control").unwrap();
+    let mut layers = Layers::new(original.clone());
+    let generated_value = [0.4, 0.6, 1.25, 1.];
+    let generated = Rendered {
+        width: 8,
+        height: 8,
+        pixels: vec![generated_value; 64],
+    };
+    let (asset, sha256) = layers.store(&generated).unwrap();
+    let mut edits = Edits::default();
+    let fill = GeneratedFill {
+        region: [0., 0., 1., 1.],
+        dabs: vec![MaskDab {
+            center: [0.5, 0.5],
+            radius: 0.25,
+        }],
+        fill_gaps: false,
+        feather: 0.25,
+        steps: 20,
+        seed: 0,
+        sampling: Default::default(),
+        asset,
+        sha256,
+        source_sha256: layers.source_hash().unwrap().into(),
+        source_color_revision: 0,
+        recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        model: "moebius-scene-2026-v1".into(),
+    };
+    edits.display.synthesis.push(fill);
+    let sidecar = rawpuppy::sidecar::path_for(&original);
+    rawpuppy::sidecar::save(&sidecar, &edits).unwrap();
+    let loaded = rawpuppy::sidecar::load(&sidecar).unwrap();
+    assert_eq!(loaded, edits);
+    let base = [2., -0.125, 0.625, 1.];
+    let mut full = Rendered {
+        width: 64,
+        height: 33,
+        pixels: vec![base; 64 * 33],
+    };
+    let mut fresh = Layers::new(original.clone());
+    fresh.apply(&loaded, &mut full, [0., 0., 1., 1.]).unwrap();
+    // At y=0.5, x=47.5/64 is 1/128 inside the radius; the blend's
+    // smoothstep coordinate is 1/8, giving the independently known 11/256.
+    let boundary = full.pixels[16 * 64 + 47];
+    for c in 0..3 {
+        assert!(
+            (boundary[c] - (base[c] + (generated_value[c] - base[c]) * 11. / 256.)).abs()
+                < 0.000001
+        );
+    }
+    assert_eq!(full.pixels[16 * 64 + 48], base);
+    for (actual, expected) in full.pixels[16 * 64 + 32].iter().zip(generated_value) {
+        assert!((actual - expected).abs() < 0.000001);
+    }
+    for y in 0..33 {
+        for x in 0..64 {
+            let dx = (x as f32 + 0.5) / 64. - 0.5;
+            let dy = ((y as f32 + 0.5) / 33. - 0.5) * 33. / 64.;
+            if dx * dx + dy * dy > 0.25 * 0.25 {
+                assert_eq!(full.pixels[y * 64 + x], base);
+            }
+            assert_eq!(full.pixels[y * 64 + x][3], 1.);
+        }
+    }
+    let mut cropped = Rendered {
+        width: 32,
+        height: 33,
+        pixels: vec![base; 32 * 33],
+    };
+    fresh
+        .apply(&loaded, &mut cropped, [0.25, 0., 0.5, 1.])
+        .unwrap();
+    for y in 0..33 {
+        for x in 0..32 {
+            assert_eq!(cropped.pixels[y * 32 + x], full.pixels[y * 64 + x + 16]);
+        }
+    }
+    assert_eq!(
+        std::fs::read(original).unwrap(),
+        b"immutable feather control"
+    );
+}
+
+#[test]
+fn inward_blending_never_reduces_geometric_gap_coverage() {
+    let directory = tempfile::tempdir().unwrap();
+    let original = directory.path().join("photo.raw");
+    std::fs::write(&original, b"immutable gap control").unwrap();
+    let mut layers = Layers::new(original.clone());
+    let value = [0.4, 0.6, 1.25, 1.];
+    let generated = Rendered {
+        width: 8,
+        height: 8,
+        pixels: vec![value; 64],
+    };
+    let (asset, sha256) = layers.store(&generated).unwrap();
+    let mut edits = Edits::default();
+    edits.display.synthesis.push(GeneratedFill {
+        region: [0., 0., 1., 1.],
+        dabs: vec![MaskDab {
+            center: [0.5, 0.5],
+            radius: 0.25,
+        }],
+        fill_gaps: true,
+        feather: 1.,
+        steps: 20,
+        seed: 0,
+        sampling: Default::default(),
+        asset,
+        sha256,
+        source_sha256: layers.source_hash().unwrap().into(),
+        source_color_revision: 0,
+        recipe_sha256: synthesis::recipe_hash(&Edits::default()).unwrap(),
+        model: "moebius-scene-2026-v1".into(),
+    });
+    let base = [2., -0.125, 0.625, 1.];
+    let mut raster = Rendered {
+        width: 64,
+        height: 33,
+        pixels: vec![base; 64 * 33],
+    };
+    for (x, y, alpha) in [(2, 2, 0.), (47, 16, 0.25)] {
+        raster.pixels[y * 64 + x][3] = alpha;
+    }
+    layers.apply(&edits, &mut raster, [0., 0., 1., 1.]).unwrap();
+    for (x, y) in [(2, 2), (47, 16)] {
+        for (actual, expected) in raster.pixels[y * 64 + x].iter().zip(value) {
+            assert!((actual - expected).abs() < 0.000001);
+        }
+    }
+    assert_eq!(raster.pixels[0], base);
+    assert_eq!(std::fs::read(original).unwrap(), b"immutable gap control");
 }

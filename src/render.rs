@@ -448,6 +448,7 @@ impl Renderer {
             region,
             dabs,
             fill_gaps,
+            feather: 0.15,
             steps: settings.steps,
             seed: settings.seed,
             sampling: settings.parameters(),

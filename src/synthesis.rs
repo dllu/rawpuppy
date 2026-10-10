@@ -65,6 +65,9 @@ pub struct GeneratedFill {
     pub region: [f32; 4],
     pub dabs: Vec<MaskDab>,
     pub fill_gaps: bool,
+    /// Fraction of brush radius blended inward; zero preserves historical layers.
+    #[serde(default, skip_serializing_if = "is_zero_f32")]
+    pub feather: f32,
     pub steps: usize,
     pub seed: i64,
     #[serde(default, skip_serializing_if = "SamplingParameters::is_legacy")]
@@ -132,9 +135,16 @@ pub fn valid_hash(hash: &str) -> bool {
 fn is_zero(value: &u32) -> bool {
     *value == 0
 }
+fn is_zero_f32(value: &f32) -> bool {
+    *value == 0.
+}
 
 impl GeneratedFill {
     pub fn validate(&self) -> Result<()> {
+        ensure!(
+            self.feather.is_finite() && (0.0..=1.0).contains(&self.feather),
+            "Invalid synthesis edge blend"
+        );
         ensure!(
             self.source_color_revision <= 3,
             "Unsupported source color decoding revision"
@@ -191,23 +201,41 @@ impl LayerCoverage<'_> {
                 (uv[0] - fill.region[0]) / fill.region[2],
                 (uv[1] - fill.region[1]) / fill.region[3],
             ];
-            if local.iter().all(|v| (0.0..=1.0).contains(v))
-                && target_contains(fill, uv, self.aspect, alpha)
-            {
-                alpha += sample_layer(image, local[0], local[1])[3].clamp(0., 1.) * (1. - alpha);
+            if local.iter().all(|v| (0.0..=1.0).contains(v)) {
+                let weight = target_weight(fill, uv, self.aspect, alpha);
+                if weight > 0. {
+                    alpha += weight
+                        * sample_layer(image, local[0], local[1])[3].clamp(0., 1.)
+                        * (1. - alpha);
+                }
             }
         }
         alpha
     }
 }
 
-fn target_contains(fill: &GeneratedFill, uv: [f32; 2], aspect: f32, alpha: f32) -> bool {
-    fill.fill_gaps && alpha < 1.
-        || fill.dabs.iter().any(|dab| {
-            let dx = uv[0] - dab.center[0];
-            let dy = (uv[1] - dab.center[1]) * aspect;
-            dx * dx + dy * dy <= dab.radius * dab.radius
-        })
+fn target_weight(fill: &GeneratedFill, uv: [f32; 2], aspect: f32, alpha: f32) -> f32 {
+    // Missing geometry must remain fully filled, independently of brush edges.
+    if fill.fill_gaps && alpha < 1. {
+        return 1.;
+    }
+    let mut weight = 0f32;
+    for dab in &fill.dabs {
+        let dx = uv[0] - dab.center[0];
+        let dy = (uv[1] - dab.center[1]) * aspect;
+        let distance2 = dx * dx + dy * dy;
+        if distance2 <= dab.radius * dab.radius {
+            if fill.feather == 0. {
+                return 1.;
+            }
+            let t = ((1. - distance2.sqrt() / dab.radius) / fill.feather).clamp(0., 1.);
+            weight = weight.max(t * t * (3. - 2. * t));
+            if weight == 1. {
+                return 1.;
+            }
+        }
+    }
+    weight
 }
 
 impl Layers {
@@ -404,9 +432,11 @@ impl Layers {
                         continue;
                     }
                     let pixel = &mut image.pixels[y * image.width + x];
-                    if !target_contains(fill, uv, aspect, pixel[3]) {
+                    let weight = target_weight(fill, uv, aspect, pixel[3]);
+                    if weight == 0. {
                         continue;
                     }
+                    let alpha = alpha * weight;
                     for c in 0..3 {
                         pixel[c] += alpha * (sample[c] - pixel[c]);
                     }
@@ -687,6 +717,7 @@ mod native_asset_tests {
                 radius: 1.,
             }],
             fill_gaps: false,
+            feather: 0.,
             steps: 2,
             seed: 0,
             asset,

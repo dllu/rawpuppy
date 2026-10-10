@@ -87,6 +87,12 @@ Brush context also shifts inward at canvas edges wherever the physical square
 fits, retaining more photographic content without stretching or dropping the
 selected part inside the canvas.
 
+New painted layers record an inward edge blend of 15% of brush radius. The
+generated core and all unpainted pixels stay exact; blending is in working linear
+RGB and does not widen the selection. Missing geometric pixels retain full
+coverage. Legacy layers omit this field and retain zero blend. See the
+[inward-blend validation](2026-10-10-09-19-inward-synthesis-edge-blending.md).
+
 Corner detection checks every perimeter pixel at the full output dimensions,
 alongside a sparse interior grid. Narrow edge gaps therefore survive even when
 the overview misses them. Missing perimeter samples are also projected into
