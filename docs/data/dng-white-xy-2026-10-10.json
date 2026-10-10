@@ -1,0 +1,2909 @@
+{
+  "scope": "Synthetic DNG AsShotWhiteXY calibration controls for warm dual and third/custom profile; no physical camera/colorimetry claim.",
+  "specification": "https://helpx.adobe.com/content/dam/help/en/photoshop/pdf/DNG_Spec_1_7_1_0.pdf",
+  "policy": "Use the declared xy directly to weight profile matrices, derive camera neutral through AB*CC*CM, and normalize its gains once in the existing calibration module. Do not use a fixed-matrix decoder fallback.",
+  "source_color_revision": 3,
+  "cases": [
+    {
+      "mode": "warm",
+      "fixture_settings": {
+        "as_shot": [
+          0.40503036975860596,
+          1.0,
+          5.4118499755859375
+        ],
+        "black": 512,
+        "block_size": 256,
+        "camera_source_sha256": null,
+        "camera_to_working": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "fixtures": [
+          {
+            "fixture": "constant",
+            "metadata": {
+              "aperture": null,
+              "as_shot": [
+                0.40503042936325073,
+                1.0,
+                5.411880016326904
+              ],
+              "bits": 16,
+              "camera_to_working": [
+                [
+                  1.4044970273971558,
+                  -0.39002054929733276,
+                  -0.014476296491920948
+                ],
+                [
+                  0.03621445596218109,
+                  0.9710509777069092,
+                  -0.007265207823365927
+                ],
+                [
+                  0.35944926738739014,
+                  0.09584765881299973,
+                  0.5447032451629639
+                ]
+              ],
+              "color_revision": 3,
+              "focal_length_mm": null,
+              "height": 768,
+              "lens_model": null,
+              "lens_profile": null,
+              "lens_profile_error": null,
+              "make": "Rawpuppy",
+              "model": "Controlled Bayer Fixture",
+              "pattern": "RGGB",
+              "sensor_height": 768,
+              "sensor_width": 768,
+              "width": 768
+            },
+            "patches": [
+              {
+                "clipped_camera_mean": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "expected_working_mean": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "measured_camera_mean": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "patch": 0,
+                "rawpuppy_mean": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.004983836319297552,
+                  0.004983836319297552,
+                  0.004983836319297552
+                ],
+                "expected_working_mean": [
+                  0.0005008729640394449,
+                  0.004716705065220594,
+                  0.015894969925284386
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.004999999888241291,
+                  0.004999999888241291,
+                  0.004999999888241291
+                ],
+                "measured_camera_mean": [
+                  0.004983836319297552,
+                  0.004983836319297552,
+                  0.004983836319297552
+                ],
+                "patch": 1,
+                "rawpuppy_mean": [
+                  0.0005008734297007322,
+                  0.004716704832389951,
+                  0.015894970390945673
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0200026948004961,
+                  0.0200026948004961,
+                  0.0200026948004961
+                ],
+                "expected_working_mean": [
+                  0.002010260708630085,
+                  0.01893055997788906,
+                  0.06379467248916626
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.019999999552965164,
+                  0.019999999552965164,
+                  0.019999999552965164
+                ],
+                "measured_camera_mean": [
+                  0.0200026948004961,
+                  0.0200026948004961,
+                  0.0200026948004961
+                ],
+                "patch": 2,
+                "rawpuppy_mean": [
+                  0.002010260708630085,
+                  0.018930560909211636,
+                  0.06379467993974686
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.18002425134181976,
+                  0.18002425134181976,
+                  0.18002425134181976
+                ],
+                "expected_working_mean": [
+                  0.018092356622219086,
+                  0.1703750342130661,
+                  0.5741520524024963
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.18000000715255737,
+                  0.18000000715255737,
+                  0.18000000715255737
+                ],
+                "measured_camera_mean": [
+                  0.18002425134181976,
+                  0.18002425134181976,
+                  0.18002425134181976
+                ],
+                "patch": 3,
+                "rawpuppy_mean": [
+                  0.018092356622219086,
+                  0.1703750267624855,
+                  0.5741520524024963
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.18002425134181976,
+                  0.0400053896009922,
+                  0.0200026948004961
+                ],
+                "expected_working_mean": [
+                  0.08523931354284286,
+                  0.040701381862163544,
+                  0.08900909125804901
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.18000000715255737,
+                  0.03999999910593033,
+                  0.019999999552965164
+                ],
+                "measured_camera_mean": [
+                  0.18002425134181976,
+                  0.0400053896009922,
+                  0.0200026948004961
+                ],
+                "patch": 4,
+                "rawpuppy_mean": [
+                  0.08523931726813316,
+                  0.040701381862163544,
+                  0.08900908939540386
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0200026948004961,
+                  0.18002425134181976,
+                  0.0400053896009922
+                ],
+                "expected_working_mean": [
+                  -0.061968520283699036,
+                  0.17353317141532898,
+                  0.13809768855571747
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.019999999552965164,
+                  0.18000000715255737,
+                  0.03999999910593033
+                ],
+                "measured_camera_mean": [
+                  0.0200026948004961,
+                  0.18002425134181976,
+                  0.0400053896009922
+                ],
+                "patch": 5,
+                "rawpuppy_mean": [
+                  -0.061968520283699036,
+                  0.17353316769003868,
+                  0.13809769973158836
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0400053896009922,
+                  0.0200026948004961,
+                  0.18002425134181976
+                ],
+                "expected_working_mean": [
+                  0.0008523492142558098,
+                  0.01293216086924076,
+                  0.538429319858551
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.03999999910593033,
+                  0.019999999552965164,
+                  0.18000000715255737
+                ],
+                "measured_camera_mean": [
+                  0.0400053896009922,
+                  0.0200026948004961,
+                  0.18002425134181976
+                ],
+                "patch": 6,
+                "rawpuppy_mean": [
+                  0.0008523492142558098,
+                  0.01293216273188591,
+                  0.538429319858551
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  544,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0,
+                  0.004983836319297552,
+                  0.0
+                ],
+                "expected_working_mean": [
+                  -0.0072235953994095325,
+                  0.004889310337603092,
+                  -0.015665177255868912
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  -0.009999999776482582,
+                  0.004999999888241291,
+                  -0.004999999888241291
+                ],
+                "measured_camera_mean": [
+                  -0.009967672638595104,
+                  0.004983836319297552,
+                  -0.004983836319297552
+                ],
+                "patch": 7,
+                "rawpuppy_mean": [
+                  -0.007223594933748245,
+                  0.004889310337603092,
+                  -0.015665178652852774
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  544,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.2999730706214905,
+                  0.2999730706214905,
+                  0.2999730706214905
+                ],
+                "expected_working_mean": [
+                  0.030147135257720947,
+                  0.2838946580886841,
+                  0.9567053318023682
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.30000001192092896,
+                  0.30000001192092896,
+                  0.30000001192092896
+                ],
+                "measured_camera_mean": [
+                  0.2999730706214905,
+                  0.2999730706214905,
+                  0.2999730706214905
+                ],
+                "patch": 8,
+                "rawpuppy_mean": [
+                  0.030147142708301544,
+                  0.2838946580886841,
+                  0.9567053616046906
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  544,
+                  192,
+                  192
+                ]
+              }
+            ],
+            "sha256": "b4696a002e348523e9bfa330628c8442d519f00d15463e5de4f388d5147c7fda"
+          },
+          {
+            "fixture": "noisy",
+            "metadata": {
+              "aperture": null,
+              "as_shot": [
+                0.40503042936325073,
+                1.0,
+                5.411880016326904
+              ],
+              "bits": 16,
+              "camera_to_working": [
+                [
+                  1.4044970273971558,
+                  -0.39002054929733276,
+                  -0.014476296491920948
+                ],
+                [
+                  0.03621445596218109,
+                  0.9710509777069092,
+                  -0.007265207823365927
+                ],
+                [
+                  0.35944926738739014,
+                  0.09584765881299973,
+                  0.5447032451629639
+                ]
+              ],
+              "color_revision": 3,
+              "focal_length_mm": null,
+              "height": 768,
+              "lens_model": null,
+              "lens_profile": null,
+              "lens_profile_error": null,
+              "make": "Rawpuppy",
+              "model": "Controlled Bayer Fixture",
+              "pattern": "RGGB",
+              "sensor_height": 768,
+              "sensor_width": 768,
+              "width": 768
+            },
+            "patches": [
+              {
+                "clipped_camera_mean": [
+                  0.007552925031632185,
+                  0.00753901107236743,
+                  0.0075480141676962376
+                ],
+                "expected_working_mean": [
+                  1.3597241377283353e-05,
+                  -8.045895810937509e-06,
+                  3.102858681813814e-05
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "measured_camera_mean": [
+                  1.9643497580545954e-05,
+                  -8.184791113308165e-06,
+                  9.821748790272977e-06
+                ],
+                "patch": 0,
+                "rawpuppy_mean": [
+                  6.848965145738677e-06,
+                  -9.751607647798563e-06,
+                  6.324713570570061e-05
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.009817247278988361,
+                  0.010037198662757874,
+                  0.010135197080671787
+                ],
+                "expected_working_mean": [
+                  0.0003015562251675874,
+                  0.004709160421043634,
+                  0.01629156805574894
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.004999999888241291,
+                  0.004999999888241291,
+                  0.004999999888241291
+                ],
+                "measured_camera_mean": [
+                  0.004656444303691387,
+                  0.0049871099181473255,
+                  0.005134435836225748
+                ],
+                "patch": 1,
+                "rawpuppy_mean": [
+                  0.0003072229466927941,
+                  0.004707666231419062,
+                  0.016263625204531864
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.020150020718574524,
+                  0.020001057535409927,
+                  0.020032159984111786
+                ],
+                "expected_working_mean": [
+                  0.0020923996344208717,
+                  0.018929973244667053,
+                  0.0639028325676918
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.019999999552965164,
+                  0.019999999552965164,
+                  0.019999999552965164
+                ],
+                "measured_camera_mean": [
+                  0.020150020718574524,
+                  0.020001057535409927,
+                  0.020032159984111786
+                ],
+                "patch": 2,
+                "rawpuppy_mean": [
+                  0.002090707959709448,
+                  0.018927649782110874,
+                  0.06392354874078403
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.17991948127746582,
+                  0.18004879355430603,
+                  0.18000133335590363
+                ],
+                "expected_working_mean": [
+                  0.018024973571300507,
+                  0.17039825022220612,
+                  0.5740716457366943
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.18000000715255737,
+                  0.18000000715255737,
+                  0.18000000715255737
+                ],
+                "measured_camera_mean": [
+                  0.17991948127746582,
+                  0.18004879355430603,
+                  0.18000133335590363
+                ],
+                "patch": 3,
+                "rawpuppy_mean": [
+                  0.018027968802319567,
+                  0.1703973707428506,
+                  0.5740758372388276
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.18025341629981995,
+                  0.039997201412916183,
+                  0.020297346636652946
+                ],
+                "expected_working_mean": [
+                  0.08534978330135345,
+                  0.04068521037697792,
+                  0.08991026878356934
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.18000000715255737,
+                  0.03999999910593033,
+                  0.019999999552965164
+                ],
+                "measured_camera_mean": [
+                  0.18025341629981995,
+                  0.039997201412916183,
+                  0.020297346636652946
+                ],
+                "patch": 4,
+                "rawpuppy_mean": [
+                  0.08534691657183026,
+                  0.040686623380502676,
+                  0.08990343789522133
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.019973227754235268,
+                  0.18007007241249084,
+                  0.0402083694934845
+                ],
+                "expected_working_mean": [
+                  -0.06201906129717827,
+                  0.17356926202774048,
+                  0.13869613409042358
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.019999999552965164,
+                  0.18000000715255737,
+                  0.03999999910593033
+                ],
+                "measured_camera_mean": [
+                  0.019973227754235268,
+                  0.18007007241249084,
+                  0.0402083694934845
+                ],
+                "patch": 5,
+                "rawpuppy_mean": [
+                  -0.062021421896740016,
+                  0.17356835737074208,
+                  0.13871455257362364
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.03985478729009628,
+                  0.019984686747193336,
+                  0.1802304983139038
+                ],
+                "expected_working_mean": [
+                  0.0007575424388051033,
+                  0.012904355302453041,
+                  0.539013683795929
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.03999999910593033,
+                  0.019999999552965164,
+                  0.18000000715255737
+                ],
+                "measured_camera_mean": [
+                  0.03985478729009628,
+                  0.019984686747193336,
+                  0.1802304983139038
+                ],
+                "patch": 6,
+                "rawpuppy_mean": [
+                  0.0007606463049240927,
+                  0.012906213267544646,
+                  0.5389851404963539
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  544,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0025559349451214075,
+                  0.010030665434896946,
+                  0.005183822941035032
+                ],
+                "expected_working_mean": [
+                  -0.007263251580297947,
+                  0.004867088049650192,
+                  -0.014500882476568222
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  -0.009999999776482582,
+                  0.004999999888241291,
+                  -0.004999999888241291
+                ],
+                "measured_camera_mean": [
+                  -0.009987316094338894,
+                  0.004977288190275431,
+                  -0.004587691742926836
+                ],
+                "patch": 7,
+                "rawpuppy_mean": [
+                  -0.007257012163121444,
+                  0.004868595272831221,
+                  -0.01451834691019687
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  544,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.3002513647079468,
+                  0.2998126447200775,
+                  0.2997831702232361
+                ],
+                "expected_working_mean": [
+                  0.030382907018065453,
+                  0.28375044465065,
+                  0.9561706781387329
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.30000001192092896,
+                  0.30000001192092896,
+                  0.30000001192092896
+                ],
+                "measured_camera_mean": [
+                  0.3002513647079468,
+                  0.2998126447200775,
+                  0.2997831702232361
+                ],
+                "patch": 8,
+                "rawpuppy_mean": [
+                  0.030391097060702223,
+                  0.28374603363045026,
+                  0.956172217530871
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  544,
+                  192,
+                  192
+                ]
+              }
+            ],
+            "sha256": "a1b653018ea90538136c551524b998266ea556d637e8238fbf1ce08e5fe731ca"
+          }
+        ],
+        "scope": "synthetic Bayer DNG controls; equivalent normalized camera matrix, not a copy of the camera's original profile",
+        "white": 15360,
+        "xyz_to_camera": [
+          [
+            3.2409698963165283,
+            -1.5373830795288086,
+            -0.4986107647418976
+          ],
+          [
+            -0.9692435264587402,
+            1.8759675025939941,
+            0.041555050760507584
+          ],
+          [
+            0.055630069226026535,
+            -0.20397695899009705,
+            1.056971549987793
+          ]
+        ]
+      },
+      "gpu_checks": [
+        {
+          "build_profile": "release",
+          "comparisons": [
+            {
+              "alpha_mismatches": 0,
+              "backend": "Cuda",
+              "cold_render_seconds": 0.441956103,
+              "device_label": "cuda (system memory)",
+              "max_absolute_rgb_error": 7.450580596923828e-07,
+              "mean_absolute_rgb_error": 1.0062832243110572e-08,
+              "passed": true,
+              "preview_dimensions": [
+                512,
+                512
+              ],
+              "recipe": "camera-defaults",
+              "warm_1800_preview_seconds": [
+                0.000902321,
+                0.000552112
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Vulkan",
+              "cold_render_seconds": 0.557591916,
+              "device_label": "wgpu<wgsl>",
+              "max_absolute_rgb_error": 7.450580596923828e-07,
+              "mean_absolute_rgb_error": 2.4888844674166948e-08,
+              "passed": true,
+              "preview_dimensions": [
+                512,
+                512
+              ],
+              "recipe": "camera-defaults",
+              "warm_1800_preview_seconds": [
+                0.000872512,
+                0.001084241
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Cuda",
+              "cold_render_seconds": 0.247414175,
+              "device_label": "cuda (system memory)",
+              "max_absolute_rgb_error": 0.00019943714141845703,
+              "mean_absolute_rgb_error": 7.472747409018062e-08,
+              "passed": true,
+              "preview_dimensions": [
+                478,
+                512
+              ],
+              "recipe": "composed-edit",
+              "warm_1800_preview_seconds": [
+                0.000548096,
+                0.000545505
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Vulkan",
+              "cold_render_seconds": 0.013410806,
+              "device_label": "wgpu<wgsl>",
+              "max_absolute_rgb_error": 0.000224430114030838,
+              "mean_absolute_rgb_error": 1.3081626503148388e-07,
+              "passed": true,
+              "preview_dimensions": [
+                478,
+                512
+              ],
+              "recipe": "composed-edit",
+              "warm_1800_preview_seconds": [
+                0.0010816,
+                0.001174785
+              ]
+            }
+          ],
+          "composed_edits": {
+            "display": {
+              "curve": [
+                [
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.5,
+                  0.6000000238418579
+                ],
+                [
+                  1.0,
+                  1.0
+                ]
+              ],
+              "highlights": [
+                1.100000023841858,
+                1.0199999809265137,
+                0.8500000238418579
+              ],
+              "retouch": [],
+              "shadows": [
+                0.8999999761581421,
+                0.949999988079071,
+                1.100000023841858
+              ],
+              "split_strength": 0.15000000596046448,
+              "synthesis": []
+            },
+            "geometry": {
+              "chromatic_aberration": [
+                0.00039999998989515007,
+                -0.0003000000142492354
+              ],
+              "crop": [
+                0.15000000596046448,
+                0.10000000149011612,
+                0.699999988079071,
+                0.75
+              ],
+              "distortion": [
+                -0.009999999776482582,
+                0.004999999888241291
+              ],
+              "field_of_view": 50.0,
+              "pitch": -1.0,
+              "rotation": 3.0,
+              "scale": 1.0,
+              "yaw": 2.0
+            },
+            "raw": {
+              "denoise": 0.0,
+              "hot_pixels": false,
+              "recover_highlights": true
+            },
+            "scene": {
+              "calibration": [
+                1.0499999523162842,
+                0.949999988079071,
+                1.0
+              ],
+              "exposure": 0.699999988079071,
+              "graduated": {
+                "angle": 35.0,
+                "center": [
+                  0.5,
+                  0.5
+                ],
+                "exposure": 0.5,
+                "width": 0.30000001192092896
+              },
+              "mixer": [
+                [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "vignette": [
+                0.0,
+                0.0
+              ]
+            },
+            "tone": {
+              "mapper": "agx_sdr_v1",
+              "saturation": 1.0
+            },
+            "version": 1
+          },
+          "decode_seconds": 0.02126537,
+          "default_edits": {
+            "display": {
+              "curve": [
+                [
+                  0.0,
+                  0.0
+                ],
+                [
+                  1.0,
+                  1.0
+                ]
+              ],
+              "highlights": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "retouch": [],
+              "shadows": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "split_strength": 0.0,
+              "synthesis": []
+            },
+            "geometry": {
+              "chromatic_aberration": [
+                0.0,
+                0.0
+              ],
+              "crop": [
+                0.0,
+                0.0,
+                1.0,
+                1.0
+              ],
+              "distortion": [
+                0.0,
+                0.0
+              ],
+              "field_of_view": 50.0,
+              "pitch": 0.0,
+              "rotation": 0.0,
+              "scale": 1.0,
+              "yaw": 0.0
+            },
+            "raw": {
+              "denoise": 0.0,
+              "hot_pixels": false,
+              "recover_highlights": true
+            },
+            "scene": {
+              "calibration": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "exposure": 0.0,
+              "graduated": {
+                "angle": 0.0,
+                "center": [
+                  0.5,
+                  0.5
+                ],
+                "exposure": 0.0,
+                "width": 0.30000001192092896
+              },
+              "mixer": [
+                [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "vignette": [
+                0.0,
+                0.0
+              ]
+            },
+            "tone": {
+              "mapper": "agx_sdr_v1",
+              "saturation": 1.0
+            },
+            "version": 1
+          },
+          "default_missing_perimeter_samples": 0,
+          "default_perimeter_samples": 3072,
+          "input_sha256": "b4696a002e348523e9bfa330628c8442d519f00d15463e5de4f388d5147c7fda",
+          "input_unchanged": true,
+          "metadata": {
+            "aperture": null,
+            "as_shot": [
+              0.40503042936325073,
+              1.0,
+              5.411880016326904
+            ],
+            "bits": 16,
+            "camera_to_working": [
+              [
+                1.4044970273971558,
+                -0.39002054929733276,
+                -0.014476296491920948
+              ],
+              [
+                0.03621445596218109,
+                0.9710509777069092,
+                -0.007265207823365927
+              ],
+              [
+                0.35944926738739014,
+                0.09584765881299973,
+                0.5447032451629639
+              ]
+            ],
+            "color_revision": 3,
+            "focal_length_mm": null,
+            "height": 768,
+            "lens_model": null,
+            "lens_profile": null,
+            "lens_profile_error": null,
+            "make": "Rawpuppy",
+            "model": "Controlled Bayer Fixture",
+            "pattern": "RGGB",
+            "sensor_height": 768,
+            "sensor_width": 768,
+            "width": 768
+          },
+          "orientation": 1,
+          "output_dimensions": [
+            768,
+            768
+          ],
+          "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+          "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+          "sensor_unchanged": true,
+          "tolerances": {
+            "alpha_mismatches": 0,
+            "max_absolute_rgb": 0.003,
+            "mean_absolute_rgb": 3e-05
+          }
+        },
+        {
+          "build_profile": "release",
+          "comparisons": [
+            {
+              "alpha_mismatches": 0,
+              "backend": "Cuda",
+              "cold_render_seconds": 0.443567768,
+              "device_label": "cuda (system memory)",
+              "max_absolute_rgb_error": 1.996755599975586e-06,
+              "mean_absolute_rgb_error": 1.7694630128605792e-08,
+              "passed": true,
+              "preview_dimensions": [
+                512,
+                512
+              ],
+              "recipe": "camera-defaults",
+              "warm_1800_preview_seconds": [
+                0.001461968,
+                0.000579296
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Vulkan",
+              "cold_render_seconds": 0.568352608,
+              "device_label": "wgpu<wgsl>",
+              "max_absolute_rgb_error": 1.996755599975586e-06,
+              "mean_absolute_rgb_error": 2.6313094614545775e-08,
+              "passed": true,
+              "preview_dimensions": [
+                512,
+                512
+              ],
+              "recipe": "camera-defaults",
+              "warm_1800_preview_seconds": [
+                0.001222945,
+                0.001135632
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Cuda",
+              "cold_render_seconds": 0.249512784,
+              "device_label": "cuda (system memory)",
+              "max_absolute_rgb_error": 0.00019887089729309082,
+              "mean_absolute_rgb_error": 6.789816744016038e-07,
+              "passed": true,
+              "preview_dimensions": [
+                478,
+                512
+              ],
+              "recipe": "composed-edit",
+              "warm_1800_preview_seconds": [
+                0.000569952,
+                0.000566464
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Vulkan",
+              "cold_render_seconds": 0.011523381,
+              "device_label": "wgpu<wgsl>",
+              "max_absolute_rgb_error": 0.00021602213382720947,
+              "mean_absolute_rgb_error": 1.22572416822184e-06,
+              "passed": true,
+              "preview_dimensions": [
+                478,
+                512
+              ],
+              "recipe": "composed-edit",
+              "warm_1800_preview_seconds": [
+                0.000950784,
+                0.001180081
+              ]
+            }
+          ],
+          "composed_edits": {
+            "display": {
+              "curve": [
+                [
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.5,
+                  0.6000000238418579
+                ],
+                [
+                  1.0,
+                  1.0
+                ]
+              ],
+              "highlights": [
+                1.100000023841858,
+                1.0199999809265137,
+                0.8500000238418579
+              ],
+              "retouch": [],
+              "shadows": [
+                0.8999999761581421,
+                0.949999988079071,
+                1.100000023841858
+              ],
+              "split_strength": 0.15000000596046448,
+              "synthesis": []
+            },
+            "geometry": {
+              "chromatic_aberration": [
+                0.00039999998989515007,
+                -0.0003000000142492354
+              ],
+              "crop": [
+                0.15000000596046448,
+                0.10000000149011612,
+                0.699999988079071,
+                0.75
+              ],
+              "distortion": [
+                -0.009999999776482582,
+                0.004999999888241291
+              ],
+              "field_of_view": 50.0,
+              "pitch": -1.0,
+              "rotation": 3.0,
+              "scale": 1.0,
+              "yaw": 2.0
+            },
+            "raw": {
+              "denoise": 0.0,
+              "hot_pixels": false,
+              "recover_highlights": true
+            },
+            "scene": {
+              "calibration": [
+                1.0499999523162842,
+                0.949999988079071,
+                1.0
+              ],
+              "exposure": 0.699999988079071,
+              "graduated": {
+                "angle": 35.0,
+                "center": [
+                  0.5,
+                  0.5
+                ],
+                "exposure": 0.5,
+                "width": 0.30000001192092896
+              },
+              "mixer": [
+                [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "vignette": [
+                0.0,
+                0.0
+              ]
+            },
+            "tone": {
+              "mapper": "agx_sdr_v1",
+              "saturation": 1.0
+            },
+            "version": 1
+          },
+          "decode_seconds": 0.02078097,
+          "default_edits": {
+            "display": {
+              "curve": [
+                [
+                  0.0,
+                  0.0
+                ],
+                [
+                  1.0,
+                  1.0
+                ]
+              ],
+              "highlights": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "retouch": [],
+              "shadows": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "split_strength": 0.0,
+              "synthesis": []
+            },
+            "geometry": {
+              "chromatic_aberration": [
+                0.0,
+                0.0
+              ],
+              "crop": [
+                0.0,
+                0.0,
+                1.0,
+                1.0
+              ],
+              "distortion": [
+                0.0,
+                0.0
+              ],
+              "field_of_view": 50.0,
+              "pitch": 0.0,
+              "rotation": 0.0,
+              "scale": 1.0,
+              "yaw": 0.0
+            },
+            "raw": {
+              "denoise": 0.0,
+              "hot_pixels": false,
+              "recover_highlights": true
+            },
+            "scene": {
+              "calibration": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "exposure": 0.0,
+              "graduated": {
+                "angle": 0.0,
+                "center": [
+                  0.5,
+                  0.5
+                ],
+                "exposure": 0.0,
+                "width": 0.30000001192092896
+              },
+              "mixer": [
+                [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "vignette": [
+                0.0,
+                0.0
+              ]
+            },
+            "tone": {
+              "mapper": "agx_sdr_v1",
+              "saturation": 1.0
+            },
+            "version": 1
+          },
+          "default_missing_perimeter_samples": 0,
+          "default_perimeter_samples": 3072,
+          "input_sha256": "a1b653018ea90538136c551524b998266ea556d637e8238fbf1ce08e5fe731ca",
+          "input_unchanged": true,
+          "metadata": {
+            "aperture": null,
+            "as_shot": [
+              0.40503042936325073,
+              1.0,
+              5.411880016326904
+            ],
+            "bits": 16,
+            "camera_to_working": [
+              [
+                1.4044970273971558,
+                -0.39002054929733276,
+                -0.014476296491920948
+              ],
+              [
+                0.03621445596218109,
+                0.9710509777069092,
+                -0.007265207823365927
+              ],
+              [
+                0.35944926738739014,
+                0.09584765881299973,
+                0.5447032451629639
+              ]
+            ],
+            "color_revision": 3,
+            "focal_length_mm": null,
+            "height": 768,
+            "lens_model": null,
+            "lens_profile": null,
+            "lens_profile_error": null,
+            "make": "Rawpuppy",
+            "model": "Controlled Bayer Fixture",
+            "pattern": "RGGB",
+            "sensor_height": 768,
+            "sensor_width": 768,
+            "width": 768
+          },
+          "orientation": 1,
+          "output_dimensions": [
+            768,
+            768
+          ],
+          "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+          "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+          "sensor_unchanged": true,
+          "tolerances": {
+            "alpha_mismatches": 0,
+            "max_absolute_rgb": 0.003,
+            "mean_absolute_rgb": 3e-05
+          }
+        }
+      ]
+    },
+    {
+      "mode": "third",
+      "fixture_settings": {
+        "as_shot": [
+          0.8945784568786621,
+          1.0,
+          2.3340229988098145
+        ],
+        "black": 512,
+        "block_size": 256,
+        "camera_source_sha256": null,
+        "camera_to_working": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "fixtures": [
+          {
+            "fixture": "constant",
+            "metadata": {
+              "aperture": null,
+              "as_shot": [
+                0.8945778608322144,
+                1.0,
+                2.3340208530426025
+              ],
+              "bits": 16,
+              "camera_to_working": [
+                [
+                  1.204088568687439,
+                  -0.17482762038707733,
+                  -0.029260916635394096
+                ],
+                [
+                  -0.029779931530356407,
+                  1.0307823419570923,
+                  -0.0010023207869380713
+                ],
+                [
+                  0.002312624594196677,
+                  0.1488555520772934,
+                  0.8488318920135498
+                ]
+              ],
+              "color_revision": 3,
+              "focal_length_mm": null,
+              "height": 768,
+              "lens_model": null,
+              "lens_profile": null,
+              "lens_profile_error": null,
+              "make": "Rawpuppy",
+              "model": "Controlled Bayer Fixture",
+              "pattern": "RGGB",
+              "sensor_height": 768,
+              "sensor_width": 768,
+              "width": 768
+            },
+            "patches": [
+              {
+                "clipped_camera_mean": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "expected_working_mean": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "measured_camera_mean": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "patch": 0,
+                "rawpuppy_mean": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.004983836319297552,
+                  0.004983836319297552,
+                  0.004983836319297552
+                ],
+                "expected_working_mean": [
+                  0.004156657960265875,
+                  0.004992819391191006,
+                  0.010626115836203098
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.004999999888241291,
+                  0.004999999888241291,
+                  0.004999999888241291
+                ],
+                "measured_camera_mean": [
+                  0.004983836319297552,
+                  0.004983836319297552,
+                  0.004983836319297552
+                ],
+                "patch": 1,
+                "rawpuppy_mean": [
+                  0.004156657611019909,
+                  0.004992819158360362,
+                  0.010626116069033742
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0200026948004961,
+                  0.0200026948004961,
+                  0.0200026948004961
+                ],
+                "expected_working_mean": [
+                  0.016682803630828857,
+                  0.020038748160004616,
+                  0.042648058384656906
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.019999999552965164,
+                  0.019999999552965164,
+                  0.019999999552965164
+                ],
+                "measured_camera_mean": [
+                  0.0200026948004961,
+                  0.0200026948004961,
+                  0.0200026948004961
+                ],
+                "patch": 2,
+                "rawpuppy_mean": [
+                  0.016682804562151432,
+                  0.02003874909132719,
+                  0.042648060247302055
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.18002425134181976,
+                  0.18002425134181976,
+                  0.18002425134181976
+                ],
+                "expected_working_mean": [
+                  0.15014523267745972,
+                  0.180348739027977,
+                  0.38383251428604126
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.18000000715255737,
+                  0.18000000715255737,
+                  0.18000000715255737
+                ],
+                "measured_camera_mean": [
+                  0.18002425134181976,
+                  0.18002425134181976,
+                  0.18002425134181976
+                ],
+                "patch": 3,
+                "rawpuppy_mean": [
+                  0.15014523267745972,
+                  0.1803487315773964,
+                  0.38383251428604126
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.18002425134181976,
+                  0.0400053896009922,
+                  0.0200026948004961
+                ],
+                "expected_working_mean": [
+                  0.1855531632900238,
+                  0.03639412298798561,
+                  0.045956626534461975
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.18000000715255737,
+                  0.03999999910593033,
+                  0.019999999552965164
+                ],
+                "measured_camera_mean": [
+                  0.18002425134181976,
+                  0.0400053896009922,
+                  0.0200026948004961
+                ],
+                "patch": 4,
+                "rawpuppy_mean": [
+                  0.1855531558394432,
+                  0.03639412298798561,
+                  0.0459566256031394
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0200026948004961,
+                  0.18002425134181976,
+                  0.0400053896009922
+                ],
+                "expected_working_mean": [
+                  -0.012659480795264244,
+                  0.18493933975696564,
+                  0.10609732568264008
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.019999999552965164,
+                  0.18000000715255737,
+                  0.03999999910593033
+                ],
+                "measured_camera_mean": [
+                  0.0200026948004961,
+                  0.18002425134181976,
+                  0.0400053896009922
+                ],
+                "patch": 5,
+                "rawpuppy_mean": [
+                  -0.012659475207328796,
+                  0.18493933603167534,
+                  0.10609732568264008
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0400053896009922,
+                  0.0200026948004961,
+                  0.18002425134181976
+                ],
+                "expected_working_mean": [
+                  0.02729995921254158,
+                  0.019131505861878395,
+                  0.359722763299942
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.03999999910593033,
+                  0.019999999552965164,
+                  0.18000000715255737
+                ],
+                "measured_camera_mean": [
+                  0.0400053896009922,
+                  0.0200026948004961,
+                  0.18002425134181976
+                ],
+                "patch": 6,
+                "rawpuppy_mean": [
+                  0.02729995734989643,
+                  0.01913150679320097,
+                  0.3597227856516838
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  544,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0,
+                  0.004983836319297552,
+                  0.0
+                ],
+                "expected_working_mean": [
+                  -0.011267626658082008,
+                  0.0054144528694450855,
+                  -0.00915268249809742
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  -0.009999999776482582,
+                  0.004999999888241291,
+                  -0.004999999888241291
+                ],
+                "measured_camera_mean": [
+                  -0.009967672638595104,
+                  0.004983836319297552,
+                  -0.004983836319297552
+                ],
+                "patch": 7,
+                "rawpuppy_mean": [
+                  -0.011267625726759434,
+                  0.0054144528694450855,
+                  -0.00915268319658935
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  544,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.2999730706214905,
+                  0.2999730706214905,
+                  0.2999730706214905
+                ],
+                "expected_working_mean": [
+                  0.25018584728240967,
+                  0.30051374435424805,
+                  0.6395772695541382
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.30000001192092896,
+                  0.30000001192092896,
+                  0.30000001192092896
+                ],
+                "measured_camera_mean": [
+                  0.2999730706214905,
+                  0.2999730706214905,
+                  0.2999730706214905
+                ],
+                "patch": 8,
+                "rawpuppy_mean": [
+                  0.25018584728240967,
+                  0.30051374435424805,
+                  0.6395772397518158
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  544,
+                  192,
+                  192
+                ]
+              }
+            ],
+            "sha256": "47a4b009e0213c1f4387c7572e51da13678f632f92523edfbe3fb8a5ecf9096e"
+          },
+          {
+            "fixture": "noisy",
+            "metadata": {
+              "aperture": null,
+              "as_shot": [
+                0.8945778608322144,
+                1.0,
+                2.3340208530426025
+              ],
+              "bits": 16,
+              "camera_to_working": [
+                [
+                  1.204088568687439,
+                  -0.17482762038707733,
+                  -0.029260916635394096
+                ],
+                [
+                  -0.029779931530356407,
+                  1.0307823419570923,
+                  -0.0010023207869380713
+                ],
+                [
+                  0.002312624594196677,
+                  0.1488555520772934,
+                  0.8488318920135498
+                ]
+              ],
+              "color_revision": 3,
+              "focal_length_mm": null,
+              "height": 768,
+              "lens_model": null,
+              "lens_profile": null,
+              "lens_profile_error": null,
+              "make": "Rawpuppy",
+              "model": "Controlled Bayer Fixture",
+              "pattern": "RGGB",
+              "sensor_height": 768,
+              "sensor_width": 768,
+              "width": 768
+            },
+            "patches": [
+              {
+                "clipped_camera_mean": [
+                  0.007552925031632185,
+                  0.00753901107236743,
+                  0.0075480141676962376
+                ],
+                "expected_working_mean": [
+                  2.1919158825767227e-05,
+                  -8.983028237707913e-06,
+                  1.8281052689417265e-05
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.0,
+                  0.0,
+                  0.0
+                ],
+                "measured_camera_mean": [
+                  1.9643497580545954e-05,
+                  -8.184791113308165e-06,
+                  9.821748790272977e-06
+                ],
+                "patch": 0,
+                "rawpuppy_mean": [
+                  9.429373787068269e-06,
+                  -9.8737974300415e-06,
+                  4.08975995785315e-05
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.009817247278988361,
+                  0.010037198662757874,
+                  0.010135197080671787
+                ],
+                "expected_working_mean": [
+                  0.003793149720877409,
+                  0.005004563368856907,
+                  0.010924292728304863
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.004999999888241291,
+                  0.004999999888241291,
+                  0.004999999888241291
+                ],
+                "measured_camera_mean": [
+                  0.004656444303691387,
+                  0.0049871099181473255,
+                  0.005134435836225748
+                ],
+                "patch": 1,
+                "rawpuppy_mean": [
+                  0.003801945634260543,
+                  0.005002287562228326,
+                  0.010904649437871209
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.020150020718574524,
+                  0.020001057535409927,
+                  0.020032159984111786
+                ],
+                "expected_working_mean": [
+                  0.0168397706001997,
+                  0.020033065229654312,
+                  0.04270649701356888
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.019999999552965164,
+                  0.019999999552965164,
+                  0.019999999552965164
+                ],
+                "measured_camera_mean": [
+                  0.020150020718574524,
+                  0.020001057535409927,
+                  0.020032159984111786
+                ],
+                "patch": 2,
+                "rawpuppy_mean": [
+                  0.016835992155320254,
+                  0.020031029750188938,
+                  0.04272057176607783
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  32,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.17991948127746582,
+                  0.18004879355430603,
+                  0.18000133335590363
+                ],
+                "expected_working_mean": [
+                  0.15002964437007904,
+                  0.18037687242031097,
+                  0.3837905526161194
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.18000000715255737,
+                  0.18000000715255737,
+                  0.18000000715255737
+                ],
+                "measured_camera_mean": [
+                  0.17991948127746582,
+                  0.18004879355430603,
+                  0.18000133335590363
+                ],
+                "patch": 3,
+                "rawpuppy_mean": [
+                  0.1500348912211646,
+                  0.1803757999292025,
+                  0.38379284771266003
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.18025341629981995,
+                  0.039997201412916183,
+                  0.020297346636652946
+                ],
+                "expected_working_mean": [
+                  0.1857813000679016,
+                  0.0363788902759552,
+                  0.04653964564204216
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.18000000715255737,
+                  0.03999999910593033,
+                  0.019999999552965164
+                ],
+                "measured_camera_mean": [
+                  0.18025341629981995,
+                  0.039997201412916183,
+                  0.020297346636652946
+                ],
+                "patch": 4,
+                "rawpuppy_mean": [
+                  0.1857765158335193,
+                  0.03638048822009902,
+                  0.046535593882051925
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.019973227754235268,
+                  0.18007007241249084,
+                  0.0402083694934845
+                ],
+                "expected_working_mean": [
+                  -0.012713092379271984,
+                  0.1849868893623352,
+                  0.10650622099637985
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.019999999552965164,
+                  0.18000000715255737,
+                  0.03999999910593033
+                ],
+                "measured_camera_mean": [
+                  0.019973227754235268,
+                  0.18007007241249084,
+                  0.0402083694934845
+                ],
+                "patch": 5,
+                "rawpuppy_mean": [
+                  -0.012717392737815518,
+                  0.18498634659489552,
+                  0.10651889371992082
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  288,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.03985478729009628,
+                  0.019984686747193336,
+                  0.1802304983139038
+                ],
+                "expected_working_mean": [
+                  0.027126800268888474,
+                  0.0191164743155241,
+                  0.36012837290763855
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.03999999910593033,
+                  0.019999999552965164,
+                  0.18000000715255737
+                ],
+                "measured_camera_mean": [
+                  0.03985478729009628,
+                  0.019984686747193336,
+                  0.1802304983139038
+                ],
+                "patch": 6,
+                "rawpuppy_mean": [
+                  0.027132683222362175,
+                  0.019117837897409926,
+                  0.3601088295149061
+                ],
+                "reference_mean": null,
+                "region": [
+                  32,
+                  544,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.0025559349451214075,
+                  0.010030665434896946,
+                  0.005183822941035032
+                ],
+                "expected_working_mean": [
+                  -0.0113146947696805,
+                  0.005407300312072039,
+                  -0.008368860930204391
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  -0.009999999776482582,
+                  0.004999999888241291,
+                  -0.004999999888241291
+                ],
+                "measured_camera_mean": [
+                  -0.009987316094338894,
+                  0.004977288190275431,
+                  -0.004587691742926836
+                ],
+                "patch": 7,
+                "rawpuppy_mean": [
+                  -0.011302766347960692,
+                  0.00540818623753757,
+                  -0.008381540607268157
+                ],
+                "reference_mean": null,
+                "region": [
+                  288,
+                  544,
+                  192,
+                  192
+                ]
+              },
+              {
+                "clipped_camera_mean": [
+                  0.3002513647079468,
+                  0.2998126447200775,
+                  0.2997831702232361
+                ],
+                "expected_working_mean": [
+                  0.25052666664123535,
+                  0.3003414273262024,
+                  0.6391777396202087
+                ],
+                "inferred_reference_camera_mean": null,
+                "input_camera_rgb": [
+                  0.30000001192092896,
+                  0.30000001192092896,
+                  0.30000001192092896
+                ],
+                "measured_camera_mean": [
+                  0.3002513647079468,
+                  0.2998126447200775,
+                  0.2997831702232361
+                ],
+                "patch": 8,
+                "rawpuppy_mean": [
+                  0.25053951163782684,
+                  0.30033628286603037,
+                  0.6391773069157757
+                ],
+                "reference_mean": null,
+                "region": [
+                  544,
+                  544,
+                  192,
+                  192
+                ]
+              }
+            ],
+            "sha256": "7707d64ab9d761b04f5d642c482badd528ef5a4b26d0352d3c568721f2dac9a6"
+          }
+        ],
+        "scope": "synthetic Bayer DNG controls; equivalent normalized camera matrix, not a copy of the camera's original profile",
+        "white": 15360,
+        "xyz_to_camera": [
+          [
+            3.2409698963165283,
+            -1.5373830795288086,
+            -0.4986107647418976
+          ],
+          [
+            -0.9692435264587402,
+            1.8759675025939941,
+            0.041555050760507584
+          ],
+          [
+            0.055630069226026535,
+            -0.20397695899009705,
+            1.056971549987793
+          ]
+        ]
+      },
+      "gpu_checks": [
+        {
+          "build_profile": "release",
+          "comparisons": [
+            {
+              "alpha_mismatches": 0,
+              "backend": "Cuda",
+              "cold_render_seconds": 0.44153967,
+              "device_label": "cuda (system memory)",
+              "max_absolute_rgb_error": 5.960464477539062e-07,
+              "mean_absolute_rgb_error": 8.054209355012887e-09,
+              "passed": true,
+              "preview_dimensions": [
+                512,
+                512
+              ],
+              "recipe": "camera-defaults",
+              "warm_1800_preview_seconds": [
+                0.001502944,
+                0.00057032
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Vulkan",
+              "cold_render_seconds": 0.558964252,
+              "device_label": "wgpu<wgsl>",
+              "max_absolute_rgb_error": 4.3213367462158203e-07,
+              "mean_absolute_rgb_error": 1.0652538795508093e-08,
+              "passed": true,
+              "preview_dimensions": [
+                512,
+                512
+              ],
+              "recipe": "camera-defaults",
+              "warm_1800_preview_seconds": [
+                0.001781409,
+                0.001136737
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Cuda",
+              "cold_render_seconds": 0.23580785,
+              "device_label": "cuda (system memory)",
+              "max_absolute_rgb_error": 0.00015425682067871094,
+              "mean_absolute_rgb_error": 6.47876033758502e-08,
+              "passed": true,
+              "preview_dimensions": [
+                478,
+                512
+              ],
+              "recipe": "composed-edit",
+              "warm_1800_preview_seconds": [
+                0.000572144,
+                0.000567361
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Vulkan",
+              "cold_render_seconds": 0.012008293,
+              "device_label": "wgpu<wgsl>",
+              "max_absolute_rgb_error": 0.0001834779977798462,
+              "mean_absolute_rgb_error": 1.3329420036002269e-07,
+              "passed": true,
+              "preview_dimensions": [
+                478,
+                512
+              ],
+              "recipe": "composed-edit",
+              "warm_1800_preview_seconds": [
+                0.00106256,
+                0.000978737
+              ]
+            }
+          ],
+          "composed_edits": {
+            "display": {
+              "curve": [
+                [
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.5,
+                  0.6000000238418579
+                ],
+                [
+                  1.0,
+                  1.0
+                ]
+              ],
+              "highlights": [
+                1.100000023841858,
+                1.0199999809265137,
+                0.8500000238418579
+              ],
+              "retouch": [],
+              "shadows": [
+                0.8999999761581421,
+                0.949999988079071,
+                1.100000023841858
+              ],
+              "split_strength": 0.15000000596046448,
+              "synthesis": []
+            },
+            "geometry": {
+              "chromatic_aberration": [
+                0.00039999998989515007,
+                -0.0003000000142492354
+              ],
+              "crop": [
+                0.15000000596046448,
+                0.10000000149011612,
+                0.699999988079071,
+                0.75
+              ],
+              "distortion": [
+                -0.009999999776482582,
+                0.004999999888241291
+              ],
+              "field_of_view": 50.0,
+              "pitch": -1.0,
+              "rotation": 3.0,
+              "scale": 1.0,
+              "yaw": 2.0
+            },
+            "raw": {
+              "denoise": 0.0,
+              "hot_pixels": false,
+              "recover_highlights": true
+            },
+            "scene": {
+              "calibration": [
+                1.0499999523162842,
+                0.949999988079071,
+                1.0
+              ],
+              "exposure": 0.699999988079071,
+              "graduated": {
+                "angle": 35.0,
+                "center": [
+                  0.5,
+                  0.5
+                ],
+                "exposure": 0.5,
+                "width": 0.30000001192092896
+              },
+              "mixer": [
+                [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "vignette": [
+                0.0,
+                0.0
+              ]
+            },
+            "tone": {
+              "mapper": "agx_sdr_v1",
+              "saturation": 1.0
+            },
+            "version": 1
+          },
+          "decode_seconds": 0.030718638,
+          "default_edits": {
+            "display": {
+              "curve": [
+                [
+                  0.0,
+                  0.0
+                ],
+                [
+                  1.0,
+                  1.0
+                ]
+              ],
+              "highlights": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "retouch": [],
+              "shadows": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "split_strength": 0.0,
+              "synthesis": []
+            },
+            "geometry": {
+              "chromatic_aberration": [
+                0.0,
+                0.0
+              ],
+              "crop": [
+                0.0,
+                0.0,
+                1.0,
+                1.0
+              ],
+              "distortion": [
+                0.0,
+                0.0
+              ],
+              "field_of_view": 50.0,
+              "pitch": 0.0,
+              "rotation": 0.0,
+              "scale": 1.0,
+              "yaw": 0.0
+            },
+            "raw": {
+              "denoise": 0.0,
+              "hot_pixels": false,
+              "recover_highlights": true
+            },
+            "scene": {
+              "calibration": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "exposure": 0.0,
+              "graduated": {
+                "angle": 0.0,
+                "center": [
+                  0.5,
+                  0.5
+                ],
+                "exposure": 0.0,
+                "width": 0.30000001192092896
+              },
+              "mixer": [
+                [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "vignette": [
+                0.0,
+                0.0
+              ]
+            },
+            "tone": {
+              "mapper": "agx_sdr_v1",
+              "saturation": 1.0
+            },
+            "version": 1
+          },
+          "default_missing_perimeter_samples": 0,
+          "default_perimeter_samples": 3072,
+          "input_sha256": "47a4b009e0213c1f4387c7572e51da13678f632f92523edfbe3fb8a5ecf9096e",
+          "input_unchanged": true,
+          "metadata": {
+            "aperture": null,
+            "as_shot": [
+              0.8945778608322144,
+              1.0,
+              2.3340208530426025
+            ],
+            "bits": 16,
+            "camera_to_working": [
+              [
+                1.204088568687439,
+                -0.17482762038707733,
+                -0.029260916635394096
+              ],
+              [
+                -0.029779931530356407,
+                1.0307823419570923,
+                -0.0010023207869380713
+              ],
+              [
+                0.002312624594196677,
+                0.1488555520772934,
+                0.8488318920135498
+              ]
+            ],
+            "color_revision": 3,
+            "focal_length_mm": null,
+            "height": 768,
+            "lens_model": null,
+            "lens_profile": null,
+            "lens_profile_error": null,
+            "make": "Rawpuppy",
+            "model": "Controlled Bayer Fixture",
+            "pattern": "RGGB",
+            "sensor_height": 768,
+            "sensor_width": 768,
+            "width": 768
+          },
+          "orientation": 1,
+          "output_dimensions": [
+            768,
+            768
+          ],
+          "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+          "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+          "sensor_unchanged": true,
+          "tolerances": {
+            "alpha_mismatches": 0,
+            "max_absolute_rgb": 0.003,
+            "mean_absolute_rgb": 3e-05
+          }
+        },
+        {
+          "build_profile": "release",
+          "comparisons": [
+            {
+              "alpha_mismatches": 0,
+              "backend": "Cuda",
+              "cold_render_seconds": 0.441458599,
+              "device_label": "cuda (system memory)",
+              "max_absolute_rgb_error": 1.0728836059570312e-06,
+              "mean_absolute_rgb_error": 1.725627857375912e-08,
+              "passed": true,
+              "preview_dimensions": [
+                512,
+                512
+              ],
+              "recipe": "camera-defaults",
+              "warm_1800_preview_seconds": [
+                0.001392209,
+                0.000533424
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Vulkan",
+              "cold_render_seconds": 0.563314798,
+              "device_label": "wgpu<wgsl>",
+              "max_absolute_rgb_error": 9.238719940185547e-07,
+              "mean_absolute_rgb_error": 2.5168165781666446e-08,
+              "passed": true,
+              "preview_dimensions": [
+                512,
+                512
+              ],
+              "recipe": "camera-defaults",
+              "warm_1800_preview_seconds": [
+                0.001281393,
+                0.001250976
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Cuda",
+              "cold_render_seconds": 0.250787761,
+              "device_label": "cuda (system memory)",
+              "max_absolute_rgb_error": 0.0001481473445892334,
+              "mean_absolute_rgb_error": 6.17936294816159e-07,
+              "passed": true,
+              "preview_dimensions": [
+                478,
+                512
+              ],
+              "recipe": "composed-edit",
+              "warm_1800_preview_seconds": [
+                0.000551424,
+                0.00055632
+              ]
+            },
+            {
+              "alpha_mismatches": 0,
+              "backend": "Vulkan",
+              "cold_render_seconds": 0.011184869,
+              "device_label": "wgpu<wgsl>",
+              "max_absolute_rgb_error": 0.00020301342010498047,
+              "mean_absolute_rgb_error": 1.1213853853877569e-06,
+              "passed": true,
+              "preview_dimensions": [
+                478,
+                512
+              ],
+              "recipe": "composed-edit",
+              "warm_1800_preview_seconds": [
+                0.001391088,
+                0.001255088
+              ]
+            }
+          ],
+          "composed_edits": {
+            "display": {
+              "curve": [
+                [
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.5,
+                  0.6000000238418579
+                ],
+                [
+                  1.0,
+                  1.0
+                ]
+              ],
+              "highlights": [
+                1.100000023841858,
+                1.0199999809265137,
+                0.8500000238418579
+              ],
+              "retouch": [],
+              "shadows": [
+                0.8999999761581421,
+                0.949999988079071,
+                1.100000023841858
+              ],
+              "split_strength": 0.15000000596046448,
+              "synthesis": []
+            },
+            "geometry": {
+              "chromatic_aberration": [
+                0.00039999998989515007,
+                -0.0003000000142492354
+              ],
+              "crop": [
+                0.15000000596046448,
+                0.10000000149011612,
+                0.699999988079071,
+                0.75
+              ],
+              "distortion": [
+                -0.009999999776482582,
+                0.004999999888241291
+              ],
+              "field_of_view": 50.0,
+              "pitch": -1.0,
+              "rotation": 3.0,
+              "scale": 1.0,
+              "yaw": 2.0
+            },
+            "raw": {
+              "denoise": 0.0,
+              "hot_pixels": false,
+              "recover_highlights": true
+            },
+            "scene": {
+              "calibration": [
+                1.0499999523162842,
+                0.949999988079071,
+                1.0
+              ],
+              "exposure": 0.699999988079071,
+              "graduated": {
+                "angle": 35.0,
+                "center": [
+                  0.5,
+                  0.5
+                ],
+                "exposure": 0.5,
+                "width": 0.30000001192092896
+              },
+              "mixer": [
+                [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "vignette": [
+                0.0,
+                0.0
+              ]
+            },
+            "tone": {
+              "mapper": "agx_sdr_v1",
+              "saturation": 1.0
+            },
+            "version": 1
+          },
+          "decode_seconds": 0.019513209,
+          "default_edits": {
+            "display": {
+              "curve": [
+                [
+                  0.0,
+                  0.0
+                ],
+                [
+                  1.0,
+                  1.0
+                ]
+              ],
+              "highlights": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "retouch": [],
+              "shadows": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "split_strength": 0.0,
+              "synthesis": []
+            },
+            "geometry": {
+              "chromatic_aberration": [
+                0.0,
+                0.0
+              ],
+              "crop": [
+                0.0,
+                0.0,
+                1.0,
+                1.0
+              ],
+              "distortion": [
+                0.0,
+                0.0
+              ],
+              "field_of_view": 50.0,
+              "pitch": 0.0,
+              "rotation": 0.0,
+              "scale": 1.0,
+              "yaw": 0.0
+            },
+            "raw": {
+              "denoise": 0.0,
+              "hot_pixels": false,
+              "recover_highlights": true
+            },
+            "scene": {
+              "calibration": [
+                1.0,
+                1.0,
+                1.0
+              ],
+              "exposure": 0.0,
+              "graduated": {
+                "angle": 0.0,
+                "center": [
+                  0.5,
+                  0.5
+                ],
+                "exposure": 0.0,
+                "width": 0.30000001192092896
+              },
+              "mixer": [
+                [
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  1.0,
+                  0.0
+                ],
+                [
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ],
+              "vignette": [
+                0.0,
+                0.0
+              ]
+            },
+            "tone": {
+              "mapper": "agx_sdr_v1",
+              "saturation": 1.0
+            },
+            "version": 1
+          },
+          "default_missing_perimeter_samples": 0,
+          "default_perimeter_samples": 3072,
+          "input_sha256": "7707d64ab9d761b04f5d642c482badd528ef5a4b26d0352d3c568721f2dac9a6",
+          "input_unchanged": true,
+          "metadata": {
+            "aperture": null,
+            "as_shot": [
+              0.8945778608322144,
+              1.0,
+              2.3340208530426025
+            ],
+            "bits": 16,
+            "camera_to_working": [
+              [
+                1.204088568687439,
+                -0.17482762038707733,
+                -0.029260916635394096
+              ],
+              [
+                -0.029779931530356407,
+                1.0307823419570923,
+                -0.0010023207869380713
+              ],
+              [
+                0.002312624594196677,
+                0.1488555520772934,
+                0.8488318920135498
+              ]
+            ],
+            "color_revision": 3,
+            "focal_length_mm": null,
+            "height": 768,
+            "lens_model": null,
+            "lens_profile": null,
+            "lens_profile_error": null,
+            "make": "Rawpuppy",
+            "model": "Controlled Bayer Fixture",
+            "pattern": "RGGB",
+            "sensor_height": 768,
+            "sensor_width": 768,
+            "width": 768
+          },
+          "orientation": 1,
+          "output_dimensions": [
+            768,
+            768
+          ],
+          "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+          "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+          "sensor_unchanged": true,
+          "tolerances": {
+            "alpha_mismatches": 0,
+            "max_absolute_rgb": 0.003,
+            "mean_absolute_rgb": 3e-05
+          }
+        }
+      ]
+    }
+  ],
+  "regressions": [
+    "expected warm and third camera gains/matrices",
+    "invalid xy rejected",
+    "conflicting AsShotWhiteXY/AsShotNeutral rejected",
+    "old revision-2 fill rejected, matching revision-3 fill accepted"
+  ],
+  "remaining_scope": "Extra/nonlinear camera profiles and physical colorimetric verification remain in the full audit."
+}

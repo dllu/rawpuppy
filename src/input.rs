@@ -260,16 +260,20 @@ impl SensorImage {
             }
         });
         let as_shot = as_shot.map(|x| x / as_shot[1]);
-        ensure!(
-            as_shot.iter().all(|x| x.is_finite() && *x > 0.),
-            "Invalid camera white point"
-        );
         let interpolated = if ext == "dng" && !raw.is_monochrome() {
             crate::camera_profiles::from_dng(&source, &raw.color_matrix, as_shot)?
         } else {
             None
         };
         let color_revision = interpolated.as_ref().map_or(0, |profile| profile.revision);
+        let as_shot = interpolated
+            .as_ref()
+            .and_then(|profile| profile.as_shot)
+            .unwrap_or(as_shot);
+        ensure!(
+            as_shot.iter().all(|x| x.is_finite() && *x > 0.),
+            "Invalid camera white point"
+        );
         let forward_calibration = interpolated.as_ref().and_then(|profile| profile.forward);
         let (xyz_to_cam, white) = interpolated.map_or((xyz_to_cam, white), |profile| {
             (profile.xyz_to_camera, profile.white)

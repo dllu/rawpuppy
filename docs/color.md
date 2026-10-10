@@ -94,5 +94,9 @@ Custom illuminant chromaticities/spectra and three calibration slots are read
 directly from DNG metadata, including the third matrix that the decoder's ordinary
 matrix map omits. These source interpretations use color revision 2; see the
 [extended profile journal](2026-10-10-05-40-extended-dng-profiles.md).
+DNG `AsShotWhiteXY` uses the declared white point directly to weight its profile
+and derive camera neutral/gains. It supersedes the decoder's fixed-matrix fallback
+and uses source revision 3 for saved-fill compatibility; see the
+[xy white-balance journal](2026-10-10-06-00-dng-xy-white-balance.md).
 Float HDR interchange and SDR presentation on an HDR desktop are distinct
 capabilities.

@@ -23,7 +23,8 @@ struct Profile {
 }
 
 fn extended(root: &IFD) -> bool {
-    root.has_entry(DngTag::ColorMatrix3)
+    root.has_entry(DngTag::AsShotWhiteXY)
+        || root.has_entry(DngTag::ColorMatrix3)
         || root.has_entry(DngTag::CalibrationIlluminant3)
         || [
             DngTag::CalibrationIlluminant1,
@@ -33,9 +34,16 @@ fn extended(root: &IFD) -> bool {
         .any(|tag| root.get_entry(tag).is_some_and(|e| e.force_u16(0) == 255))
 }
 
-pub(crate) fn is_extended(source: &RawSource) -> Result<bool> {
+pub(crate) fn revision(source: &RawSource) -> Result<Option<u32>> {
     let tiff = GenericTiffReader::new_with_buffer(source.buf(), 0, 0, Some(1))?;
-    Ok(extended(tiff.root_ifd()))
+    let root = tiff.root_ifd();
+    Ok(extended(root).then(|| {
+        if root.has_entry(DngTag::AsShotWhiteXY) {
+            3
+        } else {
+            2
+        }
+    }))
 }
 
 fn bytes(value: &Value) -> Result<&[u8]> {
@@ -340,13 +348,18 @@ fn diagonal(values: [f32; 3]) -> Matrix {
     std::array::from_fn(|i| std::array::from_fn(|j| if i == j { values[i] } else { 0. }))
 }
 
-fn solve(profiles: &[Profile], analog: Matrix, gains: [f32; 3]) -> Result<Calibration> {
+fn solve(
+    profiles: &[Profile],
+    analog: Matrix,
+    gains: [f32; 3],
+    declared_white: Option<[f32; 3]>,
+) -> Result<Calibration> {
     ensure!(
         gains.iter().all(|v| v.is_finite() && *v > 0.),
         "Invalid camera neutral"
     );
     let neutral = gains.map(|v| 1. / v);
-    let mut estimate = [0.96422, 1., 0.82521];
+    let mut estimate = declared_white.unwrap_or([0.96422, 1., 0.82521]);
     for _ in 0..96 {
         let w = weights(profiles, estimate)?;
         let blend = |get: fn(&Profile) -> Matrix| -> Matrix {
@@ -368,13 +381,13 @@ fn solve(profiles: &[Profile], analog: Matrix, gains: [f32; 3]) -> Result<Calibr
             xyz.iter().all(|v| v.is_finite() && *v > 0.),
             "Invalid inferred DNG white point"
         );
-        let next = xyz.map(|v| v / xyz[1]);
+        let next = declared_white.unwrap_or_else(|| xyz.map(|v| v / xyz[1]));
         let error = estimate
             .iter()
             .zip(next)
             .map(|(a, b)| (*a - b).abs())
             .fold(0., f32::max);
-        if profiles.len() == 1 || error < 1e-6 {
+        if declared_white.is_some() || profiles.len() == 1 || error < 1e-6 {
             let forward = if profiles.iter().all(|p| p.forward.is_some()) {
                 let fm = blend(|p| p.forward.unwrap());
                 let inverse = color::inverse(reference_to_camera)?;
@@ -407,7 +420,8 @@ fn solve(profiles: &[Profile], analog: Matrix, gains: [f32; 3]) -> Result<Calibr
                 xyz_to_camera: cm,
                 white: next,
                 forward,
-                revision: 2,
+                revision: if declared_white.is_some() { 3 } else { 2 },
+                as_shot: Some(gains),
             });
         }
         estimate = std::array::from_fn(|i| 0.5 * (estimate[i] + next[i]));
@@ -415,13 +429,54 @@ fn solve(profiles: &[Profile], analog: Matrix, gains: [f32; 3]) -> Result<Calibr
     bail!("Extended DNG white-point interpolation did not converge")
 }
 
-pub(crate) fn from_source(source: &RawSource, gains: [f32; 3]) -> Result<Option<Calibration>> {
+pub(crate) fn from_source(source: &RawSource, mut gains: [f32; 3]) -> Result<Option<Calibration>> {
     let tiff = GenericTiffReader::new_with_buffer(source.buf(), 0, 0, Some(1))?;
     if !extended(tiff.root_ifd()) {
         return Ok(None);
     }
     let (profiles, analog) = read_profiles(tiff.root_ifd())?;
-    solve(&profiles, analog, gains).map(Some)
+    let root = tiff.root_ifd();
+    let mut declared_white = None;
+    if let Some(entry) = root.get_entry(DngTag::AsShotWhiteXY) {
+        ensure!(
+            !root.has_entry(DngTag::AsShotNeutral),
+            "DNG white balance must use either camera neutral or xy, not both"
+        );
+        ensure!(
+            entry.count() == 2,
+            "DNG as-shot xy white point requires two values"
+        );
+        let (x, y) = (entry.force_f32(0), entry.force_f32(1));
+        ensure!(
+            x.is_finite() && y.is_finite() && x > 0. && y > 0. && x + y < 1.,
+            "Invalid DNG as-shot white point"
+        );
+        let white = [x / y, 1., (1. - x - y) / y];
+        declared_white = Some(white);
+        let w = weights(&profiles, white)?;
+        let blend = |get: fn(&Profile) -> Matrix| -> Matrix {
+            std::array::from_fn(|i| {
+                std::array::from_fn(|j| {
+                    profiles
+                        .iter()
+                        .enumerate()
+                        .map(|(p, v)| get(v)[i][j] * w[p])
+                        .sum()
+                })
+            })
+        };
+        let xyz_to_camera = color::multiply(
+            analog,
+            color::multiply(blend(|p| p.camera), blend(|p| p.color)),
+        );
+        let neutral = color::apply(xyz_to_camera, white);
+        ensure!(
+            neutral.iter().all(|v| v.is_finite() && *v > 0.),
+            "Invalid camera neutral derived from DNG xy white point"
+        );
+        gains = neutral.map(|v| neutral[1] / v);
+    }
+    solve(&profiles, analog, gains, declared_white).map(Some)
 }
 
 #[cfg(test)]

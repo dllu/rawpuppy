@@ -97,6 +97,7 @@ pub(crate) struct Calibration {
     pub white: [f32; 3],
     pub forward: Option<Matrix>,
     pub revision: u32,
+    pub as_shot: Option<[f32; 3]>,
 }
 
 #[derive(Default)]
@@ -199,8 +200,8 @@ pub(crate) fn revision(
     source: &rawler::rawsource::RawSource,
     matrices: &HashMap<Illuminant, FlatColorMatrix>,
 ) -> Result<u32> {
-    if crate::dng_profiles::is_extended(source)? {
-        return Ok(2);
+    if let Some(revision) = crate::dng_profiles::revision(source)? {
+        return Ok(revision);
     }
     let extra = read_extra(source)?;
     Ok(u32::from(
@@ -332,6 +333,7 @@ fn interpolate_with(
                 white: next,
                 forward,
                 revision: 1,
+                as_shot: None,
             }));
         }
         // Damping prevents a two-cycle for strongly distinct calibration matrices.
