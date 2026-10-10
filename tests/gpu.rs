@@ -7,6 +7,29 @@ use rawpuppy::{
 };
 use std::sync::Arc;
 
+#[cfg(feature = "cuda")]
+#[test]
+#[ignore = "requires a working CUDA device"]
+fn automatic_selection_prefers_working_cuda_over_native_gpu() {
+    let mut gpu = GpuRenderer::new(Backend::Auto).unwrap();
+    assert!(
+        gpu.name().starts_with("cuda"),
+        "Working CUDA was bypassed: {}",
+        gpu.name()
+    );
+    let source = Arc::new(SensorImage::from_rgb(17, 13, vec![0.2; 17 * 13 * 3]).unwrap());
+    let mut edits = Edits::default();
+    edits.tone.mapper = rawpuppy::edits::ToneMapper::Linear;
+    let output = gpu.render(source.clone(), &edits, None).unwrap();
+    assert!(
+        output
+            .pixels
+            .iter()
+            .all(|p| (p[0] - 0.2).abs() < 1e-6 && p[3] == 1.)
+    );
+    assert!(source.data.iter().all(|v| *v == 0.2));
+}
+
 #[test]
 #[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
 fn sensor_highlight_recovery_matches_cpu_across_orientations() {

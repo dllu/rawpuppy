@@ -74,6 +74,10 @@ device. Auto and explicit native API selection use the same registration; an
 explicit request must match its actual API. Each renderer retains its own sensor,
 prepared buffer and layer state. Dropping one renderer retires its source without
 affecting another renderer on the same client.
+In a CUDA build, Auto tries CUDA first and then the native wgpu API if CUDA
+initialization fails or panics. CPU follows only if both initialization attempts
+fail. Explicit backend requests retain their requested backend. Initialization
+errors identify both unavailable APIs when automatic selection exhausts them.
 On eligible coherent integrated CUDA devices, a driver adapter launches the same
 Rust kernel using owned system allocations, avoiding sensor duplication and
 preview readback. Capability checks, synchronized borrows and local page hints

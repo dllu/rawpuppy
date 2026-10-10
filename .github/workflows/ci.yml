@@ -58,7 +58,9 @@ jobs:
         if: runner.os == 'Linux'
         env:
           RUST_MIN_STACK: '33554432'
-        run: cargo test --test gpu --test hdr -- --ignored
+        run: |
+          cargo test --test gpu --test hdr -- --ignored
+          cargo test --lib gpu::selection_tests::unavailable_or_panicking_cuda_still_renders_on_native_gpu -- --ignored
       - name: Automatic ICC discovery on isolated X11 display
         if: runner.os == 'Linux'
         env:
@@ -69,7 +71,9 @@ jobs:
         continue-on-error: true
         env:
           RUST_MIN_STACK: '33554432'
-        run: cargo test --test gpu --test hdr -- --ignored --nocapture
+        run: |
+          cargo test --test gpu --test hdr -- --ignored --nocapture
+          cargo test --lib gpu::selection_tests::unavailable_or_panicking_cuda_still_renders_on_native_gpu -- --ignored --nocapture
   native-learning:
     strategy:
       fail-fast: false

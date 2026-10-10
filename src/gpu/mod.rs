@@ -16,6 +16,25 @@ use anyhow::{Result, ensure};
 use cubecl::{prelude::*, server::Handle};
 use std::sync::{Arc, OnceLock};
 
+#[cfg(any(feature = "cuda", test))]
+fn prefer_gpu<T>(
+    preferred: impl FnOnce() -> Result<T>,
+    native: impl FnOnce() -> Result<T>,
+) -> Result<T> {
+    let attempt = std::panic::catch_unwind(std::panic::AssertUnwindSafe(preferred))
+        .unwrap_or_else(|_| Err(anyhow::anyhow!("CUDA initialization panicked")));
+    match attempt {
+        Ok(gpu) => Ok(gpu),
+        Err(cuda) => {
+            let fallback = std::panic::catch_unwind(std::panic::AssertUnwindSafe(native))
+                .unwrap_or_else(|_| Err(anyhow::anyhow!("Native GPU initialization panicked")));
+            fallback.map_err(|native| {
+                anyhow::anyhow!("CUDA unavailable: {cuda:#}; native GPU unavailable: {native:#}")
+            })
+        }
+    }
+}
+
 pub use crate::render::{Backend, CudaMemoryMode};
 
 pub enum GpuRenderer {
@@ -108,7 +127,10 @@ impl GpuRenderer {
             Backend::Auto => {
                 #[cfg(feature = "cuda")]
                 {
-                    Self::with_cuda_memory(Backend::Cuda, mode)
+                    prefer_gpu(
+                        || Self::with_cuda_memory(Backend::Cuda, mode),
+                        || Ok(Self::Wgpu(Session::new(wgpu_client(Backend::Auto)?))),
+                    )
                 }
                 #[cfg(not(feature = "cuda"))]
                 {
@@ -451,5 +473,64 @@ impl<R: Runtime> Session<R> {
             height,
             pixels,
         })
+    }
+}
+
+#[cfg(test)]
+mod selection_tests {
+    use super::*;
+
+    #[test]
+    fn automatic_selection_keeps_cuda_and_reports_both_failures() {
+        assert_eq!(
+            prefer_gpu(|| Ok(1), || panic!("Native must not replace working CUDA")).unwrap(),
+            1
+        );
+        let failed = prefer_gpu::<()>(
+            || anyhow::bail!("no CUDA device"),
+            || anyhow::bail!("no native adapter"),
+        )
+        .unwrap_err()
+        .to_string();
+        assert!(failed.contains("no CUDA device") && failed.contains("no native adapter"));
+    }
+
+    #[test]
+    #[ignore = "requires a working native Vulkan or Metal compute device"]
+    fn unavailable_or_panicking_cuda_still_renders_on_native_gpu() {
+        let source = Arc::new(SensorImage::from_rgb(13, 17, vec![0.2; 13 * 17 * 3]).unwrap());
+        let mut edits = Edits::default();
+        edits.tone.mapper = ToneMapper::Linear;
+        let expected = Pipeline::compile(&source, &edits)
+            .unwrap()
+            .render(None)
+            .unwrap();
+        let native = if cfg!(target_os = "macos") {
+            Backend::Metal
+        } else {
+            Backend::Vulkan
+        };
+        for panics in [false, true] {
+            let mut selected = prefer_gpu(
+                || {
+                    if panics {
+                        panic!("simulated CUDA driver failure");
+                    }
+                    anyhow::bail!("simulated missing CUDA device")
+                },
+                || GpuRenderer::new(native),
+            )
+            .unwrap();
+            assert!(selected.name().starts_with("wgpu"));
+            let actual = selected.render(source.clone(), &edits, None).unwrap();
+            assert!(
+                actual
+                    .pixels
+                    .iter()
+                    .zip(&expected.pixels)
+                    .all(|(a, b)| a.iter().zip(b).all(|(a, b)| (a - b).abs() < 1e-6))
+            );
+        }
+        assert!(source.data.iter().all(|v| *v == 0.2));
     }
 }

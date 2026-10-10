@@ -29,7 +29,8 @@ EXR stores floating-point linear sRGB with explicit primaries
 (`--color-space linear-srgb`); tagged HDR input chromaticities are respected.
 Use `--overwrite` to replace an existing export. Originals are never overwritten
 by export; the CLI defaults to eight CPU workers to share the workstation.
-`--backend auto|cpu|cuda|vulkan|metal` selects photo compute. Auto falls back to
+`--backend auto|cpu|cuda|vulkan|metal` selects photo compute. In CUDA builds, Auto
+tries CUDA, then native Vulkan/Metal, then CPU when unavailable. Auto also selects
 CPU for unsupported sources or device limits; GPU sources stay resident between
 edits. `cargo build --no-default-features` omits photo compute acceleration.
 Eligible coherent CUDA devices share the existing sensor/output allocations;
