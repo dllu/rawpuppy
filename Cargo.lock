@@ -3986,6 +3986,7 @@ dependencies = [
  "objc2-core-graphics",
  "objc2-quartz-core 0.3.2",
  "ort",
+ "png",
  "pollster 0.4.0",
  "quick-xml",
  "raw-window-handle",

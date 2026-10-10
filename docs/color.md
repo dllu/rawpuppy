@@ -13,6 +13,13 @@ tagged TIFFs honor their ICC profile. Integer TIFFs keep the existing sRGB
 fallback. Signed values and highlights survive exposure editing and EXR export;
 non-finite or float32-overflowing values are rejected. Three-channel TIFF imports
 reuse their normalized RGB allocation instead of creating another full raster.
+PNG export converts fixed blocks into two reusable 1 MiB byte buffers, overlapping
+conversion with streaming compression. The codec's filtering rows still scale
+with image width. ICC tagging, RGBA16 quantization and straight alpha are retained;
+the data stream and final PNG chunk are explicitly finished with error propagation.
+At 101.8 MP, the measured export probe's peak RSS fell from 3.30 to 1.52 GiB;
+[the PNG journal](2026-10-10-03-15-streaming-png-export.md) records timing and
+complete decoded-pixel verification, including an independent LibPNG reader.
 RGBA16 TIFF exports explicitly identify their fourth channel as unassociated
 (straight) alpha, alongside the selected ICC profile. Transparent and partial
 alpha retain their independently stored RGB values.

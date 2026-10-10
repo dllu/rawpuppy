@@ -1,0 +1,62 @@
+{
+  "machine": "NVIDIA GB10 workstation, shared system memory",
+  "threads": 8,
+  "baseline_export_implementation": "990180f",
+  "baseline": {
+    "alpha_exact": true,
+    "export_seconds": 1.763669615,
+    "file_bytes": 229071161,
+    "height": 11648,
+    "icc_matches_linear_srgb": true,
+    "max_rgb_error_u16": 0,
+    "png_finalization_valid": true,
+    "source_pixels_unchanged": true,
+    "verified_pixels": 101756928,
+    "width": 8736
+  },
+  "baseline_peak_rss_kib": 3456160,
+  "pipelined": {
+    "alpha_exact": true,
+    "export_seconds": 2.184444517,
+    "file_bytes": 229113100,
+    "height": 11648,
+    "icc_matches_linear_srgb": true,
+    "max_rgb_error_u16": 0,
+    "png_finalization_valid": true,
+    "source_pixels_unchanged": true,
+    "verified_pixels": 101756928,
+    "width": 8736
+  },
+  "pipelined_peak_rss_kib": 1595600,
+  "rss_reduction_percent": 53.83315587241331,
+  "conversion_buffers_max_bytes": 2097152,
+  "wide": {
+    "alpha_exact": true,
+    "export_seconds": 0.018283936,
+    "file_bytes": 963473,
+    "height": 3,
+    "icc_matches_linear_srgb": true,
+    "max_rgb_error_u16": 0,
+    "png_finalization_valid": true,
+    "source_pixels_unchanged": true,
+    "verified_pixels": 300009,
+    "width": 100003
+  },
+  "independent_reader": {
+    "reader": "OpenCV 5.0.0",
+    "png_backend": "PNG:                         /usr/local/lib/libpng.so (ver 1.6.58)",
+    "large_dimensions": [
+      8736,
+      11648
+    ],
+    "large_pixels_compared": 101756928,
+    "all_baseline_and_pipelined_components_equal": true,
+    "wide_dimensions": [
+      100003,
+      3
+    ],
+    "wide_pixels_compared": 300009,
+    "wide_all_rgb_and_alpha_exact": true
+  },
+  "scope": "Synthetic rendered RGBA; all source/decoded pixels checked. RSS includes the full float source and row verifier. Timings include sync but exclude RAW decode/reconstruction/render. Measurements are single runs; other project workloads were not changed."
+}
