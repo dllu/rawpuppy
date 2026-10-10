@@ -81,5 +81,7 @@ remain to verify. GFX and further Canon/Sony camera comparisons are recorded in
 the journals, with crop/reconstruction/signed-noise limits on their interpretation.
 The [Canon/Sony check](2026-10-10-03-40-canon-sony-camera-validation.md) includes
 a reproducible normalization diagnostic and a high-ISO oracle discrepancy.
+Further [controlled Bayer DNG checks](2026-10-10-04-00-controlled-dng-color.md)
+separate constant-color calibration agreement from signed-noise behavior.
 Float HDR interchange and SDR presentation on an HDR desktop are distinct
 capabilities.

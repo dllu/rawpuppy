@@ -27,6 +27,8 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test --locked
+      - name: DNG camera normalization and calibration
+        run: cargo test --example raw_color_fixture --locked
       - name: Build native editor signal probe
         run: cargo build --bin rawpuppy --example editor_signal_probe --locked
       - name: Native editor signal verification on X11
