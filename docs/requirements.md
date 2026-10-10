@@ -1,7 +1,10 @@
 # Completion audit
 
-The scope remains the whole PROMPT.md. This file distinguishes implementation
-from verification; the project is not complete merely because core tests pass.
+The scope remains the whole PROMPT.md. The
+[complete implementation audit](2026-10-10-13-37-complete-prompt-implementation-audit.md)
+maps all explicit requirements to inspected implementation and executed evidence.
+All required implementation CI gates pass. The rows below preserve measured
+scope and further extension/validation work; core tests alone are not completion proof.
 
 | Requirement | Current evidence / remaining work |
 | --- | --- |

@@ -1,0 +1,1280 @@
+{
+  "date_utc": "2026-10-10",
+  "audited_head": "dc264407f0bbfa74b6e4f3f842612030b35bad35",
+  "verified_production_commit": "172cb7f37fe930ef8e391d687a868e5ec9731c4c",
+  "prompt_sha256": "9d765d4dd956bf0e2abc3d972c2811aaddb5092805ec064453a1cb065581a95a",
+  "scope": "Complete original explicit PROMPT.md implementation/delivery requirement audit; no universal model ranking or physical-monitor measurement is asserted.",
+  "requirements": [
+    {
+      "id": "rust_native_ui",
+      "requirement": "Rust native minimal egui single-photo editor",
+      "status": "verified",
+      "proof": "Rust egui native single-photo implementation; actual current 101.8 MP X11 editing/history/save/cold-reopen, earlier native Wayland/macOS/Windows signal checks and current cross-platform CI.",
+      "evidence": [
+        {
+          "file": "Cargo.toml",
+          "sha256": "5ea44b5b91fc7d6653c5d16efafef55e7d642b33140bef9ebe06a938b8da024b"
+        },
+        {
+          "file": "src/gui.rs",
+          "sha256": "5e4d9f92d704251bcb90067be22001eeab0658309b66d694abc52a84d76eca58"
+        },
+        {
+          "file": "src/main.rs",
+          "sha256": "792bd2e18f789d63cfc42a2ff153b9f8d923a73aa2ff1d7d5e3d8711c94162a9"
+        },
+        {
+          "file": "docs/data/native-gfx-workflow-2026-10-10.json",
+          "sha256": "9d36f5e21321dfecf08925768a7c4545a5317b4fd88bf55085130a4947a809e5"
+        },
+        {
+          "file": "docs/data/native-error-status-2026-10-10.json",
+          "sha256": "c338f65237098b6e5a99fe83b49fcb0b94da25a75bdc9a2232577be6f79af9f5"
+        },
+        {
+          "file": "docs/data/native-fused-layer-ui-2026-10-10.json",
+          "sha256": "ca0e8197e1c4d14b3e199ef8d34a5dc44cd4cf5a965abdf0a86a967405eee3a4"
+        },
+        {
+          "file": "src/raw_background.rs",
+          "sha256": "c4a43a8bdc1369503a98dbc56d24f12037a8d40da10dcf784d7bd06831d5494c"
+        }
+      ]
+    },
+    {
+      "id": "cuda_vulkan_metal",
+      "requirement": "Rust CUDA, Vulkan and Metal acceleration",
+      "status": "verified",
+      "proof": "Shared CubeCL Rust kernel with actual copied/coherent CUDA and Vulkan execution, required native Metal execution including fused layers, and successful desktop/native-learning matrix.",
+      "evidence": [
+        {
+          "file": "src/gpu/kernel.rs",
+          "sha256": "b4e6f098a3603dcf5a6ef7b8b716cdd49ef7fc576560949693f8a58f3b8cddd9"
+        },
+        {
+          "file": "src/gpu/mod.rs",
+          "sha256": "c7f1c0a272b6b65afa620236cbdee920fd5e11dbfca868035530fc37a2a1f5c9"
+        },
+        {
+          "file": "src/gpu/system_cuda.rs",
+          "sha256": "5375f5a38e76fd400c16be4cedbcdf9f9990902760c1787fa787fbcdf663b2bf"
+        },
+        {
+          "file": ".github/workflows/ci.yml",
+          "sha256": "f02a65d9a737269fa23b704ac3280c06593079254d00e4875e518c3c306509e1"
+        },
+        {
+          "file": "docs/data/gpu-flat-tiles-2026-10-10.json",
+          "sha256": "f189161bb3113744df3444ee4270e52ea036588be1e4dc2dc41e892a696ee0de"
+        },
+        {
+          "file": "docs/data/wide-dng-2026-10-10.json",
+          "sha256": "ae4c96478ead0ae05600760f2be36a50f608a9da95cf28711a556b6b3234dee2"
+        },
+        {
+          "file": "docs/data/gb10-system-memory-2026-10-09.json",
+          "sha256": "a7e9cda17d3e2fb3851518b2f6e4e4c0f9597b629aaae9c6821b373be4b12eed"
+        },
+        {
+          "file": "docs/data/fused-synthesis-gpu-2026-10-10.json",
+          "sha256": "3d746ffebf68e2f516484b5e653fbd04082e837ea90e39a0debe44ca76b3bf99"
+        },
+        {
+          "file": "src/gpu/synthesis.rs",
+          "sha256": "5002b99d5a469f2b3f37624a6e8a133042964e4552f7df90b660a9fb9533e81b"
+        }
+      ]
+    },
+    {
+      "id": "raw_input",
+      "requirement": "RAW decoding and GFX100S support",
+      "status": "verified",
+      "proof": "Rawler decoding/normalization, GFX100S sensor/active geometry, eight additional GFX captures/lenses/orientations and Canon/Sony/wide-file controls, immutable source/sensor hashes.",
+      "evidence": [
+        {
+          "file": "src/input.rs",
+          "sha256": "272eb9593d75bfc2d9c76d33b1e069d8cba599ed9ad78aafed5971a63e71205a"
+        },
+        {
+          "file": "docs/data/gfx-input-diversity-gb10-2026-10-09.json",
+          "sha256": "46b1ad8dedf7eed692a7476587806f2610ec4822a5e11939d940126fc8637f02"
+        },
+        {
+          "file": "docs/data/canon-sony-camera-2026-10-10.json",
+          "sha256": "00230902206e33b9b06098e5196cb9a5a1324980086db009b505180534ef0c97"
+        },
+        {
+          "file": "docs/data/wide-dng-2026-10-10.json",
+          "sha256": "ae4c96478ead0ae05600760f2be36a50f608a9da95cf28711a556b6b3234dee2"
+        }
+      ]
+    },
+    {
+      "id": "raw_detail",
+      "requirement": "Demosaicing, denoising and hot-pixel correction",
+      "status": "verified",
+      "proof": "Independent MHC and same-color cleanup, analytic all-Bayer constants/hot-pixel addressing, native joint RawNIND prepared graph and full-size learned cache with device/region/photometry checks.",
+      "evidence": [
+        {
+          "file": "src/input.rs",
+          "sha256": "272eb9593d75bfc2d9c76d33b1e069d8cba599ed9ad78aafed5971a63e71205a"
+        },
+        {
+          "file": "src/raw_ml.rs",
+          "sha256": "fbe4529113c829a10b1665c143ba17f1f7860f460bf3726a0b0026b2033d9279"
+        },
+        {
+          "file": "docs/data/raw-reconstruction-2026-10-09.json",
+          "sha256": "6e8d5d3c066aeb84b2d67554c6bd12de17d2cf028462db287fdf9cee164becf7"
+        },
+        {
+          "file": "docs/data/raw-reconstruction-detail-2026-10-09.json",
+          "sha256": "51004bf29e3d4acaf5611fa7b3583bcc501ae7943c7b8b818b12799026fe6c5a"
+        },
+        {
+          "file": "docs/data/wide-dng-2026-10-10.json",
+          "sha256": "ae4c96478ead0ae05600760f2be36a50f608a9da95cf28711a556b6b3234dee2"
+        }
+      ]
+    },
+    {
+      "id": "ca",
+      "requirement": "Chromatic aberration correction",
+      "status": "verified",
+      "proof": "Manual and embedded per-channel radial maps, analytic coordinate checks, amplified real GF55 metadata/oracle fit and shared CPU/GPU parity.",
+      "evidence": [
+        {
+          "file": "src/lens.rs",
+          "sha256": "64c7593c144a40bb393b42b0919fcd87fa8b96bdf52f75cd35a47056c926e633"
+        },
+        {
+          "file": "src/geometry.rs",
+          "sha256": "104b811fdd36d0ed93a0b58f37d4639f70edde9c3dfc2a2f9c6ea8e38ea9c003"
+        },
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "docs/data/lens-ca-gfx-oracle-2026-10-09.json",
+          "sha256": "3d9aae13db4daadbcfe63695787dedf11a7ec2d8a35a1a24cbed7a9487185850"
+        }
+      ]
+    },
+    {
+      "id": "geometry",
+      "requirement": "Embedded/manual barrel and pincushion, crop, rotation and pinhole perspective",
+      "status": "verified",
+      "proof": "One compiled crop/pinhole homography/radial backward map, trigonometry at recipe compilation, known coordinate/orientation/crop tests, independently developed lens framing comparisons.",
+      "evidence": [
+        {
+          "file": "src/geometry.rs",
+          "sha256": "104b811fdd36d0ed93a0b58f37d4639f70edde9c3dfc2a2f9c6ea8e38ea9c003"
+        },
+        {
+          "file": "src/lens.rs",
+          "sha256": "64c7593c144a40bb393b42b0919fcd87fa8b96bdf52f75cd35a47056c926e633"
+        },
+        {
+          "file": "tests/core.rs",
+          "sha256": "362609068cb77c0ca0950045cc1e0a55ed15a3bb3f4ce4123d8fb6491f1c0c7a"
+        },
+        {
+          "file": "tests/lens.rs",
+          "sha256": "7d7b9d471e33d8d756b61a232a5a0fd6d36d2785af7d04e5272000c31e13d0a3"
+        },
+        {
+          "file": "docs/data/lens-gfx-oracle-2026-10-08.json",
+          "sha256": "93dcec6a46a74372c511a455deac5a864f5148021f3ca0317e9e138a4f748baa"
+        },
+        {
+          "file": "docs/data/gfx-input-diversity-gb10-2026-10-09.json",
+          "sha256": "46b1ad8dedf7eed692a7476587806f2610ec4822a5e11939d940126fc8637f02"
+        }
+      ]
+    },
+    {
+      "id": "intensity_calibration",
+      "requirement": "Embedded/manual vignetting, graduated ND, exposure and one color calibration",
+      "status": "verified",
+      "proof": "Composed scalar exposure/vignette/gradient plus one camera/user matrix; DNG profile/white/analog/forward/spectral controls; full 72 million signed photosite calibration components and documented oracle reconstruction difference.",
+      "evidence": [
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "src/camera_profiles.rs",
+          "sha256": "b627b5a5b13f9804b5341ebd4539628138155368e53edc53ea5b5c2e67078b62"
+        },
+        {
+          "file": "src/dng_profiles.rs",
+          "sha256": "cdb1054e0b08acc80080c0b0be1a11089aebfd8b9f3f5cc8e5a114f082c0b368"
+        },
+        {
+          "file": "docs/data/lens-gfx-oracle-2026-10-08.json",
+          "sha256": "93dcec6a46a74372c511a455deac5a864f5148021f3ca0317e9e138a4f748baa"
+        },
+        {
+          "file": "docs/data/raw-color-fixture-2026-10-10.json",
+          "sha256": "de14e00523717d51bac705ffa035d25223c8d30f464367d8555a48532bc1a435"
+        },
+        {
+          "file": "docs/data/dng-calibration-2026-10-10.json",
+          "sha256": "6e09d2cae807bf47c5670a5d028a46aab08eabed9847fae3705a978939af1a73"
+        },
+        {
+          "file": "docs/data/extended-dng-2026-10-10.json",
+          "sha256": "2bbcd375d730006aa6f570c568df2e19adf60cf2afa71ef585d846ed4ada2cd9"
+        },
+        {
+          "file": "docs/data/dng-white-xy-2026-10-10.json",
+          "sha256": "5f80a6dfb120c5807c1af7b30c04167a5c360b260ed067118e149eab4b7ad96d"
+        },
+        {
+          "file": "docs/data/sony-photosite-calibration-2026-10-10.json",
+          "sha256": "2f9dd90599f6994ec8d3eb8f4dd1f8f17c0a571f9b50f997ed7112680b8f25ea"
+        }
+      ]
+    },
+    {
+      "id": "agx",
+      "requirement": "Photographic AgX and permitted independent Darktable oracle",
+      "status": "verified",
+      "proof": "Independent numeric oracle observations and attributed formation lattice, 1677 golden samples and gray/legacy/gamut checks; Rust CPU/shared GPU evaluators; no Darktable source code copied.",
+      "evidence": [
+        {
+          "file": "src/agx.rs",
+          "sha256": "0696018febea14942d921bfe6f96c59cb338239086a7674068372f7f4ae6c667"
+        },
+        {
+          "file": "src/data/agx-rec2020-97.json",
+          "sha256": "f711c1176e7a7cf7b515f4a3c1a06679acf2571cb616eec393e9670ed21d1941"
+        },
+        {
+          "file": "tools/bake_agx.py",
+          "sha256": "772e00ca85e32f96a3c8e57b1503ca4da195b4c7499b57ee742444616acda048"
+        },
+        {
+          "file": "tests/color.rs",
+          "sha256": "5f294ff7a0f9c658d7100a5da63b84f6655a07b0e07e11c4240cdbf3ea6a3e6e"
+        }
+      ]
+    },
+    {
+      "id": "display_edits",
+      "requirement": "Clone/heal, tone curve and split toning",
+      "status": "verified",
+      "proof": "Native clone/heal, monotone perceptual curve and split controls in fixed CPU/GPU order; actual pointer/gesture/crop/undo tests and accelerator parity.",
+      "evidence": [
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "src/gui.rs",
+          "sha256": "5e4d9f92d704251bcb90067be22001eeab0658309b66d694abc52a84d76eca58"
+        },
+        {
+          "file": "tests/core.rs",
+          "sha256": "362609068cb77c0ca0950045cc1e0a55ed15a3bb3f4ce4123d8fb6491f1c0c7a"
+        }
+      ]
+    },
+    {
+      "id": "modern_synthesis",
+      "requirement": "Recent licensed neural removal and corner filling; consider Qwen 2.1 and alternatives",
+      "status": "verified",
+      "proof": "Native seeded June2026 Moebius, actual removal/rotated gap generation, saved working-float assets and exact membership; licensed recent-model research includes pinned Qwen2.1/adapter/FLUX/LLaDA measurements; background matching and actual/full-size persistence verified.",
+      "evidence": [
+        {
+          "file": "src/moebius.rs",
+          "sha256": "93cf100e517ffba6d1b28b5b79c5d21ad4752aa0408c5b891ad9b8666aa4bbde"
+        },
+        {
+          "file": "src/synthesis.rs",
+          "sha256": "6794a54c5d1c552e1a56fc9508fed61b4a9c2743057a03a9f1d40001ee244d66"
+        },
+        {
+          "file": "src/render.rs",
+          "sha256": "ab80d353352962efb4538b50cad2c3be7969ef191634868b3b30e3091b181b0b"
+        },
+        {
+          "file": "docs/inpainting-research.md",
+          "sha256": "b1c7b05f7a308ff3cf5b26b340c9fbace356b750ec8b43d5504abdefd1f55c2b"
+        },
+        {
+          "file": "docs/inpainting-comparison.md",
+          "sha256": "1b0150bae32cf6ff990e7a6d087cc7ad5129c05710723575546b5f5c1cf90cf3"
+        },
+        {
+          "file": "docs/data/inpainting-gb10-2026-10-08.json",
+          "sha256": "b6949f26f1efa5966d647a55933bfdb9e3ad331db1fcca7d18117f4e7a21fb01"
+        },
+        {
+          "file": "docs/data/qwen-controlnet-gb10-2026-10-09.json",
+          "sha256": "381b08b1bc31bff15b28a90c7ad4919dd4f7e5641ebf29f1c81fe19b7df3d95a"
+        },
+        {
+          "file": "docs/data/llada-turbo-gb10-2026-10-10.json",
+          "sha256": "8abed7ad44c970edc3bd115c8d84fb9d6d8b0e3492ddeade99cd7ad941ca6b1c"
+        },
+        {
+          "file": "docs/data/narrow-corner-gb10-release-2026-10-09.json",
+          "sha256": "4be54d5966621222f3ed1b83fd7c9afab8e1f01ef3ab9de85db58e6e3996ae61"
+        },
+        {
+          "file": "docs/data/moebius-selection-diagnosis-2026-10-10.json",
+          "sha256": "7e89c671793a327ecd7c57cf899ba13de53bd17c28846605345135e137d7122a"
+        },
+        {
+          "file": "docs/data/inward-synthesis-blend-2026-10-10.json",
+          "sha256": "3454ac4de1e6c20ab9395e6433589fb7c837f06f75971c581a209e1ed107cad6"
+        },
+        {
+          "file": "src/synthesis/harmonization.rs",
+          "sha256": "9791ded1b63e313b240a72ef70dcae9a13a87a4db5baa7a30be9cb03feeaa84d"
+        },
+        {
+          "file": "docs/data/synthesis-background-match-2026-10-10.json",
+          "sha256": "9973e532ed6e0b9478f25b6b674fb37701ac60da1e238eb2f8f327360328f4b4"
+        },
+        {
+          "file": "docs/data/fused-synthesis-gpu-2026-10-10.json",
+          "sha256": "3d746ffebf68e2f516484b5e653fbd04082e837ea90e39a0debe44ca76b3bf99"
+        },
+        {
+          "file": "docs/data/native-fused-layer-ui-2026-10-10.json",
+          "sha256": "ca0e8197e1c4d14b3e199ef8d34a5dc44cd4cf5a965abdf0a86a967405eee3a4"
+        }
+      ]
+    },
+    {
+      "id": "composition_order",
+      "requirement": "Fixed opinionated order, composed coordinates/scalar/color transforms, sparse original previews, fused GPU output",
+      "status": "verified",
+      "proof": "MODULE_ORDER and executable CPU/shared-kernel order; compiled geometry/scalar/color/LUTs, original sparse previews, cached sensor/joint prep and final GPU layer fusion in eight bindings with bounded output tiles.",
+      "evidence": [
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "src/geometry.rs",
+          "sha256": "104b811fdd36d0ed93a0b58f37d4639f70edde9c3dfc2a2f9c6ea8e38ea9c003"
+        },
+        {
+          "file": "src/gpu/kernel.rs",
+          "sha256": "b4e6f098a3603dcf5a6ef7b8b716cdd49ef7fc576560949693f8a58f3b8cddd9"
+        },
+        {
+          "file": "src/render.rs",
+          "sha256": "ab80d353352962efb4538b50cad2c3be7969ef191634868b3b30e3091b181b0b"
+        },
+        {
+          "file": "docs/architecture.md",
+          "sha256": "02cadabc729f54e4a150e670f1132790eaf661dadd562c02f74d766387399deb"
+        },
+        {
+          "file": "docs/data/gpu-flat-tiles-2026-10-10.json",
+          "sha256": "f189161bb3113744df3444ee4270e52ea036588be1e4dc2dc41e892a696ee0de"
+        },
+        {
+          "file": "docs/data/gb10-system-memory-2026-10-09.json",
+          "sha256": "a7e9cda17d3e2fb3851518b2f6e4e4c0f9597b629aaae9c6821b373be4b12eed"
+        },
+        {
+          "file": "src/gpu/synthesis.rs",
+          "sha256": "5002b99d5a469f2b3f37624a6e8a133042964e4552f7df90b660a9fb9533e81b"
+        },
+        {
+          "file": "docs/data/fused-synthesis-gpu-2026-10-10.json",
+          "sha256": "3d746ffebf68e2f516484b5e653fbd04082e837ea90e39a0debe44ca76b3bf99"
+        }
+      ]
+    },
+    {
+      "id": "research_joint",
+      "requirement": "Research OIDN/classical methods and superior joint ML path",
+      "status": "verified",
+      "proof": "OIDN/classical and 2026 alternatives reviewed; attributed CC-BY4 RawNIND weights in an independently expressed native graph; PSNR and high-pass correlation improve over fixed MHC/bilateral on all six preselected held-out detail regions, with explicit tradeoffs.",
+      "evidence": [
+        {
+          "file": "docs/research.md",
+          "sha256": "4f603c3757e45a4cd6c678992d6326d00a8d494e4126c21059807e644c3d804a"
+        },
+        {
+          "file": "docs/learned-reconstruction.md",
+          "sha256": "ae0b87729c183c09bcbb0a23adc4be688bf3a5392eed121d41be1ad57436ab9e"
+        },
+        {
+          "file": "tools/export_rawnind.py",
+          "sha256": "ec7f1a8c88234addfb0df6e79ae92b3fe41a84c9afaf3498fc816aa4e0a7d127"
+        },
+        {
+          "file": "src/raw_ml.rs",
+          "sha256": "fbe4529113c829a10b1665c143ba17f1f7860f460bf3726a0b0026b2033d9279"
+        },
+        {
+          "file": "docs/data/raw-reconstruction-2026-10-09.json",
+          "sha256": "6e8d5d3c066aeb84b2d67554c6bd12de17d2cf028462db287fdf9cee164becf7"
+        },
+        {
+          "file": "docs/data/raw-reconstruction-detail-2026-10-09.json",
+          "sha256": "51004bf29e3d4acaf5611fa7b3583bcc501ae7943c7b8b818b12799026fe6c5a"
+        },
+        {
+          "file": "docs/data/full-reconstruction-provenance-2026-10-10.json",
+          "sha256": "11fbadf8fec00bedd82896fc4b7e53a92673e6e77e58de1165ab094b132d580d"
+        }
+      ]
+    },
+    {
+      "id": "color_profiles",
+      "requirement": "Working/input/output/display color spaces on X11, Wayland and macOS",
+      "status": "verified",
+      "proof": "Working linear-sRGB D65, Little CMS input/display/output transforms and correctly tagged five output spaces, signed/HDR/chromaticity/gray checks; X11 profile refresh, managed/legacy Wayland surface policy and macOS ColorSync tagging runtime checks.",
+      "evidence": [
+        {
+          "file": "src/color.rs",
+          "sha256": "90139b8ad23225c7d1828a66da968950996bbd56e4ac3ff25be174573ad510c9"
+        },
+        {
+          "file": "src/export.rs",
+          "sha256": "97e4a908171a685e0ed2a6c3cf3a5732d3672012904501a43156a3b4b7c448c4"
+        },
+        {
+          "file": "src/display.rs",
+          "sha256": "c5a213af486e0c4f727eeda63b5de024df709df55ef4d8641b5618ecb7626c2b"
+        },
+        {
+          "file": "src/display/platform/linux.rs",
+          "sha256": "4881a9bb2a198eaea68eddc793bb6f79f7ec82e14ad7608b3493befface454ad"
+        },
+        {
+          "file": "src/display/platform/mac.rs",
+          "sha256": "6df038b687fdc13d308508f26f8a7ac7934d9b2f8302eb26c446bf96c1d2f08a"
+        },
+        {
+          "file": "src/display/wayland_surface.rs",
+          "sha256": "509d555bbe02175238b89ea9c6b319d74c2cc8fdbe8cd13d65f47d0bf3a11c49"
+        },
+        {
+          "file": "tests/color.rs",
+          "sha256": "5f294ff7a0f9c658d7100a5da63b84f6655a07b0e07e11c4240cdbf3ea6a3e6e"
+        },
+        {
+          "file": "tests/display.rs",
+          "sha256": "08e9c6d2f56f5a0e00ed8a58a292341f41f951aa4fdea353a043347e6df3e606"
+        },
+        {
+          "file": "docs/data/wayland-surface-2026-10-09.json",
+          "sha256": "7a1be4ab88d9a49d5c8597583e341b87b20022818b51170e183252b0276868e0"
+        },
+        {
+          "file": "docs/data/full-saved-synthesis-export-2026-10-10.json",
+          "sha256": "014713f92c71b83479eeeecf355e49d118eb60f67126904068f0500c5ef6554e"
+        }
+      ]
+    },
+    {
+      "id": "hdr",
+      "requirement": "HDR images and display consideration",
+      "status": "verified",
+      "proof": "Signed float HDR import/export, advertised paired native extended-linear format/colorspace, float photo/UI/alpha/reference-white renderer and native SDR/HDR signal probes including macOS/Windows CI.",
+      "evidence": [
+        {
+          "file": "src/display/hdr.rs",
+          "sha256": "be212a13ccc60972869cccf1316a7e053293b11943828423fbcb5905ebe0748b"
+        },
+        {
+          "file": "vendor/egui-wgpu/RAWPUPPY.md",
+          "sha256": "761d1ea5f234d1dd349b28324457737904e9c7ef3ea4ded675030a1c9f98a883"
+        },
+        {
+          "file": "tests/hdr.rs",
+          "sha256": "258e647661e4ba5671bc82bbe38164f7e75a512b1205b4ba613dcf30b85c9052"
+        },
+        {
+          "file": "examples/editor_signal_probe.rs",
+          "sha256": "b97d9b6fa59b6f2e0c3c21cc8cd0cdbdc6d6792af3a7843b10850855acf43d37"
+        },
+        {
+          "file": "docs/data/hdr-editor-gb10-2026-10-09.json",
+          "sha256": "ee6c146197c4d2eb3cbd3166c4ee1e03c60483775c5dcde8febc8ee2ecb79c46"
+        },
+        {
+          "file": "docs/data/hdr-native-gb10-2026-10-09.json",
+          "sha256": "cfdd9c0b733f5efc9c45e97588617c6f7cfdd0e610edc595863ad791a3c91620"
+        },
+        {
+          "file": "docs/data/exr-input-2026-10-10.json",
+          "sha256": "11c1e215be20ec80d1650a4644effffe226b9cdd8872f9de673f23c14ce5b965"
+        }
+      ]
+    },
+    {
+      "id": "large_files",
+      "requirement": "100 MP, >100000-wide indices, no arbitrary application raster limit beyond format/memory",
+      "status": "verified",
+      "proof": "Checked usize core products/indices, decoder budgets removed, format-specific narrowing, actual101.8MP and100003-wide RAW/EXR/render/export, bounded conversion scratch, >4GiB BigTIFF independently decoded.",
+      "evidence": [
+        {
+          "file": "src/input.rs",
+          "sha256": "272eb9593d75bfc2d9c76d33b1e069d8cba599ed9ad78aafed5971a63e71205a"
+        },
+        {
+          "file": "src/export.rs",
+          "sha256": "97e4a908171a685e0ed2a6c3cf3a5732d3672012904501a43156a3b4b7c448c4"
+        },
+        {
+          "file": "src/pipeline.rs",
+          "sha256": "4ee3f30e7a5a4e9ad9eea2ce7986ce28d6624c3dc40ef0fb074eccfbfd5fed55"
+        },
+        {
+          "file": "src/synthesis.rs",
+          "sha256": "6794a54c5d1c552e1a56fc9508fed61b4a9c2743057a03a9f1d40001ee244d66"
+        },
+        {
+          "file": "docs/data/wide-dng-2026-10-10.json",
+          "sha256": "ae4c96478ead0ae05600760f2be36a50f608a9da95cf28711a556b6b3234dee2"
+        },
+        {
+          "file": "docs/data/bigtiff-export-2026-10-10.json",
+          "sha256": "b6292cca191fdd369426ed87f72df9dda4fd26ade972fba8874959d5686a1ce0"
+        },
+        {
+          "file": "docs/data/png-export-2026-10-10.json",
+          "sha256": "a2e0b5cead6f699e9502ba6cf73f33cec4fcb76bf7c1ec34a846c2049cf32200"
+        },
+        {
+          "file": "docs/data/large-layer-2026-10-10.json",
+          "sha256": "2544104b686d55ba038d73563c0c0c7856c8dae51b779c87fa7c2c5b7226c070"
+        },
+        {
+          "file": "docs/data/exr-input-2026-10-10.json",
+          "sha256": "11c1e215be20ec80d1650a4644effffe226b9cdd8872f9de673f23c14ce5b965"
+        },
+        {
+          "file": "docs/data/full-saved-synthesis-export-2026-10-10.json",
+          "sha256": "014713f92c71b83479eeeecf355e49d118eb60f67126904068f0500c5ef6554e"
+        },
+        {
+          "file": "docs/data/jpeg-export-2026-10-10.json",
+          "sha256": "bbe9eb268236b6b00f72c0b42571deb629e62c2916f9f642210d62e1d990a60d"
+        },
+        {
+          "file": "docs/data/fused-synthesis-gpu-2026-10-10.json",
+          "sha256": "3d746ffebf68e2f516484b5e653fbd04082e837ea90e39a0debe44ca76b3bf99"
+        }
+      ]
+    },
+    {
+      "id": "unified_memory",
+      "requirement": "Embrace GB10 coherent memory and avoid redundant GPU transfers",
+      "status": "verified",
+      "proof": "Capability-selected synchronized owned-system CUDA pointers, local page advice and retained sensor/asset allocations; Nsight removes app upload/readback, actual GB10 timing and full-size coherent rendering.",
+      "evidence": [
+        {
+          "file": "src/gpu/system_cuda.rs",
+          "sha256": "5375f5a38e76fd400c16be4cedbcdf9f9990902760c1787fa787fbcdf663b2bf"
+        },
+        {
+          "file": "src/input.rs",
+          "sha256": "272eb9593d75bfc2d9c76d33b1e069d8cba599ed9ad78aafed5971a63e71205a"
+        },
+        {
+          "file": "docs/system-memory.md",
+          "sha256": "16944f9331b304f1e2fe654b1e8e24d4cf953ff31807f52f8408412ab49aab3a"
+        },
+        {
+          "file": "docs/data/gb10-system-memory-2026-10-09.json",
+          "sha256": "a7e9cda17d3e2fb3851518b2f6e4e4c0f9597b629aaae9c6821b373be4b12eed"
+        },
+        {
+          "file": "src/gpu/synthesis.rs",
+          "sha256": "5002b99d5a469f2b3f37624a6e8a133042964e4552f7df90b660a9fb9533e81b"
+        },
+        {
+          "file": "docs/data/fused-synthesis-gpu-2026-10-10.json",
+          "sha256": "3d746ffebf68e2f516484b5e653fbd04082e837ea90e39a0debe44ca76b3bf99"
+        }
+      ]
+    },
+    {
+      "id": "cooperation",
+      "requirement": "Protect original photograph folders, bound resource use, leave other projects/processes alone",
+      "status": "verified",
+      "proof": "Originals are read only; owned validation copies/artifacts, eight worker default, bounded model contexts/jobs/tiles, isolated allocation-pressure recovery, exact input hashes, export original/alias rejection and owned-process cleanup.",
+      "evidence": [
+        {
+          "file": "src/export.rs",
+          "sha256": "97e4a908171a685e0ed2a6c3cf3a5732d3672012904501a43156a3b4b7c448c4"
+        },
+        {
+          "file": "src/main.rs",
+          "sha256": "792bd2e18f789d63cfc42a2ff153b9f8d923a73aa2ff1d7d5e3d8711c94162a9"
+        },
+        {
+          "file": "src/ml_runtime.rs",
+          "sha256": "afb3c90bcabc3fcb77aa16683799131e7b4b5301736e35178e400b581841ec4d"
+        },
+        {
+          "file": "tests/cli.rs",
+          "sha256": "c5838b833dec37ab8ccab1c04c1ff97432fcee379a502c46ed5bb3d6ed164145"
+        },
+        {
+          "file": "docs/data/cuda-inference-budget-2026-10-10.json",
+          "sha256": "79dc6067527faece84cef905054a551f71e1a85b79ceb75450207608ea1e7abf"
+        },
+        {
+          "file": "docs/data/reconstruction-memory-2026-10-09.json",
+          "sha256": "4f2427e18d597725d2908a0ea8821e88708ed2561c57d8c50465d7edb6589a73"
+        },
+        {
+          "file": "docs/data/native-error-status-2026-10-10.json",
+          "sha256": "c338f65237098b6e5a99fe83b49fcb0b94da25a75bdc9a2232577be6f79af9f5"
+        },
+        {
+          "file": "docs/data/full-saved-synthesis-export-2026-10-10.json",
+          "sha256": "014713f92c71b83479eeeecf355e49d118eb60f67126904068f0500c5ef6554e"
+        }
+      ]
+    },
+    {
+      "id": "xmp_no_db",
+      "requirement": "Single photo, no global database, isolated atomic XMP and CLI",
+      "status": "verified",
+      "proof": "No gallery/global photo database; atomic separate namespace and full-filename .rawpuppy.xmp plus asset identities; CLI/roundtrip/no-clobber/write-failure/undo/cold-load checks.",
+      "evidence": [
+        {
+          "file": "src/gui.rs",
+          "sha256": "5e4d9f92d704251bcb90067be22001eeab0658309b66d694abc52a84d76eca58"
+        },
+        {
+          "file": "src/sidecar.rs",
+          "sha256": "f2fe468b52a2c98e71e4550e389ec96c80b0c0ba0881145e5eab4a6cd026f8bc"
+        },
+        {
+          "file": "src/main.rs",
+          "sha256": "792bd2e18f789d63cfc42a2ff153b9f8d923a73aa2ff1d7d5e3d8711c94162a9"
+        },
+        {
+          "file": "tests/cli.rs",
+          "sha256": "c5838b833dec37ab8ccab1c04c1ff97432fcee379a502c46ed5bb3d6ed164145"
+        },
+        {
+          "file": "tests/core.rs",
+          "sha256": "362609068cb77c0ca0950045cc1e0a55ed15a3bb3f4ce4123d8fb6491f1c0c7a"
+        }
+      ]
+    },
+    {
+      "id": "docs_delivery",
+      "requirement": "Concise README, progress journals, commit and push milestones",
+      "status": "verified",
+      "proof": "Concise README with current build/run/model setup links, progress journals and machine-readable records, clean synced main and pushed milestones; final audit is committed and pushed before goal closure.",
+      "evidence": [
+        {
+          "file": "README.md",
+          "sha256": "532c4a3e67177b5a553fa8483ec80db9a605be2e89f6a017b24be8d98ba4716c"
+        },
+        {
+          "file": "PROMPT.md",
+          "sha256": "9d765d4dd956bf0e2abc3d972c2811aaddb5092805ec064453a1cb065581a95a"
+        },
+        {
+          "file": "AGENTS.md",
+          "sha256": "45642f117ed5f3fdd8f7cbd11cf1813f4d58a4baa20461349e5298ef1aa59de2"
+        },
+        {
+          "file": "docs/requirements.md",
+          "sha256": "5e7494f9b0f6c7c0365fe9edc4fa374aeda472eb3d62c58c4437979bf06f8df7"
+        }
+      ]
+    }
+  ],
+  "required_ci": {
+    "url": "https://github.com/dllu/rawpuppy/actions/runs/38082697336",
+    "head_sha": "172cb7f37fe930ef8e391d687a868e5ec9731c4c",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "native-learning (macos-latest)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install native Apple Silicon LibTorch",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install matching Apple Silicon vision library",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install pinned graph preparation dependencies",
+            "conclusion": "success"
+          },
+          {
+            "name": "Configure native library loader",
+            "conclusion": "success"
+          },
+          {
+            "name": "macOS neural build dependencies",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare verified real RAW graph",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo clippy --features moebius,raw-ml --all-targets -j 2 -- -D warnings",
+            "conclusion": "success"
+          },
+          {
+            "name": "Native scheduler and layer tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install attributed RAW graph for renderer tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real native RAW inference and CPU parity",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare verified real inpainting graphs",
+            "conclusion": "success"
+          },
+          {
+            "name": "Export verified real inpainting graphs",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real native inpainting on the selected device and CPU",
+            "conclusion": "success"
+          },
+          {
+            "name": "Retain native graph provenance",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "name": "test (windows-latest)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo fmt --check",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo clippy --all-targets -- -D warnings",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo test --locked",
+            "conclusion": "success"
+          },
+          {
+            "name": "DNG camera normalization and calibration",
+            "conclusion": "success"
+          },
+          {
+            "name": "Build native editor signal probe",
+            "conclusion": "success"
+          },
+          {
+            "name": "Native editor signal verification",
+            "conclusion": "success"
+          },
+          {
+            "name": "Optional neural inference builds",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "name": "test (macos-latest)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "conclusion": "success"
+          },
+          {
+            "name": "macOS dependencies",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo fmt --check",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo clippy --all-targets -- -D warnings",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo test --locked",
+            "conclusion": "success"
+          },
+          {
+            "name": "DNG camera normalization and calibration",
+            "conclusion": "success"
+          },
+          {
+            "name": "Build native editor signal probe",
+            "conclusion": "success"
+          },
+          {
+            "name": "Native editor signal verification",
+            "conclusion": "success"
+          },
+          {
+            "name": "Optional neural inference builds",
+            "conclusion": "success"
+          },
+          {
+            "name": "Metal compute parity on native GPU",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "name": "native-learning (windows-latest)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install CPU LibTorch on Linux and Windows",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install matching CPU vision library",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install pinned graph preparation dependencies",
+            "conclusion": "success"
+          },
+          {
+            "name": "Configure native library loader",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare verified real RAW graph",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo clippy --features moebius,raw-ml --all-targets -j 2 -- -D warnings",
+            "conclusion": "success"
+          },
+          {
+            "name": "Native scheduler and layer tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install attributed RAW graph for renderer tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real native RAW inference and CPU parity",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare verified real inpainting graphs",
+            "conclusion": "success"
+          },
+          {
+            "name": "Export verified real inpainting graphs",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real native inpainting on the selected device and CPU",
+            "conclusion": "success"
+          },
+          {
+            "name": "Retain native graph provenance",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "name": "native-learning (ubuntu-latest)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install CPU LibTorch on Linux and Windows",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install matching CPU vision library",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install pinned graph preparation dependencies",
+            "conclusion": "success"
+          },
+          {
+            "name": "Configure native library loader",
+            "conclusion": "success"
+          },
+          {
+            "name": "Linux neural build dependencies",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare verified real RAW graph",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo clippy --features moebius,raw-ml --all-targets -j 2 -- -D warnings",
+            "conclusion": "success"
+          },
+          {
+            "name": "Native scheduler and layer tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install attributed RAW graph for renderer tests",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real native RAW inference and CPU parity",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare verified real inpainting graphs",
+            "conclusion": "success"
+          },
+          {
+            "name": "Export verified real inpainting graphs",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real native inpainting on the selected device and CPU",
+            "conclusion": "success"
+          },
+          {
+            "name": "Retain native graph provenance",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "name": "test (ubuntu-latest)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run dtolnay/rust-toolchain@stable",
+            "conclusion": "success"
+          },
+          {
+            "name": "Linux dependencies",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo fmt --check",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo clippy --all-targets -- -D warnings",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run cargo test --locked",
+            "conclusion": "success"
+          },
+          {
+            "name": "DNG camera normalization and calibration",
+            "conclusion": "success"
+          },
+          {
+            "name": "Build native editor signal probe",
+            "conclusion": "success"
+          },
+          {
+            "name": "Native editor signal verification on X11",
+            "conclusion": "success"
+          },
+          {
+            "name": "Optional neural inference builds",
+            "conclusion": "success"
+          },
+          {
+            "name": "CUDA adapter compilation without requiring a GPU",
+            "conclusion": "success"
+          },
+          {
+            "name": "Vulkan compute parity on software GPU",
+            "conclusion": "success"
+          },
+          {
+            "name": "Automatic ICC discovery on isolated X11 display",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run Swatinem/rust-cache@v2",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "conclusion": "success"
+          }
+        ]
+      }
+    ]
+  },
+  "local_current_checks": {
+    "default": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-all-standard-final-2026-10-10.log",
+      "sha256": "d0da0ce7d4dbfc46c6c428df90bd06aeb92f3128304179d759132106cb5484d7",
+      "passed": 96,
+      "failed": 0,
+      "ignored": 13
+    },
+    "combined": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-combined-tests-2026-10-10.log",
+      "sha256": "59383ea6554cf8d37218a9fae78446a2c172bd7d8cc1a94e5a3ca4472f767b35",
+      "passed": 104,
+      "failed": 0,
+      "ignored": 27
+    },
+    "storage": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-storage-tests-2026-10-10.log",
+      "sha256": "55ac5873bf3bac4aadbcf2cf5b5f31f36051cc088bebc395516aada15419360d",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    },
+    "vulkan_fusion": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-confirmed-vulkan-2026-10-10.log",
+      "sha256": "7afb51318616f855bbe5766c68c34e3fb4b18bc1f054b342bf2a8db9837c3e6a",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "cuda_fusion": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-confirmed-cuda-2026-10-10.log",
+      "sha256": "4ace0f85dcdaca56327769987dd021da6895382dcdbddebe54391910f32bd3c4",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "vulkan_regressions": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-vulkan-regressions-2026-10-10.log",
+      "sha256": "99160d5c4cfab69196d9015240260adc5d4978bfa561e5974d1e3e8a62c2a7df",
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0
+    },
+    "cuda_regressions": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-cuda-regressions-2026-10-10.log",
+      "sha256": "bf463fb20baae3e25cdf67b5df41f1bed03ab09a10330d6b5dc5a9896e3458a9",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0
+    },
+    "clippy": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-current-all-target-clippy-2026-10-10.log",
+      "sha256": "89e57533939fc60f2966adbe2816f8346a0975ea42e43dd35e640412cbbefde8",
+      "passed": true
+    },
+    "no_gpu": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-no-gpu-2026-10-10.log",
+      "sha256": "7dab03a6063075e0e371765d245cfe3befba3f1260577bc9099ed932bc10c81b",
+      "passed": true
+    },
+    "release_editor": {
+      "path": "/tmp/rawpuppy-validation/fused-layers-editor-build-2026-10-10.log",
+      "sha256": "366395a9cd038b3bcc7122aedbe81ceb3ad6a8b13890953cb1df50d9a926be4c",
+      "passed": true
+    }
+  },
+  "required_work_remaining": [],
+  "limits": [
+    "Neural reconstruction/inpainting quality is measured on recorded controls and has documented texture/structure tradeoffs; no method is promised best on every photograph.",
+    "Color policy and signal/numeric conformance are verified; physical colorimeter measurements across all monitors/cameras are not claimed.",
+    "Unsupported sensor arrangements/extra profiles report their documented limits; the prompt-requested GFX100S and tested formats/dimensions are supported.",
+    "Performance figures are observations on the shared GB10, not latency guarantees.",
+    "Native generation needs documented optional features and verified prepared models; model weights/photos are not bundled with the repo."
+  ],
+  "goal_ready_for_completion_after_audit_delivery": true
+}
