@@ -1,0 +1,201 @@
+{
+  "date_utc": "2026-10-10",
+  "implementation_commit": "172cb7f37fe930ef8e391d687a868e5ec9731c4c",
+  "scope": "Actual current release X11 editor after GPU layer fusion; saved matched GFX layer clear/undo/redo/save/cold-reopen and complete displayed-photo comparison, not physical colorimetry or a full-resolution/perceptual claim.",
+  "features": [
+    "cuda",
+    "raw-ml",
+    "moebius"
+  ],
+  "libtorch": "2.13",
+  "initial_and_final_hashes": {
+    "photo.raf": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "photo.raf.rawpuppy.xmp": "2b7a82e6ba01b7b7aeaa9b85abdfcd11aa6bae8e9d521548bb546ba5ceb0b9c5",
+    "binary_sha256": "06814ffbd5944c9ac6ce107b91f7509b4321c94fadde6c79f966142f69b273ad"
+  },
+  "source_dimensions": [
+    8736,
+    11648
+  ],
+  "source_pixels": 101756928,
+  "assets": {
+    "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726.exr": "a147f7a1129c4192b14a1518b6a177d4daa3a5a331ae37a5ede1927b22094726"
+  },
+  "raw_and_final_xmp_assets_unchanged": true,
+  "moebius_cache_absent_both_windows": true,
+  "actions": [
+    "open saved matched layer with Joint RAW/exposure1.8",
+    "open AI controls",
+    "clear generated fills and save: zero layers",
+    "undo and save: byte-identical original matched layer",
+    "redo and save: cleared state",
+    "undo and save: original state again",
+    "normal WM_DELETE_WINDOW close: zero exit",
+    "fresh reopen and complete displayed-photo comparison",
+    "normal close: zero exit"
+  ],
+  "frame_comparison": {
+    "scope": "Every displayed RGBA sample in the native photo rectangle, not physical colorimetry",
+    "photo_rectangle": [
+      268,
+      116,
+      862,
+      908
+    ],
+    "photo_pixels": 470448,
+    "comparisons": {
+      "controls": {
+        "changed_pixels": 0,
+        "maximum_channel_difference": 0
+      },
+      "cleared": {
+        "changed_pixels": 9002,
+        "maximum_channel_difference": 167
+      },
+      "undo": {
+        "changed_pixels": 0,
+        "maximum_channel_difference": 0
+      },
+      "redo": {
+        "changed_pixels": 9002,
+        "maximum_channel_difference": 167
+      },
+      "restored": {
+        "changed_pixels": 0,
+        "maximum_channel_difference": 0
+      }
+    },
+    "cleared_and_redone_pixels_identical": true
+  },
+  "previous_hybrid_preview_comparison": {
+    "scope": "Old hybrid and current fused native preview, same owned RAW/recipe/cache and displayed photo rectangle; no physical-colorimetry claim.",
+    "photo_pixels": 470448,
+    "changed_pixels": 0,
+    "maximum_channel_difference": 0,
+    "mean_channel_difference": 0.0
+  },
+  "cold_reopen_comparison": {
+    "photo_pixels": 470448,
+    "changed_pixels": 0,
+    "maximum_channel_difference": 0,
+    "moebius_cache_absent": true,
+    "scope": "Every displayed RGBA photo sample; no full-resolution or physical-monitor claim"
+  },
+  "owned_processes": {
+    "initial": {
+      "editor_pid": 874566,
+      "xvfb_pid": 874563,
+      "editor_exit": 0
+    },
+    "reopened": {
+      "editor_pid": 874967,
+      "xvfb_pid": 874964,
+      "editor_exit": 0
+    },
+    "all_four_pids_absent_after_cleanup": true
+  },
+  "artifacts": {
+    "directory": "/tmp/rawpuppy-validation/native-fused-layer-ui-2026-10-10",
+    "files": {
+      "undo.png": {
+        "bytes": 884475,
+        "sha256": "a01363442a5b1345a8787b095be25d8fe80bf03568e8b86d620ed922033382c7"
+      },
+      "restored.png": {
+        "bytes": 884475,
+        "sha256": "a01363442a5b1345a8787b095be25d8fe80bf03568e8b86d620ed922033382c7"
+      },
+      "ready.png": {
+        "bytes": 881942,
+        "sha256": "b844a66acacec2b622b2ccf49ee4aff1e3ffd3a0b710de52f61d4baacd21a4d1"
+      },
+      "processes-initial.json": {
+        "bytes": 60,
+        "sha256": "76f957229f9b5569475793819632676ebd8cb2f833287b96d0d9bdbc1579f564"
+      },
+      "frame-comparison.json": {
+        "bytes": 711,
+        "sha256": "8513af92cf0501f349ec8bbbf89f4c06e1646a0e53743102ba0429a3b8d59551"
+      },
+      "initial-hashes.json": {
+        "bytes": 269,
+        "sha256": "9316e6040324521a9dc289a41d7d2c4c3aa3a8e0515c8517fda7be242e944d18"
+      },
+      "previous-render-comparison.json": {
+        "bytes": 270,
+        "sha256": "0e8cba58469c366d84e726cb9bc64cf21e2ae83210a9b355b87d4c701408b58c"
+      },
+      "restored-recipe.json": {
+        "bytes": 7756,
+        "sha256": "ae1e62cbb4a2596c83a1d126c8c04e9d5018e27061d8c350c0b84db5db10a5ce"
+      },
+      "redo.png": {
+        "bytes": 888332,
+        "sha256": "7c4ffa239d4fdc9617539654d74bbb144856ae4f782dc08e0ada4db0e561d50c"
+      },
+      "cleared.png": {
+        "bytes": 888332,
+        "sha256": "7c4ffa239d4fdc9617539654d74bbb144856ae4f782dc08e0ada4db0e561d50c"
+      },
+      "reopening.png": {
+        "bytes": 881858,
+        "sha256": "56c696c2eada396cc54726c4db98593df7ae5acc5dada6b489fd5d4edf9beae9"
+      },
+      "undo-recipe.json": {
+        "bytes": 7756,
+        "sha256": "ae1e62cbb4a2596c83a1d126c8c04e9d5018e27061d8c350c0b84db5db10a5ce"
+      },
+      "opening.png": {
+        "bytes": 881942,
+        "sha256": "b844a66acacec2b622b2ccf49ee4aff1e3ffd3a0b710de52f61d4baacd21a4d1"
+      },
+      "reopen-comparison.json": {
+        "bytes": 213,
+        "sha256": "ab76fb3ae2eeae4730e8e5444800a5223c45c6d7a39a05207d79af2dc86e5876"
+      },
+      "session.py": {
+        "bytes": 4989,
+        "sha256": "6dda86d5d5f69a3ee33bbe5d7340937433cfbee259087ad9bbf11e557c839998"
+      },
+      "xvfb.log": {
+        "bytes": 2348,
+        "sha256": "b987a262609a3720f450ab6815ed90b2069dd47b7b012959ca19c325aebf5d55"
+      },
+      "editor-initial.log": {
+        "bytes": 134,
+        "sha256": "76050053c4b02071888d4c96a42008c20783652c7d6b1762457f640578a0d413"
+      },
+      "redo-recipe.json": {
+        "bytes": 1428,
+        "sha256": "04fa0701e046a3aefbd789281e8d69ba481ede823f2c22fd2fa64912823d4dac"
+      },
+      "cleared-recipe.json": {
+        "bytes": 1428,
+        "sha256": "04fa0701e046a3aefbd789281e8d69ba481ede823f2c22fd2fa64912823d4dac"
+      },
+      "processes-reopened.json": {
+        "bytes": 60,
+        "sha256": "4499b8853f69b2ef11e41645864f9963f0d2b847127fe6bee16b5ad51df7742f"
+      },
+      "controls.png": {
+        "bytes": 885135,
+        "sha256": "0f6a73cc8293466141af6dc317906bdfe1409aee02baf1e8a8a5bc1b570baff6"
+      },
+      "editor-reopened.log": {
+        "bytes": 134,
+        "sha256": "76050053c4b02071888d4c96a42008c20783652c7d6b1762457f640578a0d413"
+      }
+    }
+  },
+  "ci_at_recording": {
+    "url": "https://github.com/dllu/rawpuppy/actions/runs/38082697336",
+    "desktop_jobs_successful": 3,
+    "mandatory_metal_step": "success",
+    "native_learning_jobs": "in progress"
+  },
+  "limits": [
+    "These comparisons cover all470448 displayed RGBA samples, while full101.8MP fused export conformance has a separate record.",
+    "No new neural sampling is run; this verifies rendering and history of a saved result.",
+    "Old and fused previews agree on this edit at display quantization; their full float outputs need not be bit-identical."
+  ]
+}

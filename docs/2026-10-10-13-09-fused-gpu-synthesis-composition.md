@@ -74,3 +74,8 @@ and exposes the two additional verification flags. Assets, photographic outputs
 and logs remain under `/tmp/rawpuppy-validation`. This advances the requested
 single-pass composition; model-quality and physical colorimetry claims remain
 bounded by their separate evidence in the full project audit.
+
+The [native follow-up](2026-10-10-13-18-native-fused-layer-history-and-metal-gate.md)
+subsequently verifies current editor history/reopen and a successful mandatory
+Metal step on the fusion commit. All displayed photo pixels also match the prior
+hybrid preview on the controlled GFX edit.
