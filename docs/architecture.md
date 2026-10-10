@@ -64,6 +64,11 @@ AgX, retouch, curve and split toning run in the output kernel. GPU retouch uses 
 same spatial index and precomputed heal offsets as CPU. Source/device addressing
 and binding limits select CPU fallback in auto mode and never limit the core image
 representation. GPU X-Trans currently selects CPU.
+Wgpu renderers share one lazily registered CubeCL client for the process's default
+device. Auto and explicit native API selection use the same registration; an
+explicit request must match its actual API. Each renderer retains its own sensor,
+prepared buffer and layer state. Dropping one renderer retires its source without
+affecting another renderer on the same client.
 On eligible coherent integrated CUDA devices, a driver adapter launches the same
 Rust kernel using owned system allocations, avoiding sensor duplication and
 preview readback. Capability checks, synchronized borrows and local page hints

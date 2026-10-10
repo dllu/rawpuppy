@@ -145,3 +145,21 @@ They do not promise constant latency across machines or system load.
 
 Tag identifiers are documented by [ExifTool](https://exiftool.org/TagNames/FujiFilm.html).
 The application uses [Rawler's TIFF API](https://docs.rs/rawler/0.8.0/rawler/formats/tiff/).
+
+### Additional GFX lenses and orientations
+
+Eight owned GFX100S copies cover the GF20–35 zoom at 20/35 mm, GF500, GF110,
+GF50, an adapted Sigma 70 mm and an unnamed manual lens, with EXIF orientations
+1, 6 and 8. Independent ExifTool values match every distortion, red/blue CA and
+vignetting table, including the manual lens's identity curves. Every default
+full-resolution output perimeter is finite and opaque. CUDA/Vulkan previews
+agree with CPU for both defaults and a composed crop/perspective/color edit,
+within the recorded tolerances, with identical alpha. Original and decoded sensor
+hashes remain unchanged. See [the validation record](data/gfx-input-diversity-gb10-2026-10-09.json).
+
+Build `verify_camera_input` with `--release --features cuda`, then run it with an
+owned RAW copy and a fresh output directory; `--expected-orientation` checks its
+independent EXIF orientation. It retains matched previews and a JSON receipt.
+These checks establish decoding, metadata interpretation, framing coverage and
+implementation agreement; optical calibration and highlight quality still need
+independent photographic validation.

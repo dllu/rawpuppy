@@ -1,0 +1,4943 @@
+{
+  "scope": "eight owned GFX copies; finite, framing, orientation and CPU/GPU checks; not an independent optical/color oracle",
+  "cases": [
+    {
+      "name": "wide-20",
+      "exit_code": 0,
+      "exiftool": {
+        "Make": "FUJIFILM",
+        "Model": "GFX100S",
+        "LensModel": "GF20-35mmF4 R WR",
+        "Orientation": 1,
+        "ImageWidth": 4000,
+        "ImageHeight": 3000,
+        "ISO": 320,
+        "FocalLength": "20.0 mm",
+        "FNumber": 5.6
+      },
+      "receipt": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.418608844,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.00020682811737060547,
+            "mean_absolute_rgb_error": 5.252453206199764e-07,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.005148552,
+              0.005022807
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 1.9741358199999999,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.00029990077018737793,
+            "mean_absolute_rgb_error": 1.3311549968049914e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.011611841,
+              0.011446753
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.177968407,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.0008601099252700806,
+            "mean_absolute_rgb_error": 4.170342520106012e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.004997191,
+              0.005038728
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.363390603,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0006484389305114746,
+            "mean_absolute_rgb_error": 5.944422757460875e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.012301395,
+              0.01164333
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.412793122,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 40768,
+        "input_sha256": "728e952d6f817a42c0b14215f5597c0824a6b9477cb613015eb75be26771263e",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 5.599999904632568,
+          "as_shot": [
+            1.619205355644226,
+            1.0,
+            1.9437086582183838
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.0725822448730469,
+              0.17127156257629395,
+              -0.24385379254817963
+            ],
+            [
+              -0.12670612335205078,
+              1.431113362312317,
+              -0.3044072091579437
+            ],
+            [
+              -0.009693307802081108,
+              -0.2934032380580902,
+              1.3030966520309448
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 20.0,
+          "height": 8736,
+          "lens_model": "GF20-35mmF4 R WR",
+          "lens_profile": {
+            "blue_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.000152587890625
+                ],
+                [
+                  0.5001828074455261,
+                  6.103515625e-05
+                ],
+                [
+                  0.6124314665794373,
+                  3.0517578125e-05
+                ],
+                [
+                  0.7071297764778137,
+                  6.103515625e-05
+                ],
+                [
+                  0.7904936075210571,
+                  9.1552734375e-05
+                ],
+                [
+                  0.8661791682243347,
+                  9.1552734375e-05
+                ],
+                [
+                  0.935283362865448,
+                  0.0001220703125
+                ],
+                [
+                  1.0,
+                  0.0001220703125
+                ],
+                [
+                  1.060694694519043,
+                  0.0001220703125
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "distortion": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  -1.381317138671875
+                ],
+                [
+                  0.5001828074455261,
+                  -2.780303955078125
+                ],
+                [
+                  0.6124314665794373,
+                  -3.99298095703125
+                ],
+                [
+                  0.7071297764778137,
+                  -5.00006103515625
+                ],
+                [
+                  0.7904936075210571,
+                  -5.8047637939453125
+                ],
+                [
+                  0.8661791682243347,
+                  -6.421539306640625
+                ],
+                [
+                  0.935283362865448,
+                  -6.85198974609375
+                ],
+                [
+                  1.0,
+                  -7.110595703125
+                ],
+                [
+                  1.060694694519043,
+                  -7.110595703125
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "red_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.0
+                ],
+                [
+                  0.5001828074455261,
+                  6.103515625e-05
+                ],
+                [
+                  0.6124314665794373,
+                  3.0517578125e-05
+                ],
+                [
+                  0.7071297764778137,
+                  0.0
+                ],
+                [
+                  0.7904936075210571,
+                  -3.0517578125e-05
+                ],
+                [
+                  0.8661791682243347,
+                  -9.1552734375e-05
+                ],
+                [
+                  0.935283362865448,
+                  -0.0001220703125
+                ],
+                [
+                  1.0,
+                  -0.000152587890625
+                ],
+                [
+                  1.060694694519043,
+                  -0.000152587890625
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "vignette": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  91.79736328125
+                ],
+                [
+                  0.5001828074455261,
+                  85.0849609375
+                ],
+                [
+                  0.6124314665794373,
+                  76.162109375
+                ],
+                [
+                  0.7071297764778137,
+                  67.904296875
+                ],
+                [
+                  0.7904936075210571,
+                  61.2255859375
+                ],
+                [
+                  0.8661791682243347,
+                  55.74267578125
+                ],
+                [
+                  0.935283362865448,
+                  51.41845703125
+                ],
+                [
+                  1.0,
+                  47.89501953125
+                ],
+                [
+                  1.060694694519043,
+                  47.89501953125
+                ]
+              ],
+              "radius_pixels": 7280.0
+            }
+          },
+          "lens_profile_error": null,
+          "make": "Fujifilm",
+          "model": "GFX 100S",
+          "pattern": "RGGB",
+          "sensor_height": 8754,
+          "sensor_width": 11808,
+          "width": 11648
+        },
+        "orientation": 1,
+        "output_dimensions": [
+          11648,
+          8736
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      },
+      "original_and_copy_unchanged": true,
+      "independent_exiftool_curve_checks": [
+        {
+          "tag": "GeometricDistortionParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "ChromaticAberrationParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "VignettingParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        }
+      ],
+      "independent_exiftool_numeric_curves": {
+        "GeometricDistortionParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          -1.381317139,
+          -2.780303955,
+          -3.992980957,
+          -5.000061035,
+          -5.804763794,
+          -6.421539307,
+          -6.851989746,
+          -7.110595703,
+          -7.110595703
+        ],
+        "ChromaticAberrationParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          0.0,
+          6.103515625e-05,
+          3.051757812e-05,
+          0.0,
+          -3.051757812e-05,
+          -9.155273438e-05,
+          -0.0001220703125,
+          -0.0001525878906,
+          -0.0001525878906,
+          0.0001525878906,
+          6.103515625e-05,
+          3.051757812e-05,
+          6.103515625e-05,
+          9.155273438e-05,
+          9.155273438e-05,
+          0.0001220703125,
+          0.0001220703125,
+          0.0001220703125,
+          808.8888889
+        ],
+        "VignettingParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          91.79736328,
+          85.08496094,
+          76.16210938,
+          67.90429688,
+          61.22558594,
+          55.74267578,
+          51.41845703,
+          47.89501953,
+          47.89501953
+        ]
+      }
+    },
+    {
+      "name": "zoom-35",
+      "exit_code": 0,
+      "exiftool": {
+        "Make": "FUJIFILM",
+        "Model": "GFX100S",
+        "LensModel": "GF20-35mmF4 R WR",
+        "Orientation": 1,
+        "ImageWidth": 4000,
+        "ImageHeight": 3000,
+        "ISO": 100,
+        "FocalLength": "35.0 mm",
+        "FNumber": 5.6
+      },
+      "receipt": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.387667568,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.00026929378509521484,
+            "mean_absolute_rgb_error": 4.069589784173723e-07,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.005104632,
+              0.005500792
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.861853538,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0005758702754974365,
+            "mean_absolute_rgb_error": 1.1459946963980154e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.011453633,
+              0.011317841
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.202786542,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.0009787976741790771,
+            "mean_absolute_rgb_error": 3.934685755730811e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.004478391,
+              0.004452342
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.36141545,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0011585578322410583,
+            "mean_absolute_rgb_error": 5.693229425717633e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.011022753,
+              0.011459041
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.433147875,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 40768,
+        "input_sha256": "406104f6c03e4967656a9584f56b78833e55e63867e55c4d9ebfb0d1427be4a5",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 5.599999904632568,
+          "as_shot": [
+            1.695364236831665,
+            1.0,
+            1.887417197227478
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.0725822448730469,
+              0.17127156257629395,
+              -0.24385379254817963
+            ],
+            [
+              -0.12670612335205078,
+              1.431113362312317,
+              -0.3044072091579437
+            ],
+            [
+              -0.009693307802081108,
+              -0.2934032380580902,
+              1.3030966520309448
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 35.0,
+          "height": 8736,
+          "lens_model": "GF20-35mmF4 R WR",
+          "lens_profile": {
+            "blue_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  -3.0517578125e-05
+                ],
+                [
+                  0.5001828074455261,
+                  0.0
+                ],
+                [
+                  0.6124314665794373,
+                  0.0
+                ],
+                [
+                  0.7071297764778137,
+                  3.0517578125e-05
+                ],
+                [
+                  0.7904936075210571,
+                  3.0517578125e-05
+                ],
+                [
+                  0.8661791682243347,
+                  6.103515625e-05
+                ],
+                [
+                  0.935283362865448,
+                  6.103515625e-05
+                ],
+                [
+                  1.0,
+                  6.103515625e-05
+                ],
+                [
+                  1.060694694519043,
+                  0.0001220703125
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "distortion": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.5942840576171875
+                ],
+                [
+                  0.5001828074455261,
+                  1.0729217529296875
+                ],
+                [
+                  0.6124314665794373,
+                  1.630279541015625
+                ],
+                [
+                  0.7071297764778137,
+                  2.27435302734375
+                ],
+                [
+                  0.7904936075210571,
+                  2.9875030517578125
+                ],
+                [
+                  0.8661791682243347,
+                  3.777740478515625
+                ],
+                [
+                  0.935283362865448,
+                  4.6177825927734375
+                ],
+                [
+                  1.0,
+                  5.526885986328125
+                ],
+                [
+                  1.060694694519043,
+                  5.526885986328125
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "red_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  9.1552734375e-05
+                ],
+                [
+                  0.5001828074455261,
+                  6.103515625e-05
+                ],
+                [
+                  0.6124314665794373,
+                  6.103515625e-05
+                ],
+                [
+                  0.7071297764778137,
+                  3.0517578125e-05
+                ],
+                [
+                  0.7904936075210571,
+                  3.0517578125e-05
+                ],
+                [
+                  0.8661791682243347,
+                  0.0
+                ],
+                [
+                  0.935283362865448,
+                  0.0
+                ],
+                [
+                  1.0,
+                  -3.0517578125e-05
+                ],
+                [
+                  1.060694694519043,
+                  -9.1552734375e-05
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "vignette": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  93.34521484375
+                ],
+                [
+                  0.5001828074455261,
+                  87.48388671875
+                ],
+                [
+                  0.6124314665794373,
+                  81.205078125
+                ],
+                [
+                  0.7071297764778137,
+                  74.908203125
+                ],
+                [
+                  0.7904936075210571,
+                  69.42333984375
+                ],
+                [
+                  0.8661791682243347,
+                  64.3212890625
+                ],
+                [
+                  0.935283362865448,
+                  60.39501953125
+                ],
+                [
+                  1.0,
+                  56.48095703125
+                ],
+                [
+                  1.060694694519043,
+                  56.48095703125
+                ]
+              ],
+              "radius_pixels": 7280.0
+            }
+          },
+          "lens_profile_error": null,
+          "make": "Fujifilm",
+          "model": "GFX 100S",
+          "pattern": "RGGB",
+          "sensor_height": 8754,
+          "sensor_width": 11808,
+          "width": 11648
+        },
+        "orientation": 1,
+        "output_dimensions": [
+          11648,
+          8736
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      },
+      "original_and_copy_unchanged": true,
+      "independent_exiftool_curve_checks": [
+        {
+          "tag": "GeometricDistortionParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "ChromaticAberrationParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "VignettingParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        }
+      ],
+      "independent_exiftool_numeric_curves": {
+        "GeometricDistortionParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          0.5942840576,
+          1.072921753,
+          1.630279541,
+          2.274353027,
+          2.987503052,
+          3.777740479,
+          4.617782593,
+          5.526885986,
+          5.526885986
+        ],
+        "ChromaticAberrationParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          9.155273438e-05,
+          6.103515625e-05,
+          6.103515625e-05,
+          3.051757812e-05,
+          3.051757812e-05,
+          0.0,
+          0.0,
+          -3.051757812e-05,
+          -9.155273438e-05,
+          -3.051757812e-05,
+          0.0,
+          0.0,
+          3.051757812e-05,
+          3.051757812e-05,
+          6.103515625e-05,
+          6.103515625e-05,
+          6.103515625e-05,
+          0.0001220703125,
+          808.8888889
+        ],
+        "VignettingParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          93.34521484,
+          87.48388672,
+          81.20507812,
+          74.90820312,
+          69.42333984,
+          64.32128906,
+          60.39501953,
+          56.48095703,
+          56.48095703
+        ]
+      }
+    },
+    {
+      "name": "wide-portrait",
+      "exit_code": 0,
+      "exiftool": {
+        "Make": "FUJIFILM",
+        "Model": "GFX100S",
+        "LensModel": "GF20-35mmF4 R WR",
+        "Orientation": 6,
+        "ImageWidth": 4000,
+        "ImageHeight": 3000,
+        "ISO": 125,
+        "FocalLength": "20.0 mm",
+        "FNumber": 4.0
+      },
+      "receipt": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.364468607,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.0007789433002471924,
+            "mean_absolute_rgb_error": 1.4576349134129728e-06,
+            "passed": true,
+            "preview_dimensions": [
+              384,
+              512
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.010524368,
+              0.011395745
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.896565594,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0011347532272338867,
+            "mean_absolute_rgb_error": 3.3040142949975545e-06,
+            "passed": true,
+            "preview_dimensions": [
+              384,
+              512
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.018893308,
+              0.018447564
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.19144395,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.0012308359146118164,
+            "mean_absolute_rgb_error": 3.0944740729405244e-06,
+            "passed": true,
+            "preview_dimensions": [
+              358,
+              512
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.009648206,
+              0.010241392
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.378847701,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0013009607791900635,
+            "mean_absolute_rgb_error": 5.939289376298647e-06,
+            "passed": true,
+            "preview_dimensions": [
+              358,
+              512
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.017952219,
+              0.017936443
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.393071082,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 40768,
+        "input_sha256": "425013abb13b7ea0b4d336451a4e2b53700a2ccd647eed879aac1b985f28fe9d",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 4.0,
+          "as_shot": [
+            1.5165562629699707,
+            1.0,
+            2.023178815841675
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.0725822448730469,
+              0.17127156257629395,
+              -0.24385379254817963
+            ],
+            [
+              -0.12670612335205078,
+              1.431113362312317,
+              -0.3044072091579437
+            ],
+            [
+              -0.009693307802081108,
+              -0.2934032380580902,
+              1.3030966520309448
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 20.0,
+          "height": 11648,
+          "lens_model": "GF20-35mmF4 R WR",
+          "lens_profile": {
+            "blue_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.00042724609375
+                ],
+                [
+                  0.5001828074455261,
+                  0.000335693359375
+                ],
+                [
+                  0.6124314665794373,
+                  0.0002899169921875
+                ],
+                [
+                  0.7071297764778137,
+                  0.0002899169921875
+                ],
+                [
+                  0.7904936075210571,
+                  0.00030517578125
+                ],
+                [
+                  0.8661791682243347,
+                  0.0003204345703125
+                ],
+                [
+                  0.935283362865448,
+                  0.0003204345703125
+                ],
+                [
+                  1.0,
+                  0.0003204345703125
+                ],
+                [
+                  1.060694694519043,
+                  0.0002899169921875
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "distortion": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  -1.468048095703125
+                ],
+                [
+                  0.5001828074455261,
+                  -2.968231201171875
+                ],
+                [
+                  0.6124314665794373,
+                  -4.254791259765625
+                ],
+                [
+                  0.7071297764778137,
+                  -5.353424072265625
+                ],
+                [
+                  0.7904936075210571,
+                  -6.25128173828125
+                ],
+                [
+                  0.8661791682243347,
+                  -6.9483642578125
+                ],
+                [
+                  0.935283362865448,
+                  -7.45751953125
+                ],
+                [
+                  1.0,
+                  -7.7996368408203125
+                ],
+                [
+                  1.060694694519043,
+                  -7.7996368408203125
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "red_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  -0.0001983642578125
+                ],
+                [
+                  0.5001828074455261,
+                  -0.0001373291015625
+                ],
+                [
+                  0.6124314665794373,
+                  -0.0001373291015625
+                ],
+                [
+                  0.7071297764778137,
+                  -0.0001678466796875
+                ],
+                [
+                  0.7904936075210571,
+                  -0.0001983642578125
+                ],
+                [
+                  0.8661791682243347,
+                  -0.0002288818359375
+                ],
+                [
+                  0.935283362865448,
+                  -0.0002593994140625
+                ],
+                [
+                  1.0,
+                  -0.000274658203125
+                ],
+                [
+                  1.060694694519043,
+                  -0.000244140625
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "vignette": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  89.9033203125
+                ],
+                [
+                  0.5001828074455261,
+                  78.4072265625
+                ],
+                [
+                  0.6124314665794373,
+                  69.37646484375
+                ],
+                [
+                  0.7071297764778137,
+                  62.4580078125
+                ],
+                [
+                  0.7904936075210571,
+                  56.9677734375
+                ],
+                [
+                  0.8661791682243347,
+                  52.5126953125
+                ],
+                [
+                  0.935283362865448,
+                  48.9716796875
+                ],
+                [
+                  1.0,
+                  45.7958984375
+                ],
+                [
+                  1.060694694519043,
+                  45.7958984375
+                ]
+              ],
+              "radius_pixels": 7280.0
+            }
+          },
+          "lens_profile_error": null,
+          "make": "Fujifilm",
+          "model": "GFX 100S",
+          "pattern": "RGGB",
+          "sensor_height": 8754,
+          "sensor_width": 11808,
+          "width": 8736
+        },
+        "orientation": 6,
+        "output_dimensions": [
+          8736,
+          11648
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      },
+      "original_and_copy_unchanged": true,
+      "independent_exiftool_curve_checks": [
+        {
+          "tag": "GeometricDistortionParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "ChromaticAberrationParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "VignettingParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        }
+      ],
+      "independent_exiftool_numeric_curves": {
+        "GeometricDistortionParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          -1.468048096,
+          -2.968231201,
+          -4.25479126,
+          -5.353424072,
+          -6.251281738,
+          -6.948364258,
+          -7.457519531,
+          -7.799636841,
+          -7.799636841
+        ],
+        "ChromaticAberrationParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          -0.0001983642578,
+          -0.0001373291016,
+          -0.0001373291016,
+          -0.0001678466797,
+          -0.0001983642578,
+          -0.0002288818359,
+          -0.0002593994141,
+          -0.0002746582031,
+          -0.000244140625,
+          0.0004272460938,
+          0.0003356933594,
+          0.0002899169922,
+          0.0002899169922,
+          0.0003051757812,
+          0.0003204345703,
+          0.0003204345703,
+          0.0003204345703,
+          0.0002899169922,
+          808.8888889
+        ],
+        "VignettingParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          89.90332031,
+          78.40722656,
+          69.37646484,
+          62.45800781,
+          56.96777344,
+          52.51269531,
+          48.97167969,
+          45.79589844,
+          45.79589844
+        ]
+      }
+    },
+    {
+      "name": "tele-portrait",
+      "exit_code": 0,
+      "exiftool": {
+        "Make": "FUJIFILM",
+        "Model": "GFX100S",
+        "LensModel": "GF500mmF5.6 R LM OIS WR",
+        "Orientation": 8,
+        "ImageWidth": 4000,
+        "ImageHeight": 3000,
+        "ISO": 3200,
+        "FocalLength": "500.0 mm",
+        "FNumber": 5.6
+      },
+      "receipt": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.385917122,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 9.879469871520996e-05,
+            "mean_absolute_rgb_error": 1.172773154497116e-06,
+            "passed": true,
+            "preview_dimensions": [
+              384,
+              512
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.010763888,
+              0.011756289
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.922658933,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0001601874828338623,
+            "mean_absolute_rgb_error": 3.3453455746775615e-06,
+            "passed": true,
+            "preview_dimensions": [
+              384,
+              512
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.018578108,
+              0.018091707
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.200464028,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.00046133995056152344,
+            "mean_absolute_rgb_error": 5.941429530605266e-06,
+            "passed": true,
+            "preview_dimensions": [
+              358,
+              512
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.010511344,
+              0.010627904
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.403453933,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0004988312721252441,
+            "mean_absolute_rgb_error": 1.3137709514522264e-05,
+            "passed": true,
+            "preview_dimensions": [
+              358,
+              512
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.017700187,
+              0.017758474
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.404865438,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 40768,
+        "input_sha256": "1e8e30b56d472a79e983c53d6dd2f9e57e77cab9ab3963f91a87457eb7f3ac67",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 5.599999904632568,
+          "as_shot": [
+            1.9105960130691528,
+            1.0,
+            1.493377447128296
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.0725822448730469,
+              0.17127156257629395,
+              -0.24385379254817963
+            ],
+            [
+              -0.12670612335205078,
+              1.431113362312317,
+              -0.3044072091579437
+            ],
+            [
+              -0.009693307802081108,
+              -0.2934032380580902,
+              1.3030966520309448
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 500.0,
+          "height": 11648,
+          "lens_model": "GF500mmF5.6 R LM OIS WR",
+          "lens_profile": {
+            "blue_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  6.103515625e-05
+                ],
+                [
+                  0.5001828074455261,
+                  3.0517578125e-05
+                ],
+                [
+                  0.6124314665794373,
+                  0.0
+                ],
+                [
+                  0.7071297764778137,
+                  -3.0517578125e-05
+                ],
+                [
+                  0.7904936075210571,
+                  -6.103515625e-05
+                ],
+                [
+                  0.8661791682243347,
+                  -9.1552734375e-05
+                ],
+                [
+                  0.935283362865448,
+                  -0.0001220703125
+                ],
+                [
+                  1.0,
+                  -0.000152587890625
+                ],
+                [
+                  1.060694694519043,
+                  -0.000152587890625
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "distortion": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.165435791015625
+                ],
+                [
+                  0.5001828074455261,
+                  0.32122802734375
+                ],
+                [
+                  0.6124314665794373,
+                  0.4770355224609375
+                ],
+                [
+                  0.7071297764778137,
+                  0.634429931640625
+                ],
+                [
+                  0.7904936075210571,
+                  0.7805938720703125
+                ],
+                [
+                  0.8661791682243347,
+                  0.9171295166015625
+                ],
+                [
+                  0.935283362865448,
+                  1.05364990234375
+                ],
+                [
+                  1.0,
+                  1.190185546875
+                ],
+                [
+                  1.060694694519043,
+                  1.190185546875
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "red_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  -0.000274658203125
+                ],
+                [
+                  0.5001828074455261,
+                  -0.000244140625
+                ],
+                [
+                  0.6124314665794373,
+                  -0.000213623046875
+                ],
+                [
+                  0.7071297764778137,
+                  -0.00018310546875
+                ],
+                [
+                  0.7904936075210571,
+                  -0.000152587890625
+                ],
+                [
+                  0.8661791682243347,
+                  -0.0001220703125
+                ],
+                [
+                  0.935283362865448,
+                  -9.1552734375e-05
+                ],
+                [
+                  1.0,
+                  -6.103515625e-05
+                ],
+                [
+                  1.060694694519043,
+                  -3.0517578125e-05
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "vignette": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  86.9638671875
+                ],
+                [
+                  0.5001828074455261,
+                  80.66162109375
+                ],
+                [
+                  0.6124314665794373,
+                  75.7392578125
+                ],
+                [
+                  0.7071297764778137,
+                  71.80908203125
+                ],
+                [
+                  0.7904936075210571,
+                  68.2890625
+                ],
+                [
+                  0.8661791682243347,
+                  65.1396484375
+                ],
+                [
+                  0.935283362865448,
+                  61.81689453125
+                ],
+                [
+                  1.0,
+                  58.681640625
+                ],
+                [
+                  1.060694694519043,
+                  58.681640625
+                ]
+              ],
+              "radius_pixels": 7280.0
+            }
+          },
+          "lens_profile_error": null,
+          "make": "Fujifilm",
+          "model": "GFX 100S",
+          "pattern": "RGGB",
+          "sensor_height": 8754,
+          "sensor_width": 11808,
+          "width": 8736
+        },
+        "orientation": 8,
+        "output_dimensions": [
+          8736,
+          11648
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      },
+      "original_and_copy_unchanged": true,
+      "independent_exiftool_curve_checks": [
+        {
+          "tag": "GeometricDistortionParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "ChromaticAberrationParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "VignettingParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        }
+      ],
+      "independent_exiftool_numeric_curves": {
+        "GeometricDistortionParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          0.165435791,
+          0.3212280273,
+          0.4770355225,
+          0.6344299316,
+          0.7805938721,
+          0.9171295166,
+          1.053649902,
+          1.190185547,
+          1.190185547
+        ],
+        "ChromaticAberrationParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          -0.0002746582031,
+          -0.000244140625,
+          -0.0002136230469,
+          -0.0001831054688,
+          -0.0001525878906,
+          -0.0001220703125,
+          -9.155273438e-05,
+          -6.103515625e-05,
+          -3.051757812e-05,
+          6.103515625e-05,
+          3.051757812e-05,
+          0.0,
+          -3.051757812e-05,
+          -6.103515625e-05,
+          -9.155273438e-05,
+          -0.0001220703125,
+          -0.0001525878906,
+          -0.0001525878906,
+          808.8888889
+        ],
+        "VignettingParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          86.96386719,
+          80.66162109,
+          75.73925781,
+          71.80908203,
+          68.2890625,
+          65.13964844,
+          61.81689453,
+          58.68164062,
+          58.68164062
+        ]
+      }
+    },
+    {
+      "name": "prime-portrait",
+      "exit_code": 0,
+      "exiftool": {
+        "Make": "FUJIFILM",
+        "Model": "GFX100S",
+        "LensModel": "GF110mmF2 R LM WR",
+        "Orientation": 8,
+        "ImageWidth": 4000,
+        "ImageHeight": 3000,
+        "ISO": 100,
+        "FocalLength": "110.0 mm",
+        "FNumber": 2.0
+      },
+      "receipt": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.38127694,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 4.139542579650879e-05,
+            "mean_absolute_rgb_error": 2.1312750408952752e-07,
+            "passed": true,
+            "preview_dimensions": [
+              384,
+              512
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.010682944,
+              0.011357569
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.935012077,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 7.969141006469727e-05,
+            "mean_absolute_rgb_error": 5.950925591808382e-07,
+            "passed": true,
+            "preview_dimensions": [
+              384,
+              512
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.018811629,
+              0.018753117
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.198531195,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.00012123584747314453,
+            "mean_absolute_rgb_error": 1.339954822095437e-06,
+            "passed": true,
+            "preview_dimensions": [
+              358,
+              512
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.009508526,
+              0.010250175
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.401643196,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.00024008750915527344,
+            "mean_absolute_rgb_error": 2.866073118825481e-06,
+            "passed": true,
+            "preview_dimensions": [
+              358,
+              512
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.018134411,
+              0.018209195
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.379752042,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 40768,
+        "input_sha256": "80994ca7f73141221680a59bc447c571e63bea6d6cfd6bdb1ed5c20344012d87",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 2.0,
+          "as_shot": [
+            1.695364236831665,
+            1.0,
+            1.8940397500991821
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.0725822448730469,
+              0.17127156257629395,
+              -0.24385379254817963
+            ],
+            [
+              -0.12670612335205078,
+              1.431113362312317,
+              -0.3044072091579437
+            ],
+            [
+              -0.009693307802081108,
+              -0.2934032380580902,
+              1.3030966520309448
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 110.0,
+          "height": 11648,
+          "lens_model": "GF110mmF2 R LM WR",
+          "lens_profile": {
+            "blue_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.0
+                ],
+                [
+                  0.5001828074455261,
+                  -3.0517578125e-05
+                ],
+                [
+                  0.6124314665794373,
+                  -3.0517578125e-05
+                ],
+                [
+                  0.7071297764778137,
+                  -3.0517578125e-05
+                ],
+                [
+                  0.7904936075210571,
+                  -3.0517578125e-05
+                ],
+                [
+                  0.8661791682243347,
+                  -3.0517578125e-05
+                ],
+                [
+                  0.935283362865448,
+                  0.0
+                ],
+                [
+                  1.0,
+                  3.0517578125e-05
+                ],
+                [
+                  1.060694694519043,
+                  6.103515625e-05
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "distortion": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.10760498046875
+                ],
+                [
+                  0.5001828074455261,
+                  0.216827392578125
+                ],
+                [
+                  0.6124314665794373,
+                  0.31640625
+                ],
+                [
+                  0.7071297764778137,
+                  0.41278076171875
+                ],
+                [
+                  0.7904936075210571,
+                  0.501129150390625
+                ],
+                [
+                  0.8661791682243347,
+                  0.57501220703125
+                ],
+                [
+                  0.935283362865448,
+                  0.6456756591796875
+                ],
+                [
+                  1.0,
+                  0.700286865234375
+                ],
+                [
+                  1.060694694519043,
+                  0.700286865234375
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "red_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  -3.0517578125e-05
+                ],
+                [
+                  0.5001828074455261,
+                  -6.103515625e-05
+                ],
+                [
+                  0.6124314665794373,
+                  -6.103515625e-05
+                ],
+                [
+                  0.7071297764778137,
+                  -9.1552734375e-05
+                ],
+                [
+                  0.7904936075210571,
+                  -9.1552734375e-05
+                ],
+                [
+                  0.8661791682243347,
+                  -9.1552734375e-05
+                ],
+                [
+                  0.935283362865448,
+                  -0.0001068115234375
+                ],
+                [
+                  1.0,
+                  -0.0001373291015625
+                ],
+                [
+                  1.060694694519043,
+                  -0.0001678466796875
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "vignette": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  90.10107421875
+                ],
+                [
+                  0.5001828074455261,
+                  82.91455078125
+                ],
+                [
+                  0.6124314665794373,
+                  77.13720703125
+                ],
+                [
+                  0.7071297764778137,
+                  72.44384765625
+                ],
+                [
+                  0.7904936075210571,
+                  67.8369140625
+                ],
+                [
+                  0.8661791682243347,
+                  63.24853515625
+                ],
+                [
+                  0.935283362865448,
+                  58.93505859375
+                ],
+                [
+                  1.0,
+                  55.00927734375
+                ],
+                [
+                  1.060694694519043,
+                  55.00927734375
+                ]
+              ],
+              "radius_pixels": 7280.0
+            }
+          },
+          "lens_profile_error": null,
+          "make": "Fujifilm",
+          "model": "GFX 100S",
+          "pattern": "RGGB",
+          "sensor_height": 8754,
+          "sensor_width": 11808,
+          "width": 8736
+        },
+        "orientation": 8,
+        "output_dimensions": [
+          8736,
+          11648
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      },
+      "original_and_copy_unchanged": true,
+      "independent_exiftool_curve_checks": [
+        {
+          "tag": "GeometricDistortionParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "ChromaticAberrationParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "VignettingParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        }
+      ],
+      "independent_exiftool_numeric_curves": {
+        "GeometricDistortionParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          0.1076049805,
+          0.2168273926,
+          0.31640625,
+          0.4127807617,
+          0.5011291504,
+          0.575012207,
+          0.6456756592,
+          0.7002868652,
+          0.7002868652
+        ],
+        "ChromaticAberrationParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          -3.051757812e-05,
+          -6.103515625e-05,
+          -6.103515625e-05,
+          -9.155273438e-05,
+          -9.155273438e-05,
+          -9.155273438e-05,
+          -0.0001068115234,
+          -0.0001373291016,
+          -0.0001678466797,
+          0.0,
+          -3.051757812e-05,
+          -3.051757812e-05,
+          -3.051757812e-05,
+          -3.051757812e-05,
+          -3.051757812e-05,
+          0.0,
+          3.051757812e-05,
+          6.103515625e-05,
+          808.8888889
+        ],
+        "VignettingParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          90.10107422,
+          82.91455078,
+          77.13720703,
+          72.44384766,
+          67.83691406,
+          63.24853516,
+          58.93505859,
+          55.00927734,
+          55.00927734
+        ]
+      }
+    },
+    {
+      "name": "compact-prime",
+      "exit_code": 0,
+      "exiftool": {
+        "Make": "FUJIFILM",
+        "Model": "GFX100S",
+        "LensModel": "GF50mmF3.5 R LM WR",
+        "Orientation": 1,
+        "ImageWidth": 4000,
+        "ImageHeight": 3000,
+        "ISO": 2500,
+        "FocalLength": "50.0 mm",
+        "FNumber": 3.5
+      },
+      "receipt": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.384182163,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.0001443326473236084,
+            "mean_absolute_rgb_error": 1.6663508969167808e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.005297976,
+              0.005079192
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.907193704,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0004993453621864319,
+            "mean_absolute_rgb_error": 4.527702913493782e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.01172861,
+              0.011691778
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.204214932,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.00043129920959472656,
+            "mean_absolute_rgb_error": 7.528810427145782e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.004702599,
+              0.004693319
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.408975833,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0004213303327560425,
+            "mean_absolute_rgb_error": 1.0772489825940621e-05,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.011494305,
+              0.012162627
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.407795974,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 40768,
+        "input_sha256": "374ff7fa518799d9bd94ec4be9fadbbb5cf3249733bf1122097e2f2c0079e4a6",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 3.5,
+          "as_shot": [
+            1.7682119607925415,
+            1.0,
+            2.0198676586151123
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.0725822448730469,
+              0.17127156257629395,
+              -0.24385379254817963
+            ],
+            [
+              -0.12670612335205078,
+              1.431113362312317,
+              -0.3044072091579437
+            ],
+            [
+              -0.009693307802081108,
+              -0.2934032380580902,
+              1.3030966520309448
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 50.0,
+          "height": 8736,
+          "lens_model": "GF50mmF3.5 R LM WR",
+          "lens_profile": {
+            "blue_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.0001983642578125
+                ],
+                [
+                  0.5001828074455261,
+                  0.0001983642578125
+                ],
+                [
+                  0.6124314665794373,
+                  0.000213623046875
+                ],
+                [
+                  0.7071297764778137,
+                  0.0002288818359375
+                ],
+                [
+                  0.7904936075210571,
+                  0.0002288818359375
+                ],
+                [
+                  0.8661791682243347,
+                  0.0002288818359375
+                ],
+                [
+                  0.935283362865448,
+                  0.0002288818359375
+                ],
+                [
+                  1.0,
+                  0.0002288818359375
+                ],
+                [
+                  1.060694694519043,
+                  0.0002593994140625
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "distortion": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  -0.150970458984375
+                ],
+                [
+                  0.5001828074455261,
+                  -0.3758392333984375
+                ],
+                [
+                  0.6124314665794373,
+                  -0.5766143798828125
+                ],
+                [
+                  0.7071297764778137,
+                  -0.7548980712890625
+                ],
+                [
+                  0.7904936075210571,
+                  -0.9074859619140625
+                ],
+                [
+                  0.8661791682243347,
+                  -1.0263519287109375
+                ],
+                [
+                  0.935283362865448,
+                  -1.1195068359375
+                ],
+                [
+                  1.0,
+                  -1.1789398193359375
+                ],
+                [
+                  1.060694694519043,
+                  -1.1789398193359375
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "red_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  9.1552734375e-05
+                ],
+                [
+                  0.5001828074455261,
+                  9.1552734375e-05
+                ],
+                [
+                  0.6124314665794373,
+                  9.1552734375e-05
+                ],
+                [
+                  0.7071297764778137,
+                  9.1552734375e-05
+                ],
+                [
+                  0.7904936075210571,
+                  9.1552734375e-05
+                ],
+                [
+                  0.8661791682243347,
+                  9.1552734375e-05
+                ],
+                [
+                  0.935283362865448,
+                  9.1552734375e-05
+                ],
+                [
+                  1.0,
+                  6.103515625e-05
+                ],
+                [
+                  1.060694694519043,
+                  4.57763671875e-05
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "vignette": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  87.4091796875
+                ],
+                [
+                  0.5001828074455261,
+                  78.9208984375
+                ],
+                [
+                  0.6124314665794373,
+                  72.0869140625
+                ],
+                [
+                  0.7071297764778137,
+                  66.66650390625
+                ],
+                [
+                  0.7904936075210571,
+                  61.630859375
+                ],
+                [
+                  0.8661791682243347,
+                  56.9833984375
+                ],
+                [
+                  0.935283362865448,
+                  52.6611328125
+                ],
+                [
+                  1.0,
+                  48.267578125
+                ],
+                [
+                  1.060694694519043,
+                  48.267578125
+                ]
+              ],
+              "radius_pixels": 7280.0
+            }
+          },
+          "lens_profile_error": null,
+          "make": "Fujifilm",
+          "model": "GFX 100S",
+          "pattern": "RGGB",
+          "sensor_height": 8754,
+          "sensor_width": 11808,
+          "width": 11648
+        },
+        "orientation": 1,
+        "output_dimensions": [
+          11648,
+          8736
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      },
+      "original_and_copy_unchanged": true,
+      "independent_exiftool_curve_checks": [
+        {
+          "tag": "GeometricDistortionParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "ChromaticAberrationParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "VignettingParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        }
+      ],
+      "independent_exiftool_numeric_curves": {
+        "GeometricDistortionParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          -0.150970459,
+          -0.3758392334,
+          -0.5766143799,
+          -0.7548980713,
+          -0.9074859619,
+          -1.026351929,
+          -1.119506836,
+          -1.178939819,
+          -1.178939819
+        ],
+        "ChromaticAberrationParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          9.155273438e-05,
+          9.155273438e-05,
+          9.155273438e-05,
+          9.155273438e-05,
+          9.155273438e-05,
+          9.155273438e-05,
+          9.155273438e-05,
+          6.103515625e-05,
+          4.577636719e-05,
+          0.0001983642578,
+          0.0001983642578,
+          0.0002136230469,
+          0.0002288818359,
+          0.0002288818359,
+          0.0002288818359,
+          0.0002288818359,
+          0.0002288818359,
+          0.0002593994141,
+          808.8888889
+        ],
+        "VignettingParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          87.40917969,
+          78.92089844,
+          72.08691406,
+          66.66650391,
+          61.63085938,
+          56.98339844,
+          52.66113281,
+          48.26757812,
+          48.26757812
+        ]
+      }
+    },
+    {
+      "name": "macro",
+      "exit_code": 0,
+      "exiftool": {
+        "Make": "FUJIFILM",
+        "Model": "GFX100S",
+        "LensModel": "SIGMA 70mm F2.8 DG MACRO A018",
+        "Orientation": 1,
+        "ImageWidth": 4000,
+        "ImageHeight": 3000,
+        "ISO": 100,
+        "FocalLength": "70.0 mm",
+        "FNumber": 2.8
+      },
+      "receipt": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.403170434,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.00014352798461914062,
+            "mean_absolute_rgb_error": 3.532173915330203e-07,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.004715623,
+              0.004739815
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.896076524,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.00033254921436309814,
+            "mean_absolute_rgb_error": 1.4784397165278228e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.012026466,
+              0.011501713
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.202495363,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.00026810169219970703,
+            "mean_absolute_rgb_error": 2.0986436807209925e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.004616182,
+              0.005470937
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.400618479,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0003701448440551758,
+            "mean_absolute_rgb_error": 3.012806719587223e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.012124514,
+              0.011926434
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.403685667,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 40768,
+        "input_sha256": "17879f2e862410b06576e11e95ddd9b3a02476787c4050198f8fd6097c0f9aa4",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": 2.799999952316284,
+          "as_shot": [
+            1.6721854209899902,
+            1.0,
+            1.8443708419799805
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.0725822448730469,
+              0.17127156257629395,
+              -0.24385379254817963
+            ],
+            [
+              -0.12670612335205078,
+              1.431113362312317,
+              -0.3044072091579437
+            ],
+            [
+              -0.009693307802081108,
+              -0.2934032380580902,
+              1.3030966520309448
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": 70.0,
+          "height": 8736,
+          "lens_model": "SIGMA 70mm F2.8 DG MACRO A018",
+          "lens_profile": {
+            "blue_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.0
+                ],
+                [
+                  0.5001828074455261,
+                  0.0
+                ],
+                [
+                  0.6124314665794373,
+                  0.0
+                ],
+                [
+                  0.7071297764778137,
+                  0.0
+                ],
+                [
+                  0.7904936075210571,
+                  0.0
+                ],
+                [
+                  0.8661791682243347,
+                  0.0
+                ],
+                [
+                  0.935283362865448,
+                  0.0
+                ],
+                [
+                  1.0,
+                  0.0
+                ],
+                [
+                  1.060694694519043,
+                  0.0
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "distortion": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  -0.195953369140625
+                ],
+                [
+                  0.5001828074455261,
+                  -0.2939300537109375
+                ],
+                [
+                  0.6124314665794373,
+                  -0.39190673828125
+                ],
+                [
+                  0.7071297764778137,
+                  -0.48828125
+                ],
+                [
+                  0.7904936075210571,
+                  -0.5862579345703125
+                ],
+                [
+                  0.8661791682243347,
+                  -0.684234619140625
+                ],
+                [
+                  0.935283362865448,
+                  -0.7822113037109375
+                ],
+                [
+                  1.0,
+                  -0.88018798828125
+                ],
+                [
+                  1.060694694519043,
+                  -0.88018798828125
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "red_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.00018310546875
+                ],
+                [
+                  0.5001828074455261,
+                  0.00018310546875
+                ],
+                [
+                  0.6124314665794373,
+                  0.00018310546875
+                ],
+                [
+                  0.7071297764778137,
+                  0.00018310546875
+                ],
+                [
+                  0.7904936075210571,
+                  0.00018310546875
+                ],
+                [
+                  0.8661791682243347,
+                  0.00018310546875
+                ],
+                [
+                  0.935283362865448,
+                  0.00018310546875
+                ],
+                [
+                  1.0,
+                  0.00018310546875
+                ],
+                [
+                  1.060694694519043,
+                  0.00018310546875
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "vignette": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  82.61376953125
+                ],
+                [
+                  0.5001828074455261,
+                  74.01513671875
+                ],
+                [
+                  0.6124314665794373,
+                  65.38916015625
+                ],
+                [
+                  0.7071297764778137,
+                  56.74658203125
+                ],
+                [
+                  0.7904936075210571,
+                  48.0859375
+                ],
+                [
+                  0.8661791682243347,
+                  39.42236328125
+                ],
+                [
+                  0.935283362865448,
+                  30.71826171875
+                ],
+                [
+                  1.0,
+                  21.96435546875
+                ],
+                [
+                  1.060694694519043,
+                  21.96435546875
+                ]
+              ],
+              "radius_pixels": 7280.0
+            }
+          },
+          "lens_profile_error": null,
+          "make": "Fujifilm",
+          "model": "GFX 100S",
+          "pattern": "RGGB",
+          "sensor_height": 8754,
+          "sensor_width": 11808,
+          "width": 11648
+        },
+        "orientation": 1,
+        "output_dimensions": [
+          11648,
+          8736
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      },
+      "original_and_copy_unchanged": true,
+      "independent_exiftool_curve_checks": [
+        {
+          "tag": "GeometricDistortionParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "ChromaticAberrationParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "VignettingParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        }
+      ],
+      "independent_exiftool_numeric_curves": {
+        "GeometricDistortionParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          -0.1959533691,
+          -0.2939300537,
+          -0.3919067383,
+          -0.48828125,
+          -0.5862579346,
+          -0.6842346191,
+          -0.7822113037,
+          -0.8801879883,
+          -0.8801879883
+        ],
+        "ChromaticAberrationParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          0.0001831054688,
+          0.0001831054688,
+          0.0001831054688,
+          0.0001831054688,
+          0.0001831054688,
+          0.0001831054688,
+          0.0001831054688,
+          0.0001831054688,
+          0.0001831054688,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          808.8888889
+        ],
+        "VignettingParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          82.61376953,
+          74.01513672,
+          65.38916016,
+          56.74658203,
+          48.0859375,
+          39.42236328,
+          30.71826172,
+          21.96435547,
+          21.96435547
+        ]
+      }
+    },
+    {
+      "name": "manual",
+      "exit_code": 0,
+      "exiftool": {
+        "Make": "FUJIFILM",
+        "Model": "GFX100S",
+        "LensModel": "",
+        "Orientation": 1,
+        "ImageWidth": 4000,
+        "ImageHeight": 3000,
+        "ISO": 125,
+        "FocalLength": "0.0 mm",
+        "FNumber": "undef"
+      },
+      "receipt": {
+        "build_profile": "release",
+        "comparisons": [
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.383429446,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.00019599497318267822,
+            "mean_absolute_rgb_error": 4.626527364671852e-07,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.005153512,
+              0.005036535
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.899453798,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0005256235599517822,
+            "mean_absolute_rgb_error": 2.7655153753691764e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              384
+            ],
+            "recipe": "camera-defaults",
+            "warm_1800_preview_seconds": [
+              0.011600978,
+              0.011579793
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Cuda",
+            "cold_render_seconds": 0.204388631,
+            "device_label": "cuda (system memory)",
+            "max_absolute_rgb_error": 0.000727728009223938,
+            "mean_absolute_rgb_error": 4.030657379350609e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.004583511,
+              0.005351752
+            ]
+          },
+          {
+            "alpha_mismatches": 0,
+            "backend": "Vulkan",
+            "cold_render_seconds": 0.373559447,
+            "device_label": "wgpu<wgsl>",
+            "max_absolute_rgb_error": 0.0017011761665344238,
+            "mean_absolute_rgb_error": 6.104176577776299e-06,
+            "passed": true,
+            "preview_dimensions": [
+              512,
+              411
+            ],
+            "recipe": "composed-edit",
+            "warm_1800_preview_seconds": [
+              0.011748354,
+              0.011784482
+            ]
+          }
+        ],
+        "composed_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                0.5,
+                0.6000000238418579
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.100000023841858,
+              1.0199999809265137,
+              0.8500000238418579
+            ],
+            "retouch": [],
+            "shadows": [
+              0.8999999761581421,
+              0.949999988079071,
+              1.100000023841858
+            ],
+            "split_strength": 0.15000000596046448,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.00039999998989515007,
+              -0.0003000000142492354
+            ],
+            "crop": [
+              0.15000000596046448,
+              0.10000000149011612,
+              0.699999988079071,
+              0.75
+            ],
+            "distortion": [
+              -0.009999999776482582,
+              0.004999999888241291
+            ],
+            "field_of_view": 50.0,
+            "pitch": -1.0,
+            "rotation": 3.0,
+            "scale": 1.0,
+            "yaw": 2.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0499999523162842,
+              0.949999988079071,
+              1.0
+            ],
+            "exposure": 0.699999988079071,
+            "graduated": {
+              "angle": 35.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.5,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "decode_seconds": 0.413878339,
+        "default_edits": {
+          "display": {
+            "curve": [
+              [
+                0.0,
+                0.0
+              ],
+              [
+                1.0,
+                1.0
+              ]
+            ],
+            "highlights": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "retouch": [],
+            "shadows": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "split_strength": 0.0,
+            "synthesis": []
+          },
+          "geometry": {
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "field_of_view": 50.0,
+            "pitch": 0.0,
+            "rotation": 0.0,
+            "scale": 1.0,
+            "yaw": 0.0
+          },
+          "lens": {
+            "auto_frame": true,
+            "chromatic_aberration": true,
+            "distortion": true,
+            "mode": "embedded_v1",
+            "vignette": true
+          },
+          "raw": {
+            "denoise": 0.0,
+            "hot_pixels": false
+          },
+          "scene": {
+            "calibration": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "exposure": 0.0,
+            "graduated": {
+              "angle": 0.0,
+              "center": [
+                0.5,
+                0.5
+              ],
+              "exposure": 0.0,
+              "width": 0.30000001192092896
+            },
+            "mixer": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            "vignette": [
+              0.0,
+              0.0
+            ]
+          },
+          "tone": {
+            "mapper": "agx_sdr_v1",
+            "saturation": 1.0
+          },
+          "version": 1
+        },
+        "default_missing_perimeter_samples": 0,
+        "default_perimeter_samples": 40768,
+        "input_sha256": "250f9ca361b71c61dd42809164bc407f34e94a6a38443f6d11c9e8eb801592ca",
+        "input_unchanged": true,
+        "metadata": {
+          "aperture": null,
+          "as_shot": [
+            1.7384105920791626,
+            1.0,
+            1.8443708419799805
+          ],
+          "bits": 16,
+          "camera_to_working": [
+            [
+              1.0725822448730469,
+              0.17127156257629395,
+              -0.24385379254817963
+            ],
+            [
+              -0.12670612335205078,
+              1.431113362312317,
+              -0.3044072091579437
+            ],
+            [
+              -0.009693307802081108,
+              -0.2934032380580902,
+              1.3030966520309448
+            ]
+          ],
+          "color_revision": 0,
+          "focal_length_mm": null,
+          "height": 8736,
+          "lens_model": null,
+          "lens_profile": {
+            "blue_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.0
+                ],
+                [
+                  0.5001828074455261,
+                  0.0
+                ],
+                [
+                  0.6124314665794373,
+                  0.0
+                ],
+                [
+                  0.7071297764778137,
+                  0.0
+                ],
+                [
+                  0.7904936075210571,
+                  0.0
+                ],
+                [
+                  0.8661791682243347,
+                  0.0
+                ],
+                [
+                  0.935283362865448,
+                  0.0
+                ],
+                [
+                  1.0,
+                  0.0
+                ],
+                [
+                  1.060694694519043,
+                  0.0
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "distortion": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.0
+                ],
+                [
+                  0.5001828074455261,
+                  0.0
+                ],
+                [
+                  0.6124314665794373,
+                  0.0
+                ],
+                [
+                  0.7071297764778137,
+                  0.0
+                ],
+                [
+                  0.7904936075210571,
+                  0.0
+                ],
+                [
+                  0.8661791682243347,
+                  0.0
+                ],
+                [
+                  0.935283362865448,
+                  0.0
+                ],
+                [
+                  1.0,
+                  0.0
+                ],
+                [
+                  1.060694694519043,
+                  0.0
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "red_ca": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  0.0
+                ],
+                [
+                  0.5001828074455261,
+                  0.0
+                ],
+                [
+                  0.6124314665794373,
+                  0.0
+                ],
+                [
+                  0.7071297764778137,
+                  0.0
+                ],
+                [
+                  0.7904936075210571,
+                  0.0
+                ],
+                [
+                  0.8661791682243347,
+                  0.0
+                ],
+                [
+                  0.935283362865448,
+                  0.0
+                ],
+                [
+                  1.0,
+                  0.0
+                ],
+                [
+                  1.060694694519043,
+                  0.0
+                ]
+              ],
+              "radius_pixels": 7280.0
+            },
+            "vignette": {
+              "knots": [
+                [
+                  0.35356488823890686,
+                  100.0
+                ],
+                [
+                  0.5001828074455261,
+                  100.0
+                ],
+                [
+                  0.6124314665794373,
+                  100.0
+                ],
+                [
+                  0.7071297764778137,
+                  100.0
+                ],
+                [
+                  0.7904936075210571,
+                  100.0
+                ],
+                [
+                  0.8661791682243347,
+                  100.0
+                ],
+                [
+                  0.935283362865448,
+                  100.0
+                ],
+                [
+                  1.0,
+                  100.0
+                ],
+                [
+                  1.060694694519043,
+                  100.0
+                ]
+              ],
+              "radius_pixels": 7280.0
+            }
+          },
+          "lens_profile_error": null,
+          "make": "Fujifilm",
+          "model": "GFX 100S",
+          "pattern": "RGGB",
+          "sensor_height": 8754,
+          "sensor_width": 11808,
+          "width": 11648
+        },
+        "orientation": 1,
+        "output_dimensions": [
+          11648,
+          8736
+        ],
+        "perimeter_count_convention": "four full-resolution edge strips; corner points counted twice",
+        "scope": "real-camera decode, default full-resolution perimeter and composed preview CPU/GPU agreement; not an independent lens/color oracle",
+        "sensor_unchanged": true,
+        "tolerances": {
+          "alpha_mismatches": 0,
+          "max_absolute_rgb": 0.003,
+          "mean_absolute_rgb": 3e-05
+        }
+      },
+      "original_and_copy_unchanged": true,
+      "independent_exiftool_curve_checks": [
+        {
+          "tag": "GeometricDistortionParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "ChromaticAberrationParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        },
+        {
+          "tag": "VignettingParams",
+          "knot_count": 9,
+          "max_absolute_knot_value_difference": 2.242218632986237e-08,
+          "header_radius_difference_pixels": 9.999985195463523e-08
+        }
+      ],
+      "independent_exiftool_numeric_curves": {
+        "GeometricDistortionParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ChromaticAberrationParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          808.8888889
+        ],
+        "VignettingParams": [
+          808.8888889,
+          0.3535648995,
+          0.5001828154,
+          0.6124314442,
+          0.7071297989,
+          0.7904936015,
+          0.866179159,
+          0.9352833638,
+          1.0,
+          1.060694698,
+          100.0,
+          100.0,
+          100.0,
+          100.0,
+          100.0,
+          100.0,
+          100.0,
+          100.0,
+          100.0
+        ]
+      }
+    }
+  ],
+  "independent_metadata_check": "ExifTool numeric FujiIFD values; table count inferred from lengths; header quotient multiplied by count; maximum knot difference <5e-6",
+  "exiftool_version": "12.76"
+}

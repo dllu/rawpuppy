@@ -8,6 +8,57 @@ use rawpuppy::{
 use std::sync::Arc;
 
 #[test]
+#[ignore = "requires a working native Vulkan or Metal compute device"]
+fn repeated_native_renderers_share_the_device_and_retire_their_own_sources() {
+    let backend = if cfg!(target_os = "macos") {
+        Backend::Metal
+    } else {
+        Backend::Vulkan
+    };
+    let a = Arc::new(SensorImage::from_rgb(13, 11, vec![0.2; 13 * 11 * 3]).unwrap());
+    let b = Arc::new(SensorImage::from_rgb(17, 9, vec![0.7; 17 * 9 * 3]).unwrap());
+    let retired = Arc::downgrade(&a);
+    let mut edits = Edits::default();
+    edits.tone.mapper = rawpuppy::edits::ToneMapper::Linear;
+    // Auto initializes the same native wgpu runtime in a non-CUDA build.
+    let mut automatic = GpuRenderer::new(Backend::Auto).unwrap();
+    let mut first = GpuRenderer::new(backend).unwrap();
+    let mut second = GpuRenderer::new(backend).unwrap();
+    for (renderer, source, value) in [
+        (&mut automatic, b.clone(), 0.7),
+        (&mut first, a.clone(), 0.2),
+        (&mut second, b.clone(), 0.7),
+    ] {
+        let output = renderer.render(source, &edits, None).unwrap();
+        assert!(
+            output
+                .pixels
+                .iter()
+                .all(|p| p[..3].iter().all(|v| (*v - value).abs() < 1e-6) && p[3] == 1.)
+        );
+    }
+    drop(a);
+    assert!(retired.upgrade().is_some());
+    drop(first);
+    assert!(retired.upgrade().is_none());
+    let conflicting = if backend == Backend::Metal {
+        Backend::Vulkan
+    } else {
+        Backend::Metal
+    };
+    assert!(GpuRenderer::new(conflicting).is_err());
+    assert!(
+        second
+            .render(b.clone(), &edits, None)
+            .unwrap()
+            .pixels
+            .iter()
+            .all(|p| (p[0] - 0.7).abs() < 1e-6)
+    );
+    assert!(b.data.iter().all(|v| *v == 0.7));
+}
+
+#[test]
 #[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
 fn composed_gpu_matches_cpu_for_rgb_bayer_orientation_and_local_edits() {
     let backend = if std::env::var("RAWPUPPY_TEST_CUDA").is_ok() {

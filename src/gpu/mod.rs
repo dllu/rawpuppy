@@ -14,7 +14,7 @@ use crate::{
 };
 use anyhow::{Result, ensure};
 use cubecl::{prelude::*, server::Handle};
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 pub use crate::render::{Backend, CudaMemoryMode};
 
@@ -33,6 +33,40 @@ pub struct Session<R: Runtime> {
     prepared: Option<Handle>,
     preparation: RawEdits,
     agx_lattice: Option<Handle>,
+}
+
+fn wgpu_client(backend: Backend) -> Result<ComputeClient<cubecl::wgpu::WgpuRuntime>> {
+    // CubeCL registers a server per device globally. Register its default device
+    // once, including Auto, and give each renderer an independent session on it.
+    static CLIENT: OnceLock<ComputeClient<cubecl::wgpu::WgpuRuntime>> = OnceLock::new();
+    let client = CLIENT.get_or_init(|| {
+        let device = cubecl::wgpu::WgpuDevice::default();
+        match backend {
+            Backend::Vulkan => {
+                cubecl::wgpu::init_setup::<cubecl::wgpu::Vulkan>(&device, Default::default());
+            }
+            Backend::Metal => {
+                cubecl::wgpu::init_setup::<cubecl::wgpu::Metal>(&device, Default::default());
+            }
+            _ => {}
+        }
+        cubecl::wgpu::WgpuRuntime::client(&device)
+    });
+    let matches = match backend {
+        Backend::Vulkan => {
+            *client.info() == <cubecl::wgpu::Vulkan as cubecl::wgpu::GraphicsApi>::backend()
+        }
+        Backend::Metal => {
+            *client.info() == <cubecl::wgpu::Metal as cubecl::wgpu::GraphicsApi>::backend()
+        }
+        _ => true,
+    };
+    ensure!(
+        matches,
+        "Requested {backend:?}, but shared wgpu device uses {:?}",
+        client.info()
+    );
+    Ok(client.clone())
 }
 
 impl GpuRenderer {
@@ -79,22 +113,10 @@ impl GpuRenderer {
                 #[cfg(not(feature = "cuda"))]
                 {
                     let _ = mode;
-                    Ok(Self::Wgpu(Session::new(cubecl::wgpu::WgpuRuntime::client(
-                        &Default::default(),
-                    ))))
+                    Ok(Self::Wgpu(Session::new(wgpu_client(backend)?)))
                 }
             }
-            Backend::Vulkan | Backend::Metal => {
-                let device = cubecl::wgpu::WgpuDevice::default();
-                if backend == Backend::Vulkan {
-                    cubecl::wgpu::init_setup::<cubecl::wgpu::Vulkan>(&device, Default::default());
-                } else {
-                    cubecl::wgpu::init_setup::<cubecl::wgpu::Metal>(&device, Default::default());
-                }
-                Ok(Self::Wgpu(Session::new(cubecl::wgpu::WgpuRuntime::client(
-                    &device,
-                ))))
-            }
+            Backend::Vulkan | Backend::Metal => Ok(Self::Wgpu(Session::new(wgpu_client(backend)?))),
         }
     }
     pub fn name(&self) -> &'static str {
