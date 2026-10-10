@@ -231,6 +231,17 @@ More device/memory-pressure coverage and wider camera/illuminant quality
 remain outstanding. Full-frame execution does not establish HDR
 restoration quality.
 
+The current integer-RAW clipping-provenance path was rechecked on an owned GFX
+copy after its layout change. Initial reconstruction/preview took 19.20 s; three
+cached 1800-pixel CUDA previews averaged 5.00 ms. A full 8736×11648 RGBA16 TIFF
+render, including reconstruction, took 20.85 s and encoded in 0.92 s. All alpha
+is 65535, the sRGB ICC is valid, straight alpha is explicitly tagged, and the RAW
+hash remains unchanged. Peak process RSS was about 2.70 GiB for preview and 5.62
+GiB for the initial export and 5.47 GiB with corrected alpha metadata; RSS does
+not include every GPU/driver allocation. These are shared
+workstation observations on one photo. [The current record](data/full-reconstruction-provenance-2026-10-10.json)
+retains logs, resource measurements, model identity and export checks.
+
 Tests cover all four Bayer phases, unchanged originals, observed-sample photometry,
 odd regions on a 100,003-pixel-wide source, and overlapping context consistency.
 Integer RAW caches also carry original clipping flags, packed four pixels per

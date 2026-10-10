@@ -7,6 +7,9 @@ chromaticities and white point; normalized primary matrices and Bradford
 adaptation convert them to the working basis. Untagged EXR defaults to linear
 sRGB. EXR export writes explicit sRGB chromaticities and full-precision linear
 RGBA, preserving negative values and highlights.
+RGBA16 TIFF exports explicitly identify their fourth channel as unassociated
+(straight) alpha, alongside the selected ICC profile. Transparent and partial
+alpha retain their independently stored RGB values.
 
 Grayscale PNG/TIFF ICC profiles use Little CMS's gray float input format before
 conversion to working RGB. Their declared tone curve and white point are honored.

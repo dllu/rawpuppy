@@ -142,9 +142,17 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                     encoder.set_icc_profile(icc)?;
                     encoder.write_image(bytes, width, height, ExtendedColorType::Rgba16)?;
                 } else {
-                    let mut encoder = image::codecs::tiff::TiffEncoder::new(writer);
-                    encoder.set_icc_profile(icc)?;
-                    encoder.write_image(bytes, width, height, ExtendedColorType::Rgba16)?;
+                    let mut encoder = tiff::encoder::TiffEncoder::new(writer)?;
+                    let mut output =
+                        encoder.new_image::<tiff::encoder::colortype::RGBA16>(width, height)?;
+                    output
+                        .encoder()
+                        .write_tag(tiff::tags::Tag::IccProfile, icc.as_slice())?;
+                    output.encoder().write_tag(
+                        tiff::tags::Tag::ExtraSamples,
+                        &[tiff::tags::ExtraSamples::UnassociatedAlpha.to_u16()][..],
+                    )?;
+                    output.write_data(&rgba)?;
                 }
             }
             "jpg" | "jpeg" => {

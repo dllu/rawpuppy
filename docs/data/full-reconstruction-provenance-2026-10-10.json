@@ -1,0 +1,103 @@
+{
+  "scope": "current full-frame native learned reconstruction, cached CUDA previews and full TIFF export on one owned GFX photo; performance/integrity rather than general quality",
+  "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+  "input_unchanged": true,
+  "output_dimensions": [
+    8736,
+    11648
+  ],
+  "output_dtype": "uint16 RGBA",
+  "all_alpha_opaque": true,
+  "icc_bytes": 588,
+  "icc_name": "sRGB built-in",
+  "tiff_bytes": 814062454,
+  "benchmark_log": "decode_ms=393.70\niteration=0 render_ms=19196.984 checksum=163.596472 backend=cuda (system memory)\niteration=1 render_ms=5.074 checksum=178.620553 backend=cuda (system memory)\niteration=2 render_ms=4.975 checksum=194.747359 backend=cuda (system memory)\niteration=3 render_ms=4.956 checksum=211.976726 backend=cuda (system memory)\nwarm_mean_ms=5.002\n",
+  "benchmark_memory": "\tCommand being timed: \"target/release/examples/benchmark /tmp/rawpuppy-validation/full-reconstruction-provenance-2026-10-10/photo.raf --backend cuda --cuda-memory system --reconstruction raw-nind-v1 --iterations 4\"\n\tUser time (seconds): 27.64\n\tSystem time (seconds): 1.26\n\tPercent of CPU this job got: 144%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 0:19.95\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 2829000\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 64\n\tMinor (reclaiming a frame) page faults: 829521\n\tVoluntary context switches: 5669\n\tInvoluntary context switches: 192\n\tSwaps: 0\n\tFile system inputs: 54720\n\tFile system outputs: 8\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 0\n",
+  "export_log": "Compute: cuda (system memory)\n8736 \u00d7 11648 \u2192 /tmp/rawpuppy-validation/full-reconstruction-provenance-2026-10-10/learned-full.tiff \u00b7 decode 0.40s \u00b7 render 20.79s \u00b7 export 0.90s\n",
+  "export_memory": "\tCommand being timed: \"target/release/rawpuppy --backend cuda export /tmp/rawpuppy-validation/full-reconstruction-provenance-2026-10-10/photo.raf /tmp/rawpuppy-validation/full-reconstruction-provenance-2026-10-10/learned-full.tiff --reconstruction raw-nind-v1 --exposure 1\"\n\tUser time (seconds): 31.46\n\tSystem time (seconds): 1.88\n\tPercent of CPU this job got: 148%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 0:22.40\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 5891484\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 0\n\tMinor (reclaiming a frame) page faults: 1161429\n\tVoluntary context switches: 10568\n\tInvoluntary context switches: 140\n\tSwaps: 0\n\tFile system inputs: 8\n\tFile system outputs: 1589976\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 0\n",
+  "prepared_model_manifest": {
+    "version": 2,
+    "architecture": "independent four-level U-Net parameter graph",
+    "pool": "max",
+    "skip_first": false,
+    "negative_slope": 0.2,
+    "allow_tf32": false,
+    "deterministic_convolutions": true,
+    "weights_sha256": "c1f7de3de24cb12f4803ee65e11cfb467e9a5b80c3cb7126746ef026106c15e0",
+    "weight_source": "https://drive.google.com/uc?id=1dFTLeljWi9wwojcZUsam8bE31JdYy3oM",
+    "weight_authors": "Benoit Brummer and Christophe De Vleeschouwer",
+    "weight_license": "CC BY 4.0, chosen from authors' GPLv3 / CC BY 4.0 dual license",
+    "license_declaration": "https://github.com/trougnouf/rawnind_jddc/blob/e80fb7b14dc440bba38c01f312fd3cc02deb566c/README.md",
+    "oracle_revision": "e80fb7b14dc440bba38c01f312fd3cc02deb566c",
+    "oracle_source_sha256": "154868a016cc83a74f8efc54675a2c4ffd120e3f30c159d10f11e012e8ca8d65",
+    "oracle_code_bundled": false,
+    "torch_export_version": "2.14.0+cu130",
+    "graph_sha256": "f6a6fece6fe3b31035fe34d8460bb9204b83a976e153e89106af1a520c77b890",
+    "input": "NCHW float32 packed RGGB [R,G top-right,G bottom-left,B], before white balance",
+    "output": "NCHW float32 camera-native RGB, twice spatial size, arbitrary learned gain",
+    "packed_dimension_multiple": 16,
+    "clipping": "none in this graph; signed and above-white probes are parity checks, not HDR quality validation",
+    "checks": [
+      {
+        "packed_size": [
+          48,
+          32
+        ],
+        "input_range": [
+          0.0,
+          1.0
+        ],
+        "max_absolute_error": 0.0
+      },
+      {
+        "packed_size": [
+          64,
+          64
+        ],
+        "input_range": [
+          -0.02,
+          1.2
+        ],
+        "max_absolute_error": 0.0
+      },
+      {
+        "packed_size": [
+          80,
+          96
+        ],
+        "input_range": [
+          0.0,
+          4.0
+        ],
+        "max_absolute_error": 0.0
+      },
+      {
+        "packed_size": [
+          128,
+          128
+        ],
+        "input_range": [
+          0.0,
+          0.02
+        ],
+        "max_absolute_error": 0.0
+      }
+    ]
+  },
+  "corrected_tiff": {
+    "extra_samples": 2,
+    "interpretation": "unassociated / straight alpha",
+    "dimensions": [
+      8736,
+      11648
+    ],
+    "dtype": "uint16 RGBA",
+    "all_alpha_opaque": true,
+    "pixels_identical_to_previous_export": true,
+    "icc_bytes": 588,
+    "icc_name": "sRGB built-in",
+    "tiff_bytes": 814062466,
+    "export_log": "Compute: cuda (system memory)\n8736 \u00d7 11648 \u2192 /tmp/rawpuppy-validation/full-reconstruction-provenance-2026-10-10/learned-full-alpha.tiff \u00b7 decode 0.40s \u00b7 render 20.85s \u00b7 export 0.92s\n",
+    "export_memory": "\tCommand being timed: \"target/release/rawpuppy --backend cuda export /tmp/rawpuppy-validation/full-reconstruction-provenance-2026-10-10/photo.raf /tmp/rawpuppy-validation/full-reconstruction-provenance-2026-10-10/learned-full-alpha.tiff --reconstruction raw-nind-v1 --exposure 1\"\n\tUser time (seconds): 31.40\n\tSystem time (seconds): 1.92\n\tPercent of CPU this job got: 148%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 0:22.49\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 5735924\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 0\n\tMinor (reclaiming a frame) page faults: 1085515\n\tVoluntary context switches: 10526\n\tInvoluntary context switches: 317\n\tSwaps: 0\n\tFile system inputs: 56\n\tFile system outputs: 1589976\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 0\n"
+  }
+}

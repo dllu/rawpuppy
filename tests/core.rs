@@ -308,3 +308,42 @@ fn exr_roundtrips_hdr_values_and_alpha() {
         close(*got, *expected, 1e-6);
     }
 }
+
+#[test]
+fn tiff_exports_identify_and_preserve_straight_alpha() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("alpha.tiff");
+    let image = rawpuppy::pipeline::Rendered {
+        width: 3,
+        height: 1,
+        pixels: vec![
+            [0.8, 0.2, 0.05, 0.],
+            [0.25, 0.5, 0.75, 0.25],
+            [0.9, 0.1, 0.2, 1.],
+        ],
+    };
+    export::write(&path, &image, OutputSpace::LinearSrgb, false).unwrap();
+    let mut decoder = tiff::decoder::Decoder::new(std::fs::File::open(&path).unwrap()).unwrap();
+    assert_eq!(
+        decoder
+            .get_tag_u16_vec(tiff::tags::Tag::ExtraSamples)
+            .unwrap(),
+        vec![tiff::tags::ExtraSamples::UnassociatedAlpha.to_u16()]
+    );
+    assert!(
+        lcms2::Profile::new_icc(&decoder.get_tag_u8_vec(tiff::tags::Tag::IccProfile).unwrap())
+            .is_ok()
+    );
+    let tiff::decoder::DecodingResult::U16(values) = decoder.read_image().unwrap() else {
+        panic!("RGBA16 TIFF expected");
+    };
+    for (value, reference) in values.iter().zip(image.pixels.iter().flatten()) {
+        assert!((*value as f32 / 65535. - reference).abs() < 1.0 / 65535. + 1e-7);
+    }
+    let decoded = image::ImageReader::open(path)
+        .unwrap()
+        .decode()
+        .unwrap()
+        .to_rgba16();
+    assert_eq!(decoded.as_raw(), &values);
+}
