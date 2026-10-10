@@ -7,6 +7,7 @@ pub mod geometry;
 #[cfg(feature = "gpu")]
 pub mod gpu;
 pub mod gui;
+pub mod highlights;
 pub mod input;
 pub mod lens;
 #[cfg(any(feature = "moebius", feature = "raw-ml"))]

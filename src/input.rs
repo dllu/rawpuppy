@@ -34,12 +34,18 @@ pub struct Metadata {
 pub struct SensorImage {
     pub(crate) reconstruction: Reconstruction,
     pub metadata: Metadata,
+    /// Row-major sensor/RGB values. Learned integer-RAW caches append packed
+    /// clipping words after `sensor_width * sensor_height * cpp` values.
     pub data: Vec<f32>,
     pub cfa: Option<CFA>,
     pub cpp: usize,
     pub origin: [usize; 2],
     pub active: [usize; 2],
     pub orientation: Orientation,
+    /// True only for integer camera RAW; developed RGB and float HDR stay intact.
+    pub raw_integer: bool,
+    /// Packed original clipping flags appended after a learned RGB allocation.
+    pub(crate) clipping_offset: Option<usize>,
 }
 
 pub fn pixel_count(width: usize, height: usize, channels: usize) -> Result<usize> {
@@ -292,6 +298,8 @@ impl SensorImage {
             origin: [crop.p.x, crop.p.y],
             active: [crop.d.w, crop.d.h],
             orientation: raw.orientation,
+            raw_integer: matches!(&raw.data, RawImageData::Integer(_)),
+            clipping_offset: None,
         })
     }
 
@@ -379,6 +387,8 @@ impl SensorImage {
             origin: [0, 0],
             active: [width, height],
             orientation: Orientation::Normal,
+            raw_integer: false,
+            clipping_offset: None,
         })
     }
 
@@ -488,6 +498,8 @@ impl SensorImage {
             origin: [0, 0],
             active: [width, height],
             orientation: Orientation::Normal,
+            raw_integer: false,
+            clipping_offset: None,
         })
     }
 
@@ -529,6 +541,79 @@ impl SensorImage {
         let y = Self::reflect(y, self.metadata.sensor_height);
         self.data[(y * self.metadata.sensor_width + x) * self.cpp + channel.min(self.cpp - 1)]
     }
+    pub(crate) fn clipping_at_sensor(&self, x: isize, y: isize, e: &RawEdits) -> u8 {
+        if !self.raw_integer {
+            return 0;
+        }
+        if let Some(offset) = self.clipping_offset {
+            let x = Self::reflect(x, self.metadata.sensor_width);
+            let y = Self::reflect(y, self.metadata.sensor_height);
+            let i = y * self.metadata.sensor_width + x;
+            return ((self.data[offset + i / 4].to_bits() >> (3 * (i % 4))) & 7) as u8;
+        }
+        if let Some(cfa) = &self.cfa {
+            let mut mask = 0;
+            // Cover one CFA period, including both green phases. The raw-domain
+            // mask avoids interpreting demosaic ringing as physical clipping.
+            let left = x - x.rem_euclid(cfa.width as isize);
+            let top = y - y.rem_euclid(cfa.height as isize);
+            for dy in 0..cfa.height {
+                for dx in 0..cfa.width {
+                    let sx = left + dx as isize;
+                    let sy = top + dy as isize;
+                    let value = self.clean_raw(sx, sy, e);
+                    if (crate::highlights::MASK_THRESHOLD..=1.).contains(&value) {
+                        let sx = Self::reflect(sx, self.metadata.sensor_width);
+                        let sy = Self::reflect(sy, self.metadata.sensor_height);
+                        mask |= 1 << cfa.color_at(sy, sx);
+                    }
+                }
+            }
+            mask
+        } else {
+            (0..3).fold(0, |mask, c| {
+                mask | if (crate::highlights::MASK_THRESHOLD..=1.).contains(&self.raw_at(x, y, c)) {
+                    1 << c
+                } else {
+                    0
+                }
+            })
+        }
+    }
+
+    /// Original sensor clipping bits (R=1, G=2, B=4), including learned-source provenance.
+    pub fn clipping_mask(&self, uv: [f32; 2], e: &RawEdits) -> u8 {
+        let Some([x, y]) = self.sensor_position(uv) else {
+            return 0;
+        };
+        let x = x.floor() as isize;
+        let y = y.floor() as isize;
+        self.clipping_at_sensor(x, y, e)
+            | self.clipping_at_sensor(x + 1, y, e)
+            | self.clipping_at_sensor(x, y + 1, e)
+            | self.clipping_at_sensor(x + 1, y + 1, e)
+    }
+
+    pub(crate) fn clipping_weights(&self, uv: [f32; 2], e: &RawEdits) -> [f32; 3] {
+        let Some([x, y]) = self.sensor_position(uv) else {
+            return [0.; 3];
+        };
+        let ix = x.floor() as isize;
+        let iy = y.floor() as isize;
+        let tx = x - ix as f32;
+        let ty = y - iy as f32;
+        let masks = [
+            self.clipping_at_sensor(ix, iy, e),
+            self.clipping_at_sensor(ix + 1, iy, e),
+            self.clipping_at_sensor(ix, iy + 1, e),
+            self.clipping_at_sensor(ix + 1, iy + 1, e),
+        ];
+        std::array::from_fn(|c| {
+            let v = masks.map(|m| if m & (1 << c) != 0 { 1. } else { 0. });
+            (v[0] * (1. - tx) + v[1] * tx) * (1. - ty) + (v[2] * (1. - tx) + v[3] * tx) * ty
+        })
+    }
+
     pub(crate) fn clean_raw(&self, x: isize, y: isize, e: &RawEdits) -> f32 {
         let center = self.raw_at(x, y, 0);
         let mut neighbors = [

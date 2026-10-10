@@ -18,6 +18,11 @@ Versioned embedded RAF distortion and vignetting use one shared radial lookup;
 recipe preservation. Manual coefficients remain part of the same map and gain.
 
 Vignetting, graduated density, and exposure combine into one scalar gain.
+Integer camera RAW may recover clipped channel intensity before calibration,
+using original sensor clipping coverage and a neutral estimate from intact
+white-balanced channels. Intact signed/HDR data stays unchanged. Learned camera
+RGB retains packed original clipping provenance in its existing allocation.
+Old recipes default this recovery off; see [highlight recovery](highlight-recovery.md).
 As-shot sensor gains, camera calibration, user gains, and the RGB mixer combine
 into one matrix. XYZ white points are adapted with Bradford where needed.
 The working space is scene-linear sRGB/Rec.709 with D65 white, with unbounded

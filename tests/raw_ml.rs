@@ -9,6 +9,84 @@ fn model() -> BayerModel {
 
 #[test]
 #[ignore = "requires the verified external RawNIND graph"]
+fn learned_cache_retains_original_clipping_instead_of_guessing_from_model_values() {
+    use rawpuppy::{
+        edits::{Edits, Reconstruction, ToneMapper},
+        pipeline::Pipeline,
+    };
+    let model = model();
+    for clipped in [false, true] {
+        let mut original = sensor(37, 41, "RGGB");
+        original.raw_integer = true;
+        original.metadata.as_shot = [2., 1., 1.5];
+        let cfa = original.cfa.as_ref().unwrap();
+        let rgb = if clipped {
+            [0.6, 0.995, 0.8]
+        } else {
+            [0.2, 0.3, 0.4]
+        };
+        for i in 0..original.data.len() {
+            original.data[i] = rgb[cfa.color_at(i / 37, i % 37)];
+        }
+        let before = original.data.clone();
+        let mut prepared = model
+            .reconstruct_image(&original, false, 1024, |_, _| {})
+            .unwrap();
+        assert_eq!(
+            prepared.clipping_mask([0.5; 2], &Default::default()),
+            if clipped { 2 } else { 0 }
+        );
+        assert_eq!(original.data, before);
+        // Probe arbitrary learned RGB independently of its original clipping.
+        // The model and RGB numerics are checked by the other real-graph tests.
+        let value = if clipped {
+            [0.6, 0.995, 0.8]
+        } else {
+            [1.2, -0.1, 2.4]
+        };
+        for pixel in prepared.data[..37 * 41 * 3].as_chunks_mut::<3>().0 {
+            pixel.copy_from_slice(&value);
+        }
+        let prepared = std::sync::Arc::new(prepared);
+        let mut edits = Edits::for_image(&prepared);
+        edits.raw.reconstruction = Reconstruction::RawNindV1;
+        edits.tone.mapper = ToneMapper::Linear;
+        let recovered = Pipeline::compile(&prepared, &edits)
+            .unwrap()
+            .sample([0.5; 2]);
+        #[cfg(feature = "gpu")]
+        if std::env::var("RAWPUPPY_TEST_RAWNIND_GPU").as_deref() == Ok("1") {
+            let backend = if std::env::var("RAWPUPPY_TEST_CUDA").is_ok() {
+                rawpuppy::render::Backend::Cuda
+            } else {
+                rawpuppy::render::Backend::Vulkan
+            };
+            let expected = Pipeline::compile(&prepared, &edits)
+                .unwrap()
+                .render(None)
+                .unwrap();
+            let mut gpu = rawpuppy::gpu::GpuRenderer::new(backend).unwrap();
+            let actual = gpu.render(prepared.clone(), &edits, None).unwrap();
+            for (a, b) in actual.pixels.iter().zip(&expected.pixels) {
+                assert!(a.iter().zip(b).all(|(x, y)| (x - y).abs() < 0.0003));
+            }
+        }
+        if clipped {
+            assert!(recovered[..3].iter().all(|v| (*v - 1.2).abs() < 2e-6));
+        } else {
+            edits.raw.recover_highlights = false;
+            assert_eq!(
+                recovered,
+                Pipeline::compile(&prepared, &edits)
+                    .unwrap()
+                    .sample([0.5; 2])
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "requires the verified external RawNIND graph"]
 fn selected_native_device_agrees_with_cpu_on_signed_and_above_white_input() {
     let directory = std::env::var_os("RAWPUPPY_TEST_RAWNIND_GRAPH")
         .expect("Set RAWPUPPY_TEST_RAWNIND_GRAPH to the verified prepared graph directory");

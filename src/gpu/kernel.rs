@@ -227,14 +227,131 @@ fn sensor(
     }
 }
 
+// CubeCL expressions use primitive comparisons, not std range methods.
+#[allow(clippy::manual_range_contains)]
+#[cube]
+fn clipping_at(
+    input: &Array<f32>,
+    d: &Array<u32>,
+    p: &Array<f32>,
+    x: i32,
+    y: i32,
+    #[comptime] mosaic: bool,
+    #[comptime] detail: bool,
+) -> u32 {
+    if d[23] != 0 {
+        let i = reflect(y, d[1]) * d[0] + reflect(x, d[0]);
+        let word = u32::reinterpret(input[(d[24] + i / 4) as usize]);
+        (word >> (3 * (i % 4))) & 7
+    } else {
+        let mut mask = 0u32;
+        if mosaic {
+            let left = x - (x & 1);
+            let top = y - (y & 1);
+            for dy in 0..2 {
+                for dx in 0..2 {
+                    let sx = left + dx;
+                    let sy = top + dy;
+                    let value = clean(input, d, p, sx, sy, detail);
+                    if value >= 0.98 && value <= 1. {
+                        mask |= 1 << cfa(d, reflect(sx, d[0]), reflect(sy, d[1]));
+                    }
+                }
+            }
+        } else {
+            for c in 0..3 {
+                let value = raw(input, d, x, y, c);
+                if value >= 0.98 && value <= 1. {
+                    mask |= 1 << c;
+                }
+            }
+        }
+        mask
+    }
+}
+
+#[cube]
+fn clipping_sensor(
+    input: &Array<f32>,
+    d: &Array<u32>,
+    p: &Array<f32>,
+    u: f32,
+    v: f32,
+    #[comptime] mosaic: bool,
+    #[comptime] detail: bool,
+) -> Pixel {
+    let mut sx = u;
+    let mut sy = v;
+    if d[7] != 0 {
+        sx = v;
+        sy = u;
+    }
+    if d[8] != 0 {
+        sx = 1. - sx;
+    }
+    if d[9] != 0 {
+        sy = 1. - sy;
+    }
+    let x = (d[3] as f32 + sx * d[5] as f32 - 0.5).floor() as i32;
+    let y = (d[4] as f32 + sy * d[6] as f32 - 0.5).floor() as i32;
+    let fx = d[3] as f32 + sx * d[5] as f32 - 0.5;
+    let fy = d[4] as f32 + sy * d[6] as f32 - 0.5;
+    let tx = fx - x as f32;
+    let ty = fy - y as f32;
+    let a = clip_pixel(clipping_at(input, d, p, x, y, mosaic, detail));
+    let b = clip_pixel(clipping_at(input, d, p, x + 1, y, mosaic, detail));
+    let c = clip_pixel(clipping_at(input, d, p, x, y + 1, mosaic, detail));
+    let e = clip_pixel(clipping_at(input, d, p, x + 1, y + 1, mosaic, detail));
+    blend(blend(a, b, tx), blend(c, e, tx), ty)
+}
+
+#[cube]
+fn clip_pixel(mask: u32) -> Pixel {
+    Pixel {
+        r: (mask & 1 != 0) as u32 as f32,
+        g: (mask & 2 != 0) as u32 as f32,
+        b: (mask & 4 != 0) as u32 as f32,
+        a: 1.,
+    }
+}
+
+#[cube]
+fn recovered_channel(value: f32, white: f32, target: f32, clipped: f32) -> f32 {
+    if clipped > 0. {
+        let t = bounded((value - 0.98) / (0.995 - 0.98), 0., 1.);
+        value + clipped * t * t * (3. - 2. * t) * f32::max(target / white - value, 0.)
+    } else {
+        value
+    }
+}
+
+#[cube]
+fn recover_highlights(rgb: Pixel, mask: Pixel, p: &Array<f32>) -> Pixel {
+    let wr = p[70];
+    let wg = p[71];
+    let wb = p[72];
+    let sum = rgb.r * wr * (1. - mask.r) + rgb.g * wg * (1. - mask.g) + rgb.b * wb * (1. - mask.b);
+    let count = (1. - mask.r) + (1. - mask.g) + (1. - mask.b);
+    let mut target = f32::max(rgb.r * wr, f32::max(rgb.g * wg, rgb.b * wb));
+    if count > 0. {
+        target += f32::min(count, 1.) * (sum / count - target);
+    }
+    Pixel {
+        r: recovered_channel(rgb.r, wr, target, mask.r),
+        g: recovered_channel(rgb.g, wg, target, mask.g),
+        b: recovered_channel(rgb.b, wb, target, mask.b),
+        a: rgb.a,
+    }
+}
+
 #[cube]
 fn lens_value(p: &Array<f32>, radius2: f32, component: usize) -> f32 {
     let u =
         bounded(radius2 / crate::lens::MAX_RADIUS2, 0., 1.) * (crate::lens::LUT_SAMPLES - 1) as f32;
     let i = f32::min(u.floor(), (crate::lens::LUT_SAMPLES - 2) as f32) as usize;
     let t = u - i as f32;
-    let a = p[70 + i * 4 + component];
-    let b = p[70 + (i + 1) * 4 + component];
+    let a = p[73 + i * 4 + component];
+    let b = p[73 + (i + 1) * 4 + component];
     a + t * (b - a)
 }
 
@@ -443,6 +560,18 @@ fn base(
         if rgb.a == 0. {
             zero()
         } else {
+            if d[21] != 0 && d[22] != 0 && f32::max(rgb.r, f32::max(rgb.g, rgb.b)) >= 0.98 {
+                let mut mask = clipping_sensor(input, d, p, map.r, map.g, mosaic, detail);
+                if p[25] != 0. || p[69] != 0. {
+                    let point = geometry(p, u, v, 0);
+                    mask.r = clipping_sensor(input, d, p, point.r, point.g, mosaic, detail).r;
+                }
+                if p[26] != 0. || p[69] != 0. {
+                    let point = geometry(p, u, v, 2);
+                    mask.b = clipping_sensor(input, d, p, point.r, point.g, mosaic, detail).b;
+                }
+                rgb = recover_highlights(rgb, mask, p);
+            }
             let x = map.r - 0.5;
             let y = (map.g - 0.5) * p[22];
             let r2 = 4. * (x * x + y * y) / (1. + p[22] * p[22]);

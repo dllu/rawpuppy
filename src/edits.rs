@@ -74,6 +74,9 @@ pub struct RawEdits {
     pub hot_pixels: bool,
     /// Standard deviation in normalized sensor units. Zero disables denoising.
     pub denoise: f32,
+    /// Missing in historical recipes, preserving their original pixels/hashes.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub recover_highlights: bool,
 }
 
 #[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, PartialEq, Eq, clap::ValueEnum)]
@@ -237,10 +240,11 @@ pub struct Retouch {
 }
 
 impl Edits {
-    /// New documents use available camera corrections. Deserialized recipes keep
+    /// New integer RAW documents use highlight recovery and available camera corrections. Deserialized recipes keep
     /// their explicit/default-off state so historical rendering and hashes survive.
     pub fn for_image(image: &crate::input::SensorImage) -> Self {
         let mut out = Self::default();
+        out.raw.recover_highlights = image.raw_integer;
         if let Some(profile) = &image.metadata.lens_profile
             && (profile.distortion.is_some()
                 || profile.vignette.is_some()

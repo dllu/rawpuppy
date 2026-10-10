@@ -54,7 +54,8 @@ fn main() -> Result<()> {
             serde_json::json!({"maximum":max,"most_common_bright_levels":common_bright})
         })
         .collect();
-    let defaults = Edits::for_image(&source);
+    let mut defaults = Edits::for_image(&source);
+    defaults.raw.recover_highlights = false;
     let display = Pipeline::compile(&source, &defaults)?;
     let mut linear_edits = defaults.clone();
     linear_edits.tone.mapper = ToneMapper::Linear;

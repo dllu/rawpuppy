@@ -311,7 +311,15 @@ impl BayerModel {
         );
         let width = source.metadata.sensor_width;
         let height = source.metadata.sensor_height;
-        let count = pixel_count(width, height, 3)?;
+        let rgb_count = pixel_count(width, height, 3)?;
+        let mask_words = if source.raw_integer {
+            pixel_count(width, height, 1)?.div_ceil(4)
+        } else {
+            0
+        };
+        let count = rgb_count
+            .checked_add(mask_words)
+            .context("Clipping provenance allocation overflow")?;
         let columns = source.active[0].div_ceil(tile_edge);
         let rows = source.active[1].div_ceil(tile_edge);
         let total = columns.checked_mul(rows).context("Tile count overflow")?;
@@ -382,7 +390,7 @@ impl BayerModel {
         };
         ensure!(gain.is_finite(), "Invalid image-wide reconstruction gain");
         use rayon::prelude::*;
-        data.par_iter_mut().for_each(|v| *v *= gain);
+        data[..rgb_count].par_iter_mut().for_each(|v| *v *= gain);
         // Populate sensor margins by reflecting valid image RGB, so continuous
         // sampling at the crop boundary never mixes in zero/overscan values.
         for y in 0..height {
@@ -409,6 +417,34 @@ impl BayerModel {
                 data[(y * width + x) * 3..(y * width + x) * 3 + 3].copy_from_slice(&pixel);
             }
         }
+        // Four three-bit masks fit in each normal float's mantissa. Keeping the
+        // packed original flags in this allocation needs no extra GPU binding
+        // or sensor copy; it adds about one byte per reconstructed pixel.
+        data[rgb_count..]
+            .par_iter_mut()
+            .enumerate()
+            .for_each(|(word, slot)| {
+                let mut bits = 0u32;
+                for lane in 0..4 {
+                    let i = word * 4 + lane;
+                    if i < width * height {
+                        let x = source.origin[0]
+                            + SensorImage::reflect(
+                                (i % width) as isize - source.origin[0] as isize,
+                                source.active[0],
+                            );
+                        let y = source.origin[1]
+                            + SensorImage::reflect(
+                                (i / width) as isize - source.origin[1] as isize,
+                                source.active[1],
+                            );
+                        bits |= (source.clipping_at_sensor(x as isize, y as isize, &cleanup)
+                            as u32)
+                            << (3 * lane);
+                    }
+                }
+                *slot = f32::from_bits(0x3f80_0000 | bits);
+            });
         ensure!(
             data.iter().all(|v| v.is_finite()),
             "Nonfinite reconstructed camera RGB"
@@ -422,6 +458,8 @@ impl BayerModel {
             origin: source.origin,
             active: source.active,
             orientation: source.orientation,
+            raw_integer: source.raw_integer,
+            clipping_offset: source.raw_integer.then_some(rgb_count),
         })
     }
 }

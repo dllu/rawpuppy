@@ -202,6 +202,7 @@ impl ShaderArguments {
             g.lens.vignette as u8 as f32,
             g.lens.chromatic_aberration as u8 as f32,
         ]);
+        params.extend(image.metadata.as_shot);
         params.extend(g.lens.lut.iter().flatten().copied());
         let (transpose, fx, fy) = image.orientation.to_flips();
         let mut dims = vec![
@@ -233,6 +234,10 @@ impl ShaderArguments {
             (display.curve != [[0., 0.], [1., 1.]]) as u32,
             width as u32,
             0,
+            edits.raw.recover_highlights as u32,
+            image.raw_integer as u32,
+            image.clipping_offset.is_some() as u32,
+            image.clipping_offset.unwrap_or(0) as u32,
         ]);
         let mut brushes: Vec<f32> = Vec::new();
         for (i, b) in display.retouch.iter().enumerate() {

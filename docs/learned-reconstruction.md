@@ -167,7 +167,8 @@ reopening rebuilds the cache. Source-retirement tests confirm the renderer relea
 old original allocations when switching documents. Saved synthesis uses the same
 learned base source.
 
-The cache is in RAM, with a single camera-RGB allocation (~1.24 GB for this sensor)
+The cache is in RAM, with a single camera-RGB allocation (~1.34 GB for this sensor,
+including packed original clipping flags for integer RAW)
 in addition to the original sensor. Eligible coherent CUDA devices share that
 allocation with the fused renderer. No processed photo database is written. The
 initial pass runs on one owned reconstruction worker. The editor shows an explicit
@@ -206,6 +207,13 @@ restoration quality.
 
 Tests cover all four Bayer phases, unchanged originals, observed-sample photometry,
 odd regions on a 100,003-pixel-wide source, and overlapping context consistency.
+Integer RAW caches also carry original clipping flags, packed four pixels per
+normal float word after the RGB values. Only the RGB prefix receives photometry
+gain. These flags add about one byte per pixel and use the same GPU binding and
+coherent allocation. Highlight recovery uses this provenance rather than treating
+above-white learned RGB as proof of clipping. A real-model regression checks
+clipped and intact originals with arbitrary learned HDR values, including native
+Vulkan and CUDA render agreement. See [highlight recovery](highlight-recovery.md).
 The real-model tests are opt-in because the weights are external. Set
 `RAWPUPPY_TEST_RAWNIND_GRAPH` and run `cargo test --features raw-ml --test raw_ml -- --ignored`.
 Normal desktop builds remain independent of LibTorch. The shared device-selector

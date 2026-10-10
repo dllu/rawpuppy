@@ -8,6 +8,90 @@ use rawpuppy::{
 use std::sync::Arc;
 
 #[test]
+#[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
+fn sensor_highlight_recovery_matches_cpu_across_orientations() {
+    let backend = if std::env::var("RAWPUPPY_TEST_CUDA").is_ok() {
+        Backend::Cuda
+    } else {
+        Backend::Auto
+    };
+    let mut gpu = GpuRenderer::new(backend).unwrap();
+    for orientation in [1, 6, 8] {
+        let mut source = SensorImage::from_rgb(37, 41, vec![0.; 37 * 41 * 3]).unwrap();
+        let cfa = rawler::CFA::new("RGGB");
+        source.data = (0..37 * 41)
+            .map(|i| {
+                let x = i % 37;
+                let rgb = if x < 12 {
+                    [0.2, 0.3, 0.4]
+                } else if x < 26 {
+                    [0.6, 0.995, 0.8]
+                } else {
+                    [1.; 3]
+                };
+                rgb[cfa.color_at(i / 37, x)]
+            })
+            .collect();
+        source.cpp = 1;
+        source.cfa = Some(cfa);
+        source.raw_integer = true;
+        source.metadata.as_shot = [2., 1., 1.5];
+        source.orientation = rawler::Orientation::from_u16(orientation);
+        if orientation != 1 {
+            source.metadata.width = 41;
+            source.metadata.height = 37;
+        }
+        let source = Arc::new(source);
+        let original = source.data.clone();
+        let mut edits = Edits::for_image(&source);
+        edits.geometry.chromatic_aberration = [0.001, -0.001];
+        for mapper in [
+            rawpuppy::edits::ToneMapper::Linear,
+            rawpuppy::edits::ToneMapper::AgxSdr,
+        ] {
+            edits.tone.mapper = mapper;
+            let expected = Pipeline::compile(&source, &edits)
+                .unwrap()
+                .render(None)
+                .unwrap();
+            let actual = gpu.render(source.clone(), &edits, None).unwrap();
+            let max = actual
+                .pixels
+                .iter()
+                .zip(&expected.pixels)
+                .flat_map(|(a, b)| a.iter().zip(b).map(|(a, b)| (a - b).abs()))
+                .fold(0f32, f32::max);
+            if max >= 0.0003 {
+                let (i, (a, b)) = actual
+                    .pixels
+                    .iter()
+                    .zip(&expected.pixels)
+                    .enumerate()
+                    .max_by(|(_, (a, b)), (_, (c, e))| {
+                        let ab = a
+                            .iter()
+                            .zip(b.iter())
+                            .map(|(x, y)| (x - y).abs())
+                            .fold(0f32, f32::max);
+                        let ce = c
+                            .iter()
+                            .zip(e.iter())
+                            .map(|(x, y)| (x - y).abs())
+                            .fold(0f32, f32::max);
+                        ab.total_cmp(&ce)
+                    })
+                    .unwrap();
+                eprintln!(
+                    "orientation={orientation}, mapper={mapper:?}, pixel={i}: GPU {a:?}, CPU {b:?}"
+                );
+            }
+            assert!(max < 0.0003, "Recovery CPU/GPU mismatch: {max}");
+        }
+        assert_eq!(source.data, original);
+    }
+}
+
+#[test]
 #[ignore = "requires a working native Vulkan or Metal compute device"]
 fn repeated_native_renderers_share_the_device_and_retire_their_own_sources() {
     let backend = if cfg!(target_os = "macos") {

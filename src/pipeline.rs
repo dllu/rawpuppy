@@ -119,6 +119,8 @@ impl<'a> Pipeline<'a> {
         let Some(mut rgb) = self.source.sample(p, &self.edits.raw) else {
             return [0.; 4];
         };
+        let recovering = self.edits.raw.recover_highlights && self.source.raw_integer;
+        let mut positions = [p; 3];
         if self.geometry.ca != [0.; 2] || self.geometry.lens.chromatic_aberration {
             for channel in [0, 2] {
                 let Some(p) = self.geometry.map(uv, channel) else {
@@ -128,7 +130,14 @@ impl<'a> Pipeline<'a> {
                     return [0.; 4];
                 };
                 rgb[channel] = sample[channel];
+                positions[channel] = p;
             }
+        }
+        if recovering && rgb.iter().any(|v| *v >= crate::highlights::MASK_THRESHOLD) {
+            let clipping = std::array::from_fn(|c| {
+                self.source.clipping_weights(positions[c], &self.edits.raw)[c]
+            });
+            rgb = crate::highlights::recover(rgb, clipping, self.source.metadata.as_shot);
         }
         let x = p[0] - 0.5;
         let y = (p[1] - 0.5) * self.geometry.aspect;

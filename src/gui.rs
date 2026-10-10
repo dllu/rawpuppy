@@ -1453,6 +1453,9 @@ impl Editor {
                                 ui.label("The first pass prepares the photo; later adjustments reuse it.");
                             }
                             ui.checkbox(&mut self.edits.raw.hot_pixels, "Correct hot pixels");
+                            ui.add_enabled_ui(source_image.as_ref().is_some_and(|image| image.raw_integer), |ui| {
+                                ui.checkbox(&mut self.edits.raw.recover_highlights, "Recover clipped highlights");
+                            });
                             if self.edits.raw.reconstruction == Reconstruction::Mhc { slider(
                                 ui,
                                 &mut self.edits.raw.denoise,
