@@ -102,7 +102,9 @@ pub fn x11(request: &Request) -> Result<Option<Resolved>> {
         if let Some(bytes) = property(&conn, root, &format!("_ICC_PROFILE_{index}"))? {
             return resolved(bytes, format!("Automatic: X11 monitor {index} ICC")).map(Some);
         }
-    } else if primary && let Some(bytes) = property(&conn, root, "_ICC_PROFILE")? {
+    } else if (index == Some(0) || primary)
+        && let Some(bytes) = property(&conn, root, "_ICC_PROFILE")?
+    {
         return resolved(bytes, "Automatic: X11 monitor ICC".into()).map(Some);
     }
     colord(request)

@@ -129,6 +129,178 @@ fn monitor_selection_geometry_supports_negative_origins_and_large_coordinates() 
 #[cfg(target_os = "linux")]
 #[test]
 #[ignore = "only run with an owned Xvfb display and RAWPUPPY_TEST_ISOLATED_DISPLAY=1"]
+fn x11_monitor_zero_profile_is_independent_of_randr_primary_selection() {
+    use rawpuppy::display::Monitor;
+    use x11rb::{
+        connection::Connection,
+        protocol::{
+            randr::{ConnectionExt as _, MonitorInfo},
+            xinerama::ConnectionExt as _,
+            xproto::{AtomEnum, ConnectionExt as _},
+        },
+        wrapper::ConnectionExt as _,
+    };
+    assert_eq!(
+        std::env::var("RAWPUPPY_TEST_ISOLATED_DISPLAY").as_deref(),
+        Ok("1")
+    );
+    let (connection, screen) = x11rb::connect(None).unwrap();
+    let s = &connection.setup().roots[screen];
+    let root = s.root;
+    let width = s.width_in_pixels / 2;
+    let height = s.height_in_pixels;
+    let output = connection
+        .randr_get_screen_resources_current(root)
+        .unwrap()
+        .reply()
+        .unwrap()
+        .outputs[0];
+    for (name, x, outputs, primary) in [
+        (b"LEFT".as_slice(), 0, vec![output], false),
+        (b"RIGHT".as_slice(), width as i16, vec![], false),
+    ] {
+        let atom = connection
+            .intern_atom(false, name)
+            .unwrap()
+            .reply()
+            .unwrap()
+            .atom;
+        connection
+            .randr_set_monitor(
+                root,
+                MonitorInfo {
+                    name: atom,
+                    primary,
+                    automatic: false,
+                    x,
+                    y: 0,
+                    width,
+                    height,
+                    width_in_millimeters: 200,
+                    height_in_millimeters: 250,
+                    outputs,
+                },
+            )
+            .unwrap()
+            .check()
+            .unwrap();
+    }
+    let monitors = connection
+        .xinerama_query_screens()
+        .unwrap()
+        .reply()
+        .unwrap()
+        .screen_info;
+    assert_eq!(
+        monitors.len(),
+        2,
+        "Virtual monitor setup did not expose Xinerama indexing"
+    );
+    let profiles = [
+        export::profile(OutputSpace::DisplayP3)
+            .unwrap()
+            .icc()
+            .unwrap(),
+        export::profile(OutputSpace::AdobeRgb)
+            .unwrap()
+            .icc()
+            .unwrap(),
+    ];
+    for (name, bytes) in [
+        ("_ICC_PROFILE", &profiles[0]),
+        ("_ICC_PROFILE_1", &profiles[1]),
+    ] {
+        let atom = connection
+            .intern_atom(false, name.as_bytes())
+            .unwrap()
+            .reply()
+            .unwrap()
+            .atom;
+        connection
+            .change_property8(
+                x11rb::protocol::xproto::PropMode::REPLACE,
+                root,
+                atom,
+                AtomEnum::CARDINAL,
+                bytes,
+            )
+            .unwrap()
+            .check()
+            .unwrap();
+    }
+    let mut encoder = Encoder::default();
+    let image = Rendered {
+        width: 2,
+        height: 1,
+        pixels: vec![[0.8, 0.2, 0.01, 1.], [0.02, 0.1, 0.7, 0.5]],
+    };
+    let original = image.pixels.clone();
+    let mut encoded = Vec::new();
+    for i in [0, 1, 0] {
+        let m = &monitors[i];
+        let request = Request {
+            desktop: Desktop::X11,
+            custom: None,
+            monitor: Some(Monitor {
+                name: Some(if i == 0 { "LEFT" } else { "RIGHT" }.into()),
+                rect: [
+                    m.x_org.into(),
+                    m.y_org.into(),
+                    m.width.into(),
+                    m.height.into(),
+                ],
+            }),
+        };
+        let resolved = display::discover(&request).unwrap();
+        assert_eq!(
+            resolved.icc.as_ref().map(|p| p.digest),
+            Some(Icc::from_bytes(profiles[i].clone()).unwrap().digest),
+            "Selected profile for Xinerama monitor {i} differs from its atom"
+        );
+        let converted = encoder.encode(&image, resolved.icc.as_ref()).unwrap();
+        let expected = Encoder::default()
+            .encode(&image, Some(&Icc::from_bytes(profiles[i].clone()).unwrap()))
+            .unwrap();
+        assert_eq!(
+            converted, expected,
+            "Moving between monitor profiles reused a stale transform"
+        );
+        encoded.push(converted);
+    }
+    assert_ne!(encoded[0], encoded[1]);
+    assert_eq!(encoded[0], encoded[2]);
+    assert_eq!(image.pixels, original);
+    for name in [b"LEFT".as_slice(), b"RIGHT".as_slice()] {
+        let atom = connection
+            .intern_atom(true, name)
+            .unwrap()
+            .reply()
+            .unwrap()
+            .atom;
+        connection
+            .randr_delete_monitor(root, atom)
+            .unwrap()
+            .check()
+            .unwrap();
+    }
+    for name in [b"_ICC_PROFILE".as_slice(), b"_ICC_PROFILE_1".as_slice()] {
+        let atom = connection
+            .intern_atom(true, name)
+            .unwrap()
+            .reply()
+            .unwrap()
+            .atom;
+        connection
+            .delete_property(root, atom)
+            .unwrap()
+            .check()
+            .unwrap();
+    }
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+#[ignore = "only run with an owned Xvfb display and RAWPUPPY_TEST_ISOLATED_DISPLAY=1"]
 fn x11_profile_discovery_tracks_root_property_updates() {
     use rawpuppy::display::Monitor;
     use x11rb::{

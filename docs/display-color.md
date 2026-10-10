@@ -8,6 +8,8 @@ preview; unchanged profiles do not re-render the photograph.
 
 On X11, the application first reads an attached RandR output's `_ICC_PROFILE`,
 then the matching Xinerama root property (`_ICC_PROFILE` or `_ICC_PROFILE_n`).
+Xinerama index zero uses the unsuffixed property independently of RandR's primary
+flag, including configurations where no primary monitor is designated.
 It avoids applying a primary display's profile to an unprofiled secondary display.
 Colord is an additional source when the monitor name matches the display device's
 `XRANDR_name` metadata. Missing profiles fall back to sRGB.
@@ -49,7 +51,9 @@ the editor can return to Automatic. Neither setting dirties the XMP recipe.
 
 Validation covers numeric RGB-reference agreement, alpha, profile replacement,
 monitor geometry, and live X11 root-property replacement/removal in an owned
-Xvfb session. The editor's automatic X11 selection and live preview change were
+Xvfb session. A two-monitor Xvfb regression also verifies distinct P3/Adobe RGB
+profiles with no RandR primary and P3 → Adobe RGB → P3 cached conversion, leaving
+photo samples unchanged. The editor's automatic X11 selection and live preview change were
 also visually inspected. Native macOS/Windows code is exercised in desktop CI;
 physical monitor, multi-monitor, and managed Wayland colorimetry checks
 remain in the completion audit.
