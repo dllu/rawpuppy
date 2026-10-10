@@ -229,7 +229,7 @@ pub enum RetouchMode {
 pub struct Retouch {
     pub source: [f32; 2],
     pub target: [f32; 2],
-    /// Radius as a fraction of corrected canvas width.
+    /// Radius as a fraction of corrected canvas width before cropping.
     pub radius: f32,
     pub feather: f32,
     pub opacity: f32,

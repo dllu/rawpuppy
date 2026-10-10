@@ -1793,7 +1793,9 @@ impl Editor {
                         self.edits.display.retouch.push(Retouch {
                             source: [uv[0] + self.brush_offset[0], uv[1] + self.brush_offset[1]],
                             target: uv,
-                            radius: self.radius,
+                            // The cursor uses the cropped output width; saved
+                            // retouch radii use the full corrected canvas width.
+                            radius: self.radius * self.edits.geometry.crop[2],
                             feather: self.feather,
                             opacity: 1.,
                             mode: if self.tool == Tool::Heal {
@@ -2027,6 +2029,103 @@ mod brush_interaction_tests {
         let (_, paint, pan) = frame(&ctx, 0.5, vec![egui::Event::PointerMoved(end)]);
         assert!(paint, "Primary drag must still paint");
         assert!(!pan);
+    }
+
+    #[cfg(debug_assertions)]
+    #[test]
+    fn cropped_clone_and_heal_match_the_visible_circular_brush() {
+        use crate::pipeline::Pipeline;
+        for (width, height, crop) in [
+            (320, 240, [0., 0., 1., 1.]),
+            (320, 240, [0.25, 0.2, 0.5, 0.6]),
+            (240, 320, [0.3, 0.1, 0.25, 0.8]),
+        ] {
+            for mode in [Tool::Clone, Tool::Heal] {
+                let ctx = egui::Context::default();
+                let mut app = Editor::new(
+                    &eframe::CreationContext::_new_kittest(ctx.clone()),
+                    None,
+                    None,
+                    Backend::Cpu,
+                    false,
+                );
+                let pixels: Vec<_> = (0..width * height)
+                    .flat_map(|i| {
+                        let x = (i % width) as f32 / width as f32;
+                        let y = (i / width) as f32 / height as f32;
+                        [x * x, y * y, 0.2]
+                    })
+                    .collect();
+                let original = pixels.clone();
+                let source = Arc::new(SensorImage::from_rgb(width, height, pixels).unwrap());
+                app.image = Some(source.clone());
+                app.edits.tone.mapper = ToneMapper::Linear;
+                app.edits.geometry.crop = crop;
+                let base_edits = app.edits.clone();
+                app.tool = mode;
+                app.radius = 0.1;
+                app.feather = 0.;
+                app.clone_source = Some([0.25; 2]);
+                let mut canvas_frame = |time, events| {
+                    let mut output = ctx.run_ui(
+                        egui::RawInput {
+                            screen_rect: Some(Rect::from_min_size(
+                                Pos2::ZERO,
+                                Vec2::new(500., 400.),
+                            )),
+                            time: Some(time),
+                            events,
+                            ..Default::default()
+                        },
+                        |ui| app.canvas(ui),
+                    );
+                    output.textures_delta.clear();
+                    app.probe_photo_rect.unwrap()
+                };
+                let rect = canvas_frame(0., vec![]);
+                let target = rect.center();
+                canvas_frame(
+                    0.1,
+                    vec![
+                        egui::Event::PointerMoved(target),
+                        button(target, egui::PointerButton::Primary, true),
+                    ],
+                );
+                canvas_frame(
+                    0.2,
+                    vec![button(target, egui::PointerButton::Primary, false)],
+                );
+                assert_eq!(app.edits.display.retouch.len(), 1);
+                let directory = tempfile::tempdir().unwrap();
+                let recipe = directory.path().join("photo.png.rawpuppy.xmp");
+                sidecar::save(&recipe, &app.edits).unwrap();
+                let saved = sidecar::load(&recipe).unwrap();
+                let painted = Pipeline::compile(&source, &saved).unwrap();
+                let base = Pipeline::compile(&source, &base_edits).unwrap();
+                // Sample physical circles just inside and outside the cursor.
+                // This tests saved recipe behavior, not only radius arithmetic.
+                for i in 0..8 {
+                    let (sin, cos) = (i as f32 * std::f32::consts::FRAC_PI_4).sin_cos();
+                    for (distance, changed) in [(0.095, true), (0.105, false)] {
+                        let uv = [
+                            0.5 + distance * cos,
+                            0.5 + distance * sin * rect.width() / rect.height(),
+                        ];
+                        let before = base.sample(uv);
+                        let after = painted.sample(uv);
+                        let delta = (0..3)
+                            .map(|c| (before[c] - after[c]).abs())
+                            .fold(0., f32::max);
+                        assert_eq!(
+                            delta > 1e-5,
+                            changed,
+                            "Brush footprint differs from cursor: crop={crop:?}, uv={uv:?}, delta={delta}"
+                        );
+                    }
+                }
+                assert_eq!(source.data, original);
+            }
+        }
     }
 }
 
