@@ -105,6 +105,27 @@ fn main() -> Result<()> {
         channel.mean /= channel.samples as f64;
         channel.mean_after_zero_clipping /= channel.samples as f64;
     }
+    // Linear constant-preserving reconstruction should retain channel means,
+    // apart from finite borders and the preview's sampling phase. Predict the
+    // calibration result directly from sensor statistics, before demosaicing.
+    let predicted_mean = |clipped: bool| -> [f64; 3] {
+        let camera: [f64; 3] = std::array::from_fn(|c| {
+            (if clipped {
+                channels[c].mean_after_zero_clipping
+            } else {
+                channels[c].mean
+            }) * f64::from(source.metadata.as_shot[c])
+        });
+        std::array::from_fn(|row| {
+            source.metadata.camera_to_working[row]
+                .iter()
+                .zip(camera)
+                .map(|(coefficient, value)| f64::from(*coefficient) * value)
+                .sum()
+        })
+    };
+    let predicted_signed = predicted_mean(false);
+    let predicted_clipped = predicted_mean(true);
     let mut edits = Edits::default();
     edits.tone.mapper = ToneMapper::Linear;
     let signed = Pipeline::compile(&source, &edits)?.render(Some(args.max_edge))?;
@@ -153,6 +174,11 @@ fn main() -> Result<()> {
         "sensor_origin": source.origin,
         "active_size": source.active,
         "normalized_channels": channels,
+        "linear_sensor_mean_prediction": {
+            "scope": "Sensor channel means transformed by declared as-shot gains and camera-to-working matrix; finite-border and preview sampling effects remain. Not a reference for a nonlinear external reconstruction.",
+            "signed_working_rgb": predicted_signed,
+            "zero_clipped_working_rgb": predicted_clipped,
+        },
         "signed": signed_statistics,
         "zero_clipped_sensor": clipped_statistics,
         "references": references,

@@ -1,0 +1,472 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "7d6b0f0f4017ea6111fb72ca7a4908eef6b7a91a",
+  "scope": "Controlled high-ISO Sony oracle highlight toggle, complete RGB baseline reproduction and declared linear sensor-mean prediction; no production clipping or camera-calibration change.",
+  "source_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+  "source_and_oracle_input_sidecar_unchanged": true,
+  "extra_oracle_sidecar_not_written": true,
+  "oracle": {
+    "executable": "/home/dllu/proj/darktable/build/bin/darktable-cli",
+    "executable_sha256": "b6a426274b441b6302008be020aa9e558909cce00f143fb5092addc8881592b4",
+    "version": "darktable 5.5.0+1351~gd7c766cc19-dirty",
+    "opencl": false,
+    "custom_presets": false,
+    "workers": 8,
+    "icc_type": "LIN_REC709",
+    "output": "float32 EXR 1800x1200",
+    "library": ":memory:",
+    "config_and_cache": "owned private copies",
+    "source_code_read_or_copied": false
+  },
+  "controlled_change": {
+    "operation": "highlights",
+    "enabled_before": "1",
+    "enabled_after": "0",
+    "changed_xmp_characters": 1,
+    "all_other_original_xmp_bytes_preserved": true
+  },
+  "baseline_reproduction": {
+    "a_rgb_sha256": "0946c1a8efe3a19d62c0975bca4ce8caea8c8a54ce141dffdc4cc76164d7a689",
+    "b_rgb_sha256": "0946c1a8efe3a19d62c0975bca4ce8caea8c8a54ce141dffdc4cc76164d7a689",
+    "changed_components": 0,
+    "components": 6480000,
+    "dimensions": [
+      1800,
+      1200
+    ],
+    "maximum_absolute_difference": 0.0,
+    "mean_absolute_difference": 0.0,
+    "rms_difference": 0.0,
+    "scope": "Every decoded working-linear RGB component; no alpha, perceptual or physical-colorimetry claim"
+  },
+  "highlight_toggle_all_rgb_components": {
+    "a_rgb_sha256": "fa6e5f033af3b33489bcce80644760413499787dc28446c2e5ce4c94b443f5db",
+    "b_rgb_sha256": "0946c1a8efe3a19d62c0975bca4ce8caea8c8a54ce141dffdc4cc76164d7a689",
+    "changed_components": 4198,
+    "components": 6480000,
+    "dimensions": [
+      1800,
+      1200
+    ],
+    "maximum_absolute_difference": 1.7545210421085358,
+    "mean_absolute_difference": 8.773276103569274e-06,
+    "rms_difference": 0.0021135466342390953,
+    "scope": "Every decoded working-linear RGB component; no alpha, perceptual or physical-colorimetry claim"
+  },
+  "oracle_means": {
+    "enabled": [
+      0.013781168510944344,
+      0.008364189393493421,
+      0.009569308411604405
+    ],
+    "disabled": [
+      0.013785876359898565,
+      0.008351258769037535,
+      0.009572157794842587
+    ],
+    "disabled_to_enabled_ratio": [
+      1.0003416146425088,
+      0.9984540492990337,
+      1.0002977627134189
+    ]
+  },
+  "white_balance": {
+    "oracle_parameter_prefix_f32": [
+      1.82421875,
+      1.0,
+      2.4296875
+    ],
+    "rawpuppy_declared_as_shot": [
+      1.82421875,
+      1.0,
+      2.4296875
+    ],
+    "exactly_equal": true
+  },
+  "linear_mean_checks": {
+    "signed": {
+      "actual": [
+        0.011604011001101337,
+        0.008078452352983018,
+        0.006766433966866333
+      ],
+      "predicted": [
+        0.01159961759996547,
+        0.008077174700920741,
+        0.0067625000668578746
+      ],
+      "relative_difference": [
+        0.0003787539630513148,
+        0.00015818056555483295,
+        0.0005817227311741835
+      ]
+    },
+    "zero_clipped_sensor": {
+      "actual": [
+        0.013806419415664633,
+        0.008316401159576351,
+        0.01039019619383164
+      ],
+      "predicted": [
+        0.013800026317361911,
+        0.00831492940164693,
+        0.010381196169979954
+      ],
+      "relative_difference": [
+        0.00046326710947486305,
+        0.00017700185513658262,
+        0.0008669544149173536
+      ]
+    }
+  },
+  "normalization": {
+    "receipt": "/tmp/rawpuppy-validation/sony-linear-sensor-mean-2026-10-10/receipt.json",
+    "sha256": "fa56c177d9f0c9ec6845400d3b853b131d12fdbf317dbcc1c3489df688869ca9",
+    "data": {
+      "active_size": [
+        6000,
+        4000
+      ],
+      "edits": {
+        "display": {
+          "curve": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              1.0
+            ]
+          ],
+          "highlights": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "retouch": [],
+          "shadows": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "split_strength": 0.0,
+          "synthesis": []
+        },
+        "geometry": {
+          "chromatic_aberration": [
+            0.0,
+            0.0
+          ],
+          "crop": [
+            0.0,
+            0.0,
+            1.0,
+            1.0
+          ],
+          "distortion": [
+            0.0,
+            0.0
+          ],
+          "field_of_view": 50.0,
+          "pitch": 0.0,
+          "rotation": 0.0,
+          "scale": 1.0,
+          "yaw": 0.0
+        },
+        "raw": {
+          "denoise": 0.0,
+          "hot_pixels": false
+        },
+        "scene": {
+          "calibration": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "exposure": 0.0,
+          "graduated": {
+            "angle": 0.0,
+            "center": [
+              0.5,
+              0.5
+            ],
+            "exposure": 0.0,
+            "width": 0.30000001192092896
+          },
+          "mixer": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "vignette": [
+            0.0,
+            0.0
+          ]
+        },
+        "tone": {
+          "mapper": "linear",
+          "saturation": 1.0
+        },
+        "version": 1
+      },
+      "input_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e",
+      "input_unchanged": true,
+      "linear_sensor_mean_prediction": {
+        "scope": "Sensor channel means transformed by declared as-shot gains and camera-to-working matrix; finite-border and preview sampling effects remain. Not a reference for a nonlinear external reconstruction.",
+        "signed_working_rgb": [
+          0.01159961759996547,
+          0.008077174700920741,
+          0.0067625000668578746
+        ],
+        "zero_clipped_working_rgb": [
+          0.013800026317361911,
+          0.00831492940164693,
+          0.010381196169979954
+        ]
+      },
+      "metadata": {
+        "aperture": 8.0,
+        "as_shot": [
+          1.82421875,
+          1.0,
+          2.4296875
+        ],
+        "bits": 16,
+        "camera_to_working": [
+          [
+            1.6355528831481934,
+            -0.4220547080039978,
+            -0.2134982794523239
+          ],
+          [
+            -0.131061390042305,
+            1.5427645444869995,
+            -0.4117031693458557
+          ],
+          [
+            0.01142625231295824,
+            -0.41951775550842285,
+            1.408091425895691
+          ]
+        ],
+        "color_revision": 0,
+        "focal_length_mm": 32.0,
+        "height": 4000,
+        "lens_model": "28-200mm F2.8-5.6 Di III RXD",
+        "lens_profile": null,
+        "lens_profile_error": null,
+        "make": "Sony",
+        "model": "ILCE-7C",
+        "pattern": "RGGB",
+        "sensor_height": 4024,
+        "sensor_width": 6048,
+        "width": 6000
+      },
+      "normalized_channels": [
+        {
+          "maximum": 1.0688982009887695,
+          "mean": 0.0055256315584215785,
+          "mean_after_zero_clipping": 0.006623719908419393,
+          "minimum": -0.03448275849223137,
+          "negative_samples": 2071289,
+          "samples": 6000000
+        },
+        {
+          "maximum": 1.0688982009887695,
+          "mean": 0.007986623325376146,
+          "mean_after_zero_clipping": 0.009079252034462797,
+          "minimum": -0.03448275849223137,
+          "negative_samples": 4018797,
+          "samples": 12000000
+        },
+        {
+          "maximum": 1.0688982009887695,
+          "mean": 0.002922304891567288,
+          "mean_after_zero_clipping": 0.0041073155542772095,
+          "minimum": -0.03448275849223137,
+          "negative_samples": 2326652,
+          "samples": 6000000
+        }
+      ],
+      "references": [
+        {
+          "file": "disabled.exr",
+          "sha256": "31fd6aecaf794da3532ac2546e9f2a0b0eb899211876851b969b04046c2d43c5",
+          "statistics": {
+            "dimensions": [
+              1800,
+              1200
+            ],
+            "mean_rgb": [
+              0.013785876359898565,
+              0.008351258769037535,
+              0.009572157794842587
+            ],
+            "minimum_rgb": [
+              -0.12186991423368454,
+              -0.05535735934972763,
+              -0.1270422637462616
+            ],
+            "negative_fraction_rgb": [
+              0.05828240740740741,
+              0.1870462962962963,
+              0.04779166666666667
+            ]
+          }
+        }
+      ],
+      "scope": "signed sensor normalization and diagnostic-only zero clipping; not a production clipping policy",
+      "sensor_origin": [
+        12,
+        12
+      ],
+      "signed": {
+        "dimensions": [
+          1800,
+          1200
+        ],
+        "mean_rgb": [
+          0.011604011001101337,
+          0.008078452352983018,
+          0.006766433966866333
+        ],
+        "minimum_rgb": [
+          -0.27258655428886414,
+          -0.08948447555303574,
+          -0.3381534516811371
+        ],
+        "negative_fraction_rgb": [
+          0.3430800925925926,
+          0.3274310185185185,
+          0.4068935185185185
+        ]
+      },
+      "zero_clipped_sensor": {
+        "dimensions": [
+          1800,
+          1200
+        ],
+        "mean_rgb": [
+          0.013806419415664633,
+          0.008316401159576351,
+          0.01039019619383164
+        ],
+        "minimum_rgb": [
+          -0.27258655428886414,
+          -0.06599434465169907,
+          -0.3381534516811371
+        ],
+        "negative_fraction_rgb": [
+          0.20208657407407407,
+          0.25815648148148146,
+          0.22673888888888888
+        ]
+      }
+    }
+  },
+  "native_clipped_to_disabled_oracle_mean_ratio": [
+    1.001490152329077,
+    0.9958260652166091,
+    1.0854601874020304
+  ],
+  "discarded_setup": {
+    "action": "ElementTree reserialization of XMP",
+    "failure": "Oracle rejected changed namespace prefixes before processing; corrected by retaining original bytes and changing only the enable character.",
+    "excluded_from_results": true
+  },
+  "checks": {
+    "missing_arguments": {
+      "exit_status": 2,
+      "stderr": "error: the following required arguments were not provided:\n  <PATHS> <PATHS>...\n\nUsage: compare_color <PATHS> <PATHS>...\n\nFor more information, try '--help'.\n",
+      "no_panic": true
+    },
+    "strict_all_target_clippy": {
+      "passed": true,
+      "features": [
+        "cuda",
+        "raw-ml",
+        "moebius"
+      ],
+      "path": "/tmp/rawpuppy-validation/sony-oracle-diagnostics-clippy-2026-10-10.log",
+      "sha256": "b98c7a852e31a7722b2ef8b055783974312444f97c4e9138e725a57f4d5f2a1e"
+    },
+    "preceding_implementation_ci": {
+      "url": "https://github.com/dllu/rawpuppy/actions/runs/38076701680",
+      "jobs_successful": 6
+    }
+  },
+  "artifacts": {
+    "input.arw": {
+      "bytes": 49149440,
+      "sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e"
+    },
+    "missing-arguments-check.json": {
+      "bytes": 223,
+      "sha256": "5acc0fde84d0e72c559b46351d64789ebec651c4b0d32e86df6f6ae6472026e3"
+    },
+    "initial-inputs.json": {
+      "bytes": 195,
+      "sha256": "83ed21523027f747cfcf1af4b18c884687f214e43dfd3ec28e45cffb7c80e371"
+    },
+    "highlight-comparison.log": {
+      "bytes": 1751,
+      "sha256": "2beedd1cc34863c1fc897a18d3cb111505d72053e0e6373597361b6b4518a867"
+    },
+    "disabled-final.log": {
+      "bytes": 116,
+      "sha256": "b72797a39ed75a9aea3f83ffa57b61f3c78a0e56adc5b60f35dd70ce4ad7575a"
+    },
+    "baseline-reproduction.log": {
+      "bytes": 1653,
+      "sha256": "932ef68f981b7e55a3f987dd13c6f61c1c121654c64f05fcadafe8e7416be41b"
+    },
+    "disabled-rejected-serialization.xmp": {
+      "bytes": 4113,
+      "sha256": "312e94e8804ba18d31b082f693decaf067cda10298144fa0c887d8c8945d2d68"
+    },
+    "enabled.xmp": {
+      "bytes": 4681,
+      "sha256": "22940614b896890f1b1751f506367e01389ad1d726e2d278b3279493f7349fbd"
+    },
+    "enabled.log": {
+      "bytes": 115,
+      "sha256": "924930fc1bde18af4e3d959866090a332184e462ea4ba3aeb96cb378f980924f"
+    },
+    "disabled.xmp": {
+      "bytes": 4681,
+      "sha256": "cb47f630e3f6d8bd51b75e537334b5a960fece8b57bd062660c5e9a7a36e44dd"
+    },
+    "disabled.exr": {
+      "bytes": 25854202,
+      "sha256": "31fd6aecaf794da3532ac2546e9f2a0b0eb899211876851b969b04046c2d43c5"
+    },
+    "enabled.exr": {
+      "bytes": 25853889,
+      "sha256": "5ebce29af6f647d33e8e6731924a8497d5a4befd4d1dc70f6a5eac0bbd565cf3"
+    },
+    "disabled.log": {
+      "bytes": 104,
+      "sha256": "a456b2fe6a53ebd8a258b99258c7667a8d6334ee2b531471c02a5a1004852da5"
+    }
+  },
+  "interpretation": [
+    "The prior oracle RGB baseline is reproduced at all 6480000 components.",
+    "The highlight toggle changes 4198 components but alters whole-image channel means by at most about 0.155%; it does not explain the blue residual.",
+    "Rawpuppy signed means match its declared linear sensor-mean prediction within 0.0582%, and diagnostic clipped means within 0.0867%; finite-border and preview-sampling differences remain.",
+    "These checks support consistency with declared normalization/gains/matrix, not independent physical camera-profile accuracy or equality to a nonlinear oracle.",
+    "The clipped-to-oracle blue residual remains about 8.55%; its remaining cause is unproven and production signed handling remains unchanged."
+  ]
+}

@@ -1,7 +1,18 @@
 //! Mean linear-color measurements on independently exported image patches.
 use anyhow::{Result, ensure};
+use clap::Parser;
 use rawpuppy::input::SensorImage;
+use sha2::{Digest, Sha256};
 use std::path::PathBuf;
+
+#[derive(Parser)]
+struct Args {
+    #[arg(num_args = 2, required = true)]
+    paths: Vec<PathBuf>,
+    /// Also compare every decoded working-RGB component, requiring equal dimensions.
+    #[arg(long)]
+    pixels: bool,
+}
 fn mean(image: &SensorImage, uv: [f32; 4]) -> [f64; 3] {
     let w = image.metadata.width;
     let h = image.metadata.height;
@@ -25,10 +36,9 @@ fn mean(image: &SensorImage, uv: [f32; 4]) -> [f64; 3] {
     total.map(|v| v / n)
 }
 fn main() -> Result<()> {
-    let paths: Vec<PathBuf> = std::env::args_os().skip(1).map(PathBuf::from).collect();
-    ensure!(paths.len() == 2, "Pass two float exports");
-    let a = SensorImage::open(&paths[0])?;
-    let b = SensorImage::open(&paths[1])?;
+    let args = Args::parse();
+    let a = SensorImage::open(&args.paths[0])?;
+    let b = SensorImage::open(&args.paths[1])?;
     ensure!(a.cpp == 3 && b.cpp == 3, "RGB exports required");
     println!(
         "dimensions: {}x{} versus {}x{}",
@@ -47,6 +57,29 @@ fn main() -> Result<()> {
         println!(
             "region={uv:?} mean_a={aa:?} mean_b={bb:?} ratio={:?}",
             std::array::from_fn::<_, 3, _>(|i| aa[i] / bb[i])
+        );
+    }
+    if args.pixels {
+        ensure!(
+            (a.metadata.width, a.metadata.height) == (b.metadata.width, b.metadata.height),
+            "All-pixel comparison requires matching dimensions"
+        );
+        ensure!(a.data.len() == b.data.len(), "Different component counts");
+        let mut changed = 0usize;
+        let mut maximum = 0f64;
+        let mut sum = 0f64;
+        let mut squared = 0f64;
+        for (a, b) in a.data.iter().zip(&b.data) {
+            let difference = (f64::from(*a) - f64::from(*b)).abs();
+            changed += usize::from(a != b);
+            maximum = maximum.max(difference);
+            sum += difference;
+            squared += difference * difference;
+        }
+        let count = a.data.len();
+        println!(
+            "{}",
+            serde_json::json!({"scope":"Every decoded working-linear RGB component; no alpha, perceptual or physical-colorimetry claim","dimensions":[a.metadata.width,a.metadata.height],"components":count,"changed_components":changed,"maximum_absolute_difference":maximum,"mean_absolute_difference":sum/count as f64,"rms_difference":(squared/count as f64).sqrt(),"a_rgb_sha256":format!("{:x}",Sha256::digest(bytemuck::cast_slice(&a.data))),"b_rgb_sha256":format!("{:x}",Sha256::digest(bytemuck::cast_slice(&b.data)))})
         );
     }
     Ok(())
