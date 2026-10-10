@@ -8,6 +8,12 @@ adaptation convert them to the working basis. Untagged EXR defaults to linear
 sRGB. EXR export writes explicit sRGB chromaticities and full-precision linear
 RGBA, preserving negative values and highlights.
 
+Grayscale PNG/TIFF ICC profiles use Little CMS's gray float input format before
+conversion to working RGB. Their declared tone curve and white point are honored.
+The shared importer validates profile/raster compatibility; a gray profile on a
+color raster is rejected. Gray expansion uses a bounded 64 KiB workspace, with
+100,003-pixel-wide 16-bit PNG/TIFF regression fixtures and unchanged source bytes.
+
 New recipes select `agx_sdr_v1`. Its photographic formation is a 97³ lattice of
 independent numeric observations of Darktable's `blender-like|base` preset,
 sampled using synthetic linear Rec.2020 probes. No Darktable source or lookup

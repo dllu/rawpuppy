@@ -74,6 +74,43 @@ pub fn color_revision(path: &Path) -> Result<u32> {
         .is_some_and(|c| c != crate::export::SRGB_CHROMATICITIES) as u32)
 }
 
+fn convert_input_icc(data: &mut [f32], bytes: &[u8], grayscale: bool) -> Result<()> {
+    let input = lcms2::Profile::new_icc(bytes).context("Reading input ICC profile")?;
+    let output = crate::export::profile(color::OutputSpace::LinearSrgb)?;
+    if input.color_space() == lcms2::ColorSpaceSignature::GrayData {
+        ensure!(grayscale, "Gray ICC profile requires a grayscale raster");
+        let transform: lcms2::Transform<f32, [f32; 3]> = lcms2::Transform::new(
+            &input,
+            lcms2::PixelFormat::GRAY_FLT,
+            &output,
+            lcms2::PixelFormat::RGB_FLT,
+            lcms2::Intent::RelativeColorimetric,
+        )?;
+        let mut gray = Vec::new();
+        gray.try_reserve_exact((data.len() / 3).min(16_384))?;
+        for pixels in data.as_chunks_mut::<3>().0.chunks_mut(16_384) {
+            gray.clear();
+            gray.extend(pixels.iter().map(|p| p[0]));
+            transform.transform_pixels(&gray, pixels);
+        }
+    } else {
+        ensure!(
+            input.color_space() == lcms2::ColorSpaceSignature::RgbData,
+            "Unsupported input ICC color space {:?}",
+            input.color_space()
+        );
+        let transform: lcms2::Transform<[f32; 3], [f32; 3]> = lcms2::Transform::new(
+            &input,
+            lcms2::PixelFormat::RGB_FLT,
+            &output,
+            lcms2::PixelFormat::RGB_FLT,
+            lcms2::Intent::RelativeColorimetric,
+        )?;
+        transform.transform_in_place(bytemuck::cast_slice_mut(data));
+    }
+    Ok(())
+}
+
 impl SensorImage {
     pub fn open(path: &Path) -> Result<Self> {
         let ext = path
@@ -315,6 +352,13 @@ impl SensorImage {
         let mut decoder = reader.into_decoder()?;
         let orientation = decoder.orientation()?;
         let icc = decoder.icc_profile()?;
+        let grayscale = matches!(
+            decoder.color_type(),
+            image::ColorType::L8
+                | image::ColorType::La8
+                | image::ColorType::L16
+                | image::ColorType::La16
+        );
         let bits = decoder.color_type().bits_per_pixel() as usize
             / decoder.color_type().channel_count() as usize;
         let mut image = image::DynamicImage::from_decoder(decoder)?;
@@ -328,16 +372,7 @@ impl SensorImage {
         let mut data = image.into_raw();
         let mut color_revision = 0;
         if let Some(icc) = icc {
-            let input = lcms2::Profile::new_icc(&icc).context("Reading input ICC profile")?;
-            let output = crate::export::profile(color::OutputSpace::LinearSrgb)?;
-            let transform: lcms2::Transform<[f32; 3], [f32; 3]> = lcms2::Transform::new(
-                &input,
-                lcms2::PixelFormat::RGB_FLT,
-                &output,
-                lcms2::PixelFormat::RGB_FLT,
-                lcms2::Intent::RelativeColorimetric,
-            )?;
-            transform.transform_in_place(bytemuck::cast_slice_mut(&mut data));
+            convert_input_icc(&mut data, &icc, grayscale)?;
         } else if linear {
             let metadata = exr::meta::MetaData::read_from_file(path, false)?;
             if let Some(chroma) = metadata
@@ -437,16 +472,7 @@ impl SensorImage {
             })
             .collect();
         if let Some(icc) = icc {
-            let input = lcms2::Profile::new_icc(&icc)?;
-            let output = crate::export::profile(color::OutputSpace::LinearSrgb)?;
-            let transform: lcms2::Transform<[f32; 3], [f32; 3]> = lcms2::Transform::new(
-                &input,
-                lcms2::PixelFormat::RGB_FLT,
-                &output,
-                lcms2::PixelFormat::RGB_FLT,
-                lcms2::Intent::RelativeColorimetric,
-            )?;
-            transform.transform_in_place(bytemuck::cast_slice_mut(&mut data));
+            convert_input_icc(&mut data, &icc, channels <= 2)?;
         } else if bits != 32 {
             data.par_iter_mut()
                 .for_each(|v| *v = color::srgb_decode(*v));

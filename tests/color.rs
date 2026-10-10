@@ -7,6 +7,79 @@ use rawpuppy::{
 };
 
 #[test]
+fn grayscale_icc_inputs_preserve_their_declared_tone_curve() {
+    use image::ImageEncoder;
+    let directory = tempfile::tempdir().unwrap();
+    let curve = lcms2::ToneCurve::new(2.2);
+    let white = lcms2::CIExyY {
+        x: 0.3457,
+        y: 0.3585,
+        Y: 1.,
+    };
+    let profile = lcms2::Profile::new_gray(&white, &curve)
+        .unwrap()
+        .icc()
+        .unwrap();
+    let width = 100_003u32;
+    let samples: Vec<_> = (0..width)
+        .map(|i| [0u16, 16384, 32768, 65535][i as usize % 4])
+        .collect();
+    for extension in ["png", "tiff"] {
+        let path = directory.path().join(format!("gray.{extension}"));
+        let file = std::fs::File::create(&path).unwrap();
+        if extension == "png" {
+            let mut encoder = image::codecs::png::PngEncoder::new(file);
+            encoder.set_icc_profile(profile.clone()).unwrap();
+            encoder
+                .write_image(
+                    bytemuck::cast_slice(&samples),
+                    width,
+                    1,
+                    image::ExtendedColorType::L16,
+                )
+                .unwrap();
+        } else {
+            let mut encoder = tiff::encoder::TiffEncoder::new(file).unwrap();
+            let mut image = encoder
+                .new_image::<tiff::encoder::colortype::Gray16>(width, 1)
+                .unwrap();
+            image
+                .encoder()
+                .write_tag(tiff::tags::Tag::IccProfile, profile.as_slice())
+                .unwrap();
+            image.write_data(&samples).unwrap();
+        }
+        let original = std::fs::read(&path).unwrap();
+        let decoded = SensorImage::open(&path).unwrap();
+        assert_eq!(
+            (decoded.metadata.width, decoded.metadata.height),
+            (width as usize, 1)
+        );
+        for (sample, pixel) in samples.iter().zip(decoded.data.as_chunks::<3>().0) {
+            let expected = (*sample as f32 / 65535.).powf(2.2);
+            assert!(
+                pixel.iter().all(|v| (*v - expected).abs() < 0.00003),
+                "{extension} gray profile mismatch: {pixel:?} vs {expected}"
+            );
+        }
+        assert_eq!(std::fs::read(path).unwrap(), original);
+    }
+    let invalid = directory.path().join("color-with-gray-icc.png");
+    let mut encoder = image::codecs::png::PngEncoder::new(std::fs::File::create(&invalid).unwrap());
+    encoder.set_icc_profile(profile).unwrap();
+    encoder
+        .write_image(&[200, 40, 80], 1, 1, image::ExtendedColorType::Rgb8)
+        .unwrap();
+    assert!(
+        SensorImage::open(&invalid)
+            .err()
+            .unwrap()
+            .to_string()
+            .contains("grayscale raster")
+    );
+}
+
+#[test]
 fn primary_matrices_and_white_adaptation_match_standard_colorimetry() {
     let srgb = color::primaries_to_xyz([[0.64, 0.33], [0.30, 0.60], [0.15, 0.06]], [0.3127, 0.329])
         .unwrap();
