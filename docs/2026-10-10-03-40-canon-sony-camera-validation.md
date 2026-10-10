@@ -77,3 +77,5 @@ desktop/native-learning CI jobs completed successfully. A stale color-document
 paragraph about unimplemented HDR/profile discovery was corrected to reflect the
 existing signal checks and remaining physical validation. The full PROMPT.md goal
 remains active.
+
+The later [photosite/demosaic control](2026-10-10-12-36-sony-photosite-calibration-and-demosaic-controls.md) verifies the signed normalization and effective matrix on every full-size debug RGB component. All negative sites retain nonzero signed responses, and the ordinary oracle blue mean changes 10.25% between RCD and PPG. The earlier clipping trial remains a counterfactual; it does not identify an oracle rawprepare clamp or a production calibration correction.

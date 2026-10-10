@@ -1,0 +1,304 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "f67da8ecc7f3f313958a2a375d39213d366c937e",
+  "scope": "Independent executable/UI-only Sony photosite calibration and demosaic-stage controls on one held-out ISO40000 capture; direct all-component signed normalization/calibration agreement, not physical camera-profile or general reconstruction superiority.",
+  "method_controls": {
+    "PPG": {
+      "params": "0000000000000000000000000000000001000000cdcc4c3e000000003889c13e00000000080000000000000000000000",
+      "method_value": 0
+    },
+    "photosite color (debug)": {
+      "params": "0000000000000000000000000400000001000000cdcc4c3e000000003889c13e00000000080000000000000000000000",
+      "method_value": 4
+    }
+  },
+  "baseline_method": "RCD, UI-confirmed method value 5",
+  "original_history_except_one_method_byte_preserved": true,
+  "original_highlights_disabled": true,
+  "color_smoothing_and_green_matching_disabled": true,
+  "ppg_rcd_comparison": {
+    "a_rgb_sha256": "0a8aee698ca2fd9571f20631296b56574a5eade89643203fdcbc246f463f4d84",
+    "b_rgb_sha256": "fa6e5f033af3b33489bcce80644760413499787dc28446c2e5ce4c94b443f5db",
+    "changed_components": 6479996,
+    "components": 6480000,
+    "dimensions": [
+      1800,
+      1200
+    ],
+    "maximum_absolute_difference": 0.25056910514831543,
+    "mean_absolute_difference": 0.0015002201928348213,
+    "rms_difference": 0.0026388977184938016,
+    "scope": "Every decoded working-linear RGB component; no alpha, perceptual or physical-colorimetry claim"
+  },
+  "ppg_rcd_whole_mean": {
+    "ppg": [
+      0.014057077723531323,
+      0.007860233905970569,
+      0.010553549206258051
+    ],
+    "rcd": [
+      0.013785876359898565,
+      0.008351258769037535,
+      0.009572157794842587
+    ],
+    "ppg_to_rcd": [
+      1.0196724064943488,
+      0.9412034907974052,
+      1.1025256198706033
+    ]
+  },
+  "photosite_calibration": {
+    "as_shot": [
+      1.82421875,
+      1.0,
+      2.4296875
+    ],
+    "clipped_declared_prediction_mean_error_rgb": [
+      0.001187326438173345,
+      0.0008686332532204847,
+      0.0019516149662903498
+    ],
+    "clipped_fitted_prediction_maximum_error_rgb": [
+      0.10288399457931519,
+      0.053198400884866714,
+      0.11797592043876648
+    ],
+    "clipped_fitted_prediction_mean_error_rgb": [
+      0.0011872396287229841,
+      0.0008684186506096624,
+      0.0019514345959801781
+    ],
+    "coefficient_difference": [
+      [
+        1.672299771837693e-05,
+        2.491053173930835e-06,
+        -3.155798626038042e-06
+      ],
+      [
+        -3.031486387899962e-05,
+        -1.1222112145992114e-05,
+        -2.9781860605260224e-05
+      ],
+      [
+        1.3257507076203101e-05,
+        9.0941513983811e-06,
+        3.28581881701151e-05
+      ]
+    ],
+    "declared_columns_rgb": [
+      [
+        1.6355528831481934,
+        -0.131061390042305,
+        0.01142625231295824
+      ],
+      [
+        -0.4220547080039978,
+        1.5427645444869995,
+        -0.41951775550842285
+      ],
+      [
+        -0.2134982794523239,
+        -0.4117031693458557,
+        1.408091425895691
+      ]
+    ],
+    "decoded_reference_rgb_sha256": "bedb681d3e5d8984232c5e16ba43e65249411669e22e1b290b1d2bb4be68e0f8",
+    "dimensions": [
+      6000,
+      4000
+    ],
+    "error_grouping": "R/G/B photosite groups, each mean averaging all three developed RGB components",
+    "fitted_columns_rgb": [
+      [
+        1.6355696061459117,
+        -0.13105889898913106,
+        0.011423096514332202
+      ],
+      [
+        -0.4220850228678768,
+        1.5427533223748535,
+        -0.4195475373690281
+      ],
+      [
+        -0.2134850219452477,
+        -0.41169407519445733,
+        1.408124284083861
+      ]
+    ],
+    "fitted_samples": [
+      3414408,
+      7030693,
+      3089029
+    ],
+    "inputs_unchanged": true,
+    "negative_photosite_maximum_absolute_rgb": [
+      0.10288399457931519,
+      0.053198400884866714,
+      0.11797592043876648
+    ],
+    "negative_photosites_with_zero_output_rgb": [
+      0,
+      0,
+      0
+    ],
+    "negative_samples": [
+      2071289,
+      4018797,
+      2326652
+    ],
+    "photosite_group_counts": [
+      6000000,
+      12000000,
+      6000000
+    ],
+    "reference_sha256": "3b21d9f8812d240446ff3e658865862aa1208e18504d2b556ed8a272205e8fbe",
+    "rgb_components_compared": 72000000,
+    "scope": "Effective photosite-to-working-RGB column fit and signed/zero-clipped prediction on a full-size independent debug export; no implementation-source access or physical camera-profile claim",
+    "signed_declared_prediction_maximum_error_rgb": [
+      3.2877824827082236e-05,
+      3.260689045703202e-05,
+      8.500471821104583e-05
+    ],
+    "signed_declared_prediction_mean_error_rgb": [
+      1.0477320414575805e-07,
+      2.426582938215505e-07,
+      2.364675649414431e-07
+    ],
+    "source_sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e"
+  },
+  "source_unchanged": true,
+  "extra_cli_source_sidecar_absent": true,
+  "oracle_source_code_read_or_copied": false,
+  "oracle": {
+    "executable": "/home/dllu/proj/darktable/build/bin/darktable-cli",
+    "sha256": "b6a426274b441b6302008be020aa9e558909cce00f143fb5092addc8881592b4",
+    "version": "5.5.0+1351~gd7c766cc19-dirty",
+    "private_config_cache": true,
+    "library": ":memory:",
+    "opencl": false,
+    "custom_presets": false,
+    "workers": 8,
+    "format": "32-bit linear Rec.709 EXR"
+  },
+  "gui": {
+    "main_window": 2097382,
+    "verified_pid": 818070,
+    "xvfb_pid": 818067,
+    "normal_wm_delete_exit": 0,
+    "owned_processes_absent": true,
+    "initial_hidden_helper_selection_corrected": true,
+    "explicit_sidecar_write_used": true,
+    "artifact_directory": "/tmp/rawpuppy-validation/sony-demosaic-oracle-ui-2026-10-10"
+  },
+  "checks": {
+    "actual_release_probe_exit_zero": true,
+    "strict_combined_all_target_clippy": {
+      "path": "/tmp/rawpuppy-validation/sony-photosites-all-target-clippy-2026-10-10.log",
+      "sha256": "23ef93d5c96639403a537f21884678230977e4550eebd21ed626ecd995e1b62a",
+      "passed": true
+    },
+    "previous_ci": {
+      "url": "https://github.com/dllu/rawpuppy/actions/runs/38078769595",
+      "jobs_successful": 6
+    }
+  },
+  "artifacts": {
+    "ppg-rcd-comparison.log": {
+      "bytes": 1977,
+      "sha256": "e5fcd9b76a94c9d4b7cf5fc65680d260e05b2ab912b963b0f8eb5e71042fe2f3"
+    },
+    "input.arw": {
+      "bytes": 49149440,
+      "sha256": "493af3dca36f0c163104446b51128b11d9504cd0578870e28b8a73c96b32665e"
+    },
+    "photosite-fit.json": {
+      "bytes": 2427,
+      "sha256": "5e03a3a99d26c7d0b508ddb852daaeec96f4404496cfdf2407e49ab480e87a86"
+    },
+    "ppg.exr": {
+      "bytes": 25892437,
+      "sha256": "bee5f9eeb73a0cb081fa15efb8155aa020e22ecaeb77df6c0013b4509e5b9d61"
+    },
+    "debug.exr": {
+      "bytes": 253457914,
+      "sha256": "3b21d9f8812d240446ff3e658865862aa1208e18504d2b556ed8a272205e8fbe"
+    },
+    "photosite-fit.log": {
+      "bytes": 1891,
+      "sha256": "9deffb52d00a245bd727ce5fde67662785e471d56b222902ed23dd78e473b871"
+    },
+    "photosite-fit-final.log": {
+      "bytes": 2010,
+      "sha256": "5b106fa876e89261db2773280e19286da17cffe87ac6e5f9eda45121cedae598"
+    },
+    "method-controls.json": {
+      "bytes": 327,
+      "sha256": "9034bdf0b45c5509836278034358dccbcdc7d446329e0a502b6477d4b4d84309"
+    },
+    "debug.log": {
+      "bytes": 106,
+      "sha256": "90ac39c6867964704b7c163f18a73ab64042efe987e0733a00c14c7d93e17e40"
+    },
+    "debug.xmp": {
+      "bytes": 4681,
+      "sha256": "76afdf8b5e04360f5bb9bb388c49c6cb5bc3f406a0c529a7260cc31983352880"
+    },
+    "ppg.log": {
+      "bytes": 104,
+      "sha256": "a108258d5408a5d8e4492a862698f8dd33b6447cce4c67ab7d998065730e8ca6"
+    },
+    "photosite-receipt.log": {
+      "bytes": 2195,
+      "sha256": "d35e7a53d45b7faac5adfff1608f41d3c882b3989b00c930114d17d369bda940"
+    },
+    "photosite-fit-final.json": {
+      "bytes": 2568,
+      "sha256": "85bc925364c6260bdc2008d515f8b717cdc849e3a22d54c8f66c0a5a3255574f"
+    },
+    "photosite-receipt.json": {
+      "bytes": 2783,
+      "sha256": "b72199f6442be0462be3c48ba10f62c9b58afb7be63ce515485d901520d02637"
+    },
+    "ppg.xmp": {
+      "bytes": 4681,
+      "sha256": "8caa01049ab6ff9bf3f274811c7cedd03e2bf33cd007c29f40ea6d1774c60dfb"
+    }
+  },
+  "ui_artifact_hashes": {
+    "search.png": "b84547d7865b1f0351311ab647f08236d70f83a5fcc9371b6fbd60e10c031870",
+    "history-write.png": "482e32bfcb32e1cc5baa09f34094adce9403d9e23c387b48735a60b1a7994826",
+    "left-darkroom.png": "390bc2e91e5af0256e1fe520c8749097b7d534238a2525fba2033ffb5c8a801d",
+    "ready.png": "f7a040c3dfbf9aa078215dd4f185262921b712042882696c3725ac530ee826fe",
+    "processes-initial.json": "dfe1d312d23b4444629c1988744f394a143fe11c46ed54d6d2eb13a943c5ac32",
+    "ppg.png": "e70eb3a690f13cbc19338a549214c0081bce53f3bfd66626abc6d6339d22a717",
+    "dropdown.png": "ed2017b8e58a9c8dfb398ac6c1ea4a051416c0754ee62201278c401766287021",
+    "focused-search.png": "994f788d4dfaa4cc63d5df1411e8a5b48cbfa0d0f8405cc9d99aefdabffd5257",
+    "method-menu.png": "a83162af70712945b434c9c5df94499759acc4a5940a48764661e425633e5252",
+    "lighttable.png": "740a10d93743cf90955444b5f4baee84fbd2d637071b1a3f7d3f7444ce81e3b0",
+    "debug-selected.png": "0f4a73ac17d6315cd579d495459b4344fa4330f7eeea62287e7ac2fc96a04d07",
+    "ui-ppg.xmp": "fcb6c3dc56f3dac41b75417d419c6f9cb64a803cfd460a790a3378e4185a3f54",
+    "debug-menu.png": "70630cd02140527dcc6b52f7bf4b1632b141d85fd62cd31e6386938022bc9fdf",
+    "ui-debug.xmp": "8fc1a4ab72d18451e16c4f9107640b10910d0386087cf0f999c0785689ed6347",
+    "initial.json": "3fe7ce4ed509c0f97ef45d4757671bb675b248a5dd414170455cdda3c3ecd64e",
+    "method-popup.png": "3b2e2ff2a0f59a0f72e76af40337a765bd7cfbcde42836e304fb4b6d3d541117",
+    "reentered.png": "e21e15eadfc5b80d56198858ac47020e718b15ef48895a487fdd8d4b436562c4",
+    "main.png": "8b546475015f0dbe7d20e8042cea767f6cee69d65ac6017a8dbadb4db406e3fe",
+    "filtered.png": "442d5b2ea588d6b034fece1d172dde3e81e4f2580173756fb76a5e40eedb7496",
+    "input.arw.xmp": "8fc1a4ab72d18451e16c4f9107640b10910d0386087cf0f999c0785689ed6347",
+    "demosaic-search.png": "54bc0c632725a0722bc004ee19f5aa20bd3d82fc54f9a6da9e4a24aec7cd8135",
+    "debug-dropdown.png": "5b1c5fac5da1d30e040e1d0ed8284a95bd1ee0238502ba69cd219721aa0a4570",
+    "session.py": "84c9f0b8b4e212135f7fff5260e2e5932b1961d6fa9560953dbeb5e3d06f5ae9",
+    "xvfb.log": "b987a262609a3720f450ab6815ed90b2069dd47b7b012959ca19c325aebf5d55",
+    "editor-initial.log": "252e5e448ba1486cbde5b1e07ed8be05085d71a77c7914927ce1fd7a5f86b1ad",
+    "dialog.png": "c5e0de4803fc20eb2337719bd20df6c919f7bd03bf4fae5d1ecb9950df063de7",
+    "panels.png": "3c056f362c5c0dcd853a91ce19ecfe44b02f8fe75f7f09778d361f3200eac181",
+    "demosaic-panel.png": "1a4321f4b17b25e783f22cbee6d4659f4d1fb7cc340f0763ea0db3e5b4ead7b8"
+  },
+  "interpretation": [
+    "Changing only RCD to PPG increases the oracle blue mean by 10.25%, demonstrating a material reconstruction dependence of the former 8.55% clipped-path comparison.",
+    "The full photosite debug path predicts all 72 million RGB components from signed source values and declared gains/matrix with maximum absolute error below 0.0001.",
+    "None of 8416738 negative sites produces all-zero RGB; the debug path preserves signed signal and rejects the sensor-zero-clipping explanation for that path.",
+    "Measured normalization/effective-calibration agreement does not prove physical colorimetry or superiority of any demosaicer.",
+    "Production signed normalization and calibration remain unchanged."
+  ]
+}
