@@ -3,7 +3,7 @@ use crate::{
     color::{self, OutputSpace},
     pipeline::Rendered,
 };
-use anyhow::{Result, bail, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use image::{ExtendedColorType, ImageEncoder};
 use lcms2::{CIExyY, CIExyYTRIPLE, Profile, ToneCurve};
 use rayon::prelude::*;
@@ -178,7 +178,7 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
         .unwrap_or(Path::new("."));
     let mut temporary = tempfile::NamedTempFile::new_in(parent)?;
     {
-        let writer = BufWriter::new(temporary.as_file_mut());
+        let mut writer = BufWriter::new(temporary.as_file_mut());
         match extension.as_str() {
             "png" => {
                 let m = space.matrix();
@@ -197,7 +197,7 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                     .collect();
                 let bytes: &[u8] = bytemuck::cast_slice(&rgba);
                 let icc = profile(space)?.icc()?;
-                let mut encoder = image::codecs::png::PngEncoder::new(writer);
+                let mut encoder = image::codecs::png::PngEncoder::new(&mut writer);
                 encoder.set_icc_profile(icc)?;
                 encoder.write_image(bytes, width, height, ExtendedColorType::Rgba16)?;
             }
@@ -205,10 +205,20 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                 let icc = profile(space)?.icc()?;
                 let (rows, big) = tiff_layout(width, height, icc.len());
                 if big {
-                    write_tiff::<tiff::encoder::TiffKindBig>(writer, image, space, &icc, rows)?;
+                    write_tiff::<tiff::encoder::TiffKindBig>(
+                        &mut writer,
+                        image,
+                        space,
+                        &icc,
+                        rows,
+                    )?;
                 } else {
                     write_tiff::<tiff::encoder::TiffKindStandard>(
-                        writer, image, space, &icc, rows,
+                        &mut writer,
+                        image,
+                        space,
+                        &icc,
+                        rows,
                     )?;
                 }
             }
@@ -224,7 +234,8 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                     .iter()
                     .flat_map(|p| p[..3].iter().copied())
                     .collect();
-                let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(writer, 95);
+                let mut encoder =
+                    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut writer, 95);
                 encoder.set_icc_profile(profile(space)?.icc()?)?;
                 encoder.write_image(&rgb, width, height, ExtendedColorType::Rgb8)?;
             }
@@ -233,10 +244,13 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                     space == OutputSpace::LinearSrgb,
                     "EXR stores linear sRGB; select --color-space linear-srgb"
                 );
-                write_linear_exr(image, writer, SRGB_CHROMATICITIES)?;
+                write_linear_exr(image, &mut writer, SRGB_CHROMATICITIES)?;
             }
             _ => bail!("Export extension must be png, jpg, tif, tiff or exr"),
         }
+        // Dropping BufWriter ignores flush failures. Publish only after every
+        // encoded byte has reached the temporary file successfully.
+        writer.flush().context("Flushing encoded image")?;
     }
     temporary.as_file().sync_all()?;
     if overwrite {
