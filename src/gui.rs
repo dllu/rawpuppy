@@ -403,6 +403,70 @@ enum Tool {
     Heal,
     Mask,
 }
+
+#[derive(Default)]
+struct BrushStroke {
+    previous: Option<[f32; 2]>,
+}
+impl BrushStroke {
+    fn points(
+        &mut self,
+        uv: [f32; 2],
+        press: Option<[f32; 2]>,
+        radius: f32,
+        aspect: f32,
+    ) -> Vec<[f32; 2]> {
+        if press.is_some() {
+            self.previous = None;
+        }
+        let first = self.previous.is_none();
+        let start = self.previous.unwrap_or(press.unwrap_or(uv));
+        let delta = [
+            uv[0] as f64 - start[0] as f64,
+            uv[1] as f64 - start[1] as f64,
+        ];
+        let distance = delta[0].hypot(delta[1] * aspect as f64);
+        let spacing = radius as f64 * 0.2;
+        if !first && distance < spacing {
+            return vec![];
+        }
+        self.previous = Some(uv);
+        // Clip captured drags to the canvas plus a brush radius. Pointer travel
+        // outside a narrow photo must not create a huge list of invisible dabs.
+        let mut enter = 0f64;
+        let mut leave = 1f64;
+        for axis in 0..2 {
+            let scale = if axis == 0 { 1. } else { aspect as f64 };
+            let p = start[axis] as f64 * scale;
+            let d = delta[axis] * scale;
+            let min = -(radius as f64);
+            let max = scale + radius as f64;
+            if d == 0. {
+                if p < min || p > max {
+                    return vec![];
+                }
+            } else {
+                let a = (min - p) / d;
+                let b = (max - p) / d;
+                enter = enter.max(a.min(b));
+                leave = leave.min(a.max(b));
+                if enter > leave {
+                    return vec![];
+                }
+            }
+        }
+        let point = |t: f64| std::array::from_fn(|i| (start[i] as f64 + t * delta[i]) as f32);
+        let mut points = Vec::new();
+        if first || enter > 0. {
+            points.push(point(enter));
+        }
+        let steps = ((leave - enter) * distance / spacing).ceil() as usize;
+        for i in 1..=steps {
+            points.push(point(enter + (leave - enter) * i as f64 / steps as f64));
+        }
+        points
+    }
+}
 enum Pending {
     Close,
     Open(PathBuf),
@@ -490,6 +554,7 @@ struct Editor {
     pending: Option<Pending>,
     close_after_save: bool,
     stroke_recorded: bool,
+    brush_stroke: BrushStroke,
     brush_offset: [f32; 2],
     edit_gesture: Option<Edits>,
     fit_scale: f32,
@@ -603,6 +668,7 @@ impl Editor {
             pending: None,
             close_after_save: false,
             stroke_recorded: false,
+            brush_stroke: BrushStroke::default(),
             brush_offset: [0.; 2],
             edit_gesture: None,
             fit_scale: 1.,
@@ -882,6 +948,8 @@ impl Editor {
                     self.zoom = 1.;
                     self.center = [0.5; 2];
                     self.clone_source = None;
+                    self.brush_stroke = BrushStroke::default();
+                    self.stroke_recorded = false;
                     self.mask.clear();
                     self.busy = None;
                     self.changed();
@@ -1747,6 +1815,19 @@ impl Editor {
                         );
                     }
                 }
+                let press = ui.input(|i| {
+                    i.pointer
+                        .primary_pressed()
+                        .then(|| i.pointer.press_origin())
+                        .flatten()
+                });
+                let press = press.map(|pos| {
+                    [
+                        region[0] + (pos.x - rect.left()) / rect.width() * region[2],
+                        region[1] + (pos.y - rect.top()) / rect.height() * region[3],
+                    ]
+                });
+                let mut painting = false;
                 if self.tool == Tool::Mask
                     && !self.compare
                     && self.busy.is_none()
@@ -1757,15 +1838,16 @@ impl Editor {
                         region[0] + (pos.x - rect.left()) / rect.width() * region[2],
                         region[1] + (pos.y - rect.top()) / rect.height() * region[3],
                     ];
-                    if self.mask.last().is_none_or(|dab| {
-                        ((dab.center[0] - uv[0]).powi(2) + (dab.center[1] - uv[1]).powi(2)).sqrt()
-                            > self.radius * 0.2
-                    }) {
-                        self.mask.push(crate::synthesis::MaskDab {
-                            center: uv,
-                            radius: self.radius,
-                        });
-                    }
+                    painting = true;
+                    self.mask.extend(
+                        self.brush_stroke
+                            .points(uv, press, self.radius, h / w)
+                            .into_iter()
+                            .map(|center| crate::synthesis::MaskDab {
+                                center,
+                                radius: self.radius,
+                            }),
+                    );
                 }
                 if matches!(self.tool, Tool::Clone | Tool::Heal)
                     && !self.compare
@@ -1784,31 +1866,42 @@ impl Editor {
                         && primary_stroke(&response)
                         && let Some(source) = self.clone_source
                     {
-                        if !self.stroke_recorded {
-                            self.undo.push(self.edits.clone());
-                            self.redo.clear();
-                            self.stroke_recorded = true;
-                            self.brush_offset = [source[0] - uv[0], source[1] - uv[1]];
+                        painting = true;
+                        let points = self.brush_stroke.points(uv, press, self.radius, h / w);
+                        if let Some(start) = points.first() {
+                            if !self.stroke_recorded {
+                                self.undo.push(self.edits.clone());
+                                self.redo.clear();
+                                self.stroke_recorded = true;
+                                self.brush_offset = [source[0] - start[0], source[1] - start[1]];
+                            }
+                            self.edits
+                                .display
+                                .retouch
+                                .extend(points.into_iter().map(|target| Retouch {
+                                    source: [
+                                        target[0] + self.brush_offset[0],
+                                        target[1] + self.brush_offset[1],
+                                    ],
+                                    target,
+                                    // The cursor uses the cropped output width; saved
+                                    // retouch radii use the full corrected canvas width.
+                                    radius: self.radius * self.edits.geometry.crop[2],
+                                    feather: self.feather,
+                                    opacity: 1.,
+                                    mode: if self.tool == Tool::Heal {
+                                        RetouchMode::Heal
+                                    } else {
+                                        RetouchMode::Clone
+                                    },
+                                }));
+                            self.changed();
                         }
-                        self.edits.display.retouch.push(Retouch {
-                            source: [uv[0] + self.brush_offset[0], uv[1] + self.brush_offset[1]],
-                            target: uv,
-                            // The cursor uses the cropped output width; saved
-                            // retouch radii use the full corrected canvas width.
-                            radius: self.radius * self.edits.geometry.crop[2],
-                            feather: self.feather,
-                            opacity: 1.,
-                            mode: if self.tool == Tool::Heal {
-                                RetouchMode::Heal
-                            } else {
-                                RetouchMode::Clone
-                            },
-                        });
-                        self.changed();
                     }
                 }
-                if !ui.input(|i| i.pointer.primary_down()) {
+                if !painting || !ui.input(|i| i.pointer.primary_down()) {
                     self.stroke_recorded = false;
+                    self.brush_stroke = BrushStroke::default();
                 }
                 if self.preview_pending && self.busy.is_none() {
                     let edits = if self.compare {
@@ -1959,13 +2052,45 @@ fn slider(
 }
 
 fn primary_stroke(response: &egui::Response) -> bool {
-    response.clicked_by(egui::PointerButton::Primary)
-        || response.dragged_by(egui::PointerButton::Primary)
+    !response.ctx.input(|i| i.pointer.middle_down())
+        && (response.clicked_by(egui::PointerButton::Primary)
+            || response.dragged_by(egui::PointerButton::Primary)
+            || response.drag_stopped_by(egui::PointerButton::Primary)
+            || (response.is_pointer_button_down_on()
+                && response.ctx.input(|i| i.pointer.primary_down())))
 }
 
 #[cfg(test)]
 mod brush_interaction_tests {
     use super::*;
+    #[test]
+    fn captured_brush_travel_outside_the_canvas_does_not_stamp_invisible_paths() {
+        for aspect in [1., 17. / 100_003.] {
+            let mut stroke = BrushStroke::default();
+            assert_eq!(
+                stroke.points([0.5; 2], Some([0.5; 2]), 0.025, aspect).len(),
+                1
+            );
+            let outbound = stroke.points([10_000_000.; 2], None, 0.025, aspect);
+            assert!(!outbound.is_empty());
+            assert!(
+                outbound.len() < 500,
+                "Off-canvas travel produced excessive dabs"
+            );
+            assert!(
+                stroke
+                    .points([20_000_000.; 2], None, 0.025, aspect)
+                    .is_empty()
+            );
+            let inbound = stroke.points([0.5; 2], None, 0.025, aspect);
+            assert!(!inbound.is_empty());
+            assert!(inbound.len() < 500);
+            for point in outbound.into_iter().chain(inbound) {
+                assert!((-0.02501..=1.02501).contains(&point[0]));
+                assert!((-0.02501..=aspect + 0.02501).contains(&(point[1] * aspect)));
+            }
+        }
+    }
     fn frame(ctx: &egui::Context, time: f64, events: Vec<egui::Event>) -> (Rect, bool, bool) {
         let mut result = (Rect::NOTHING, false, false);
         let mut output = ctx.run_ui(
@@ -1995,6 +2120,25 @@ mod brush_interaction_tests {
             pressed,
             modifiers: egui::Modifiers::NONE,
         }
+    }
+    #[cfg(debug_assertions)]
+    fn canvas_frame(
+        ctx: &egui::Context,
+        app: &mut Editor,
+        time: f64,
+        events: Vec<egui::Event>,
+    ) -> Rect {
+        let mut output = ctx.run_ui(
+            egui::RawInput {
+                screen_rect: Some(Rect::from_min_size(Pos2::ZERO, Vec2::new(500., 400.))),
+                time: Some(time),
+                events,
+                ..Default::default()
+            },
+            |ui| app.canvas(ui),
+        );
+        output.textures_delta.clear();
+        app.probe_photo_rect.unwrap()
     }
     #[test]
     fn middle_button_pans_without_painting_and_primary_drag_paints() {
@@ -2066,25 +2210,11 @@ mod brush_interaction_tests {
                 app.radius = 0.1;
                 app.feather = 0.;
                 app.clone_source = Some([0.25; 2]);
-                let mut canvas_frame = |time, events| {
-                    let mut output = ctx.run_ui(
-                        egui::RawInput {
-                            screen_rect: Some(Rect::from_min_size(
-                                Pos2::ZERO,
-                                Vec2::new(500., 400.),
-                            )),
-                            time: Some(time),
-                            events,
-                            ..Default::default()
-                        },
-                        |ui| app.canvas(ui),
-                    );
-                    output.textures_delta.clear();
-                    app.probe_photo_rect.unwrap()
-                };
-                let rect = canvas_frame(0., vec![]);
+                let rect = canvas_frame(&ctx, &mut app, 0., vec![]);
                 let target = rect.center();
                 canvas_frame(
+                    &ctx,
+                    &mut app,
                     0.1,
                     vec![
                         egui::Event::PointerMoved(target),
@@ -2092,6 +2222,8 @@ mod brush_interaction_tests {
                     ],
                 );
                 canvas_frame(
+                    &ctx,
+                    &mut app,
                     0.2,
                     vec![button(target, egui::PointerButton::Primary, false)],
                 );
@@ -2124,6 +2256,119 @@ mod brush_interaction_tests {
                     }
                 }
                 assert_eq!(source.data, original);
+            }
+        }
+    }
+
+    #[cfg(debug_assertions)]
+    #[test]
+    fn fast_brush_drags_cover_the_path_and_separate_gestures_do_not_connect() {
+        use crate::pipeline::{Pipeline, Rendered};
+        for (tool, traffic) in [Tool::Clone, Tool::Heal, Tool::Mask]
+            .into_iter()
+            .flat_map(|tool| [0, 1, 2].map(|traffic| (tool, traffic)))
+        {
+            let ctx = egui::Context::default();
+            let mut app = Editor::new(
+                &eframe::CreationContext::_new_kittest(ctx.clone()),
+                None,
+                None,
+                Backend::Cpu,
+                false,
+            );
+            let pixels = (0..320 * 480)
+                .flat_map(|i| {
+                    let x = (i % 320) as f32 / 320.;
+                    let y = (i / 320) as f32 / 480.;
+                    [x * x, y * y, 0.2]
+                })
+                .collect();
+            let source = Arc::new(SensorImage::from_rgb(320, 480, pixels).unwrap());
+            app.image = Some(source.clone());
+            app.edits.tone.mapper = ToneMapper::Linear;
+            app.edits.geometry.crop = [0.1, 0.1, 0.75, 0.8];
+            let base_edits = app.edits.clone();
+            app.tool = tool;
+            app.radius = 0.025;
+            app.feather = 0.;
+            app.clone_source = Some([0.1; 2]);
+            let rect = canvas_frame(&ctx, &mut app, 0., vec![]);
+            let at = |uv: [f32; 2]| {
+                Pos2::new(
+                    rect.left() + uv[0] * rect.width(),
+                    rect.top() + uv[1] * rect.height(),
+                )
+            };
+            let start = at([0.35, 0.25]);
+            let end = at([0.65, 0.75]);
+            let mut press_events = vec![
+                egui::Event::PointerMoved(start),
+                button(start, egui::PointerButton::Primary, true),
+            ];
+            if traffic == 1 {
+                press_events.push(egui::Event::PointerMoved(end));
+            }
+            canvas_frame(&ctx, &mut app, 0.1, press_events);
+            let motion = if traffic == 2 {
+                at([0.365, 0.275])
+            } else {
+                end
+            };
+            canvas_frame(&ctx, &mut app, 0.2, vec![egui::Event::PointerMoved(motion)]);
+            canvas_frame(
+                &ctx,
+                &mut app,
+                0.3,
+                vec![button(end, egui::PointerButton::Primary, false)],
+            );
+            let second = at([0.15, 0.75]);
+            canvas_frame(
+                &ctx,
+                &mut app,
+                0.4,
+                vec![
+                    egui::Event::PointerMoved(second),
+                    button(second, egui::PointerButton::Primary, true),
+                ],
+            );
+            canvas_frame(
+                &ctx,
+                &mut app,
+                0.5,
+                vec![button(second, egui::PointerButton::Primary, false)],
+            );
+            let painted = Pipeline::compile(&source, &app.edits).unwrap();
+            let base = Pipeline::compile(&source, &base_edits).unwrap();
+            let selected = |uv: [f32; 2]| {
+                if tool == Tool::Mask {
+                    let pixel = Rendered {
+                        width: 1,
+                        height: 1,
+                        pixels: vec![[0., 0., 0., 1.]],
+                    };
+                    crate::synthesis::context_mask(
+                        &pixel,
+                        [uv[0] - 0.0005, uv[1] - 0.0005, 0.001, 0.001],
+                        &app.mask,
+                        false,
+                        rect.height() / rect.width(),
+                    )[0] == 1.
+                } else {
+                    let before = base.sample(uv);
+                    let after = painted.sample(uv);
+                    (0..3).any(|c| (before[c] - after[c]).abs() > 1e-5)
+                }
+            };
+            for i in 0..=100 {
+                let t = i as f32 / 100.;
+                // Offset slightly from the centerline: a heal deliberately
+                // preserves its center's local color.
+                let uv = [0.358 + t * 0.3, 0.25 + t * 0.5];
+                assert!(selected(uv), "Fast drag left a hole at {uv:?}");
+            }
+            assert!(!selected([0.4, 0.75]), "Separate strokes were connected");
+            if tool != Tool::Mask {
+                assert_eq!(app.undo.len(), 2, "Undo must retain whole gestures");
             }
         }
     }
