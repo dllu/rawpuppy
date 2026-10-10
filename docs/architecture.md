@@ -67,6 +67,10 @@ overflow. Export narrows dimensions only to the actual file format's representat
 JPEG's 65535-pixel limit is a format constraint. PNG/TIFF/EXR do not inherit that
 constraint. Decoder allocation limits are removed, leaving system memory and core
 format constraints. Export never replaces the original path, including aliases.
+JPEG conversion uses a fallibly allocated RGB stripe aligned with the encoder's
+8-row blocks. Rayon converts that stripe from immutable working floats; scratch
+is at most 1 MiB except when one 8-row block is wider. No full RGBA/RGB conversion
+rasters are retained. Quality, ICC tagging and final quantization remain the same.
 
 No Darktable source has been copied. Its local checkout can be used to generate
 comparison outputs as an independent oracle.

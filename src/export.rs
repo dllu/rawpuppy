@@ -4,11 +4,12 @@ use crate::{
     pipeline::Rendered,
 };
 use anyhow::{Context, Result, bail, ensure};
-use image::{ExtendedColorType, ImageEncoder};
+use image::ImageEncoder;
 use lcms2::{CIExyY, CIExyYTRIPLE, Profile, ToneCurve};
 use rayon::prelude::*;
 use std::{
     borrow::Cow,
+    cell::RefCell,
     io::{BufWriter, Seek, Write},
     path::Path,
 };
@@ -75,6 +76,68 @@ fn quantize8(x: f32) -> u8 {
 }
 fn quantize16(x: f32) -> u16 {
     (x.clamp(0., 1.) * 65535. + 0.5) as u16
+}
+
+struct JpegView<'a> {
+    image: &'a Rendered,
+    space: OutputSpace,
+    matrix: color::Matrix,
+    rows: usize,
+    cache: RefCell<JpegRows>,
+}
+struct JpegRows {
+    start: usize,
+    pixels: Vec<[u8; 3]>,
+}
+impl<'a> JpegView<'a> {
+    fn new(image: &'a Rendered, space: OutputSpace) -> Result<Self> {
+        // Align stripes with the codec's 8-row blocks. Scratch is at most 1 MiB,
+        // except for a minimum block at the format's widest legal dimensions.
+        let rows = ((1_048_576 / (image.width * 3) / 8) * 8)
+            .max(8)
+            .min(image.height);
+        let count = crate::input::pixel_count(image.width, rows, 1)?;
+        let mut pixels = Vec::new();
+        pixels.try_reserve_exact(count)?;
+        pixels.resize(count, [0; 3]);
+        Ok(Self {
+            image,
+            space,
+            matrix: space.matrix(),
+            rows,
+            cache: RefCell::new(JpegRows {
+                start: usize::MAX,
+                pixels,
+            }),
+        })
+    }
+}
+impl image::GenericImageView for JpegView<'_> {
+    type Pixel = image::Rgb<u8>;
+    fn dimensions(&self) -> (u32, u32) {
+        (self.image.width as u32, self.image.height as u32)
+    }
+    #[inline]
+    fn get_pixel(&self, x: u32, y: u32) -> Self::Pixel {
+        let y = y as usize;
+        let mut cache = self.cache.borrow_mut();
+        let start = y / self.rows * self.rows;
+        if cache.start != start {
+            let begin = start * self.image.width;
+            let end = (begin + cache.pixels.len()).min(self.image.pixels.len());
+            let matrix = self.matrix;
+            let space = self.space;
+            cache.pixels[..end - begin]
+                .par_iter_mut()
+                .zip(&self.image.pixels[begin..end])
+                .for_each(|(out, pixel)| {
+                    let rgb = color::apply(matrix, [pixel[0], pixel[1], pixel[2]]);
+                    *out = rgb.map(|v| quantize8(space.encode(v)));
+                });
+            cache.start = start;
+        }
+        image::Rgb(cache.pixels[(y - start) * self.image.width + x as usize])
+    }
 }
 
 fn rgba16_pixel(p: &[f32; 4], matrix: color::Matrix, space: OutputSpace) -> [u16; 4] {
@@ -267,17 +330,12 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                     width <= 65535 && height <= 65535,
                     "JPEG format limits dimensions to 65535; use TIFF, PNG or EXR"
                 );
-                let rgba = rgba8(image, space);
-                let rgb: Vec<u8> = rgba
-                    .as_chunks::<4>()
-                    .0
-                    .iter()
-                    .flat_map(|p| p[..3].iter().copied())
-                    .collect();
                 let mut encoder =
                     image::codecs::jpeg::JpegEncoder::new_with_quality(&mut writer, 95);
                 encoder.set_icc_profile(profile(space)?.icc()?)?;
-                encoder.write_image(&rgb, width, height, ExtendedColorType::Rgb8)?;
+                // Convert bounded stripes in parallel from the immutable float
+                // source instead of retaining full RGBA/RGB copies.
+                encoder.encode_image(&JpegView::new(image, space)?)?;
             }
             "exr" => {
                 ensure!(
@@ -311,8 +369,57 @@ pub fn display_rgba8(image: &Rendered, monitor: Option<&Path>) -> Result<Vec<u8>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use image::ExtendedColorType;
     use std::io::Cursor;
     use tiff::{decoder::DecodingResult, encoder::TiffKind, tags::Tag};
+
+    #[test]
+    fn jpeg_stripes_match_full_raster_encoding_in_all_output_spaces() {
+        for (width, height) in [(1, 1), (9, 7), (17, 19), (4097, 89), (65_535, 9)] {
+            let image = Rendered {
+                width,
+                height,
+                pixels: (0..width * height)
+                    .map(|i| {
+                        let t = (i % 257) as f32 / 256.;
+                        [t * 1.5 - 0.125, 0.25, 1. - t, (i % 3) as f32 / 2.]
+                    })
+                    .collect(),
+            };
+            let original = image.pixels.clone();
+            for space in [
+                OutputSpace::Srgb,
+                OutputSpace::LinearSrgb,
+                OutputSpace::DisplayP3,
+                OutputSpace::AdobeRgb,
+                OutputSpace::Rec2020,
+            ] {
+                let icc = profile(space).unwrap().icc().unwrap();
+                let rgb: Vec<u8> = rgba8(&image, space)
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
+                    .flat_map(|p| p[..3].iter().copied())
+                    .collect();
+                let mut expected = Vec::new();
+                let mut encoder =
+                    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut expected, 95);
+                encoder.set_icc_profile(icc.clone()).unwrap();
+                encoder
+                    .write_image(&rgb, width as u32, height as u32, ExtendedColorType::Rgb8)
+                    .unwrap();
+                let mut actual = Vec::new();
+                let mut encoder =
+                    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut actual, 95);
+                encoder.set_icc_profile(icc).unwrap();
+                let view = JpegView::new(&image, space).unwrap();
+                encoder.encode_image(&view).unwrap();
+                assert_eq!(actual, expected, "{width}×{height} {space:?}");
+                assert_eq!(image.pixels, original);
+                assert!(view.cache.borrow().pixels.len() * 3 <= 1_048_576.max(width * 3 * 8));
+            }
+        }
+    }
 
     #[test]
     fn png_stream_preserves_wide_rows_color_alpha_and_partial_batches() {

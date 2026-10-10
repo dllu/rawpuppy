@@ -1,0 +1,181 @@
+{
+  "date_utc": "2026-10-10",
+  "baseline_commit": "1281b304b840b9f8a52832825ee64463c0274702",
+  "scope": "Remove full RGBA8 and RGB8 conversion rasters from JPEG export using one bounded, parallel RGB stripe; verify color-tagged encoded byte identity and immutable source floats.",
+  "measurement_method": "Separate release processes with eight Rayon workers; signed/HDR/alpha synthetic source at GFX100S dimensions, not a RAW photographic-quality benchmark. Final stripe timing started after our builds and tests finished. Shared machine, one observation per configuration.",
+  "baseline": {
+    "color_space": "srgb",
+    "dimensions": [
+      8736,
+      11648
+    ],
+    "export_seconds": 1.4134979140000001,
+    "file_bytes": 32991687,
+    "output_sha256": "ae2d351ce547789b3b779bbc202ba748165cde79add752e8d0f5020ac604f9df",
+    "pixels": 101756928,
+    "scope": "generated signed/HDR/alpha float source; JPEG output byte identity compared separately, not perceptual quality",
+    "source_pixels_unchanged": true,
+    "maximum_process_rss_kib": 2322484,
+    "time_exit_status": 0,
+    "log": "/tmp/rawpuppy-validation/jpeg-baseline-2026-10-10.log",
+    "time_log": "/tmp/rawpuppy-validation/jpeg-baseline-time-2026-10-10.txt",
+    "log_sha256": "fa024c8725f0ca9721bb0fd850c4e46b576827c3baa87356506532f05516ab7b",
+    "time_log_sha256": "4be01619415ab57af6ef528358a1b27d10c78729f8989973e3be2d980d30e3e7"
+  },
+  "discarded_serial_implementation": {
+    "color_space": "srgb",
+    "dimensions": [
+      8736,
+      11648
+    ],
+    "export_seconds": 2.775280531,
+    "file_bytes": 32991687,
+    "output_sha256": "e9d01b4c89ba494e6bcf83eea9d2962df854dab24c208f29b3319117df7c1bfa",
+    "pixels": 101756928,
+    "scope": "generated signed/HDR/alpha float source; JPEG output byte identity compared separately, not perceptual quality",
+    "source_pixels_unchanged": true,
+    "maximum_process_rss_kib": 1593440,
+    "time_exit_status": 0,
+    "log": "/tmp/rawpuppy-validation/jpeg-direct-2026-10-10.log",
+    "time_log": "/tmp/rawpuppy-validation/jpeg-direct-time-2026-10-10.txt",
+    "log_sha256": "c4caffe2e3bdba35ab5ed6fdcb6a5ca1f329b1128d4faab39d483d135eabf9a8",
+    "time_log_sha256": "6cc9216614c4cc522b006fc377a5cf34fac2006b3e88abcc9e1b323b1a5f5bd6"
+  },
+  "final_parallel_stripes": {
+    "color_space": "srgb",
+    "dimensions": [
+      8736,
+      11648
+    ],
+    "export_seconds": 1.423987069,
+    "file_bytes": 32991687,
+    "output_sha256": "8d09ce1c2abdf8e0a5b66bc9786b6bc5569f3915e93b2badb35ad6916eaa5246",
+    "pixels": 101756928,
+    "scope": "generated signed/HDR/alpha float source; JPEG output byte identity compared separately, not perceptual quality",
+    "source_pixels_unchanged": true,
+    "maximum_process_rss_kib": 1594228,
+    "time_exit_status": 0,
+    "log": "/tmp/rawpuppy-validation/jpeg-stripes-final-2026-10-10.log",
+    "time_log": "/tmp/rawpuppy-validation/jpeg-stripes-final-time-2026-10-10.txt",
+    "log_sha256": "3489b438dc5c1050be746748708bcccf496fd18ceecbbd6ed4c5df76acc7c286",
+    "time_log_sha256": "63212c8924c1bc180e4993f7c1d99afd0cf829fd8dbcdae618c06e898ff7119d"
+  },
+  "earlier_stripe_run_overlapping_checks_excluded_from_final_timing": {
+    "color_space": "srgb",
+    "dimensions": [
+      8736,
+      11648
+    ],
+    "export_seconds": 1.430165631,
+    "file_bytes": 32991687,
+    "output_sha256": "17a6e834531c956a51f7ce01b415e78f373101189d877ec5c986a545b4e1b34a",
+    "pixels": 101756928,
+    "scope": "generated signed/HDR/alpha float source; JPEG output byte identity compared separately, not perceptual quality",
+    "source_pixels_unchanged": true,
+    "maximum_process_rss_kib": 1594400,
+    "time_exit_status": 0,
+    "log": "/tmp/rawpuppy-validation/jpeg-stripes-2026-10-10.log",
+    "time_log": "/tmp/rawpuppy-validation/jpeg-stripes-time-2026-10-10.txt",
+    "log_sha256": "9bcf090ea7d73364a3c063806a5318a2841db80c1654b9aa28a6c98f3fc9c718",
+    "time_log_sha256": "84db5aab3ee50ee3440149da3430aab6c5f3852f5c5f6b202a4ee55963a54b03"
+  },
+  "rss_reduction_fraction": 0.3135677145676784,
+  "export_time_ratio": 1.0074207078030395,
+  "full_jpeg_byte_comparison": {
+    "scope": "Every JPEG byte, ignoring only the 12 ICC creation-date bytes; encoded scan, other headers and all other profile bytes must match.",
+    "all_bytes_equal_except_icc_creation_date": true,
+    "outputs": [
+      {
+        "path": "/tmp/rawpuppy-validation/jpeg-baseline-2026-10-10.jpg",
+        "bytes": 32991687,
+        "sha256_excluding_icc_creation_date": "7fe2d575b136d42df4487d15ed3ffc917c85053adbb712ee36fbe2c0100d2ac4"
+      },
+      {
+        "path": "/tmp/rawpuppy-validation/jpeg-direct-2026-10-10.jpg",
+        "bytes": 32991687,
+        "sha256_excluding_icc_creation_date": "7fe2d575b136d42df4487d15ed3ffc917c85053adbb712ee36fbe2c0100d2ac4"
+      },
+      {
+        "path": "/tmp/rawpuppy-validation/jpeg-stripes-2026-10-10.jpg",
+        "bytes": 32991687,
+        "sha256_excluding_icc_creation_date": "7fe2d575b136d42df4487d15ed3ffc917c85053adbb712ee36fbe2c0100d2ac4"
+      },
+      {
+        "path": "/tmp/rawpuppy-validation/jpeg-stripes-final-2026-10-10.jpg",
+        "bytes": 32991687,
+        "sha256_excluding_icc_creation_date": "7fe2d575b136d42df4487d15ed3ffc917c85053adbb712ee36fbe2c0100d2ac4"
+      }
+    ]
+  },
+  "scratch_bytes_at_measured_width": 838656,
+  "scratch_bytes_at_maximum_legal_width": 1572840,
+  "regression_dimensions": [
+    [
+      1,
+      1
+    ],
+    [
+      9,
+      7
+    ],
+    [
+      17,
+      19
+    ],
+    [
+      4097,
+      89
+    ],
+    [
+      65535,
+      9
+    ]
+  ],
+  "regression_output_spaces": [
+    "srgb",
+    "linear-srgb",
+    "display-p3",
+    "adobe-rgb",
+    "rec2020"
+  ],
+  "regression_byte_identity_including_icc": true,
+  "checks": {
+    "standard": {
+      "log": "/tmp/rawpuppy-validation/jpeg-full-tests-2026-10-10.log",
+      "sha256": "51e25b388d3701f3ef4c0ff2cb07b5f684e98e930d942c1c11de81981f3ea37f",
+      "passed": 90,
+      "failed": 0,
+      "ignored": 12
+    },
+    "jpeg_final": {
+      "log": "/tmp/rawpuppy-validation/jpeg-stripes-test-final-2026-10-10.log",
+      "sha256": "089f4a95aa6e0a7c957c8abb7ced35d5db9f5c092f1e18b258eded6f9cd707dc",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    "clippy": {
+      "log": "/tmp/rawpuppy-validation/jpeg-full-clippy-final-2026-10-10.log",
+      "sha256": "832f2dd234261e8f44bb0892aa9c6eb146470b210c9b338befa7997b5ea3f0cf",
+      "passed": true,
+      "features": [
+        "cuda",
+        "raw-ml",
+        "moebius"
+      ],
+      "all_targets": true,
+      "toolchain": "1.99.0"
+    }
+  },
+  "preceding_ci": {
+    "url": "https://github.com/dllu/rawpuppy/actions/runs/38070430176",
+    "jobs_successful": 6,
+    "mandatory_native_metal_step": "success"
+  },
+  "limits": [
+    "Peak process RSS includes the synthetic float source and probe, not ordinary GUI or aggregate GB10 memory.",
+    "Observed timings on a shared machine do not establish a general speed guarantee.",
+    "JPEG retains its real 65535-pixel dimension limit and existing lossy RGB/alpha-omission behavior.",
+    "This is export integrity and allocation evidence, not photographic neural-model quality or completion of the full prompt audit."
+  ]
+}
