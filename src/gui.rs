@@ -1543,7 +1543,8 @@ impl Editor {
                             });
                             ui.add_enabled_ui(cfg!(feature = "moebius"), |ui| {
                                 ui.horizontal(|ui| {
-                                    ui.selectable_value(&mut self.tool, Tool::Mask, "Paint area");
+                                    ui.selectable_value(&mut self.tool, Tool::Mask, "Paint area")
+                                        .on_hover_text("Cover the entire object, including its edges and shadows. Only painted pixels are replaced.");
                                     ui.selectable_value(&mut self.tool, Tool::View, "Pan");
                                 });
                                 slider(ui, &mut self.radius, 0.002..=0.15, "Brush size", "");

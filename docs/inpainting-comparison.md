@@ -391,3 +391,14 @@ The adapter's weights use the same [Qwen research license](https://huggingface.c
 as the base model. This remains a research evaluation rather than a generally
 distributable application backend. Native Moebius remains the provisional
 compact option; LaMa remains a historical reference.
+
+## Exact native GFX selection diagnosis — 2026-10-10
+
+The [native-context follow-up](2026-10-10-08-09-moebius-selection-and-context-diagnosis.md)
+reproduces the latest saved GFX asset exactly in float RGBA. Its narrow selection
+leaves parts of the person unpainted; a separately declared wider target removes
+the recognizable person. Inference-only padding leaves unselected remnants after
+composition. Portable/installed graphs do not change that conclusion, and further
+padding shows more visible seams. Production masks/defaults stay unchanged; the
+editor now explains complete object/edge/shadow coverage. This is one controlled
+photograph, not a general ranking or a promise of seam-free removal.

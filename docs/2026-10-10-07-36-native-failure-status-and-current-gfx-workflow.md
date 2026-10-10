@@ -45,3 +45,10 @@ Settings, source/model/asset identities and numeric comparisons are retained in
 [the data record](data/native-error-status-2026-10-10.json). Photos, screenshots
 and the machine-specific interaction harness remain under
 `/tmp/rawpuppy-validation/native-current-gfx-2026-10-10`.
+
+The [exact-context follow-up](2026-10-10-08-09-moebius-selection-and-context-diagnosis.md)
+reproduces this asset exactly and finds visible object parts outside the saved
+narrow target. A separately declared wider target removes the recognizable
+person; inference-only padding preserves the unselected remnants. The original
+failure observation stands, with the selection cause and comparison limits now
+recorded separately.
