@@ -83,5 +83,12 @@ The [Canon/Sony check](2026-10-10-03-40-canon-sony-camera-validation.md) include
 a reproducible normalization diagnostic and a high-ISO oracle discrepancy.
 Further [controlled Bayer DNG checks](2026-10-10-04-00-controlled-dng-color.md)
 separate constant-color calibration agreement from signed-noise behavior.
+DNGs with supported dual standard illuminants now select/interpolate their
+matrices from the as-shot neutral in reciprocal color temperature, rather than
+always preferring D65. Analog balance, matching-signature camera calibration and
+forward matrices participate in the same linear transform. Changed DNG color
+interpretation versions saved fills; single-matrix files without these extra tags
+retain their previous transform. See [DNG calibration](2026-10-10-04-27-dng-calibration.md)
+for tests and remaining profile scope.
 Float HDR interchange and SDR presentation on an HDR desktop are distinct
 capabilities.

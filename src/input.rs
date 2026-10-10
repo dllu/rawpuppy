@@ -60,6 +60,17 @@ pub fn pixel_count(width: usize, height: usize, channels: usize) -> Result<usize
 }
 
 pub fn color_revision(path: &Path) -> Result<u32> {
+    if path
+        .extension()
+        .is_some_and(|e| e.eq_ignore_ascii_case("dng"))
+    {
+        let source = rawler::rawsource::RawSource::new(path)?;
+        let raw = rawler::get_decoder(&source)?.raw_image(&source, &Default::default(), true)?;
+        if raw.is_monochrome() {
+            return Ok(0);
+        }
+        return crate::camera_profiles::revision(&source, &raw.color_matrix);
+    }
     if !path
         .extension()
         .is_some_and(|e| e.eq_ignore_ascii_case("exr"))
@@ -230,8 +241,20 @@ impl SensorImage {
             as_shot.iter().all(|x| x.is_finite() && *x > 0.),
             "Invalid camera white point"
         );
+        let interpolated = if ext == "dng" && !raw.is_monochrome() {
+            crate::camera_profiles::from_dng(&source, &raw.color_matrix, as_shot)?
+        } else {
+            None
+        };
+        let color_revision = u32::from(interpolated.is_some());
+        let forward_calibration = interpolated.as_ref().and_then(|profile| profile.forward);
+        let (xyz_to_cam, white) = interpolated.map_or((xyz_to_cam, white), |profile| {
+            (profile.xyz_to_camera, profile.white)
+        });
         let camera_to_working = if raw.is_monochrome() {
             color::IDENTITY
+        } else if let Some(forward) = forward_calibration {
+            forward
         } else {
             // DNG matrices map XYZ to camera. Normalize camera responses to D65 RGB white,
             // then invert; the single color calibration module later applies as-shot gains.
@@ -308,7 +331,7 @@ impl SensorImage {
             width,
             height,
             bits: raw.bps,
-            color_revision: 0,
+            color_revision,
             pattern: cfa.as_ref().map_or("RGB/mono".into(), |c| c.name.clone()),
             as_shot,
             camera_to_working,
