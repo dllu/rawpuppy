@@ -275,19 +275,36 @@ impl Layers {
             models::sha256(&path).context("Reading saved generated pixels")? == fill.sha256,
             "Synthesis asset checksum mismatch"
         );
-        let image = image::ImageReader::open(path)?.decode()?.to_rgba32f();
-        let (width, height) = (image.width() as usize, image.height() as usize);
-        let pixels = image.into_raw().as_chunks::<4>().0.to_vec();
+        // Decode directly into the owned pixel vector. The image adapter's
+        // default allocation budget and full-raster intermediate are unnecessary
+        // for our immutable EXR assets.
+        let decoded = exr::prelude::read_first_rgba_layer_from_file(
+            path,
+            |size, _| -> Result<Rendered> {
+                let count = pixel_count(size.width(), size.height(), 1)?;
+                let mut pixels = Vec::new();
+                pixels
+                    .try_reserve_exact(count)
+                    .context("Allocating saved generated pixels")?;
+                pixels.resize(count, [0.; 4]);
+                Ok(Rendered {
+                    width: size.width(),
+                    height: size.height(),
+                    pixels,
+                })
+            },
+            |image: &mut Result<Rendered>, position, (r, g, b, a): (f32, f32, f32, f32)| {
+                if let Ok(image) = image {
+                    image.pixels[position.y() * image.width + position.x()] = [r, g, b, a];
+                }
+            },
+        )?;
+        let image = decoded.layer_data.channel_data.pixels?;
         ensure!(
-            pixels.len() == pixel_count(width, height, 1)?
-                && pixels.iter().flatten().all(|v| v.is_finite()),
+            image.pixels.iter().flatten().all(|v| v.is_finite()),
             "Invalid synthesis asset samples"
         );
-        let image = Arc::new(Rendered {
-            width,
-            height,
-            pixels,
-        });
+        let image = Arc::new(image);
         self.cache(fill.sha256.clone(), image.clone());
         Ok(image)
     }
@@ -638,4 +655,55 @@ pub fn cover_boundary_gaps(
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod native_asset_tests {
+    use super::*;
+
+    #[test]
+    fn cold_exr_asset_load_preserves_signed_hdr_and_straight_alpha() {
+        let directory = tempfile::tempdir().unwrap();
+        let original = directory.path().join("photo.raw");
+        std::fs::write(&original, b"owned original").unwrap();
+        let mut layers = Layers::new(original.clone());
+        let generated = Rendered {
+            width: 3,
+            height: 2,
+            pixels: vec![
+                [10., -0.125, 0.625, 0.],
+                [1.5, 0.25, 2., 0.25],
+                [-0.5, 2., 0.125, 0.5],
+                [0.18, 0.25, 0.3, 1.],
+                [3., 2., 1., 1.],
+                [0., 0., 0., 0.],
+            ],
+        };
+        let (asset, sha256) = layers.store(&generated).unwrap();
+        let fill = GeneratedFill {
+            region: [0., 0., 1., 1.],
+            dabs: vec![MaskDab {
+                center: [0.5; 2],
+                radius: 1.,
+            }],
+            fill_gaps: false,
+            steps: 2,
+            seed: 0,
+            asset,
+            sha256,
+            source_sha256: layers.source_hash().unwrap().into(),
+            source_color_revision: 0,
+            recipe_sha256: recipe_hash(&Edits::default()).unwrap(),
+            sampling: Default::default(),
+            model: "moebius-scene-2026-v1".into(),
+        };
+        drop(layers);
+        let mut fresh = Layers::new(original.clone());
+        let loaded = fresh.load(&fill).unwrap();
+        assert_eq!((loaded.width, loaded.height), (3, 2));
+        assert_eq!(loaded.pixels, generated.pixels);
+        let again = fresh.load(&fill).unwrap();
+        assert!(Arc::ptr_eq(&loaded, &again));
+        assert_eq!(std::fs::read(original).unwrap(), b"owned original");
+    }
 }

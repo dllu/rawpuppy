@@ -1,0 +1,32 @@
+{
+  "scope": "Owned synthetic source and 100003x336 float RGBA EXR layer, stored through Layers, XMP roundtrip, fresh cache, full composition; not neural inference or photographic quality.",
+  "baseline": {
+    "implementation": "8712034",
+    "result": "failed",
+    "error": "Error: Memory limit exceeded",
+    "default_image_reader_budget_bytes": 536870912,
+    "elapsed_seconds": 2.52,
+    "peak_process_rss_kib": 1057052
+  },
+  "native_exr": {
+    "decoded_rgba_bytes": 537616128,
+    "height": 336,
+    "max_absolute_error": 0.0,
+    "original_unchanged": true,
+    "pixels": 33601008,
+    "recipe_unchanged": true,
+    "reload_and_apply_seconds": 1.500581104,
+    "source_pixels_unchanged": true,
+    "store_seconds": 1.3928037770000001,
+    "width": 100003
+  },
+  "native_exr_peak_process_rss_kib": 1074308,
+  "native_exr_total_probe_seconds": 3.41,
+  "verified_pixel_value": [
+    1.5,
+    -0.125,
+    0.625,
+    1.0
+  ],
+  "notes": "Whole-probe RSS includes source/cache during store and destination/cache during cold load. Final loader decodes directly to the owned RGBA vector with fallible reservation. Images, synthetic original and sidecar remain in temporary storage."
+}
