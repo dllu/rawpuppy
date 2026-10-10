@@ -101,7 +101,7 @@ The source example is from the [LaMa ONNX publisher](https://huggingface.co/Carv
 fitted and edge-padded to a square without stretching.
 
 Moebius remains a compact native pilot, with LaMa as a historical reference.
-LLaDA-Image/Turbo still needs local comparison. Selection must include textured
+The later [LLaDA-Turbo comparison](2026-10-10-08-56-llada-turbo-reference-editing-comparison.md) records its local reference-editing run and seam/memory tradeoffs. Selection must include textured
 surfaces, fine detail, associated shadows/reflections and geometric gaps, at actual
 photographic pixels.
 
@@ -402,3 +402,14 @@ composition. Portable/installed graphs do not change that conclusion, and furthe
 padding shows more visible seams. Production masks/defaults stay unchanged; the
 editor now explains complete object/edge/shadow coverage. This is one controlled
 photograph, not a general ranking or a promise of seam-free removal.
+
+## LLaDA-Image-Turbo — 2026-10-10
+
+The [pinned comparison](2026-10-10-08-56-llada-turbo-reference-editing-comparison.md)
+uses the same complete 512-pixel GFX target as the Moebius diagnosis. Turbo removes
+the recognizable person through instruction-guided reference editing, at about
+3.9 seconds warm and 46.6 GiB tensor allocation. Its raw output changes unselected
+content; target-only composition preserves it exactly but leaves strong seams.
+An isolated publisher-version environment and explicit global RNG policy are
+needed for reproducible measurements. This is another recent, licensed candidate
+with recorded limits, not a final replacement or an equivalent conditioning path.
