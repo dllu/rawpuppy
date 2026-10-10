@@ -2226,6 +2226,7 @@ mod error_scope_tests {
                 source_sha256: hash.clone(),
                 source_color_revision: 0,
                 recipe_sha256: hash,
+                sampling: Default::default(),
                 model: "moebius-scene-2026-v1".into(),
             });
         let expected_hash = crate::synthesis::recipe_hash(&edits).unwrap();

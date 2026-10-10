@@ -7,6 +7,11 @@ editor mask painting/corner filling, and persisted non-destructive layers. See
 [runtime setup and layer behavior](moebius.md). Selection remains provisional
 until broader photography and alternative-model comparisons are complete.
 
+New Moebius fills use full diffusion strength after a controlled two-seed
+comparison on a rotated GFX photo. It removed the seed-zero black corner wedge
+seen with strength 0.99; see the [quality and saved-parameter record](2026-10-09-17-04-full-strength-corner-quality-and-provenance.md).
+Earlier measurements below retain their original settings.
+
 ## Candidates and evidence
 
 | Model | Release / licensing | Current evidence |

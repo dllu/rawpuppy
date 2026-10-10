@@ -22,11 +22,22 @@ fn main() -> anyhow::Result<()> {
         steps: usize,
         #[arg(long, default_value_t = 1.)]
         scale: f32,
+        #[arg(long, default_value_t = 1.)]
+        strength: f64,
+        #[arg(long, default_value_t = 0)]
+        seed: i64,
+        #[arg(long, default_value_t = 0.)]
+        exposure: f32,
+        /// Retain matched base/filled previews for visual quality inspection.
+        #[arg(long)]
+        preview: bool,
     }
     let args = Args::parse();
     ensure!(!args.output.exists(), "Choose a new output directory");
     let settings = Sampling {
         steps: args.steps,
+        strength: args.strength,
+        seed: args.seed,
         ..Default::default()
     };
     settings.validate()?;
@@ -51,6 +62,7 @@ fn main() -> anyhow::Result<()> {
     edits.lens = Default::default();
     edits.geometry.rotation = args.rotation;
     edits.geometry.scale = args.scale;
+    edits.scene.exposure = args.exposure;
     let mut renderer = Renderer::new(Backend::Cpu);
     renderer.set_document(original.clone());
     let (w, h) = renderer.dimensions(source.clone(), &edits, None)?;
@@ -77,6 +89,15 @@ fn main() -> anyhow::Result<()> {
         !regions.is_empty(),
         "Corner planning missed the perimeter gaps"
     );
+    if args.preview {
+        let base = renderer.render(source.clone(), &edits, Some(1000))?;
+        rawpuppy::export::write(
+            &args.output.join("base.png"),
+            &base,
+            rawpuppy::color::OutputSpace::Srgb,
+            false,
+        )?;
+    }
     let start = Instant::now();
     let mut times = Vec::new();
     let mut skipped = 0;
@@ -96,6 +117,15 @@ fn main() -> anyhow::Result<()> {
     ensure!(loaded == edits, "Generated recipe did not roundtrip");
     let mut reload = Renderer::new(Backend::Cpu);
     reload.set_document(original.clone());
+    if args.preview {
+        let filled = reload.render(source.clone(), &loaded, Some(1000))?;
+        rawpuppy::export::write(
+            &args.output.join("filled.png"),
+            &filled,
+            rawpuppy::color::OutputSpace::Srgb,
+            false,
+        )?;
+    }
     let mut filled = 0;
     let mut preserved = 0;
     let mut min_filled_rgb = f32::INFINITY;
@@ -129,7 +159,8 @@ fn main() -> anyhow::Result<()> {
     let receipt = serde_json::json!({
         "purpose": "real-model output-perimeter conformance; not a perceptual quality benchmark",
         "build_profile": if cfg!(debug_assertions) { "debug" } else { "release" },
-        "dimensions": [w, h], "rotation": args.rotation, "scale": args.scale, "settings": settings,
+        "dimensions": [w, h], "rotation": args.rotation, "scale": args.scale,
+        "exposure": args.exposure, "preview_exported": args.preview, "settings": settings,
         "skipped_completed_contexts": skipped,
         "input_sha256": source_hash,
         "cuda_available": tch::Cuda::is_available(),

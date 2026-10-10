@@ -71,6 +71,13 @@ is square in image pixels, with extra surrounding content; portrait or wide phot
 are never stretched. “Fill geometric corners” computes a separate region for each
 corner containing missing pixels, shifting the square inward where it fits to
 retain more photographic context. Sampling count and seed control regeneration.
+New generation uses full diffusion strength (1.0), starting the selected content
+from noise. The earlier 0.99 setting retained some original-image latents; on the
+controlled rotated GFX example it left a black wedge with seed zero. At the same
+20 requested steps and seed, full strength filled that wedge. Seed 42 was also
+checked. This is an observed improvement on one photograph, not a general quality
+ranking. The [comparison record](data/corner-strength-gb10-2026-10-09.json) retains
+the settings, graph identities, timings and preview-preservation checks.
 Generation runs on the photo worker, and ordinary preview updates remain separate.
 Recoverable tensor-operation panics are converted to generation errors inside
 the serialized sampler. Temporary tensors and gradient state unwind before the
@@ -121,6 +128,9 @@ detail; wide areas may need smaller selections or a future model/refinement path
 Generated display-linear RGB is stored as immutable float EXR assets in
 `photo.raf.rawpuppy-assets`. The XMP recipe stores content hashes, source identity,
 the preceding recipe identity, mask strokes, region, model version, steps and seed.
+New non-legacy settings also record guidance, strength and noise offset. Older
+sidecars imply the previous 2.0 / 0.99 / 0.0357 values and retain their serialized
+form; existing asset pixels and preceding-recipe hashes remain compatible.
 Only exact target pixels are composited; unpainted original pixels remain unchanged.
 Corner membership is checked at output resolution, avoiding leftover transparent
 slivers from the smaller inference mask. Preview and export share the same layers.
@@ -160,6 +170,7 @@ That temporary memory scales with visible contexts, not a rollback copy of the
 full photograph. Offscreen contexts remain culled.
 
 Model selection remains provisional: generation can invent structures or details.
-Large-gap outpainting can retain dark wedges even when all output alpha is opaque.
+Large-gap outpainting with the legacy 0.99 strength can retain dark wedges even
+when all output alpha is opaque; full strength resolved the inspected GFX case.
 Native CUDA/CPU execution and save/reload have been exercised, but more photography,
 corner detail and alternative-model comparisons remain necessary.

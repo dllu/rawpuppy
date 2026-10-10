@@ -16,6 +16,49 @@ pub struct MaskDab {
     pub radius: f32,
 }
 
+/// Parameters not exposed by the editor's step/seed controls. Defaults describe
+/// existing layers whose recipes predate explicit parameter recording.
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(default, deny_unknown_fields)]
+pub struct SamplingParameters {
+    pub guidance: f64,
+    pub strength: f64,
+    pub noise_offset: f64,
+}
+impl Default for SamplingParameters {
+    fn default() -> Self {
+        Self {
+            guidance: 2.,
+            strength: 0.99,
+            noise_offset: 0.0357,
+        }
+    }
+}
+impl SamplingParameters {
+    fn is_legacy(&self) -> bool {
+        *self == Self::default()
+    }
+    pub fn validate(&self, steps: usize) -> Result<()> {
+        ensure!(
+            self.guidance.is_finite() && (0.0..=30.0).contains(&self.guidance),
+            "Invalid diffusion guidance"
+        );
+        ensure!(
+            self.strength.is_finite() && self.strength > 0. && self.strength <= 1.,
+            "Diffusion strength must be in (0,1]"
+        );
+        ensure!(
+            (steps as f64 * self.strength).floor() >= 1.,
+            "Diffusion strength must permit at least one step"
+        );
+        ensure!(
+            self.noise_offset.is_finite() && self.noise_offset.abs() <= 1.,
+            "Invalid diffusion noise offset"
+        );
+        Ok(())
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct GeneratedFill {
@@ -24,6 +67,8 @@ pub struct GeneratedFill {
     pub fill_gaps: bool,
     pub steps: usize,
     pub seed: i64,
+    #[serde(default, skip_serializing_if = "SamplingParameters::is_legacy")]
+    pub sampling: SamplingParameters,
     pub asset: String,
     pub sha256: String,
     pub source_sha256: String,
@@ -116,6 +161,7 @@ impl GeneratedFill {
             (2..=1000).contains(&self.steps),
             "Invalid synthesis sampling steps"
         );
+        self.sampling.validate(self.steps)?;
         for dab in &self.dabs {
             ensure!(
                 dab.center.iter().all(|v| v.is_finite())

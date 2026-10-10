@@ -97,6 +97,7 @@ fn tagged_hdr_exr_import_preserves_wide_gamut_and_unbounded_values() {
         source_sha256: layers.source_hash().unwrap().into(),
         source_color_revision: 0,
         recipe_sha256: rawpuppy::synthesis::recipe_hash(&edits).unwrap(),
+        sampling: Default::default(),
         model: "moebius-scene-2026-v1".into(),
     };
     edits.display.synthesis.push(fill);

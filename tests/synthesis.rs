@@ -32,6 +32,7 @@ fn generated_layer_roundtrips_and_preserves_every_unpainted_pixel() {
         source_sha256: layers.source_hash().unwrap().into(),
         source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        sampling: Default::default(),
         model: "moebius-scene-2026-v1".into(),
     };
     edits.display.synthesis.push(fill);
@@ -62,6 +63,44 @@ fn generated_layer_roundtrips_and_preserves_every_unpainted_pixel() {
 }
 
 #[test]
+fn saved_sampling_parameters_preserve_legacy_recipes_and_record_actual_settings() {
+    use rawpuppy::synthesis::SamplingParameters;
+    let old: Edits =
+        serde_json::from_str(include_str!("data/legacy-synthesis-recipe.json")).unwrap();
+    let fill = &old.display.synthesis[0];
+    assert_eq!(fill.sampling, SamplingParameters::default());
+    assert_eq!(fill.sampling.strength, 0.99);
+    assert!(
+        serde_json::to_value(fill)
+            .unwrap()
+            .get("sampling")
+            .is_none()
+    );
+    assert_eq!(synthesis::recipe_hash(&old).unwrap(), fill.recipe_sha256);
+    let mut current = fill.clone();
+    current.sampling = SamplingParameters {
+        guidance: 3.,
+        strength: 1.,
+        noise_offset: 0.1,
+    };
+    let value = serde_json::to_value(&current).unwrap();
+    assert_eq!(value["sampling"]["strength"], 1.);
+    assert_eq!(
+        serde_json::from_value::<GeneratedFill>(value).unwrap(),
+        current
+    );
+    current.validate().unwrap();
+    current.sampling.strength = 0.01;
+    assert!(current.validate().is_err());
+    current.sampling.strength = 1.;
+    current.sampling.guidance = f64::INFINITY;
+    assert!(current.validate().is_err());
+    current.sampling.guidance = 2.;
+    current.sampling.noise_offset = 2.;
+    assert!(current.validate().is_err());
+}
+
+#[test]
 fn stale_or_corrupt_synthesis_is_rejected_without_changing_output() {
     let dir = tempfile::tempdir().unwrap();
     let original = dir.path().join("photo.raw");
@@ -88,6 +127,7 @@ fn stale_or_corrupt_synthesis_is_rejected_without_changing_output() {
         source_sha256: layers.source_hash().unwrap().into(),
         source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        sampling: Default::default(),
         model: "moebius-scene-2026-v1".into(),
     });
     let mut raster = Rendered {
@@ -136,6 +176,7 @@ fn a_later_bad_asset_leaves_the_entire_raster_unchanged_and_offscreen_assets_are
         source_sha256: store.source_hash().unwrap().into(),
         source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        sampling: Default::default(),
         model: "moebius-scene-2026-v1".into(),
     };
     let missing_hash = "0".repeat(64);
@@ -257,6 +298,7 @@ fn resampling_an_opaque_fill_keeps_every_output_sample_exactly_opaque() {
         source_sha256: layers.source_hash().unwrap().into(),
         source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        sampling: Default::default(),
         model: "moebius-scene-2026-v1".into(),
     });
     let mut output = Rendered {
@@ -315,6 +357,7 @@ fn a_completed_overlapping_corner_skips_inference_and_creates_no_asset() {
         source_sha256: layers.source_hash().unwrap().into(),
         source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        sampling: Default::default(),
         model: "moebius-scene-2026-v1".into(),
     });
     // The first top-left fill also covers the bottom-left output gap, while
@@ -421,6 +464,7 @@ fn regeneration_replans_brushes_and_current_gaps_after_an_aspect_change() {
         source_sha256: hash.clone(),
         source_color_revision: 0,
         recipe_sha256: hash,
+        sampling: Default::default(),
         model: "moebius-scene-2026-v1".into(),
     };
     let mut corner = brush.clone();
@@ -480,6 +524,7 @@ fn corner_fill_uses_output_resolution_membership_and_preserves_opaque_pixels() {
         source_sha256: layers.source_hash().unwrap().into(),
         source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        sampling: Default::default(),
         model: "moebius-scene-2026-v1".into(),
     });
     let mut raster = Rendered {
@@ -657,6 +702,7 @@ fn gap_planning_and_mask_coverage_respect_existing_saved_fills() {
         source_sha256: layers.source_hash().unwrap().into(),
         source_color_revision: 0,
         recipe_sha256: synthesis::recipe_hash(&edits).unwrap(),
+        sampling: Default::default(),
         model: "moebius-scene-2026-v1".into(),
     });
     assert!(

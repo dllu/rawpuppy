@@ -1,0 +1,877 @@
+{
+  "purpose": "controlled diffusion strength comparison on one rotated GFX photograph; not a general quality ranking",
+  "cases": [
+    {
+      "receipt": {
+        "build_profile": "release",
+        "cuda_available": true,
+        "dimensions": [
+          8736,
+          11648
+        ],
+        "exactly_preserved_opaque_perimeter_samples": 18046,
+        "filled_perimeter_samples": 22722,
+        "filled_rgb_range": [
+          0.0005314640584401786,
+          0.47155553102493286
+        ],
+        "generated_layers": [
+          {
+            "asset": "9fd4c292d8d33aa3ea6c31dfc7b8d11faf22085859106c9aee9835982e922f54.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.0,
+              0.0,
+              0.6307692527770996,
+              0.4730769097805023
+            ],
+            "seed": 0,
+            "sha256": "9fd4c292d8d33aa3ea6c31dfc7b8d11faf22085859106c9aee9835982e922f54",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "1d7accb5940e87e76e0b08f82fed01027a6df7f3c43ad8d48cba1185bef8111d.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.06025642156600952,
+              0.0,
+              0.9397435784339905,
+              0.704807698726654
+            ],
+            "seed": 0,
+            "sha256": "1d7accb5940e87e76e0b08f82fed01027a6df7f3c43ad8d48cba1185bef8111d",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "4a28ed5a9094c28cb4fc254fa1e6a3cc82bf3e6689763b8a3f4ecd330547329f.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.0,
+              0.29519230127334595,
+              0.9397435784339905,
+              0.704807698726654
+            ],
+            "seed": 0,
+            "sha256": "4a28ed5a9094c28cb4fc254fa1e6a3cc82bf3e6689763b8a3f4ecd330547329f",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "183b5e3766082280b464f02478f3d986f35916a6012f2530f4d88f98fc49c420.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.3692307472229004,
+              0.5269230604171753,
+              0.6307692527770996,
+              0.4730769097805023
+            ],
+            "seed": 0,
+            "sha256": "183b5e3766082280b464f02478f3d986f35916a6012f2530f4d88f98fc49c420",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          }
+        ],
+        "generation_seconds_per_context": [
+          7.493932584,
+          2.939899989,
+          2.951483813,
+          2.933057135
+        ],
+        "graph_manifest": {
+          "cpu_threads": 2,
+          "modules": {
+            "decoder": {
+              "file": "decoder.pt",
+              "float64_scalar_constants_converted": [
+                1.0
+              ],
+              "max_abs_error": 8.791685104370117e-06,
+              "max_trace_error": 0.0,
+              "sha256": "944f5cc151ca05d941262ab6677faed5a6c58c9ea6ef336c0a004b3bc0856c3d"
+            },
+            "denoiser": {
+              "file": "denoiser.pt",
+              "float64_scalar_constants_converted": [
+                1.0
+              ],
+              "max_abs_error": 0.0,
+              "max_trace_error": 0.0,
+              "sha256": "a0458f3d2076a8060acf8861eafa53cc4b3c73e286ff1bf59ec5bff07f366696"
+            },
+            "encoder": {
+              "file": "encoder.pt",
+              "float64_scalar_constants_converted": [
+                0.5,
+                1.0
+              ],
+              "max_abs_error": 8.106231689453125e-06,
+              "max_trace_error": 0.0,
+              "sha256": "d7b7091ec4af56658dd82ff431f611871398dd730dc24b3bffe54825d89e4cc4"
+            }
+          },
+          "preparation_versions": {
+            "accelerate": "1.15.0",
+            "diffusers": "0.41.0",
+            "einops": "0.8.2",
+            "pyyaml": "6.0.3",
+            "timm": "1.0.26",
+            "torch": "2.13.0+cpu",
+            "torchvision": "0.28.0+cpu",
+            "transformers": "5.17.0"
+          },
+          "scaling_factor": 0.13025,
+          "size": 512,
+          "source_hashes": {
+            "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+            "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+            "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+          },
+          "source_revision": "b88d462bacb9af6e7128a3b4cc4a07418bedfd61",
+          "torch_version": "2.13.0+cpu",
+          "version": 1
+        },
+        "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+        "purpose": "real-model output-perimeter conformance; not a perceptual quality benchmark",
+        "rotation": 18.0,
+        "save_reload_verified": true,
+        "scale": 1.0,
+        "settings": {
+          "guidance": 2.0,
+          "noise_offset": 0.0357,
+          "seed": 0,
+          "steps": 20,
+          "strength": 0.99
+        },
+        "skipped_completed_contexts": 0,
+        "total_seconds_after_planning": 16.938481412
+      },
+      "preview_check": {
+        "seed": 0,
+        "strength": 0.99,
+        "selected_preview_samples": 91510,
+        "dark_selected_preview_samples": 22114,
+        "unselected_preview_max_change_8bit": 0,
+        "nonopaque_selected_preview_samples": 0
+      },
+      "exposure": 0.8,
+      "preview_size": [
+        750,
+        1000
+      ]
+    },
+    {
+      "receipt": {
+        "build_profile": "release",
+        "cuda_available": true,
+        "dimensions": [
+          8736,
+          11648
+        ],
+        "exactly_preserved_opaque_perimeter_samples": 18046,
+        "filled_perimeter_samples": 22722,
+        "filled_rgb_range": [
+          0.003914182074368,
+          0.6686131954193115
+        ],
+        "generated_layers": [
+          {
+            "asset": "6992f74f23ddb99ba75d31f04d4989a8d286fc4cbc3150dc32f68f9ba6db5344.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.0,
+              0.0,
+              0.6307692527770996,
+              0.4730769097805023
+            ],
+            "seed": 0,
+            "sha256": "6992f74f23ddb99ba75d31f04d4989a8d286fc4cbc3150dc32f68f9ba6db5344",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "cd2262c159fc77ad6b3d78c91b4827efebe03512c32ad6dc11b30347f748415e.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.06025642156600952,
+              0.0,
+              0.9397435784339905,
+              0.704807698726654
+            ],
+            "seed": 0,
+            "sha256": "cd2262c159fc77ad6b3d78c91b4827efebe03512c32ad6dc11b30347f748415e",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "650432fd40fa6b102586ded3f4e518e4a100a9841bc41e167a2d32333e4ef686.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.0,
+              0.29519230127334595,
+              0.9397435784339905,
+              0.704807698726654
+            ],
+            "seed": 0,
+            "sha256": "650432fd40fa6b102586ded3f4e518e4a100a9841bc41e167a2d32333e4ef686",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "4acd3bbb12f7e2ca96200255d4869ec4a9b878af49a7c73b5598a66cdb6a6673.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.3692307472229004,
+              0.5269230604171753,
+              0.6307692527770996,
+              0.4730769097805023
+            ],
+            "seed": 0,
+            "sha256": "4acd3bbb12f7e2ca96200255d4869ec4a9b878af49a7c73b5598a66cdb6a6673",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          }
+        ],
+        "generation_seconds_per_context": [
+          7.584954221,
+          3.047970976,
+          3.083927685,
+          3.09686729
+        ],
+        "graph_manifest": {
+          "cpu_threads": 2,
+          "modules": {
+            "decoder": {
+              "file": "decoder.pt",
+              "float64_scalar_constants_converted": [
+                1.0
+              ],
+              "max_abs_error": 8.791685104370117e-06,
+              "max_trace_error": 0.0,
+              "sha256": "944f5cc151ca05d941262ab6677faed5a6c58c9ea6ef336c0a004b3bc0856c3d"
+            },
+            "denoiser": {
+              "file": "denoiser.pt",
+              "float64_scalar_constants_converted": [
+                1.0
+              ],
+              "max_abs_error": 0.0,
+              "max_trace_error": 0.0,
+              "sha256": "a0458f3d2076a8060acf8861eafa53cc4b3c73e286ff1bf59ec5bff07f366696"
+            },
+            "encoder": {
+              "file": "encoder.pt",
+              "float64_scalar_constants_converted": [
+                0.5,
+                1.0
+              ],
+              "max_abs_error": 8.106231689453125e-06,
+              "max_trace_error": 0.0,
+              "sha256": "d7b7091ec4af56658dd82ff431f611871398dd730dc24b3bffe54825d89e4cc4"
+            }
+          },
+          "preparation_versions": {
+            "accelerate": "1.15.0",
+            "diffusers": "0.41.0",
+            "einops": "0.8.2",
+            "pyyaml": "6.0.3",
+            "timm": "1.0.26",
+            "torch": "2.13.0+cpu",
+            "torchvision": "0.28.0+cpu",
+            "transformers": "5.17.0"
+          },
+          "scaling_factor": 0.13025,
+          "size": 512,
+          "source_hashes": {
+            "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+            "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+            "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+          },
+          "source_revision": "b88d462bacb9af6e7128a3b4cc4a07418bedfd61",
+          "torch_version": "2.13.0+cpu",
+          "version": 1
+        },
+        "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+        "purpose": "real-model output-perimeter conformance; not a perceptual quality benchmark",
+        "rotation": 18.0,
+        "save_reload_verified": true,
+        "scale": 1.0,
+        "settings": {
+          "guidance": 2.0,
+          "noise_offset": 0.0357,
+          "seed": 0,
+          "steps": 20,
+          "strength": 1.0
+        },
+        "skipped_completed_contexts": 0,
+        "total_seconds_after_planning": 17.442814679
+      },
+      "preview_check": {
+        "seed": 0,
+        "strength": 1.0,
+        "selected_preview_samples": 91510,
+        "dark_selected_preview_samples": 0,
+        "unselected_preview_max_change_8bit": 0,
+        "nonopaque_selected_preview_samples": 0
+      },
+      "exposure": 0.8,
+      "preview_size": [
+        750,
+        1000
+      ]
+    },
+    {
+      "receipt": {
+        "build_profile": "release",
+        "cuda_available": true,
+        "dimensions": [
+          8736,
+          11648
+        ],
+        "exactly_preserved_opaque_perimeter_samples": 18046,
+        "filled_perimeter_samples": 22722,
+        "filled_rgb_range": [
+          0.0014282915508374572,
+          0.30901533365249634
+        ],
+        "generated_layers": [
+          {
+            "asset": "799d2dca320f65ce35f3d6ed9a07fdefaa84fbf7864ed5e5b7215ea6a058cf51.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.0,
+              0.0,
+              0.6307692527770996,
+              0.4730769097805023
+            ],
+            "seed": 42,
+            "sha256": "799d2dca320f65ce35f3d6ed9a07fdefaa84fbf7864ed5e5b7215ea6a058cf51",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "1ccc5796efc01f66411cf1e179b8c3898e2c39e7794a1a488bb92b8cb1576a07.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.06025642156600952,
+              0.0,
+              0.9397435784339905,
+              0.704807698726654
+            ],
+            "seed": 42,
+            "sha256": "1ccc5796efc01f66411cf1e179b8c3898e2c39e7794a1a488bb92b8cb1576a07",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "389255ccf05633e659b0181f6b2070fe338152a58ffc6cdf6c5c84ad24d16a77.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.0,
+              0.29519230127334595,
+              0.9397435784339905,
+              0.704807698726654
+            ],
+            "seed": 42,
+            "sha256": "389255ccf05633e659b0181f6b2070fe338152a58ffc6cdf6c5c84ad24d16a77",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "10ba5d00625fecbd4bc35a024f89104bd5eda819d0675519d58843852bca8027.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.3692307472229004,
+              0.5269230604171753,
+              0.6307692527770996,
+              0.4730769097805023
+            ],
+            "seed": 42,
+            "sha256": "10ba5d00625fecbd4bc35a024f89104bd5eda819d0675519d58843852bca8027",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          }
+        ],
+        "generation_seconds_per_context": [
+          12.642191123,
+          4.450467501,
+          4.111936915,
+          4.542648616
+        ],
+        "graph_manifest": {
+          "cpu_threads": 2,
+          "modules": {
+            "decoder": {
+              "file": "decoder.pt",
+              "float64_scalar_constants_converted": [
+                1.0
+              ],
+              "max_abs_error": 8.791685104370117e-06,
+              "max_trace_error": 0.0,
+              "sha256": "944f5cc151ca05d941262ab6677faed5a6c58c9ea6ef336c0a004b3bc0856c3d"
+            },
+            "denoiser": {
+              "file": "denoiser.pt",
+              "float64_scalar_constants_converted": [
+                1.0
+              ],
+              "max_abs_error": 0.0,
+              "max_trace_error": 0.0,
+              "sha256": "a0458f3d2076a8060acf8861eafa53cc4b3c73e286ff1bf59ec5bff07f366696"
+            },
+            "encoder": {
+              "file": "encoder.pt",
+              "float64_scalar_constants_converted": [
+                0.5,
+                1.0
+              ],
+              "max_abs_error": 8.106231689453125e-06,
+              "max_trace_error": 0.0,
+              "sha256": "d7b7091ec4af56658dd82ff431f611871398dd730dc24b3bffe54825d89e4cc4"
+            }
+          },
+          "preparation_versions": {
+            "accelerate": "1.15.0",
+            "diffusers": "0.41.0",
+            "einops": "0.8.2",
+            "pyyaml": "6.0.3",
+            "timm": "1.0.26",
+            "torch": "2.13.0+cpu",
+            "torchvision": "0.28.0+cpu",
+            "transformers": "5.17.0"
+          },
+          "scaling_factor": 0.13025,
+          "size": 512,
+          "source_hashes": {
+            "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+            "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+            "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+          },
+          "source_revision": "b88d462bacb9af6e7128a3b4cc4a07418bedfd61",
+          "torch_version": "2.13.0+cpu",
+          "version": 1
+        },
+        "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+        "purpose": "real-model output-perimeter conformance; not a perceptual quality benchmark",
+        "rotation": 18.0,
+        "save_reload_verified": true,
+        "scale": 1.0,
+        "settings": {
+          "guidance": 2.0,
+          "noise_offset": 0.0357,
+          "seed": 42,
+          "steps": 20,
+          "strength": 0.99
+        },
+        "skipped_completed_contexts": 0,
+        "total_seconds_after_planning": 26.942985603
+      },
+      "preview_check": {
+        "seed": 42,
+        "strength": 0.99,
+        "selected_preview_samples": 91510,
+        "dark_selected_preview_samples": 0,
+        "unselected_preview_max_change_8bit": 0,
+        "nonopaque_selected_preview_samples": 0
+      },
+      "exposure": 0.8,
+      "preview_size": [
+        750,
+        1000
+      ]
+    },
+    {
+      "receipt": {
+        "build_profile": "release",
+        "cuda_available": true,
+        "dimensions": [
+          8736,
+          11648
+        ],
+        "exactly_preserved_opaque_perimeter_samples": 18046,
+        "filled_perimeter_samples": 22722,
+        "filled_rgb_range": [
+          0.0032791136763989925,
+          0.42501890659332275
+        ],
+        "generated_layers": [
+          {
+            "asset": "e2e225106d18fdd929ebe0c0dcd3f4f2763a7eab1160c1d59501dbae3765eb57.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.0,
+              0.0,
+              0.6307692527770996,
+              0.4730769097805023
+            ],
+            "seed": 42,
+            "sha256": "e2e225106d18fdd929ebe0c0dcd3f4f2763a7eab1160c1d59501dbae3765eb57",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "c071b54819b584350995d542960d2e66b94c409f9209092c61bec71970e85b96.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.06025642156600952,
+              0.0,
+              0.9397435784339905,
+              0.704807698726654
+            ],
+            "seed": 42,
+            "sha256": "c071b54819b584350995d542960d2e66b94c409f9209092c61bec71970e85b96",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "7302b70f09fefccd4dc26b3683f85c6ebab1e8af8131cab2fbb320193d7ef92a.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.0,
+              0.29519230127334595,
+              0.9397435784339905,
+              0.704807698726654
+            ],
+            "seed": 42,
+            "sha256": "7302b70f09fefccd4dc26b3683f85c6ebab1e8af8131cab2fbb320193d7ef92a",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          },
+          {
+            "asset": "1e121e93e9fc5052e871b13e0b5f00071272bbc8218e3564d1e0008ce1b0ab95.exr",
+            "dabs": [],
+            "fill_gaps": true,
+            "model": "moebius-scene-2026-v1",
+            "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+            "region": [
+              0.3692307472229004,
+              0.5269230604171753,
+              0.6307692527770996,
+              0.4730769097805023
+            ],
+            "seed": 42,
+            "sha256": "1e121e93e9fc5052e871b13e0b5f00071272bbc8218e3564d1e0008ce1b0ab95",
+            "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+            "steps": 20
+          }
+        ],
+        "generation_seconds_per_context": [
+          10.250185856,
+          3.776603912,
+          3.750187542,
+          3.781734181
+        ],
+        "graph_manifest": {
+          "cpu_threads": 2,
+          "modules": {
+            "decoder": {
+              "file": "decoder.pt",
+              "float64_scalar_constants_converted": [
+                1.0
+              ],
+              "max_abs_error": 8.791685104370117e-06,
+              "max_trace_error": 0.0,
+              "sha256": "944f5cc151ca05d941262ab6677faed5a6c58c9ea6ef336c0a004b3bc0856c3d"
+            },
+            "denoiser": {
+              "file": "denoiser.pt",
+              "float64_scalar_constants_converted": [
+                1.0
+              ],
+              "max_abs_error": 0.0,
+              "max_trace_error": 0.0,
+              "sha256": "a0458f3d2076a8060acf8861eafa53cc4b3c73e286ff1bf59ec5bff07f366696"
+            },
+            "encoder": {
+              "file": "encoder.pt",
+              "float64_scalar_constants_converted": [
+                0.5,
+                1.0
+              ],
+              "max_abs_error": 8.106231689453125e-06,
+              "max_trace_error": 0.0,
+              "sha256": "d7b7091ec4af56658dd82ff431f611871398dd730dc24b3bffe54825d89e4cc4"
+            }
+          },
+          "preparation_versions": {
+            "accelerate": "1.15.0",
+            "diffusers": "0.41.0",
+            "einops": "0.8.2",
+            "pyyaml": "6.0.3",
+            "timm": "1.0.26",
+            "torch": "2.13.0+cpu",
+            "torchvision": "0.28.0+cpu",
+            "transformers": "5.17.0"
+          },
+          "scaling_factor": 0.13025,
+          "size": 512,
+          "source_hashes": {
+            "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+            "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+            "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+          },
+          "source_revision": "b88d462bacb9af6e7128a3b4cc4a07418bedfd61",
+          "torch_version": "2.13.0+cpu",
+          "version": 1
+        },
+        "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+        "purpose": "real-model output-perimeter conformance; not a perceptual quality benchmark",
+        "rotation": 18.0,
+        "save_reload_verified": true,
+        "scale": 1.0,
+        "settings": {
+          "guidance": 2.0,
+          "noise_offset": 0.0357,
+          "seed": 42,
+          "steps": 20,
+          "strength": 1.0
+        },
+        "skipped_completed_contexts": 0,
+        "total_seconds_after_planning": 22.994870061
+      },
+      "preview_check": {
+        "seed": 42,
+        "strength": 1.0,
+        "selected_preview_samples": 91510,
+        "dark_selected_preview_samples": 0,
+        "unselected_preview_max_change_8bit": 0,
+        "nonopaque_selected_preview_samples": 0
+      },
+      "exposure": 0.8,
+      "preview_size": [
+        750,
+        1000
+      ]
+    }
+  ],
+  "new_default_receipt": {
+    "build_profile": "release",
+    "cuda_available": true,
+    "dimensions": [
+      8736,
+      11648
+    ],
+    "exactly_preserved_opaque_perimeter_samples": 18046,
+    "exposure": 0.800000011920929,
+    "filled_perimeter_samples": 22722,
+    "filled_rgb_range": [
+      0.003914182074368,
+      0.6686131954193115
+    ],
+    "generated_layers": [
+      {
+        "asset": "642f63458436b25f99fe60b78548f4d9db89445c199720422592e6daa535975a.exr",
+        "dabs": [],
+        "fill_gaps": true,
+        "model": "moebius-scene-2026-v1",
+        "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+        "region": [
+          0.0,
+          0.0,
+          0.6307692527770996,
+          0.4730769097805023
+        ],
+        "sampling": {
+          "guidance": 2.0,
+          "noise_offset": 0.0357,
+          "strength": 1.0
+        },
+        "seed": 0,
+        "sha256": "642f63458436b25f99fe60b78548f4d9db89445c199720422592e6daa535975a",
+        "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+        "steps": 20
+      },
+      {
+        "asset": "a4d877098f76f545586a4cbe7f156da97ca12df3050ab9355f9a8931ffcd3f62.exr",
+        "dabs": [],
+        "fill_gaps": true,
+        "model": "moebius-scene-2026-v1",
+        "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+        "region": [
+          0.06025642156600952,
+          0.0,
+          0.9397435784339905,
+          0.704807698726654
+        ],
+        "sampling": {
+          "guidance": 2.0,
+          "noise_offset": 0.0357,
+          "strength": 1.0
+        },
+        "seed": 0,
+        "sha256": "a4d877098f76f545586a4cbe7f156da97ca12df3050ab9355f9a8931ffcd3f62",
+        "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+        "steps": 20
+      },
+      {
+        "asset": "1991d805234e36abbce3e3041699008bd1dc4294568f12c5c5047b2338e8aa18.exr",
+        "dabs": [],
+        "fill_gaps": true,
+        "model": "moebius-scene-2026-v1",
+        "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+        "region": [
+          0.0,
+          0.29519230127334595,
+          0.9397435784339905,
+          0.704807698726654
+        ],
+        "sampling": {
+          "guidance": 2.0,
+          "noise_offset": 0.0357,
+          "strength": 1.0
+        },
+        "seed": 0,
+        "sha256": "1991d805234e36abbce3e3041699008bd1dc4294568f12c5c5047b2338e8aa18",
+        "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+        "steps": 20
+      },
+      {
+        "asset": "662944d1e5c7bd2c4d222296a247a30990eb033ccd0d8fe43c1ab138fcea67a5.exr",
+        "dabs": [],
+        "fill_gaps": true,
+        "model": "moebius-scene-2026-v1",
+        "recipe_sha256": "bec90cd51d28421d9e47577369e94938d80345d7f7f7d9ab15503f83a90f752d",
+        "region": [
+          0.3692307472229004,
+          0.5269230604171753,
+          0.6307692527770996,
+          0.4730769097805023
+        ],
+        "sampling": {
+          "guidance": 2.0,
+          "noise_offset": 0.0357,
+          "strength": 1.0
+        },
+        "seed": 0,
+        "sha256": "662944d1e5c7bd2c4d222296a247a30990eb033ccd0d8fe43c1ab138fcea67a5",
+        "source_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+        "steps": 20
+      }
+    ],
+    "generation_seconds_per_context": [
+      7.631473337,
+      3.069182776,
+      3.079530473,
+      3.071176449
+    ],
+    "graph_manifest": {
+      "cpu_threads": 2,
+      "modules": {
+        "decoder": {
+          "file": "decoder.pt",
+          "float64_scalar_constants_converted": [
+            1.0
+          ],
+          "max_abs_error": 8.791685104370117e-06,
+          "max_trace_error": 0.0,
+          "sha256": "944f5cc151ca05d941262ab6677faed5a6c58c9ea6ef336c0a004b3bc0856c3d"
+        },
+        "denoiser": {
+          "file": "denoiser.pt",
+          "float64_scalar_constants_converted": [
+            1.0
+          ],
+          "max_abs_error": 0.0,
+          "max_trace_error": 0.0,
+          "sha256": "a0458f3d2076a8060acf8861eafa53cc4b3c73e286ff1bf59ec5bff07f366696"
+        },
+        "encoder": {
+          "file": "encoder.pt",
+          "float64_scalar_constants_converted": [
+            0.5,
+            1.0
+          ],
+          "max_abs_error": 8.106231689453125e-06,
+          "max_trace_error": 0.0,
+          "sha256": "d7b7091ec4af56658dd82ff431f611871398dd730dc24b3bffe54825d89e4cc4"
+        }
+      },
+      "preparation_versions": {
+        "accelerate": "1.15.0",
+        "diffusers": "0.41.0",
+        "einops": "0.8.2",
+        "pyyaml": "6.0.3",
+        "timm": "1.0.26",
+        "torch": "2.13.0+cpu",
+        "torchvision": "0.28.0+cpu",
+        "transformers": "5.17.0"
+      },
+      "scaling_factor": 0.13025,
+      "size": 512,
+      "source_hashes": {
+        "ft_places2/diffusion_pytorch_model.bin": "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a",
+        "vae/config.json": "caeb94d8607dbd24acd13719c6823e2525509de8a21eb6b56cf93d5267c04694",
+        "vae/diffusion_pytorch_model.bin": "a59d7ea697f2942d22002dc3469e8c53db807a6b78f7f5ec03bd4c1f70f98efe"
+      },
+      "source_revision": "b88d462bacb9af6e7128a3b4cc4a07418bedfd61",
+      "torch_version": "2.13.0+cpu",
+      "version": 1
+    },
+    "input_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "preview_exported": true,
+    "purpose": "real-model output-perimeter conformance; not a perceptual quality benchmark",
+    "rotation": 18.0,
+    "save_reload_verified": true,
+    "scale": 1.0,
+    "settings": {
+      "guidance": 2.0,
+      "noise_offset": 0.0357,
+      "seed": 0,
+      "steps": 20,
+      "strength": 1.0
+    },
+    "skipped_completed_contexts": 0,
+    "total_seconds_after_planning": 17.470124926
+  },
+  "new_default_preview_check": {
+    "dark_selected_preview_samples": 0,
+    "unselected_preview_max_change_8bit": 0
+  },
+  "dark_threshold": "all sRGB channels below 8/255 inside the original transparent preview region"
+}

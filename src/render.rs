@@ -450,6 +450,7 @@ impl Renderer {
             fill_gaps,
             steps: settings.steps,
             seed: settings.seed,
+            sampling: settings.parameters(),
             asset,
             sha256,
             source_sha256: source,

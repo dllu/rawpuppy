@@ -24,34 +24,25 @@ impl Default for Sampling {
             steps: 20,
             seed: 0,
             guidance: 2.,
-            strength: 0.99,
+            strength: 1.,
             noise_offset: 0.0357,
         }
     }
 }
 impl Sampling {
+    pub fn parameters(&self) -> crate::synthesis::SamplingParameters {
+        crate::synthesis::SamplingParameters {
+            guidance: self.guidance,
+            strength: self.strength,
+            noise_offset: self.noise_offset,
+        }
+    }
     pub fn validate(&self) -> Result<()> {
         ensure!(
             (2..=1000).contains(&self.steps),
             "Diffusion steps must be between 2 and 1000"
         );
-        ensure!(
-            self.guidance.is_finite() && (0.0..=30.0).contains(&self.guidance),
-            "Invalid diffusion guidance"
-        );
-        ensure!(
-            self.strength.is_finite() && self.strength > 0. && self.strength <= 1.,
-            "Diffusion strength must be in (0,1]"
-        );
-        ensure!(
-            (self.steps as f64 * self.strength).floor() >= 1.,
-            "Diffusion strength must permit at least one step"
-        );
-        ensure!(
-            self.noise_offset.is_finite() && self.noise_offset.abs() <= 1.,
-            "Invalid diffusion noise offset"
-        );
-        Ok(())
+        self.parameters().validate(self.steps)
     }
 }
 
@@ -368,6 +359,13 @@ mod tests {
     fn scheduler_matches_leading_ddim_with_img2img_strength() {
         assert_eq!(
             timesteps(&Sampling::default()),
+            (0..20).rev().map(|t| t * 50).collect::<Vec<_>>()
+        );
+        assert_eq!(
+            timesteps(&Sampling {
+                strength: 0.99,
+                ..Default::default()
+            }),
             (0..19).rev().map(|t| t * 50).collect::<Vec<_>>()
         );
         let s = Sampling {
