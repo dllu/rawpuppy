@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "base_commit": "3fc8cd319389f8bf8ebf1edbba73fc3a72efbcaf",
+  "checks": {
+    "tests-default.log": {
+      "passed": 108,
+      "failed": 0
+    },
+    "tests-combined.log": {
+      "passed": 119,
+      "failed": 0
+    },
+    "tests-cpu.log": {
+      "passed": 104,
+      "failed": 0
+    },
+    "gpu-vulkan.log": {
+      "passed": 6,
+      "failed": 0
+    },
+    "gpu-cuda.log": {
+      "passed": 9,
+      "failed": 0
+    }
+  },
+  "strict_clippy": {
+    "toolchain": "1.99.0",
+    "features": [
+      "cuda",
+      "moebius",
+      "raw-ml",
+      "sam3"
+    ],
+    "all_targets": true,
+    "warnings_as_errors": true,
+    "passed": true
+  },
+  "gui": {
+    "previous_entry_lines": 3342,
+    "current_entry_lines": 363,
+    "modules": {
+      "src/gui/controls.rs": 502,
+      "src/gui/toolbar.rs": 81,
+      "src/gui/worker.rs": 423,
+      "src/gui/display_state.rs": 108,
+      "src/gui/probe.rs": 118,
+      "src/gui/mod.rs": 363,
+      "src/gui/canvas.rs": 372,
+      "src/gui/history.rs": 75,
+      "src/gui/document.rs": 377,
+      "src/gui/curve.rs": 86
+    }
+  },
+  "native_ui": {
+    "source_raw_sha256": "09dd4764e595f18c49a51a40507fb54bd24b97b7e8b5d134e5fb6497a2a447fc",
+    "source_matches_starting_fixture": true,
+    "initial_xmp_sha256": "2b7a82e6ba01b7b7aeaa9b85abdfcd11aa6bae8e9d521548bb546ba5ceb0b9c5",
+    "generated_seed_1_xmp_sha256": "42cef3bb8c7315a7998a4125aca38687a19f5d85f9a3b7a9563f12a483924112",
+    "undo_restored_initial_xmp_byte_exact": true,
+    "redo_restored_seed_1_xmp_byte_exact": true,
+    "discarded_seed_2_asset_remained_separate": true,
+    "photo_comparisons": {
+      "loaded_afterdiscard": {
+        "pixels": 470448,
+        "byte_exact": true
+      },
+      "generatedone_redone": {
+        "pixels": 470448,
+        "byte_exact": true
+      }
+    }
+  },
+  "source_sha256": {
+    "src/gui/controls.rs": "cdea5afe0281c1dc704d5c68f2dfac4d8bd81d065d88d55c86c5799a94edf1a0",
+    "src/gui/toolbar.rs": "537aea4d3d006956c13a66cb81f3ccb4da61bb49ab5046c7b1ad349e9d7f966e",
+    "src/gui/worker.rs": "f2e259109b675d0ee00e4373059f0c4c06b7f7d86bf503530090c0616dad2739",
+    "src/gui/display_state.rs": "4e12cbd57129e6288fa6388e9622252924c1097e78d60ca8df8471587e49bca9",
+    "src/gui/probe.rs": "7adb63b582545e521d0c1049dddde1f1d6c617052857a049dd9d00be1c564283",
+    "src/gui/mod.rs": "4c138a59f8c064cc84649630373abcebc53c55636fb1813733c538bbf70d1431",
+    "src/gui/canvas.rs": "01947af6e8ecf100b1c2796fe3187b9207abc98fd125da692140e0a36f46b114",
+    "src/gui/history.rs": "7b0c3f394cf9c58f66c5fa5684e10cf817456f6648abdffbe25a77635472c30a",
+    "src/gui/document.rs": "af3afaad86b008e53e1ed032cfda5a28096ab53d2bc8325318fe5c455f309400",
+    "src/gui/curve.rs": "e86383b2489ae8bd19c60dac035fd5c97c898d65e432d6cebb31a3e3a9aec266",
+    "src/gui/tests/curves.rs": "b429505d051195d8e7e2e8e53ddc9d6252fe37b34d9cf27b18b96e5c3151dacc",
+    "src/gui/tests/brushes.rs": "e6d0c9dc30cc96d90d7df7d8b301d75a3c5db0ba106d0d59517d956d11159e7e",
+    "src/gui/tests/generation.rs": "f90149038502734224344b80110cc5b74eb21e04c8d9ba5dfaa455a6b2697a86",
+    "src/gui/tests/worker.rs": "9ab30c34f428771d6289c5cc7cafb1a46cecee80dabb77e75ba1f1bfa1e4241f",
+    "src/gui/tests/mod.rs": "84f4f9dc16cf64c6730ac0f6465f7758bc4cfbeb6b863648eeac8884788f4835",
+    "src/gui/tests/history.rs": "3115ad9b3ad7928c999047c0e69eea5ccd7ac53517f04f0852b4253df62e6aab",
+    "src/input.rs": "ee2861c456055dd9a46e3d371e406466e9e95a0c12f80148d2ceef0a56233b92",
+    "src/gpu/kernel.rs": "0e611fb8ecf2366d36caeb476e3d642419582ec42b8c00c95c87e0d5805ff41e",
+    "tests/sensor_cleanup.rs": "aad218f7158585aae9a2a5c0c518a482daf8ea9f37e2d8872b8e4f9db03b71aa",
+    "tests/gpu.rs": "d4ef74b504aadd0d461b3731adcd5e1e4022e7bbd8707624ba379b862df0d843"
+  }
+}

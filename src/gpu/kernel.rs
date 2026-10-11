@@ -53,6 +53,26 @@ fn cfa(d: &Array<u32>, x: u32, y: u32) -> u32 {
 }
 
 #[cube]
+fn hot_raw(input: &Array<f32>, d: &Array<u32>, x: i32, y: i32) -> f32 {
+    let center = raw(input, d, x, y, 0);
+    let mut value = center;
+    if d[16] != 0 && center > 0.02 {
+        let a = raw(input, d, x - 2, y, 0);
+        let b = raw(input, d, x + 2, y, 0);
+        let c = raw(input, d, x, y - 2, 0);
+        let e = raw(input, d, x, y + 2, 0);
+        let median = (a + b + c + e
+            - f32::min(f32::min(a, b), f32::min(c, e))
+            - f32::max(f32::max(a, b), f32::max(c, e)))
+            * 0.5;
+        if center > f32::max(median, 0.) * 4. + 0.02 {
+            value = median;
+        }
+    }
+    value
+}
+
+#[cube]
 fn clean(
     input: &Array<f32>,
     d: &Array<u32>,
@@ -64,21 +84,7 @@ fn clean(
     if !detail {
         raw(input, d, x, y, 0)
     } else {
-        let center = raw(input, d, x, y, 0);
-        let mut value = center;
-        if d[16] != 0 {
-            let a = raw(input, d, x - 2, y, 0);
-            let b = raw(input, d, x + 2, y, 0);
-            let c = raw(input, d, x, y - 2, 0);
-            let e = raw(input, d, x, y + 2, 0);
-            let median = (a + b + c + e
-                - f32::min(f32::min(a, b), f32::min(c, e))
-                - f32::max(f32::max(a, b), f32::max(c, e)))
-                * 0.5;
-            if center > f32::max(median, 0.) * 4. + 0.02 {
-                value = median;
-            }
-        }
+        let mut value = hot_raw(input, d, x, y);
         if p[37] > 0. {
             let channel = cfa(d, reflect(x, d[0]), reflect(y, d[1]));
             let mut sum = value;
@@ -89,7 +95,7 @@ fn clean(
                         let nx = reflect(x + dx, d[0]);
                         let ny = reflect(y + dy, d[1]);
                         if cfa(d, nx, ny) == channel {
-                            let v = raw(input, d, x + dx, y + dy, 0);
+                            let v = hot_raw(input, d, x + dx, y + dy);
                             let difference = (v - value) / p[37];
                             let w = (-0.5 * difference * difference
                                 - 0.125 * (dx * dx + dy * dy) as f32)

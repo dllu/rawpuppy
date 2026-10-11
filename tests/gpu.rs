@@ -9,6 +9,59 @@ use std::sync::Arc;
 
 #[test]
 #[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
+fn hot_pixels_and_denoising_match_a_defect_free_sensor_without_halos() {
+    use rawpuppy::edits::ToneMapper;
+    let modes = if std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {
+        vec![
+            (Backend::Cuda, CudaMemoryMode::Copy),
+            (Backend::Cuda, CudaMemoryMode::System),
+        ]
+    } else {
+        vec![(
+            if cfg!(target_os = "macos") {
+                Backend::Metal
+            } else {
+                Backend::Vulkan
+            },
+            CudaMemoryMode::Auto,
+        )]
+    };
+    for (backend, memory) in modes {
+        let mut gpu = GpuRenderer::with_cuda_memory(backend, memory).unwrap();
+        for pattern in ["RGGB", "BGGR", "GRBG", "GBRG"] {
+            let cfa = rawler::CFA::new(pattern);
+            let rgb = [0.02, 0.04, 0.08];
+            let mut source = SensorImage::from_rgb(25, 25, vec![0.; 25 * 25 * 3]).unwrap();
+            source.data = (0..25 * 25)
+                .map(|i| rgb[cfa.color_at(i / 25, i % 25)])
+                .collect();
+            source.cpp = 1;
+            source.cfa = Some(cfa);
+            for (x, y) in [(12, 12), (13, 12), (12, 13)] {
+                source.data[y * 25 + x] = 1.;
+            }
+            let before = source.data.clone();
+            let source = Arc::new(source);
+            let mut edits = Edits::default();
+            edits.tone.mapper = ToneMapper::Linear;
+            edits.raw.hot_pixels = true;
+            edits.raw.denoise = 0.5;
+            let rendered = gpu.render(source.clone(), &edits, None).unwrap();
+            for p in &rendered.pixels {
+                for c in 0..3 {
+                    assert!(
+                        (p[c] - rgb[c]).abs() < 2e-6,
+                        "{backend:?}/{memory:?}/{pattern}: hot-pixel halo {p:?}"
+                    );
+                }
+            }
+            assert_eq!(source.data, before);
+        }
+    }
+}
+
+#[test]
+#[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
 fn fused_saved_layers_match_cpu_composition_with_gaps_hdr_overlap_and_wide_tiles() {
     use rawpuppy::{
         edits::ToneMapper,

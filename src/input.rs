@@ -797,25 +797,75 @@ impl SensorImage {
         })
     }
 
-    pub(crate) fn clean_raw(&self, x: isize, y: isize, e: &RawEdits) -> f32 {
+    /// Hot-pixel correction is a leaf stage: bilateral taps must all read this
+    /// corrected sensor signal, never raw neighbors of a corrected center.
+    fn hot_raw(&self, x: isize, y: isize, enabled: bool) -> f32 {
         let center = self.raw_at(x, y, 0);
-        let mut neighbors = [
-            self.raw_at(x - 2, y, 0),
-            self.raw_at(x + 2, y, 0),
-            self.raw_at(x, y - 2, 0),
-            self.raw_at(x, y + 2, 0),
-        ];
-        let value = if e.hot_pixels {
-            neighbors.sort_by(f32::total_cmp);
-            let median = (neighbors[1] + neighbors[2]) * 0.5;
-            if center > median.max(0.) * 4. + 0.02 {
-                median
-            } else {
-                center
+        if !enabled || center <= 0.02 {
+            return center;
+        }
+        let Some(cfa) = &self.cfa else {
+            return center;
+        };
+        let mut neighbors = [0.; 4];
+        let count = if cfa.width == 2 && cfa.height == 2 {
+            neighbors = [
+                self.raw_at(x - 2, y, 0),
+                self.raw_at(x + 2, y, 0),
+                self.raw_at(x, y - 2, 0),
+                self.raw_at(x, y + 2, 0),
+            ];
+            4
+        } else {
+            // X-Trans phases have different nearest same-color sites. Select
+            // actual, distinct photosites rather than treating ±2 as Bayer.
+            let xx = Self::reflect(x, self.metadata.sensor_width) as isize;
+            let yy = Self::reflect(y, self.metadata.sensor_height) as isize;
+            let channel = cfa.color_at(yy as usize, xx as usize);
+            let mut distances = [isize::MAX; 4];
+            let mut count = 0;
+            for dy in -3_isize..=3 {
+                for dx in -3_isize..=3 {
+                    let nx = xx + dx;
+                    let ny = yy + dy;
+                    if (dx == 0 && dy == 0)
+                        || nx < 0
+                        || ny < 0
+                        || nx >= self.metadata.sensor_width as isize
+                        || ny >= self.metadata.sensor_height as isize
+                        || cfa.color_at(ny as usize, nx as usize) != channel
+                    {
+                        continue;
+                    }
+                    let distance = dx * dx + dy * dy;
+                    let Some(slot) = distances.iter().position(|&d| distance < d) else {
+                        continue;
+                    };
+                    for i in (slot + 1..4).rev() {
+                        distances[i] = distances[i - 1];
+                        neighbors[i] = neighbors[i - 1];
+                    }
+                    distances[slot] = distance;
+                    neighbors[slot] = self.raw_at(nx, ny, 0);
+                    count = (count + 1).min(4);
+                }
             }
+            count
+        };
+        if count < 2 {
+            return center;
+        }
+        neighbors[..count].sort_by(f32::total_cmp);
+        let median = (neighbors[(count - 1) / 2] + neighbors[count / 2]) * 0.5;
+        if center > median.max(0.) * 4. + 0.02 {
+            median
         } else {
             center
-        };
+        }
+    }
+
+    pub(crate) fn clean_raw(&self, x: isize, y: isize, e: &RawEdits) -> f32 {
+        let value = self.hot_raw(x, y, e.hot_pixels);
         if e.denoise <= 0. {
             return value;
         }
@@ -838,7 +888,7 @@ impl SensorImage {
                 if cfa.color_at(ny, nx) != channel {
                     continue;
                 }
-                let v = self.raw_at(x + dx, y + dy, 0);
+                let v = self.hot_raw(x + dx, y + dy, e.hot_pixels);
                 let difference = (v - value) / e.denoise;
                 let w = (-0.5 * difference * difference - 0.125 * (dx * dx + dy * dy) as f32).exp();
                 sum += w * v;
