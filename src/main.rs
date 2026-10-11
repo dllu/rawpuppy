@@ -35,6 +35,26 @@ enum Command {
     },
     /// Decode and inspect camera calibration and dimensions.
     Inspect { input: PathBuf },
+    /// Fit architectural perspective from a lens-corrected preview; abstain on weak evidence.
+    Perspective {
+        input: PathBuf,
+        #[arg(long, value_enum, default_value = "vertical")]
+        mode: rawpuppy::perspective::Mode,
+        #[arg(long, value_enum, default_value = "auto")]
+        mask_provider: rawpuppy::perspective::MaskProvider,
+        /// Write the result to this preview/export destination.
+        #[arg(long)]
+        output: Option<PathBuf>,
+        #[arg(long, default_value_t = 1440)]
+        max_edge: usize,
+        #[arg(long)]
+        save_edits: bool,
+        #[arg(long)]
+        overwrite: bool,
+    },
+    /// Install a locally prepared and verified SAM 3 architecture detector.
+    #[cfg(feature = "sam3")]
+    InstallSam3 { directory: PathBuf },
     /// Apply the fixed pipeline and export without changing the original.
     Export {
         input: PathBuf,
@@ -139,6 +159,50 @@ fn main() -> Result<()> {
                 start.elapsed().as_secs_f64(),
                 image.data.len() as f64 * 4. / 1048576.
             );
+        }
+        #[cfg(feature = "sam3")]
+        Command::InstallSam3 { directory } => {
+            println!("{}", rawpuppy::sam3::install(&directory)?.display())
+        }
+        Command::Perspective {
+            input,
+            mode,
+            mask_provider,
+            output,
+            max_edge,
+            save_edits,
+            overwrite,
+        } => {
+            ensure!(max_edge > 0, "Maximum edge must be positive");
+            if let Some(output) = &output {
+                ensure!(
+                    output.canonicalize().ok().as_ref() != Some(&input.canonicalize()?),
+                    "Perspective export cannot overwrite the original"
+                );
+            }
+            let image = std::sync::Arc::new(SensorImage::open(&input)?);
+            let mut edits = sidecar::load_for_default(&input, Edits::for_image(&image))?;
+            let mut renderer = Renderer::new(cli.backend);
+            renderer.set_document(input.clone());
+            let report = rawpuppy::perspective::Engine::default().run(
+                &mut renderer,
+                image.clone(),
+                &edits,
+                mode,
+                mask_provider,
+            )?;
+            println!("{}", serde_json::to_string_pretty(&report)?);
+            let geometry = report.solution.ok_or_else(|| {
+                anyhow::anyhow!("Automatic perspective declined: {}", report.reason)
+            })?;
+            edits.geometry = geometry;
+            if let Some(output) = output {
+                let rendered = renderer.render(image, &edits, Some(max_edge))?;
+                export::write(&output, &rendered, OutputSpace::Srgb, overwrite)?;
+            }
+            if save_edits {
+                sidecar::save(&sidecar::path_for(&input), &edits)?;
+            }
         }
         Command::Export {
             input,

@@ -82,6 +82,7 @@ fn fused_saved_layers_match_cpu_composition_with_gaps_hdr_overlap_and_wide_tiles
         let mut edits = Edits::default();
         edits.tone.mapper = ToneMapper::Linear;
         edits.geometry.rotation = 11.;
+        edits.geometry.shift = [0.08, -0.06];
         edits.scene.exposure = 0.3;
         edits.display.curve = vec![[0., 0.], [0.5, 0.56], [1., 1.]];
         edits.display.split_strength = 0.12;
@@ -568,6 +569,7 @@ fn check_backend(backend: Backend, memory: CudaMemoryMode) {
             edits.raw.hot_pixels = true;
             edits.raw.denoise = 0.012;
             edits.geometry.pitch = 4.;
+            edits.geometry.shift = [0.08, -0.06];
             edits.geometry.yaw = -5.;
             edits.geometry.rotation = 6.;
             edits.geometry.distortion = [-0.05, 0.02];

@@ -26,6 +26,8 @@ pub struct Metadata {
     pub camera_to_working: Matrix,
     pub lens_model: Option<String>,
     pub focal_length_mm: Option<f32>,
+    /// EXIF diagonal 35 mm equivalent, when actually present (never guessed from make).
+    pub focal_length_35mm: Option<f32>,
     pub aperture: Option<f32>,
     pub lens_profile: Option<crate::lens::LensProfile>,
     pub lens_profile_error: Option<String>,
@@ -57,6 +59,34 @@ pub fn pixel_count(width: usize, height: usize, channels: usize) -> Result<usize
         .checked_mul(height)
         .and_then(|n| n.checked_mul(channels))
         .context("Image dimensions exceed the addressable memory range")
+}
+
+fn focal_length_35mm(source: &rawler::rawsource::RawSource) -> Result<Option<f32>> {
+    use rawler::{
+        formats::{
+            jfif::Jfif,
+            tiff::{GenericTiffReader, IFD, Value, reader::TiffReader},
+        },
+        tags::ExifTag,
+    };
+    fn value(root: &IFD) -> Option<f32> {
+        let exif = root.get_sub_ifd(ExifTag::ExifOffset).unwrap_or(root);
+        match &exif.get_entry(ExifTag::FocalLengthIn35mmFormat)?.value {
+            Value::Short(v) => v.first().copied().filter(|v| *v > 0).map(f32::from),
+            _ => None,
+        }
+    }
+    if source.subview(0, 8)? == b"FUJIFILM" {
+        let header = source.subview(84, 8)?;
+        let offset = u32::from_be_bytes(header[..4].try_into()?) as u64;
+        let length = u32::from_be_bytes(header[4..].try_into()?) as u64;
+        let bytes = source.subview(offset, length)?;
+        let jpeg = Jfif::parse(std::io::Cursor::new(bytes))?;
+        Ok(jpeg.exif_ifd().and_then(value))
+    } else {
+        let tiff = GenericTiffReader::new_with_buffer(source.buf(), 0, 0, Some(1))?;
+        Ok(value(tiff.root_ifd()))
+    }
 }
 
 pub fn color_revision(path: &Path) -> Result<u32> {
@@ -383,6 +413,7 @@ impl SensorImage {
                 .as_ref()
                 .and_then(|m| m.exif.focal_length)
                 .and_then(positive),
+            focal_length_35mm: focal_length_35mm(&source).ok().flatten(),
             aperture: raw_metadata
                 .as_ref()
                 .and_then(|m| m.exif.fnumber)
@@ -457,6 +488,7 @@ impl SensorImage {
             camera_to_working: color::IDENTITY,
             lens_model: None,
             focal_length_mm: None,
+            focal_length_35mm: None,
             aperture: None,
             lens_profile: None,
             lens_profile_error: None,
@@ -638,6 +670,7 @@ impl SensorImage {
                 camera_to_working: color::IDENTITY,
                 lens_model: None,
                 focal_length_mm: None,
+                focal_length_35mm: None,
                 aperture: None,
                 lens_profile: None,
                 lens_profile_error: None,

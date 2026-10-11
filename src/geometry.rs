@@ -28,8 +28,12 @@ impl Geometry {
         let f = 0.5 / (e.field_of_view.to_radians() * 0.5).tan();
         let aspect = height as f32 / width as f32;
         let kinv = [
-            [1. / (f * e.scale), 0., -0.5 / (f * e.scale)],
-            [0., aspect / (f * e.scale), -0.5 * aspect / (f * e.scale)],
+            [1. / (f * e.scale), 0., (-0.5 + e.shift[0]) / (f * e.scale)],
+            [
+                0.,
+                aspect / (f * e.scale),
+                (-0.5 + e.shift[1]) * aspect / (f * e.scale),
+            ],
             [0., 0., 1.],
         ];
         let k = [[f, 0., 0.5], [0., f / aspect, 0.5], [0., 0., 1.]];

@@ -145,9 +145,11 @@ jobs:
           python tools/test_download_ci_artifact.py
           python tools/prepare_ci_raw_model.py "$RAWPUPPY_CI_MODEL_ROOT"
       - uses: Swatinem/rust-cache@v2
-      - run: cargo clippy --features moebius,raw-ml --all-targets -j 2 -- -D warnings
+      - run: cargo clippy --features moebius,raw-ml,sam3 --all-targets -j 2 -- -D warnings
       - name: Native scheduler and layer tests
-        run: cargo test --features moebius,raw-ml -j 2 --locked
+        run: cargo test --features moebius,raw-ml,sam3 -j 2 --locked
+      - name: Prepared segmentation graph device portability
+        run: python tools/test_export_sam3.py
       - name: Install attributed RAW graph for renderer tests
         shell: bash
         run: cargo run --features moebius,raw-ml -j 2 --locked -- install-raw-model "$RAWPUPPY_TEST_RAWNIND_GRAPH"

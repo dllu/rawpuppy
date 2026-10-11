@@ -107,6 +107,13 @@ pub struct GeometryEdits {
     /// x, y, width, height in the corrected canvas.
     pub crop: [f32; 4],
     pub scale: f32,
+    /// Translation in the corrected canvas, composed into the pinhole map.
+    #[serde(skip_serializing_if = "zero_shift")]
+    pub shift: [f32; 2],
+}
+
+fn zero_shift(value: &[f32; 2]) -> bool {
+    *value == [0.; 2]
 }
 
 impl Default for GeometryEdits {
@@ -120,6 +127,7 @@ impl Default for GeometryEdits {
             field_of_view: 50.0,
             crop: [0.0, 0.0, 1.0, 1.0],
             scale: 1.0,
+            shift: [0.; 2],
         }
     }
 }
@@ -257,6 +265,23 @@ impl Edits {
                 chromatic_aberration: profile.has_chromatic_aberration(),
                 auto_frame: true,
             };
+        }
+        if let Some(equivalent) = image.metadata.focal_length_35mm {
+            let frame_scale = crate::lens::Correction::compile(
+                image.metadata.lens_profile.as_ref(),
+                &out.lens,
+                image.metadata.width,
+                image.metadata.height,
+            )
+            .map_or(1., |c| c.frame_scale);
+            if let Some(fov) = crate::perspective::horizontal_fov(
+                equivalent,
+                image.metadata.width,
+                image.metadata.height,
+                frame_scale,
+            ) {
+                out.geometry.field_of_view = fov;
+            }
         }
         out
     }

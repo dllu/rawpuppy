@@ -17,6 +17,7 @@ cargo build --release --features cuda
 cargo run --release
 cargo run --release -- edit photo.raf
 cargo run --release -- inspect photo.raf
+cargo run --release -- perspective photo.raf --output corrected.png
 cargo run --release -- export photo.raf photo.png
 cargo run --release -- export photo.raf preview.jpg --max-edge 1800 --exposure 1
 cargo run --release -- recipe > edits.json
@@ -47,6 +48,8 @@ Automatic display selection and platform policies are described in [display colo
 see [HDR presentation](docs/hdr-presentation.md) for signal and platform limits.
 New RAF documents use available camera distortion, vignetting and CA corrections; existing
 recipes retain their saved behavior. See [lens correction](docs/lens-correction.md).
+Geometry & lens includes **Auto vertical** and **Auto both**, with strict straight-edge
+checks and optional local SAM 3 architectural masks. See [perspective correction](docs/perspective-correction.md).
 
 The optional `moebius` feature adds native AI removal and corner filling, saved as
 non-destructive layers. See [runtime setup](docs/moebius.md) and [model evaluation](docs/inpainting-research.md).

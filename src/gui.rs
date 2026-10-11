@@ -42,6 +42,13 @@ enum Work {
         path: PathBuf,
         edits: Edits,
     },
+    Perspective {
+        load_id: u64,
+        image: Arc<SensorImage>,
+        edits: Edits,
+        mode: crate::perspective::Mode,
+        provider: crate::perspective::MaskProvider,
+    },
     #[cfg(feature = "moebius")]
     Generate {
         load_id: u64,
@@ -85,6 +92,11 @@ enum Reply {
         path: PathBuf,
         edits: Edits,
     },
+    Perspective {
+        load_id: u64,
+        previous: Edits,
+        report: Box<crate::perspective::Report>,
+    },
     #[cfg(feature = "moebius")]
     Generated {
         load_id: u64,
@@ -108,6 +120,7 @@ enum ErrorScope {
     Preview(u64),
     Save(u64),
     Export(u64),
+    Perspective(u64),
     #[cfg(feature = "moebius")]
     Generate(u64),
 }
@@ -115,6 +128,7 @@ enum ErrorScope {
 enum Busy {
     Load(u64),
     Export(u64),
+    Perspective(u64),
     #[cfg(feature = "moebius")]
     Generate(u64),
 }
@@ -123,6 +137,7 @@ impl ErrorScope {
         match self {
             Self::Load(id) => id == load,
             Self::Preview(id) => id == preview,
+            Self::Perspective(id) => id == load,
             // Durable I/O failures still need to name the failed destination,
             // even after the user changes photographs.
             Self::Save(_) | Self::Export(_) => true,
@@ -134,6 +149,7 @@ impl ErrorScope {
         let finished = match self {
             Self::Load(id) => Some(Busy::Load(id)),
             Self::Export(id) => Some(Busy::Export(id)),
+            Self::Perspective(id) => Some(Busy::Perspective(id)),
             #[cfg(feature = "moebius")]
             Self::Generate(id) => Some(Busy::Generate(id)),
             Self::Preview(_) | Self::Save(_) => None,
@@ -148,6 +164,7 @@ impl Work {
         match self {
             Self::Open { id, .. } => ErrorScope::Load(*id),
             Self::Render { id, .. } => ErrorScope::Preview(*id),
+            Self::Perspective { load_id, .. } => ErrorScope::Perspective(*load_id),
             #[cfg(feature = "moebius")]
             Self::Generate { load_id, .. } => ErrorScope::Generate(*load_id),
             Self::Save { load_id, .. } => ErrorScope::Save(*load_id),
@@ -163,6 +180,7 @@ enum PreviewPixels {
 
 fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context, backend: Backend) {
     let mut renderer = Renderer::new(backend);
+    let mut perspective = crate::perspective::Engine::default();
     let mut display_encoder = display::Encoder::default();
     let mut last_preview = None;
     loop {
@@ -266,6 +284,20 @@ fn worker(rx: mpsc::Receiver<Work>, tx: mpsc::Sender<Reply>, ctx: egui::Context,
                     backend: renderer.label().into(),
                     managed_display: profile.is_none(),
                     reconstruction_progress,
+                })
+            }
+            Work::Perspective {
+                load_id,
+                image,
+                edits,
+                mode,
+                provider,
+            } => {
+                let report = perspective.run(&mut renderer, image, &edits, mode, provider)?;
+                Ok(Reply::Perspective {
+                    load_id,
+                    previous: edits,
+                    report: Box::new(report),
                 })
             }
             Work::Save {
@@ -561,6 +593,8 @@ struct Editor {
     mask: Vec<crate::synthesis::MaskDab>,
     ai_steps: usize,
     ai_seed: i64,
+    perspective_status: Option<String>,
+    perspective_mask: bool,
 }
 
 impl Editor {
@@ -675,6 +709,8 @@ impl Editor {
             mask: vec![],
             ai_steps: 20,
             ai_seed: 0,
+            perspective_status: None,
+            perspective_mask: true,
         };
         if let Some(path) = input {
             app.open(path);
@@ -846,6 +882,28 @@ impl Editor {
             self.changed();
         }
     }
+    fn auto_perspective(&mut self, mode: crate::perspective::Mode) {
+        if self.busy.is_some() {
+            return;
+        }
+        if let Some(image) = &self.image {
+            let image = image.clone();
+            self.busy = Some(Busy::Perspective(self.load_generation));
+            self.status = "Finding straight architectural edges…".into();
+            self.perspective_status = None;
+            self.send(Work::Perspective {
+                load_id: self.load_generation,
+                image,
+                edits: self.edits.clone(),
+                mode,
+                provider: if self.perspective_mask {
+                    crate::perspective::MaskProvider::Auto
+                } else {
+                    crate::perspective::MaskProvider::Classical
+                },
+            });
+        }
+    }
     fn redo(&mut self) {
         if let Some(next) = self.redo.pop() {
             self.undo.push(std::mem::replace(&mut self.edits, next));
@@ -952,6 +1010,7 @@ impl Editor {
                     self.stroke_recorded = false;
                     self.mask.clear();
                     self.busy = None;
+                    self.perspective_status = None;
                     self.changed();
                     self.status = "Ready".into();
                 }
@@ -1009,6 +1068,30 @@ impl Editor {
                         } else {
                             format!("Preview {:.0} ms · {backend}", elapsed * 1000.)
                         };
+                    }
+                }
+                Reply::Perspective {
+                    load_id,
+                    previous,
+                    report,
+                } if load_id == self.load_generation => {
+                    ErrorScope::Perspective(load_id).finish_busy(&mut self.busy);
+                    if previous == self.edits {
+                        self.perspective_status =
+                            Some(format!("{} · {}", report.mask_provider, report.reason));
+                        if let Some(geometry) = report.solution {
+                            self.edits.geometry = geometry;
+                            self.remember(previous);
+                            self.grid = true;
+                            self.status =
+                                "Automatic perspective ready; save edits to keep it".into();
+                        } else {
+                            self.status =
+                                "Automatic perspective found insufficient evidence".into();
+                        }
+                    } else {
+                        self.status =
+                            "Perspective result discarded because the edits changed".into();
                     }
                 }
                 Reply::Saved {
@@ -1077,6 +1160,7 @@ impl Editor {
                             ErrorScope::Preview(_) => "Could not render preview",
                             ErrorScope::Save(_) => "Could not save edits",
                             ErrorScope::Export(_) => "Could not export photo",
+                            ErrorScope::Perspective(_) => "Could not analyze perspective",
                             #[cfg(feature = "moebius")]
                             ErrorScope::Generate(_) => "Could not generate fill",
                         }
@@ -1329,6 +1413,13 @@ impl Editor {
                                 });
                             });
                         egui::CollapsingHeader::new("Geometry & lens").show(ui, |ui| {
+                            ui.horizontal(|ui| {
+                                if ui.button("Auto vertical").on_hover_text("Align reliable vertical architecture; preserve the view's horizontal perspective").clicked() {self.auto_perspective(crate::perspective::Mode::Vertical);}
+                                if ui.button("Auto both").on_hover_text("Align one unambiguous façade's vertical and horizontal directions").clicked() {self.auto_perspective(crate::perspective::Mode::Both);}
+                            });
+                            #[cfg(feature="sam3")]
+                            ui.checkbox(&mut self.perspective_mask,"Architecture mask (SAM 3)").on_hover_text("Use the installed local model to exclude trees and people. Without a model, automatic correction uses the classical detector.");
+                            if let Some(message)=&self.perspective_status {ui.label(egui::RichText::new(message).small().color(Color32::GRAY));}
                             if let Some(name) = source_image.as_ref().and_then(|i| i.metadata.lens_model.as_ref()) {
                                 ui.label(egui::RichText::new(name).small().color(Color32::GRAY));
                             }
@@ -1380,6 +1471,8 @@ impl Editor {
                                 "°",
                             );
                             slider(ui, &mut self.edits.geometry.scale, 0.5..=3.0, "Scale", "×");
+                            slider(ui, &mut self.edits.geometry.shift[0], -1.0..=1.0, "Shift X", "");
+                            slider(ui, &mut self.edits.geometry.shift[1], -1.0..=1.0, "Shift Y", "");
                             slider(
                                 ui,
                                 &mut self.edits.geometry.distortion[0],
@@ -2696,6 +2789,11 @@ mod error_scope_tests {
             (ErrorScope::Export(4), Some(Busy::Export(4)), "Exporting…"),
             (ErrorScope::Save(4), None, "Saving edits…"),
             (ErrorScope::Preview(9), None, "Rendering preview…"),
+            (
+                ErrorScope::Perspective(4),
+                Some(Busy::Perspective(4)),
+                "Analyzing perspective…",
+            ),
         ];
         #[cfg(feature = "moebius")]
         let cases = cases.into_iter().chain([(
@@ -2735,6 +2833,84 @@ mod error_scope_tests {
             assert_eq!(app.status, "Opening newer photo…");
             assert_eq!(app.error.as_deref(), Some("Older destination failed"));
         }
+    }
+    #[test]
+    fn automatic_perspective_is_one_undo_step_and_stale_results_do_not_change_edits() {
+        let ctx = egui::Context::default();
+        let mut app = Editor::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            None,
+            None,
+            Backend::Cpu,
+            false,
+        );
+        let (responses, receive) = mpsc::channel();
+        app.rx = receive;
+        app.load_generation = 4;
+        let report = || {
+            let blank = crate::pipeline::Rendered {
+                width: 32,
+                height: 32,
+                pixels: vec![[0.2, 0.2, 0.2, 1.]; 32 * 32],
+            };
+            let mut report = crate::perspective::analyze(
+                &blank,
+                None,
+                &crate::edits::GeometryEdits::default(),
+                crate::perspective::Mode::Vertical,
+            )
+            .unwrap();
+            report.solution = Some(crate::edits::GeometryEdits {
+                pitch: -15.,
+                shift: [0., 0.2],
+                ..Default::default()
+            });
+            Box::new(report)
+        };
+        let original = app.edits.clone();
+        app.busy = Some(Busy::Perspective(4));
+        responses
+            .send(Reply::Perspective {
+                load_id: 4,
+                previous: original.clone(),
+                report: report(),
+            })
+            .unwrap();
+        app.poll(&ctx);
+        let corrected = app.edits.clone();
+        assert_ne!(corrected, original);
+        assert_eq!(app.undo.len(), 1);
+        assert_eq!(app.busy, None);
+        app.undo();
+        assert_eq!(app.edits, original);
+        app.redo();
+        assert_eq!(app.edits, corrected);
+        // A result for an earlier photo cannot finish the newer photo's work.
+        app.busy = Some(Busy::Perspective(4));
+        responses
+            .send(Reply::Perspective {
+                load_id: 3,
+                previous: corrected.clone(),
+                report: report(),
+            })
+            .unwrap();
+        app.poll(&ctx);
+        assert_eq!(app.edits, corrected);
+        assert_eq!(app.busy, Some(Busy::Perspective(4)));
+        app.edits.geometry.rotation = 3.;
+        let changed = app.edits.clone();
+        let history = app.undo.len();
+        responses
+            .send(Reply::Perspective {
+                load_id: 4,
+                previous: corrected,
+                report: report(),
+            })
+            .unwrap();
+        app.poll(&ctx);
+        assert_eq!(app.edits, changed);
+        assert_eq!(app.undo.len(), history);
+        assert_eq!(app.busy, None);
     }
 
     #[test]

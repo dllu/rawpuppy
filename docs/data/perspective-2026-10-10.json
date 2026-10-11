@@ -1,0 +1,1699 @@
+{
+  "schema": 1,
+  "base_commit": "296e2579ca87d92327269f4e565f93bfdd89655d",
+  "cases": [
+    {
+      "index": 8,
+      "source": "2026-06-14-16-48-39_DSCF9471_76c7c42d97ea83fdaba926974094f37287858fdd.raf",
+      "source_sha256": "9f2f0b7ce711e083fbb0bb3354cad1e6307fba9ee15c557e1e1f87b29472612d",
+      "darktable_xmp_sha256": "775297e408bf3803585c49eb219b5efd5cdde15d2874c5a696c457a5bbc02d4c",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1080,
+            1440
+          ],
+          "vertical_inliers": [
+            2,
+            4,
+            7,
+            15,
+            17,
+            18,
+            24,
+            25
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.24490298397249596,
+          "reason": "8 vertical straight edges agree; residual 0.24\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 2.6650019e-17,
+            "pitch": -21.190271,
+            "rotation": -0.35647017,
+            "field_of_view": 33.18909,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.004046787,
+              -0.48782656
+            ]
+          },
+          "segments": 27
+        },
+        "classical-both": {
+          "analysis_size": [
+            1080,
+            1440
+          ],
+          "vertical_inliers": [
+            2,
+            4,
+            7,
+            15,
+            17,
+            18,
+            24,
+            25
+          ],
+          "horizontal_inliers": [
+            0,
+            1,
+            3,
+            5,
+            10,
+            11
+          ],
+          "residual_degrees": 0.5303847737538291,
+          "reason": "8 vertical, 6 horizontal straight edges agree; residual 0.53\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.852935,
+            "pitch": -21.183184,
+            "rotation": -0.6647332,
+            "field_of_view": 33.18909,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.019243341,
+              -0.48785722
+            ]
+          },
+          "segments": 27
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1080,
+            1440
+          ],
+          "vertical_inliers": [
+            2,
+            4,
+            7,
+            15,
+            17,
+            18,
+            23,
+            24
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.24490298395385204,
+          "reason": "8 vertical straight edges agree; residual 0.24\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -21.190271,
+            "rotation": -0.35647017,
+            "field_of_view": 33.18909,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.004046787,
+              -0.48782656
+            ]
+          },
+          "segments": 26
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1080,
+            1440
+          ],
+          "vertical_inliers": [
+            2,
+            4,
+            7,
+            15,
+            17,
+            18,
+            23,
+            24
+          ],
+          "horizontal_inliers": [
+            0,
+            1,
+            3,
+            5,
+            10,
+            11
+          ],
+          "residual_degrees": 0.530384773695438,
+          "reason": "8 vertical, 6 horizontal straight edges agree; residual 0.53\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.852935,
+            "pitch": -21.183184,
+            "rotation": -0.6647332,
+            "field_of_view": 33.18909,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.019243341,
+              -0.48785722
+            ]
+          },
+          "segments": 26
+        }
+      }
+    },
+    {
+      "index": 13,
+      "source": "2026-06-15-08-58-24_DSCF9529_ecff9dc9e2f5f9c1797f7d3e7a53a8ea3fad2aca.raf",
+      "source_sha256": "6945b77e94c16e46e8520bafa3fd16ee7372fa8fa87d55048f98688425f7749b",
+      "darktable_xmp_sha256": "f76a1d7605f144329bc36b85de71f4f499e2489e53bb017046e3e22427ffc31c",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 13
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 13
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            3,
+            5,
+            6
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.25492198138796185,
+          "reason": "4 vertical straight edges agree; residual 0.25\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -5.2259117e-17,
+            "pitch": -18.018461,
+            "rotation": -1.3463914,
+            "field_of_view": 96.605385,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0034044855,
+              -0.19313526
+            ]
+          },
+          "segments": 7
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            3,
+            5,
+            6
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "solution": null,
+          "segments": 7
+        }
+      }
+    },
+    {
+      "index": 19,
+      "source": "2026-06-15-13-30-39_DSCF9590_c9022b137437143c0bd22d4039467d665a5c4c17.raf",
+      "source_sha256": "53ebb7a2496af14849498007b9d78289b8dbf7f9757f97827356433a1d1da830",
+      "darktable_xmp_sha256": "23aff63d83a2a3619af41e7580ec952d19386ac989f93e9c6f7527b0316785d6",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            1,
+            2,
+            8,
+            9,
+            11,
+            15,
+            16,
+            17
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.3030782356722926,
+          "reason": "8 vertical straight edges agree; residual 0.30\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 3.1061678e-18,
+            "pitch": 0.5767978,
+            "rotation": -2.5876253,
+            "field_of_view": 96.73471,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.00020199962,
+              0.0059595723
+            ]
+          },
+          "segments": 18
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            1,
+            2,
+            8,
+            9,
+            11,
+            15,
+            16,
+            17
+          ],
+          "horizontal_inliers": [
+            0,
+            3,
+            4,
+            6,
+            7,
+            10,
+            12,
+            13,
+            14
+          ],
+          "residual_degrees": 0.294860934273225,
+          "reason": "8 vertical, 9 horizontal straight edges agree; residual 0.29\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 3.104769,
+            "pitch": 0.7161865,
+            "rotation": -2.5525851,
+            "field_of_view": 96.73471,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.024331981,
+              0.0059684967
+            ]
+          },
+          "segments": 18
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            1,
+            2,
+            8,
+            9,
+            11,
+            15,
+            16,
+            17
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.3030782356722926,
+          "reason": "8 vertical straight edges agree; residual 0.30\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 3.1061678e-18,
+            "pitch": 0.5767978,
+            "rotation": -2.5876253,
+            "field_of_view": 96.73471,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.00020199962,
+              0.0059595723
+            ]
+          },
+          "segments": 18
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            1,
+            2,
+            8,
+            9,
+            11,
+            15,
+            16,
+            17
+          ],
+          "horizontal_inliers": [
+            0,
+            3,
+            4,
+            6,
+            7,
+            10,
+            12,
+            13,
+            14
+          ],
+          "residual_degrees": 0.294860934273225,
+          "reason": "8 vertical, 9 horizontal straight edges agree; residual 0.29\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 3.104769,
+            "pitch": 0.7161865,
+            "rotation": -2.5525851,
+            "field_of_view": 96.73471,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.024331981,
+              0.0059684967
+            ]
+          },
+          "segments": 18
+        }
+      }
+    },
+    {
+      "index": 20,
+      "source": "2026-06-15-13-56-15_DSCF9592_79418a3f301f7de9bd48518cd4d75f7af77860d2.raf",
+      "source_sha256": "c8dd45933977463b50604c0f91389c90d221c86658077ea8ec72a2de7ce627ab",
+      "darktable_xmp_sha256": "c559886dd4e3bb281d5da8e07793f740b44db8bbaed9d1fc732e6c0a2055c94b",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            11,
+            13,
+            21,
+            23,
+            24
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 29
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            11,
+            13,
+            21,
+            23,
+            24
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 29
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 8
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 8
+        }
+      }
+    },
+    {
+      "index": 22,
+      "source": "2026-06-15-17-44-10_DSCF9618_992136915d7d12fff52cb6caa30ef6f902c9ae2b.raf",
+      "source_sha256": "7821093f7e2a0172d9ca59639d2dcc3549b8efa9408b1f26fffbc30c9bf4b734",
+      "darktable_xmp_sha256": "c475d3103156850436f2b9820c29b09824266b9f39a302ed8b4858312e4dbf7b",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            3,
+            6,
+            26,
+            33,
+            34,
+            35,
+            37,
+            39,
+            40
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.6672946127979007,
+          "reason": "10 vertical straight edges agree; residual 0.67\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 1.03731314e-16,
+            "pitch": -16.630377,
+            "rotation": -2.0007193,
+            "field_of_view": 19.83338,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.029823262,
+              -1.1382923
+            ]
+          },
+          "segments": 45
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            3,
+            6,
+            26,
+            33,
+            34,
+            35,
+            37,
+            39,
+            40
+          ],
+          "horizontal_inliers": [
+            1,
+            2,
+            4,
+            5,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            27,
+            28,
+            29,
+            31,
+            32,
+            38,
+            42,
+            43,
+            44
+          ],
+          "residual_degrees": 0.7876210198932139,
+          "reason": "10 vertical, 31 horizontal straight edges agree; residual 0.79\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -18.980541,
+            "pitch": -16.399591,
+            "rotation": 3.440613,
+            "field_of_view": 19.83338,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.97302866,
+              -1.202304
+            ]
+          },
+          "segments": 45
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            1,
+            4,
+            24,
+            27,
+            31,
+            33
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.17661107078290428,
+          "reason": "6 vertical straight edges agree; residual 0.18\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -1.8824563,
+            "rotation": -0.19077487,
+            "field_of_view": 19.83338,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0003129789,
+              -0.1253296
+            ]
+          },
+          "segments": 36
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            1,
+            4,
+            24,
+            27,
+            31,
+            33
+          ],
+          "horizontal_inliers": [
+            0,
+            2,
+            3,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            25,
+            26,
+            30,
+            34,
+            35
+          ],
+          "residual_degrees": 2.950247749234374,
+          "reason": "The fitted correction leaves inconsistent architectural lines",
+          "solution": null,
+          "segments": 36
+        }
+      }
+    },
+    {
+      "index": 27,
+      "source": "2026-06-16-18-25-50_DSCF9709_16664d991194009b565dd8c67e9e00bfb68dd115.raf",
+      "source_sha256": "b963ed17158b5049f0d13467bdf03a3bcb5caf91c811983610bc9a0759801853",
+      "darktable_xmp_sha256": "398c780cbc9f2215f2e321695df1f28819610858048e06b4e924b39ba69c8823",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1080,
+            1440
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 10
+        },
+        "classical-both": {
+          "analysis_size": [
+            1080,
+            1440
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 10
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1080,
+            1440
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 5
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1080,
+            1440
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 5
+        }
+      }
+    },
+    {
+      "index": 28,
+      "source": "2026-06-17-10-35-09_DSCF9816_8ada2f88d974bf3db043167ee28516d6db679068.raf",
+      "source_sha256": "4da285c6e4c6486a1613d8eaf1fcef49bfaa4b0d5051c82b664acbfdf177a804",
+      "darktable_xmp_sha256": "cdcdecaf9b60bde954bcaca004ca83b84b0bb2b877f2ca81eb2550bda24483da",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 0
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 0
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 0
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 0
+        }
+      }
+    },
+    {
+      "index": 31,
+      "source": "2026-06-18-08-03-17_DSCF9935_e8f8e88538e43b5c73be8c543a2bae72b78857e7.raf",
+      "source_sha256": "d45de15d2b5f082012577375bc8890683776884773ddbb33383a7b3e6d3f2ed6",
+      "darktable_xmp_sha256": "ebc35e8edfb344982ab7582f8641bdb1e65a11e8a9a04318a4ca9ef602777465",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            5,
+            7,
+            12,
+            15,
+            19
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.3486837518300922,
+          "reason": "6 vertical straight edges agree; residual 0.35\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -12.930621,
+            "rotation": 0.5470215,
+            "field_of_view": 96.739365,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.00097409735,
+              -0.13603358
+            ]
+          },
+          "segments": 23
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            5,
+            7,
+            12,
+            15,
+            19
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "solution": null,
+          "segments": 23
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            2,
+            5,
+            6,
+            8
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.07420734145133491,
+          "reason": "4 vertical straight edges agree; residual 0.07\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -6.3842122e-18,
+            "pitch": -13.337388,
+            "rotation": 0.15840311,
+            "field_of_view": 96.739365,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.00029127425,
+              -0.14047487
+            ]
+          },
+          "segments": 11
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            2,
+            5,
+            6,
+            8
+          ],
+          "horizontal_inliers": [
+            0,
+            1,
+            4,
+            7
+          ],
+          "residual_degrees": null,
+          "reason": "The estimated camera pose is too extreme for a reliable automatic correction",
+          "solution": null,
+          "segments": 11
+        }
+      }
+    },
+    {
+      "index": 32,
+      "source": "2026-06-18-08-20-15_DSCF9940_6789c038722699868751fd83489adb225a382d3f.raf",
+      "source_sha256": "b5811b2da94caa989facc7dbd280d807400826e440d375b3667f97c28405044b",
+      "darktable_xmp_sha256": "3ca49c680e654a50143e629ff6e523f2b888ac9e61160fd1c14b6919960a5a5f",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 9
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 9
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 10
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 10
+        }
+      }
+    },
+    {
+      "index": 42,
+      "source": "2026-06-20-10-28-20_DSCF0205_eddab2ddc0148a8c5c66990387a94b9572a5b75d.raf",
+      "source_sha256": "63d1a5945ba9f0c03778ccc59e7a7d6d5aa780c849f859513ed3d2ac85ed509b",
+      "darktable_xmp_sha256": "2da45f925201e36c23d2eaf34270abdcf777d2a7ba07164a61f1a13bdf595674",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 9
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 9
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 7
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "solution": null,
+          "segments": 7
+        }
+      }
+    },
+    {
+      "index": 43,
+      "source": "2026-06-20-10-45-29_DSCF0224_bd77fd9f6f2c5bdf9cab65ea693fc6da1893e023.raf",
+      "source_sha256": "88e4864e19629671ef68348c9409061fda991e317841986077e32a56564e42f0",
+      "darktable_xmp_sha256": "849419936db47ceb4595f1719fea5db95e5332c8b4abec4a94febaad11b66cff",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            4,
+            5,
+            6,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            18,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            36
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.3333360973592674,
+          "reason": "26 vertical straight edges agree; residual 0.33\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": 6.8836975,
+            "rotation": 1.2139275,
+            "field_of_view": 96.7384,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0011366038,
+              0.071517564
+            ]
+          },
+          "segments": 37
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            4,
+            5,
+            6,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            18,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            36
+          ],
+          "horizontal_inliers": [
+            0,
+            3,
+            10,
+            26
+          ],
+          "residual_degrees": null,
+          "reason": "The estimated camera pose is too extreme for a reliable automatic correction",
+          "solution": null,
+          "segments": 37
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            4,
+            5,
+            6,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            17,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            36
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": 0.37855254354163725,
+          "reason": "26 vertical straight edges agree; residual 0.38\u00b0",
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 2.5029124e-17,
+            "pitch": 6.8954964,
+            "rotation": 1.2097176,
+            "field_of_view": 96.7384,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0011346228,
+              0.071641445
+            ]
+          },
+          "segments": 37
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            4,
+            5,
+            6,
+            8,
+            9,
+            11,
+            12,
+            13,
+            14,
+            15,
+            17,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            36
+          ],
+          "horizontal_inliers": [
+            0,
+            3,
+            10,
+            25
+          ],
+          "residual_degrees": null,
+          "reason": "The estimated camera pose is too extreme for a reliable automatic correction",
+          "solution": null,
+          "segments": 37
+        }
+      }
+    },
+    {
+      "index": 52,
+      "source": "2026-07-23-14-39-52_DSCF0804_d54938dedd5687c3667a513f34ec704b31cc963d.raf",
+      "source_sha256": "083b166101046addff1ffe50d0b2ef1e910ba53a3755842f606d89fce7d1bed1",
+      "darktable_xmp_sha256": "67c85f4e59cd3c08ad39778fdc0db018bda69e1ba99a6b98eac296912c2f18d7",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 19
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 19
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 17
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 17
+        }
+      }
+    },
+    {
+      "index": 53,
+      "source": "2026-07-23-14-41-04_DSCF0807_3f0ea05f6dd3709929902d0c709feac60fa62f67.raf",
+      "source_sha256": "0738f8bfaac26f18bdd11afe86211ac6fed314bdd2d8a5740500ce7b40ad2d95",
+      "darktable_xmp_sha256": "42dd83ffb3d1b719ee8f4e96cbdc907f4e78166bdaf5f0a2b684a62d90dafecb",
+      "originals_match_owned_starting_copies": true,
+      "outcomes": {
+        "classical-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            2,
+            5,
+            10,
+            14,
+            19
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 26
+        },
+        "classical-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            2,
+            5,
+            10,
+            14,
+            19
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 26
+        },
+        "semantic-vertical": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            2,
+            4,
+            8,
+            12,
+            16
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 23
+        },
+        "semantic-both": {
+          "analysis_size": [
+            1440,
+            1080
+          ],
+          "vertical_inliers": [
+            0,
+            2,
+            4,
+            8,
+            12,
+            16
+          ],
+          "horizontal_inliers": [],
+          "residual_degrees": null,
+          "reason": "The apparent verticals converge inside the photograph; they may be roof beams or other receding structures",
+          "solution": null,
+          "segments": 23
+        }
+      }
+    }
+  ],
+  "checks": {
+    "test-combined.log": {
+      "passed": 111,
+      "failed": 0
+    },
+    "test-no-gpu.log": {
+      "passed": 99,
+      "failed": 0
+    },
+    "test-gpu-cuda.log": {
+      "passed": 8,
+      "failed": 0
+    },
+    "test-gpu-native.log": {
+      "passed": 1,
+      "failed": 0
+    },
+    "test-final.log": {
+      "passed": 112,
+      "failed": 0
+    },
+    "sam3_native_cpu_and_auto": {
+      "passed": 1,
+      "selected_device": "Cpu",
+      "mask_pixels": 1065398,
+      "total_pixels": 1555200,
+      "disagreements": 0,
+      "elapsed_seconds": 228.95
+    },
+    "test-no-gpu-final.log": {
+      "passed": 100,
+      "failed": 0
+    },
+    "test-sam3-cpu-cuda.log": {
+      "passed": 1,
+      "failed": 0
+    },
+    "sam3_cpu_cuda_mask": {
+      "device": "Cuda(0)",
+      "mask_pixels": 1065393,
+      "cpu_mask_pixels": 1065398,
+      "total_pixels": 1555200,
+      "disagreements": 5,
+      "elapsed_seconds": 212.37
+    },
+    "strict_clippy": {
+      "toolchain": "1.99.0",
+      "features": [
+        "cuda",
+        "moebius",
+        "raw-ml",
+        "sam3"
+      ],
+      "all_targets": true,
+      "warnings_as_errors": true,
+      "passed": true
+    }
+  },
+  "sam3": {
+    "version": 1,
+    "revision": "3c879f39826c281e95690f02c7821c4de09afae7",
+    "prompts": [
+      "building",
+      "wall",
+      "tree",
+      "person"
+    ],
+    "portable_device": true,
+    "input_edge": 1008,
+    "mean": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "std": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "weights_sha256": "6d06f0a5f84e435071fe6603e61d0b4cc7b40e0d39d487cfd4d67d8cc11cc14a",
+    "graph_sha256": "15a19fce5acc7f4dc13e640563eb0251189f75da5db88c337e772b6c7a6ce552",
+    "checks": [
+      {
+        "image": "/tmp/rawpuppy-validation/perspective-2026-10-10/13/embedded.jpg",
+        "image_sha256": "29da5b242e9a4955b89b918a8cc5d67a1ad16bf1170486abf9349ae1ebf96a85",
+        "max_absolute_error": 0.0,
+        "threshold_disagreements": 0
+      },
+      {
+        "image": "/tmp/rawpuppy-validation/perspective-2026-10-10/42/embedded.jpg",
+        "image_sha256": "d4a8e96cb9f39d570834cabc7c49b521522d75bfc24b1e31f82267d94b306433",
+        "max_absolute_error": 1.3232231140136719e-05,
+        "threshold_disagreements": 0
+      },
+      {
+        "image": "/tmp/rawpuppy-validation/perspective-2026-10-10/28/embedded.jpg",
+        "image_sha256": "ece16c855d22a0cf4e2aee8a2a4c46350bebc6745e3bc85349b75da07a7bf0b0",
+        "max_absolute_error": 4.7653913497924805e-05,
+        "threshold_disagreements": 0
+      }
+    ]
+  },
+  "native_ui": {
+    "source_dimensions": [
+      11648,
+      8736
+    ],
+    "corrected_xmp_sha256": "28512a4155470c6f98d5e4c5c7f05f83be271b7b305c9bb84f4206e9b761fbdc",
+    "undo_xmp_sha256": "78274a24d9a364bc4762a8518463a08dedfa253cab03b879b8b9fc81d3c16b07",
+    "redo_byte_exact": true,
+    "reopened_save_byte_exact": true,
+    "normal_close_codes": [
+      0,
+      0
+    ]
+  },
+  "source_hashes": {
+    "src/perspective.rs": "67e85781c37fc3268f19fba906a722cb4b69977aa0a404a11e598ade969cfd57",
+    "src/sam3.rs": "6bd6e7204a537cc8e2b227f36ac23f5c676b28e29b00da5ee135e921e815f8a4",
+    "src/geometry.rs": "9b28d70c019b40aed88e78b738a76a3f54fafec1938908b804932cde947db144",
+    "src/edits.rs": "41df5df785544a6a3ea81ef6fc6b5231f9a80cd764c35dea93c4e2821daabefc",
+    "src/input.rs": "3d791f6eadcac9abeabaae8fab190d8b8a9867108bd4ddcee6895079c82ba8c0",
+    "src/gui.rs": "a20c04320096afa3dc8af68672312b9b744bfe9182da4c5510cedb7367d8428d",
+    "tools/export_sam3.py": "68a060a9832bb1bd3fe06adbbbd65746a44bd4768a45d7a6afdad4a267a83160"
+  }
+}
