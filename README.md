@@ -6,6 +6,24 @@ of other editors. Development is ongoing; current capabilities and remaining
 requirements are recorded in [docs](docs).
 The CLI `save` command requires the `.rawpuppy.xmp` suffix for its output.
 
+![Rawpuppy editing a 101.8 MP GFX photograph of The Standard, London, with exposure and color calibration controls](docs/images/editor-colour.jpg)
+
+The Standard, London — DSCF0027, Fujifilm GFX 100S. Both images are 1200-pixel-wide
+exports from the same RAW: a linear SDR preview before editing, and manual
+two-axis perspective correction, exposure/color calibration and AgX tone mapping after.
+The camera calibration and embedded lens corrections are applied in both.
+
+| Before | After |
+| --- | --- |
+| ![Before: converging architecture and a linear SDR preview](docs/images/standard-london-before.jpg) | ![After: corrected vertical and horizontal perspective, adjusted color and AgX tone mapping](docs/images/standard-london-after.jpg) |
+
+<details>
+<summary>Perspective controls</summary>
+
+![Native perspective controls showing vertical and horizontal correction on the London hotel](docs/images/editor-perspective.jpg)
+
+</details>
+
 Requires a recent stable Rust toolchain and Little CMS 2 development libraries
 (`liblcms2-dev` on Debian/Ubuntu; `brew install little-cms2` on macOS).
 Linux X11 windows also require `libxkbcommon-x11-0` at runtime.

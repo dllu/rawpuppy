@@ -1,0 +1,76 @@
+{
+  "source": "2025-09-02-20-48-07_DSCF0027_09f56d9d8fdc881793ae57403e495a38f2c38a03.raf",
+  "raw_sha256": "65b226c1850a580711e45af1df7bc954193be1dabbdd6fecd5026769d65f156b",
+  "source_dimensions": [
+    11648,
+    8736
+  ],
+  "original_raw_and_xmp_verified_unchanged": true,
+  "manual_two_axis_perspective": true,
+  "assets": {
+    "docs/images/standard-london-after.jpg": {
+      "bytes": 431130,
+      "sha256": "b3459fe9e4f081bd621816adf0b9dc0ce9c21939db1109ae195d58ae270d1402"
+    },
+    "docs/images/editor-perspective.jpg": {
+      "bytes": 350259,
+      "sha256": "d30810962280f42e04596c46b52141cbe51bb163ceacfbde1f25b933c7a2feb9"
+    },
+    "docs/images/standard-london-before.json": {
+      "bytes": 1389,
+      "sha256": "deec0eed27d1e474d46dbfc1864dfe63b5495251163eff32dad05f8ccbdea83d"
+    },
+    "docs/images/standard-london-before.jpg": {
+      "bytes": 381823,
+      "sha256": "144ae52655044bcdde944449baa5588c79de9562d71d28ccf4c7290435169d0d"
+    },
+    "docs/images/editor-colour.jpg": {
+      "bytes": 341057,
+      "sha256": "fbb51e0c2eebfe73ca19ff0bea6b5f3654b8ab27b20ce94179a17e11c4b12bec"
+    },
+    "docs/images/standard-london-after.json": {
+      "bytes": 1478,
+      "sha256": "3a4813897fbc195d35066202d538dacbb547069ca84a77ab3266dff85d496492"
+    }
+  },
+  "correspondence_fit": {
+    "matches": 726,
+    "inliers": 668,
+    "homography": [
+      [
+        1.2992306320477744,
+        0.24986628543064057,
+        -191.43788919043303
+      ],
+      [
+        -0.002500163864816676,
+        1.596275450532154,
+        -2.109262786271675
+      ],
+      [
+        -3.566457674101303e-05,
+        0.00045607921789473564,
+        1.0
+      ]
+    ],
+    "rotation": [
+      [
+        0.9997658994826961,
+        0.01485204540883131,
+        -0.01573413419066159
+      ],
+      [
+        -0.011384141127710995,
+        0.9794823072438568,
+        0.20120837737787012
+      ],
+      [
+        0.01839966201700706,
+        -0.2009821547884912,
+        0.9794220877100103
+      ]
+    ]
+  },
+  "strict_clippy_example_passed": true,
+  "native_editor_exit": 0
+}
