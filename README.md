@@ -12,6 +12,8 @@ The Standard, London — DSCF0027, Fujifilm GFX 100S. Both images are 1200-pixel
 exports from the same RAW: a linear SDR preview before editing, and manual
 two-axis perspective correction, exposure/color calibration and AgX tone mapping after.
 The camera calibration and embedded lens corrections are applied in both.
+Color calibration supports an illuminant color picker, temperature controls,
+and estimation from the whole image or a drawn neutral box.
 
 | Before | After |
 | --- | --- |

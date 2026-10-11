@@ -136,6 +136,8 @@ impl Default for GeometryEdits {
 #[serde(default, deny_unknown_fields)]
 pub struct SceneEdits {
     pub exposure: f32,
+    #[serde(skip_serializing_if = "crate::calibration::Illuminant::is_legacy")]
+    pub illuminant: crate::calibration::Illuminant,
     /// Relative sensor gains, applied with the camera calibration in one matrix.
     pub calibration: [f32; 3],
     /// A scene-linear RGB mixer, in the same calibration module.
@@ -149,6 +151,7 @@ impl Default for SceneEdits {
     fn default() -> Self {
         Self {
             exposure: 0.0,
+            illuminant: Default::default(),
             calibration: [1.0; 3],
             mixer: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
             vignette: [0.0; 2],
@@ -252,6 +255,13 @@ impl Edits {
     /// their explicit/default-off state so historical rendering and hashes survive.
     pub fn for_image(image: &crate::input::SensorImage) -> Self {
         let mut out = Self::default();
+        if crate::calibration::Illuminant::Camera
+            .xy(&image.metadata)
+            .and_then(crate::calibration::adaptation)
+            .is_ok()
+        {
+            out.scene.illuminant = crate::calibration::Illuminant::Camera;
+        }
         out.raw.recover_highlights = image.raw_integer;
         if let Some(profile) = &image.metadata.lens_profile
             && (profile.distortion.is_some()
@@ -333,6 +343,7 @@ impl Edits {
             self.scene.calibration.iter().all(|x| *x > 0.0),
             "Calibration gains must be positive"
         );
+        self.scene.illuminant.validate()?;
         ensure!(
             self.scene.graduated.width > 0.0,
             "Graduated filter width must be positive"

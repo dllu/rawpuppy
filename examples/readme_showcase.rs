@@ -2,6 +2,7 @@
 //! The manual recipe is specific to that photograph, checked against its cooked reference.
 use anyhow::{Context, Result};
 use rawpuppy::{
+    calibration::{self, Illuminant},
     color::OutputSpace,
     edits::{Edits, ToneMapper},
     export,
@@ -23,21 +24,24 @@ fn main() -> Result<()> {
     let mut renderer = Renderer::new(Backend::Auto);
     renderer.set_document(input.clone());
     let mut before = Edits::for_image(&source);
+    before.scene.illuminant = Illuminant::Legacy;
     before.raw.hot_pixels = true;
     before.tone.mapper = ToneMapper::Linear;
     let mut after = before.clone();
     after.tone.mapper = ToneMapper::AgxSdr;
     after.scene.exposure = 2.1;
-    after.scene.calibration = [1.04, 0.97, 1.12];
     after.tone.saturation = 1.04;
     // Both-axis pinhole alignment, fitted from corresponding façade features
     // in the user's reference export. No Darktable implementation is used.
-    after.geometry.pitch = -11.60763;
-    after.geometry.yaw = -0.920361;
-    after.geometry.rotation = -0.665897;
+    // Refine the reference fit with the main façade's roof/base and verticals.
+    after.geometry.pitch = -12.227947;
+    after.geometry.yaw = -0.205753;
+    after.geometry.rotation = -0.793441;
     after.geometry.scale = 1.0821165;
     after.geometry.shift = [0.01581575, -0.3030224];
     after.geometry.crop = [0., 0., 1., 1.];
+    let sample = calibration::estimate(&source, &after, [0., 0., 1., 1.])?;
+    after.scene.illuminant = Illuminant::Custom { xy: sample.xy };
     for (name, edits) in [("before", &before), ("after", &after)] {
         std::fs::write(
             output.join(format!("{name}.json")),

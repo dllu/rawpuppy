@@ -28,6 +28,7 @@ fn recovery_preserves_intact_channels_and_camera_lower_bounds() {
         let source = camera(input);
         let original = source.data.clone();
         let mut edits = Edits::for_image(&source);
+        edits.scene.illuminant = rawpuppy::calibration::Illuminant::Legacy;
         edits.tone.mapper = ToneMapper::Linear;
         let output = Pipeline::compile(&source, &edits).unwrap().sample([0.5; 2]);
         for c in 0..3 {

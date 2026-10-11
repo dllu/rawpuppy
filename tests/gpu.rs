@@ -9,6 +9,54 @@ use std::sync::Arc;
 
 #[test]
 #[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
+fn illuminant_cat16_matches_cpu_for_signed_hdr_and_temperature_changes() {
+    use rawpuppy::{calibration::Illuminant, edits::ToneMapper};
+    let backend = if std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {
+        Backend::Cuda
+    } else {
+        Backend::Vulkan
+    };
+    let mut gpu = GpuRenderer::with_cuda_memory(backend, CudaMemoryMode::Auto).unwrap();
+    let image = Arc::new(
+        SensorImage::from_rgb(
+            47,
+            39,
+            (0..47 * 39)
+                .flat_map(|i| [(i % 47) as f32 / 12. - 0.2, (i / 47) as f32 / 24., 0.4])
+                .collect(),
+        )
+        .unwrap(),
+    );
+    for illuminant in [
+        Illuminant::Camera,
+        Illuminant::BlackBody { kelvin: 2856. },
+        Illuminant::Daylight { kelvin: 9000. },
+        Illuminant::Custom { xy: [0.39, 0.36] },
+    ] {
+        let mut edits = Edits::default();
+        edits.scene.illuminant = illuminant;
+        edits.scene.exposure = 1.2;
+        edits.tone.mapper = ToneMapper::Linear;
+        edits.geometry.rotation = 0.3;
+        edits.geometry.pitch = -8.;
+        let cpu = Pipeline::compile(&image, &edits)
+            .unwrap()
+            .render(None)
+            .unwrap();
+        let actual = gpu.render(image.clone(), &edits, None).unwrap();
+        for (a, b) in actual.pixels.iter().zip(cpu.pixels) {
+            for c in 0..4 {
+                assert!(
+                    (a[c] - b[c]).abs() < 3e-5,
+                    "{backend:?} {illuminant:?}: {a:?} vs {b:?}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+#[ignore = "requires a working Vulkan/Metal/CUDA compute device"]
 fn hot_pixels_and_denoising_match_a_defect_free_sensor_without_halos() {
     use rawpuppy::edits::ToneMapper;
     let modes = if std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {

@@ -2,6 +2,7 @@
 use super::*;
 
 mod brushes;
+mod calibration;
 mod curves;
 #[cfg(feature = "moebius")]
 mod generation;

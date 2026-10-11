@@ -7,10 +7,12 @@ remain unchanged; work used a local copy.
 
 The **before** image uses camera calibration, embedded lens corrections and a
 linear SDR preview, with zero additional exposure and neutral relative gains.
-The **after** image adds 2.1 EV, relative RGB gains `[1.04, 0.97, 1.12]`, saturation
-1.04, and AgX SDR tone mapping. Both-axis pinhole correction uses −11.60763° pitch,
-−0.920361° yaw and −0.665897° rotation, with framing matched to the user's cooked
-reference. The automatic detector conservatively declined this dark, curved
+The **after** image adds 2.1 EV, CAT16 colour calibration from the whole-image
+mean (illuminant CIE xy `[0.42779413, 0.4136972]`), saturation 1.04, and AgX SDR
+tone mapping. Both-axis pinhole correction uses −12.227947° pitch,
+−0.205753° yaw and −0.793441° rotation. The reference supplied the initial
+framing; the main façade's roof, base and verticals then refined the alignment
+to remove the remaining top-edge tilt. The automatic detector declined this dark, curved
 façade; the shown alignment is manually configured and checked against that
 reference, rather than presented as an automatic success.
 
@@ -22,7 +24,7 @@ The reference's tone mapping is Filmic, while the shown Rawpuppy result uses AgX
 Both photographs were rendered at full sensor resolution and then reduced to
 1200×900, with embedded sRGB profiles. The two genuine native editor captures
 are reduced to 1280×853; they show interactive previews and the applied controls.
-The four JPEG assets together are approximately 1.5 MB. RAW files and the
+The four JPEG assets together are approximately 1.3 MB. RAW files and the
 Darktable export are not included in the repository.
 
 The complete recipes are saved beside the images as

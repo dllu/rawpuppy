@@ -24,6 +24,9 @@ pub struct Metadata {
     pub pattern: String,
     pub as_shot: [f32; 3],
     pub camera_to_working: Matrix,
+    /// Unbalanced camera RGB to scene XYZ, normalized at the as-shot neutral.
+    /// Kept separately so historical row-normalized profiles render identically.
+    pub camera_to_xyz: Option<Matrix>,
     pub lens_model: Option<String>,
     pub focal_length_mm: Option<f32>,
     /// EXIF diagonal 35 mm equivalent, when actually present (never guessed from make).
@@ -341,6 +344,11 @@ impl SensorImage {
             }
             color::inverse(srgb_to_cam)?
         };
+        let camera_to_xyz = if raw.is_monochrome() {
+            None
+        } else {
+            crate::calibration::camera_xyz(xyz_to_cam, as_shot, forward_calibration).ok()
+        };
         let black = raw.blacklevel.as_vec();
         let white = raw.whitelevel.as_vec();
         ensure!(
@@ -406,6 +414,7 @@ impl SensorImage {
             pattern: cfa.as_ref().map_or("RGB/mono".into(), |c| c.name.clone()),
             as_shot,
             camera_to_working,
+            camera_to_xyz,
             lens_model: raw_metadata
                 .as_ref()
                 .and_then(|m| m.exif.lens_model.clone()),
@@ -486,6 +495,7 @@ impl SensorImage {
             pattern: "RGB".into(),
             as_shot: [1.; 3],
             camera_to_working: color::IDENTITY,
+            camera_to_xyz: Some(color::SRGB_TO_XYZ),
             lens_model: None,
             focal_length_mm: None,
             focal_length_35mm: None,
@@ -668,6 +678,7 @@ impl SensorImage {
                 pattern: "RGB".into(),
                 as_shot: [1.; 3],
                 camera_to_working: color::IDENTITY,
+                camera_to_xyz: Some(color::SRGB_TO_XYZ),
                 lens_model: None,
                 focal_length_mm: None,
                 focal_length_35mm: None,

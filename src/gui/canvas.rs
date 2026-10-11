@@ -1,12 +1,13 @@
 //! Preview viewport, painting, brush travel and actual-pixel navigation.
 use super::*;
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub(super) enum Tool {
     View,
     Clone,
     Heal,
     Mask,
+    Calibration,
 }
 
 #[derive(Default)]
@@ -207,7 +208,7 @@ impl Editor {
                         self.zoom = (self.zoom * (scroll * 0.002).exp()).max(1.);
                         self.changed();
                     }
-                    if self.tool != Tool::View
+                    if matches!(self.tool, Tool::Clone | Tool::Heal | Tool::Mask)
                         && let Some(pos) = response.hover_pos()
                     {
                         ui.painter().circle_stroke(
@@ -256,6 +257,7 @@ impl Editor {
                     ]
                 });
                 let mut painting = false;
+                self.calibration_selection(ui, &response, rect, region, press);
                 if self.tool == Tool::Mask
                     && !self.compare
                     && self.busy.is_none()

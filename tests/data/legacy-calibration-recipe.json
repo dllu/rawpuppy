@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "raw": {
+    "hot_pixels": true,
+    "denoise": 0.0,
+    "recover_highlights": true
+  },
+  "lens": {
+    "mode": "embedded_v1",
+    "distortion": true,
+    "vignette": true,
+    "chromatic_aberration": true,
+    "auto_frame": true
+  },
+  "geometry": {
+    "distortion": [
+      0.0,
+      0.0
+    ],
+    "chromatic_aberration": [
+      0.0,
+      0.0
+    ],
+    "yaw": -0.920361,
+    "pitch": -11.60763,
+    "rotation": -0.665897,
+    "field_of_view": 96.74222,
+    "crop": [
+      0.0,
+      0.0,
+      1.0,
+      1.0
+    ],
+    "scale": 1.0821165,
+    "shift": [
+      0.01581575,
+      -0.3030224
+    ]
+  },
+  "scene": {
+    "exposure": 2.1,
+    "calibration": [
+      1.04,
+      0.97,
+      1.12
+    ],
+    "mixer": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "vignette": [
+      0.0,
+      0.0
+    ],
+    "graduated": {
+      "exposure": 0.0,
+      "angle": 0.0,
+      "center": [
+        0.5,
+        0.5
+      ],
+      "width": 0.3
+    }
+  },
+  "tone": {
+    "mapper": "agx_sdr_v1",
+    "saturation": 1.04
+  },
+  "display": {
+    "curve": [
+      [
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        1.0
+      ]
+    ],
+    "shadows": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "highlights": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "split_strength": 0.0,
+    "retouch": [],
+    "synthesis": []
+  }
+}

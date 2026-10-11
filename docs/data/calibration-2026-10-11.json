@@ -1,0 +1,153 @@
+{
+  "source": "2025-09-02-20-48-07_DSCF0027_09f56d9d8fdc881793ae57403e495a38f2c38a03.raf",
+  "source_dimensions": [
+    11648,
+    8736
+  ],
+  "raw_sha256": "65b226c1850a580711e45af1df7bc954193be1dabbdd6fecd5026769d65f156b",
+  "original_raw_and_darktable_sidecar_verified_unchanged": true,
+  "whole_image": {
+    "xy": [
+      0.42779413,
+      0.4136972
+    ],
+    "usable_samples": 195731
+  },
+  "imperfect_warm_window_box": {
+    "xy": [
+      0.46170053,
+      0.4321765
+    ],
+    "usable_samples": 250010,
+    "neutrality_claim": false
+  },
+  "manual_two_axis_geometry": {
+    "distortion": [
+      0.0,
+      0.0
+    ],
+    "chromatic_aberration": [
+      0.0,
+      0.0
+    ],
+    "yaw": -0.205753,
+    "pitch": -12.227947,
+    "rotation": -0.793441,
+    "field_of_view": 96.74222,
+    "crop": [
+      0.0,
+      0.0,
+      1.0,
+      1.0
+    ],
+    "scale": 1.0821165,
+    "shift": [
+      0.01581575,
+      -0.3030224
+    ]
+  },
+  "alignment_constraints": {
+    "coordinate_frame": "previous after image at commit cbf7b5d, 1200x900",
+    "roof": [
+      [
+        465,
+        104
+      ],
+      [
+        601,
+        102
+      ],
+      [
+        734,
+        100
+      ],
+      [
+        866,
+        99
+      ]
+    ],
+    "base": [
+      [
+        434,
+        752
+      ],
+      [
+        700,
+        752
+      ],
+      [
+        986,
+        752
+      ]
+    ],
+    "left_vertical": [
+      [
+        421,
+        280
+      ],
+      [
+        419,
+        751
+      ]
+    ],
+    "right_vertical": [
+      [
+        847,
+        275
+      ],
+      [
+        849,
+        751
+      ]
+    ],
+    "rms_before_pixels": 1.3055824196677348,
+    "rms_after_pixels": 0.21332767428624524
+  },
+  "native_checks": {
+    "whole_and_box_estimation": true,
+    "estimation_undo_redo_byte_identical": true,
+    "temperature_edit_and_undo": true,
+    "swatch_edit_one_undo_step_byte_identical": true,
+    "opening_closing_picker_preserves_recipe": true
+  },
+  "checks": {
+    "combined_features": "cuda,moebius,raw-ml,sam3",
+    "combined_passed": 130,
+    "combined_ignored": 30,
+    "strict_clippy_toolchain": "1.99.0",
+    "strict_clippy_all_targets": true,
+    "gpu_cat16_signed_hdr_parity": {
+      "vulkan": "passed",
+      "cuda_system_memory": "passed",
+      "absolute_tolerance": 3e-05
+    },
+    "default_passed": 119,
+    "default_ignored": 15
+  },
+  "assets": {
+    "docs/images/editor-colour.jpg": {
+      "bytes": 211237,
+      "sha256": "f432029d99d774a6f4bb560af7a0d4e472daa25f13a58ff576eb254188ac8781"
+    },
+    "docs/images/editor-perspective.jpg": {
+      "bytes": 228010,
+      "sha256": "f918bfe3ae15f1e1f17770a4272b58090cf6f68926447eeff26becdb8494cd1d"
+    },
+    "docs/images/standard-london-after.jpg": {
+      "bytes": 432768,
+      "sha256": "3bb08df0659dec107c41c80bf1554024b98054ff82209aee48eec72fe5375d24"
+    },
+    "docs/images/standard-london-after.json": {
+      "bytes": 1587,
+      "sha256": "017fc788c2ffaef24ed56e25906cf942ae95fbba7fcb826ddac3380b3ef94c9f"
+    },
+    "docs/images/standard-london-before.jpg": {
+      "bytes": 381823,
+      "sha256": "144ae52655044bcdde944449baa5588c79de9562d71d28ccf4c7290435169d0d"
+    },
+    "docs/images/standard-london-before.json": {
+      "bytes": 1389,
+      "sha256": "deec0eed27d1e474d46dbfc1864dfe63b5495251163eff32dad05f8ccbdea83d"
+    }
+  }
+}

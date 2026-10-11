@@ -111,20 +111,7 @@ impl Editor {
                         egui::CollapsingHeader::new("Color calibration")
                             .default_open(true)
                             .show(ui, |ui| {
-                                ui.label(
-                                    egui::RichText::new("Relative to the camera white point")
-                                        .small()
-                                        .color(Color32::GRAY),
-                                );
-                                for (i, name) in ["Red", "Green", "Blue"].into_iter().enumerate() {
-                                    slider(
-                                        ui,
-                                        &mut self.edits.scene.calibration[i],
-                                        0.25..=4.0,
-                                        name,
-                                        "×",
-                                    );
-                                }
+                                self.calibration_controls(ui);
                                 slider(
                                     ui,
                                     &mut self.edits.tone.saturation,

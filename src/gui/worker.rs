@@ -29,6 +29,13 @@ pub(super) enum Work {
         mode: crate::perspective::Mode,
         provider: crate::perspective::MaskProvider,
     },
+    Calibrate {
+        load_id: u64,
+        revision: u64,
+        image: Arc<SensorImage>,
+        edits: Edits,
+        region: [f32; 4],
+    },
     #[cfg(feature = "moebius")]
     Generate {
         load_id: u64,
@@ -79,6 +86,12 @@ pub(super) enum Reply {
         previous: Edits,
         report: Box<crate::perspective::Report>,
     },
+    Calibrated {
+        load_id: u64,
+        revision: u64,
+        previous: Edits,
+        sample: crate::calibration::Sample,
+    },
     #[cfg(feature = "moebius")]
     Generated {
         load_id: u64,
@@ -105,6 +118,7 @@ pub(super) enum ErrorScope {
     Save(u64),
     Export(u64),
     Perspective(u64),
+    Calibrate(u64),
     #[cfg(feature = "moebius")]
     Generate(u64),
 }
@@ -113,6 +127,7 @@ pub(super) enum Busy {
     Load(u64),
     Export(u64),
     Perspective(u64),
+    Calibrate(u64),
     #[cfg(feature = "moebius")]
     Generate(u64),
 }
@@ -122,6 +137,7 @@ impl ErrorScope {
             Self::Load(id) => id == load,
             Self::Preview(id) => id == preview,
             Self::Perspective(id) => id == load,
+            Self::Calibrate(id) => id == load,
             // Durable I/O failures still need to name the failed destination,
             // even after the user changes photographs.
             Self::Save(_) | Self::Export(_) => true,
@@ -134,6 +150,7 @@ impl ErrorScope {
             Self::Load(id) => Some(Busy::Load(id)),
             Self::Export(id) => Some(Busy::Export(id)),
             Self::Perspective(id) => Some(Busy::Perspective(id)),
+            Self::Calibrate(id) => Some(Busy::Calibrate(id)),
             #[cfg(feature = "moebius")]
             Self::Generate(id) => Some(Busy::Generate(id)),
             Self::Preview(_) | Self::Save(_) => None,
@@ -149,6 +166,7 @@ impl Work {
             Self::Open { id, .. } => ErrorScope::Load(*id),
             Self::Render { id, .. } => ErrorScope::Preview(*id),
             Self::Perspective { load_id, .. } => ErrorScope::Perspective(*load_id),
+            Self::Calibrate { load_id, .. } => ErrorScope::Calibrate(*load_id),
             #[cfg(feature = "moebius")]
             Self::Generate { load_id, .. } => ErrorScope::Generate(*load_id),
             Self::Save { load_id, .. } => ErrorScope::Save(*load_id),
@@ -289,6 +307,21 @@ pub(super) fn worker(
                     revision,
                     previous: edits,
                     report: Box::new(report),
+                })
+            }
+            Work::Calibrate {
+                load_id,
+                revision,
+                image,
+                edits,
+                region,
+            } => {
+                let sample = crate::calibration::estimate(&image, &edits, region)?;
+                Ok(Reply::Calibrated {
+                    load_id,
+                    revision,
+                    previous: edits,
+                    sample,
                 })
             }
             Work::Save {

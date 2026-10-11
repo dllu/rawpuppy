@@ -19,6 +19,7 @@ use std::{
 
 const ACCENT: Color32 = Color32::from_rgb(225, 150, 100);
 
+mod calibration;
 mod canvas;
 mod controls;
 mod curve;
@@ -132,6 +133,8 @@ struct Editor {
     ai_seed: i64,
     perspective_status: Option<String>,
     perspective_mask: bool,
+    calibration_box: Option<[[f32; 2]; 2]>,
+    calibration_status: Option<String>,
 }
 
 impl Editor {
@@ -246,6 +249,8 @@ impl Editor {
             ai_seed: 0,
             perspective_status: None,
             perspective_mask: true,
+            calibration_box: None,
+            calibration_status: None,
         };
         if let Some(path) = input {
             app.open(path);

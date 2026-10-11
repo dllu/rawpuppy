@@ -190,6 +190,9 @@ impl Editor {
                     self.mask.clear();
                     self.busy = None;
                     self.perspective_status = None;
+                    self.calibration_status = None;
+                    self.calibration_box = None;
+                    self.tool = Tool::View;
                     self.changed();
                     self.status = "Ready".into();
                 }
@@ -274,6 +277,29 @@ impl Editor {
                             "Perspective result discarded because the edits changed".into();
                     }
                 }
+                Reply::Calibrated {
+                    load_id,
+                    revision,
+                    previous,
+                    sample,
+                } if load_id == self.load_generation => {
+                    ErrorScope::Calibrate(load_id).finish_busy(&mut self.busy);
+                    if previous == self.edits && revision == self.history.revision() {
+                        self.edits.scene.illuminant =
+                            crate::calibration::Illuminant::Custom { xy: sample.xy };
+                        self.edits.scene.calibration = [1.; 3];
+                        self.remember(previous);
+                        self.calibration_status = Some(format!(
+                            "Illuminant estimated from {} samples",
+                            sample.pixels
+                        ));
+                        self.status = "Colour calibration ready; save edits to keep it".into();
+                    } else {
+                        self.status =
+                            "Calibration result discarded because the edits or history changed"
+                                .into();
+                    }
+                }
                 Reply::Saved {
                     load_id,
                     path,
@@ -348,6 +374,7 @@ impl Editor {
                             ErrorScope::Save(_) => "Could not save edits",
                             ErrorScope::Export(_) => "Could not export photo",
                             ErrorScope::Perspective(_) => "Could not analyze perspective",
+                            ErrorScope::Calibrate(_) => "Could not estimate illuminant",
                             #[cfg(feature = "moebius")]
                             ErrorScope::Generate(_) => "Could not generate fill",
                         }

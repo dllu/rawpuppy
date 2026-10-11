@@ -61,19 +61,7 @@ impl<'a> Pipeline<'a> {
             source.metadata.width,
             source.metadata.height,
         )?;
-        let gain: Matrix = std::array::from_fn(|i| {
-            std::array::from_fn(|j| {
-                if i == j {
-                    source.metadata.as_shot[i] * edits.scene.calibration[i]
-                } else {
-                    0.
-                }
-            })
-        });
-        let calibration = color::multiply(
-            edits.scene.mixer,
-            color::multiply(source.metadata.camera_to_working, gain),
-        );
+        let calibration = crate::calibration::matrix(&source.metadata, &edits.scene)?;
         let (s, c) = edits.scene.graduated.angle.to_radians().sin_cos();
         let mut retouch_index = vec![Vec::new(); 64 * 64];
         for (i, brush) in edits.display.retouch.iter().enumerate() {
