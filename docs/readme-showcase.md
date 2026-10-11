@@ -8,17 +8,17 @@ remain unchanged; work used a local copy.
 The **before** image uses camera calibration, embedded lens corrections and a
 linear SDR preview, with zero additional exposure and neutral relative gains.
 The **after** image adds 2.1 EV, CAT16 colour calibration from the whole-image
-mean (illuminant CIE xy `[0.42779413, 0.4136972]`), saturation 1.04, and AgX SDR
-tone mapping. Both-axis pinhole correction uses −12.227947° pitch,
-−0.205753° yaw and −0.793441° rotation. The reference supplied the initial
-framing; the main façade's roof, base and verticals then refined the alignment
-to remove the remaining top-edge tilt. The automatic detector declined this dark, curved
-façade; the shown alignment is manually configured and checked against that
-reference, rather than presented as an automatic success.
+mean (illuminant CIE xy `[0.42714328, 0.413429]`), saturation 1.04, and AgX SDR
+tone mapping. The general automatic detector now supplies both-axis pinhole
+correction: −11.275674° pitch, −0.49201426° yaw and −0.7281773° rotation.
+SAM 3 selects architectural support, while verified straight fragments and
+interrupted window columns determine the pose. No reference export is passed
+to the detector. The recipe retains the photograph's chosen scale/translation
+for composition; its camera angles are estimated automatically.
 
 Reference correspondence fitting found 668 inliers among 726 feature matches,
-with median geometric error 0.346 pixels at 1200 pixels wide. It supplied an
-independent rotation/framing estimate; no Darktable implementation was copied.
+with median geometric error 0.346 pixels at 1200 pixels wide. That historical
+fit supplied the original composition; it is not used by the new detector.
 The reference's tone mapping is Filmic, while the shown Rawpuppy result uses AgX.
 
 Both photographs were rendered at full sensor resolution and then reduced to
@@ -33,10 +33,15 @@ The complete recipes are saved beside the images as
 
 ```sh
 cp /path/to/DSCF0027.raf /tmp/DSCF0027.raf
-RUST_MIN_STACK=33554432 cargo run --release --features cuda --example readme_showcase \
+RUST_MIN_STACK=33554432 cargo run --release --features cuda,sam3 --example readme_showcase \
   -- /tmp/DSCF0027.raf /tmp/rawpuppy-readme-images
 ```
 
-The example's recipe is specific to this photograph. It stores output recipes
+Build with `cuda,sam3` and the installed model to reproduce the semantic
+detector's pose. A `cuda` build uses classical detection and can choose a
+different horizontal façade direction.
+
+The example's exposure, colour and composition are specific to this photograph;
+the detector is shared with every input in the editor. It stores output recipes
 and images in the supplied output directory and does not save edits beside the
 input RAW.

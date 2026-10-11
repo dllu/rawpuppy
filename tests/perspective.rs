@@ -1,7 +1,7 @@
 use rawpuppy::{
     edits::GeometryEdits,
     geometry::Geometry,
-    perspective::{self, Mask, Mode},
+    perspective::{self, Mask, Mode, Segment},
     pipeline::Rendered,
 };
 
@@ -243,4 +243,279 @@ fn transparency_boundaries_are_not_architectural_evidence() {
     let report =
         perspective::analyze(&image, None, &GeometryEdits::default(), Mode::Vertical).unwrap();
     assert!(report.segments.is_empty() && report.solution.is_none());
+}
+
+fn family(
+    point: [f64; 3],
+    count: usize,
+    length: f64,
+    x_range: [f64; 2],
+    noise: f64,
+) -> Vec<Segment> {
+    (0..count)
+        .map(|i| {
+            let x = x_range[0] + (x_range[1] - x_range[0]) * (i % 8) as f64 / 7.;
+            let y = -0.23 + (i / 8) as f64 * 0.08;
+            let d = [point[0] - x * point[2], point[1] - y * point[2]];
+            let norm = d[0].hypot(d[1]);
+            Segment {
+                start: [x, y],
+                end: [x + d[0] / norm * length, y + d[1] / norm * length],
+                straightness: noise,
+            }
+        })
+        .collect()
+}
+
+fn lean(solution: &GeometryEdits, segments: &[Segment], width: usize, height: usize) -> f64 {
+    let inverse = rawpuppy::color::inverse(
+        Geometry::compile(solution, width, height)
+            .unwrap()
+            .homography,
+    )
+    .unwrap();
+    let aspect = height as f64 / width as f64;
+    segments
+        .iter()
+        .map(|s| {
+            let [a, b] = [s.start, s.end].map(|p| {
+                let q = rawpuppy::color::apply(
+                    inverse,
+                    [(p[0] + 0.5) as f32, (p[1] / aspect + 0.5) as f32, 1.],
+                );
+                [
+                    q[0] as f64 / q[2] as f64,
+                    q[1] as f64 / q[2] as f64 * aspect,
+                ]
+            });
+            (b[0] - a[0]).abs().atan2((b[1] - a[1]).abs()).to_degrees()
+        })
+        .fold(0., f64::max)
+}
+
+#[test]
+fn steep_receding_facade_edges_cannot_outvote_the_actual_vertical_direction() {
+    // Two independent homogeneous vanishing families, including a dominant
+    // receding direction that looks vertical in a steep telephoto view.
+    let vertical = family([0.007, 0.907, -0.421], 24, 0.14, [-0.4, 0.4], 0.2);
+    let mut segments = vertical.clone();
+    segments.extend(family([0.56, -0.789, -0.251], 48, 0.18, [-0.45, -0.1], 0.2));
+    let base = GeometryEdits {
+        field_of_view: 20.94,
+        ..Default::default()
+    };
+    let report = perspective::fit_segments(segments, [960, 1440], &base, Mode::Vertical).unwrap();
+    let solution = report
+        .solution
+        .unwrap_or_else(|| panic!("{}", report.reason));
+    assert!(
+        lean(&solution, &vertical, 960, 1440) < 0.001,
+        "{solution:?}"
+    );
+}
+
+#[test]
+fn long_precise_edges_determine_the_fit_amid_short_noisy_window_fragments() {
+    let accurate = family([0.014, 0.907, -0.419], 16, 0.24, [-0.4, 0.4], 0.15);
+    let mut segments = accurate.clone();
+    segments.extend(family([0.014, 0.907, -0.379], 80, 0.027, [-0.4, 0.4], 0.4));
+    let base = GeometryEdits {
+        field_of_view: 96.,
+        ..Default::default()
+    };
+    let report = perspective::fit_segments(segments, [1440, 1080], &base, Mode::Vertical).unwrap();
+    let solution = report
+        .solution
+        .unwrap_or_else(|| panic!("{}", report.reason));
+    assert!(
+        lean(&solution, &accurate, 1440, 1080) < 0.08,
+        "{solution:?}"
+    );
+}
+
+#[test]
+fn analysis_is_invariant_to_exposure_colour_and_display_looks() {
+    use rawpuppy::{
+        edits::Edits,
+        input::SensorImage,
+        render::{Backend, Renderer},
+    };
+    use std::sync::Arc;
+    let source = Arc::new(
+        SensorImage::from_rgb(
+            128,
+            96,
+            (0..128 * 96)
+                .flat_map(|i| {
+                    let x = (i % 128) as f32 / 128.;
+                    let y = (i / 128) as f32 / 96.;
+                    [x * x * 0.02, y * y * 0.01, 0.003]
+                })
+                .collect(),
+        )
+        .unwrap(),
+    );
+    let original = source.data.clone();
+    let mut renderer = Renderer::new(Backend::Cpu);
+    let mut edits = Edits::default();
+    let before = perspective::preview(&mut renderer, source.clone(), &edits).unwrap();
+    edits.scene.exposure = 8.;
+    edits.scene.calibration = [3., 0.5, 0.3];
+    edits.scene.vignette = [2., -1.];
+    edits.scene.illuminant = rawpuppy::calibration::Illuminant::BlackBody { kelvin: 1800. };
+    edits.tone.saturation = 0.;
+    edits.display.curve = vec![[0., 0.], [0.4, 0.9], [1., 1.]];
+    let after = perspective::preview(&mut renderer, source.clone(), &edits).unwrap();
+    assert_eq!(before.pixels, after.pixels);
+    assert_eq!(source.data, original);
+}
+
+#[test]
+fn interrupted_window_columns_supply_a_precise_long_baseline() {
+    let truth = GeometryEdits {
+        pitch: -12.4,
+        rotation: 0.8,
+        field_of_view: 96.,
+        ..Default::default()
+    };
+    let camera = Geometry::compile(&truth, 800, 640).unwrap();
+    let mut image = canvas();
+    for x in [0.12, 0.25, 0.38, 0.51, 0.64, 0.77, 0.9] {
+        for row in 0..9 {
+            let y = 0.05 + row as f32 * 0.1;
+            line(
+                &mut image,
+                camera.map([x, y], 1).unwrap(),
+                camera.map([x, y + 0.055], 1).unwrap(),
+            );
+        }
+    }
+    let report = perspective::analyze(
+        &image,
+        None,
+        &GeometryEdits {
+            field_of_view: 96.,
+            ..Default::default()
+        },
+        Mode::Vertical,
+    )
+    .unwrap();
+    let solution = report
+        .solution
+        .unwrap_or_else(|| panic!("{}", report.reason));
+    assert!((solution.pitch - truth.pitch).abs() < 0.15, "{solution:?}");
+    assert!(
+        (solution.rotation - truth.rotation).abs() < 0.08,
+        "{solution:?}"
+    );
+    assert!(
+        report
+            .segments
+            .iter()
+            .filter(|s| (s.end[1] - s.start[1]).abs() > 0.4)
+            .count()
+            >= 4,
+        "Columns were not recovered from their separate jambs"
+    );
+}
+
+#[test]
+fn real_architectural_edge_regressions_agree_with_independent_reference_axes() {
+    #[derive(serde::Deserialize)]
+    struct Case {
+        id: String,
+        analysis_size: [usize; 2],
+        geometry: GeometryEdits,
+        segments: Vec<SegmentFixture>,
+        reference_axis_segments: Vec<SegmentFixture>,
+    }
+    #[derive(serde::Deserialize)]
+    struct SegmentFixture {
+        start: [f64; 2],
+        end: [f64; 2],
+        straightness: f64,
+    }
+    impl From<SegmentFixture> for Segment {
+        fn from(s: SegmentFixture) -> Self {
+            Self {
+                start: s.start,
+                end: s.end,
+                straightness: s.straightness,
+            }
+        }
+    }
+    let cases: Vec<Case> =
+        serde_json::from_str(include_str!("data/perspective-reference-lines.json")).unwrap();
+    for case in cases {
+        let report = perspective::fit_segments(
+            case.segments.into_iter().map(Into::into).collect(),
+            case.analysis_size,
+            &case.geometry,
+            Mode::Vertical,
+        )
+        .unwrap();
+        let solution = report
+            .solution
+            .unwrap_or_else(|| panic!("{}: {}", case.id, report.reason));
+        let reference: Vec<Segment> = case
+            .reference_axis_segments
+            .into_iter()
+            .map(Into::into)
+            .collect();
+        // Export alignment is an independent, approximate oracle (not perfect
+        // gravity truth). This catches the previous 6–26 degree wrong-axis fits.
+        let discrepancy = lean(
+            &solution,
+            &reference,
+            case.analysis_size[0],
+            case.analysis_size[1],
+        );
+        assert!(
+            discrepancy < 0.85,
+            "{}: reference-axis discrepancy {discrepancy}°",
+            case.id
+        );
+    }
+}
+
+#[cfg(feature = "gpu")]
+#[test]
+#[ignore = "requires Vulkan/Metal/CUDA compute"]
+fn antialiased_linear_analysis_matches_cpu_on_the_selected_compute_backend() {
+    use rawpuppy::{
+        edits::Edits,
+        input::SensorImage,
+        render::{Backend, Renderer},
+    };
+    use std::sync::Arc;
+    let source = Arc::new(
+        SensorImage::from_rgb(
+            127,
+            93,
+            (0..127 * 93)
+                .flat_map(|i| {
+                    let x = (i % 127) as f32 / 127.;
+                    let y = (i / 127) as f32 / 93.;
+                    [x * 2.5 - 0.12, y * 2. - 0.15, 0.4 + x * y]
+                })
+                .collect(),
+        )
+        .unwrap(),
+    );
+    let mut edits = Edits::default();
+    edits.geometry.distortion = [0.04, -0.01];
+    let cpu =
+        perspective::preview(&mut Renderer::new(Backend::Cpu), source.clone(), &edits).unwrap();
+    let backend = if std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {
+        Backend::Cuda
+    } else {
+        Backend::Vulkan
+    };
+    let device = perspective::preview(&mut Renderer::new(backend), source, &edits).unwrap();
+    assert_eq!((cpu.width, cpu.height), (device.width, device.height));
+    for (a, b) in cpu.pixels.iter().zip(device.pixels) {
+        for i in 0..4 {
+            assert!((a[i] - b[i]).abs() < 0.0002, "{a:?} vs {b:?}");
+        }
+    }
 }

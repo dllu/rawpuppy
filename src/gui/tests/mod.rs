@@ -7,4 +7,5 @@ mod curves;
 #[cfg(feature = "moebius")]
 mod generation;
 mod history;
+mod perspective;
 mod worker;

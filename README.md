@@ -9,7 +9,7 @@ The CLI `save` command requires the `.rawpuppy.xmp` suffix for its output.
 ![Rawpuppy editing a 101.8 MP GFX photograph of The Standard, London, with exposure and color calibration controls](docs/images/editor-colour.jpg)
 
 The Standard, London — DSCF0027, Fujifilm GFX 100S. Both images are 1200-pixel-wide
-exports from the same RAW: a linear SDR preview before editing, and manual
+exports from the same RAW: a linear SDR preview before editing, and automatic
 two-axis perspective correction, exposure/color calibration and AgX tone mapping after.
 The camera calibration and embedded lens corrections are applied in both.
 Color calibration supports an illuminant color picker, temperature controls,

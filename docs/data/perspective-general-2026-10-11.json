@@ -1,0 +1,2146 @@
+{
+  "schema": 1,
+  "base_commit": "9557d12df5a62775394201a10eb67741e877ea72",
+  "cooked_exports_indexed": 8922,
+  "sampled_exports": 1275,
+  "enabled_perspective_candidates": 265,
+  "visual_screening": true,
+  "development_architecture": 15,
+  "heldout_architecture": 7,
+  "heldout_nonarchitecture": 2,
+  "references_used_by_production_detector": false,
+  "metric": "angular discrepancy from validation-only SIFT/MAGSAC mapping to the cooked export vertical axis; approximate, not perfect gravity ground truth",
+  "cases": [
+    {
+      "id": "c002",
+      "split": "development",
+      "source": "2017-05-27-22-50-25_DSC06384_a6b7c23c5f6aab8a4067ffd6acf355f9593a88e5.arw",
+      "source_sha256": "ab06fe7f2672d269410943660e3c7e1e85a8fe3b76c11df8ab25661fee164a1c",
+      "reference_export": "2017-05-27-22-50-25_DSC06384_a6b7c23c5f6aab8a4067ffd6acf355f9593a88e5.jpg",
+      "reference_mapping": {
+        "matches": 1668,
+        "inliers": 1350,
+        "median_match_error": 0.6998419662349838
+      },
+      "independent_reference_verticals": 97,
+      "before": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        },
+        "classical-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.19658979094623533,
+          "p90_lean": 0.21002652819954448,
+          "maximum_lean": 0.21756871608310077,
+          "measured_verticals": 97
+        },
+        "classical-vertical": {
+          "median_lean": 0.17056683589169755,
+          "p90_lean": 0.17339654435144236,
+          "maximum_lean": 0.17552008043618306,
+          "measured_verticals": 97
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -24.020363,
+            "rotation": -1.0376655,
+            "field_of_view": 83.95982,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0044848523,
+              -0.3710266
+            ]
+          },
+          "reason": "36 vertical straight edges agree; residual 0.40\u00b0",
+          "accepted_edges": 36,
+          "residual_degrees": 0.39782843667586576
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "The fitted correction leaves inconsistent architectural lines",
+          "accepted_edges": 36,
+          "residual_degrees": 1.160447935177281
+        }
+      }
+    },
+    {
+      "id": "c004",
+      "split": "development",
+      "source": "2017-07-01-21-52-02_DSC07657_22e26b6979e666a72b8ae53a53f04e425e9d7ffc.arw",
+      "source_sha256": "c0e9a863ca9842d454f0c82005ec4713629f351063afa884540c83880bd94f0d",
+      "reference_export": "2017-07-01-21-52-02_DSC07657_22e26b6979e666a72b8ae53a53f04e425e9d7ffc.jpg",
+      "reference_mapping": {
+        "matches": 931,
+        "inliers": 787,
+        "median_match_error": 0.9115341302343977
+      },
+      "independent_reference_verticals": 81,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.07999861840338217,
+          "p90_lean": 0.12677275244985176,
+          "maximum_lean": 0.13500556044988565,
+          "measured_verticals": 81
+        },
+        "classical-vertical": {
+          "median_lean": 0.07999861840338217,
+          "p90_lean": 0.12677275244985176,
+          "maximum_lean": 0.13500556044988565,
+          "measured_verticals": 81
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.06464724343387869,
+          "p90_lean": 0.07366106932746437,
+          "maximum_lean": 0.0752476323826425,
+          "measured_verticals": 81
+        },
+        "classical-vertical": {
+          "median_lean": 0.066030913533442,
+          "p90_lean": 0.07827508087773465,
+          "maximum_lean": 0.08043022808707155,
+          "measured_verticals": 81
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 2.5653516e-17,
+            "pitch": -14.395332,
+            "rotation": 0.8855927,
+            "field_of_view": 83.95982,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.0022044852,
+              -0.21369794
+            ]
+          },
+          "reason": "68 vertical straight edges agree; residual 0.32\u00b0",
+          "accepted_edges": 68,
+          "residual_degrees": 0.32320074264210574
+        },
+        "semantic-both": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -0.52188313,
+            "pitch": -14.386946,
+            "rotation": 1.0153024,
+            "field_of_view": 83.95982,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.002699014,
+              -0.21369877
+            ]
+          },
+          "reason": "68 vertical, 23 horizontal straight edges agree; residual 0.61\u00b0",
+          "accepted_edges": 68,
+          "residual_degrees": 0.6091370708043826
+        }
+      }
+    },
+    {
+      "id": "c012",
+      "split": "development",
+      "source": "2017-08-13-03-47-46_DSC08487_a5ed3d576fc0f9598159b662e74c470068a2da33.arw",
+      "source_sha256": "acc4fa4944ee97fa23de6ffa66b7c4c4170acaa400f03b6f9d47416e1469acf9",
+      "reference_export": "2017-08-13-03-47-46_DSC08487_a5ed3d576fc0f9598159b662e74c470068a2da33.jpg",
+      "reference_mapping": {
+        "matches": 896,
+        "inliers": 734,
+        "median_match_error": 0.5038568580727516
+      },
+      "independent_reference_verticals": 84,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 6.3973935178155985,
+          "p90_lean": 16.87133756703429,
+          "maximum_lean": 17.804168904891384,
+          "measured_verticals": 84
+        },
+        "classical-vertical": {
+          "median_lean": 6.3973935178155985,
+          "p90_lean": 16.87133756703429,
+          "maximum_lean": 17.804168904891384,
+          "measured_verticals": 84
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.15669855194764842,
+          "p90_lean": 0.4769358204110217,
+          "maximum_lean": 0.5004326329085123,
+          "measured_verticals": 84
+        },
+        "classical-vertical": {
+          "median_lean": 0.16077214732175588,
+          "p90_lean": 0.49630242957584025,
+          "maximum_lean": 0.5221691168598872,
+          "measured_verticals": 84
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -1.24826385e-17,
+            "pitch": -5.553825,
+            "rotation": -1.1160408,
+            "field_of_view": 50.0,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0020307673,
+              -0.15620211
+            ]
+          },
+          "reason": "55 vertical straight edges agree; residual 0.53\u00b0",
+          "accepted_edges": 55,
+          "residual_degrees": 0.5263865262750824
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "accepted_edges": 55,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c021",
+      "split": "development",
+      "source": "2017-08-17-07-47-14_DSC09481_16a77f180af09efc5456abd22a187fc575f585dd.arw",
+      "source_sha256": "07707a130a73fdaa8a1c3a7939d3837da81fcac57e47426921eaba0ce65a7ee5",
+      "reference_export": "2017-08-17-07-47-14_DSC09481_16a77f180af09efc5456abd22a187fc575f585dd.jpg",
+      "reference_mapping": {
+        "matches": 544,
+        "inliers": 313,
+        "median_match_error": 0.4614344409338867
+      },
+      "independent_reference_verticals": 3,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 26.040818512821367,
+          "p90_lean": 26.05143842491625,
+          "maximum_lean": 26.05409340293997,
+          "measured_verticals": 3
+        },
+        "classical-vertical": {
+          "median_lean": 26.040818512821367,
+          "p90_lean": 26.05143842491625,
+          "maximum_lean": 26.05409340293997,
+          "measured_verticals": 3
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.02605071784539266,
+          "p90_lean": 0.026066731602200178,
+          "maximum_lean": 0.026070735041402057,
+          "measured_verticals": 3
+        },
+        "classical-vertical": {
+          "median_lean": 0.026050727845389036,
+          "p90_lean": 0.02606674160219111,
+          "maximum_lean": 0.02607074504139163,
+          "measured_verticals": 3
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -51.425247,
+            "rotation": -0.24754366,
+            "field_of_view": 20.936806,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.014658906,
+              -2.2642822
+            ]
+          },
+          "reason": "42 vertical straight edges agree; residual 0.28\u00b0",
+          "accepted_edges": 42,
+          "residual_degrees": 0.2810469360066694
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "The estimated camera pose is too extreme for a reliable automatic correction",
+          "accepted_edges": 42,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c055",
+      "split": "development",
+      "source": "2017-10-05-18-15-55_DSC00007_f95907f4791b5893abec76942e31e460cfced855.arw",
+      "source_sha256": "4fd2fbe163dae0a842f1682c34bf325fbbbd2b5bdcb26ed8592d6d26cb782798",
+      "reference_export": "2017-10-05-18-15-55_DSC00007_f95907f4791b5893abec76942e31e460cfced855.jpg",
+      "reference_mapping": {
+        "matches": 3336,
+        "inliers": 3147,
+        "median_match_error": 0.24606997718125662
+      },
+      "independent_reference_verticals": 25,
+      "before": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        },
+        "classical-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.0622515675034442,
+          "p90_lean": 0.08523037394468914,
+          "maximum_lean": 0.09086914051525588,
+          "measured_verticals": 25
+        },
+        "classical-vertical": {
+          "median_lean": 0.0622515675034442,
+          "p90_lean": 0.08523037394468914,
+          "maximum_lean": 0.09086914051525588,
+          "measured_verticals": 25
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 1.26977104e-17,
+            "pitch": -11.917094,
+            "rotation": -0.437906,
+            "field_of_view": 30.955019,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0029125444,
+              -0.5716064
+            ]
+          },
+          "reason": "120 vertical straight edges agree; residual 0.36\u00b0",
+          "accepted_edges": 120,
+          "residual_degrees": 0.3578666225132213
+        },
+        "semantic-both": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -2.7208605,
+            "pitch": -11.924384,
+            "rotation": 0.12421165,
+            "field_of_view": 30.955019,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.08687898,
+              -0.57226694
+            ]
+          },
+          "reason": "120 vertical, 15 horizontal straight edges agree; residual 0.39\u00b0",
+          "accepted_edges": 120,
+          "residual_degrees": 0.3937830597453898
+        }
+      }
+    },
+    {
+      "id": "c071",
+      "split": "development",
+      "source": "2018-02-07-12-27-18_DSC03011_7b06b850437a2e43faacb05b11d24f0823c5f8b6.arw",
+      "source_sha256": "b88b0b893b2c69f9c360f9846549a71885b2e7a7c689523e0b8c28f76e66813e",
+      "reference_export": "2018-02-07-12-27-18_DSC03011_7b06b850437a2e43faacb05b11d24f0823c5f8b6.jpg",
+      "reference_mapping": {
+        "matches": 1647,
+        "inliers": 1434,
+        "median_match_error": 0.9088516581722839
+      },
+      "independent_reference_verticals": 91,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.052630284542907364,
+          "p90_lean": 0.16488425675754995,
+          "maximum_lean": 0.24605931108758947,
+          "measured_verticals": 91
+        },
+        "classical-vertical": {
+          "median_lean": 0.17288645912362433,
+          "p90_lean": 0.5712261030034302,
+          "maximum_lean": 0.8367934561767975,
+          "measured_verticals": 91
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.07111137712598078,
+          "p90_lean": 0.1675270257519277,
+          "maximum_lean": 0.22684839614993105,
+          "measured_verticals": 91
+        },
+        "classical-vertical": {
+          "median_lean": 0.07802171162455364,
+          "p90_lean": 0.14673937236614598,
+          "maximum_lean": 0.18901867610210857,
+          "measured_verticals": 91
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -19.83588,
+            "rotation": -0.90313697,
+            "field_of_view": 83.97006,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0031590438,
+              -0.30059376
+            ]
+          },
+          "reason": "51 vertical straight edges agree; residual 0.58\u00b0",
+          "accepted_edges": 51,
+          "residual_degrees": 0.5841855469124242
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "accepted_edges": 51,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c088",
+      "split": "development",
+      "source": "2018-08-05-03-25-46_DSC06576_3138e9ad42bd31678ba528e626eaf5528e518e69.arw",
+      "source_sha256": "ccf9818b26d28e32e97340a4db4c1a006c23239aa0c6fd225a0e9d947dd9f9e6",
+      "reference_export": "2018-08-05-03-25-46_DSC06576_3138e9ad42bd31678ba528e626eaf5528e518e69.jpg",
+      "reference_mapping": {
+        "matches": 1545,
+        "inliers": 1418,
+        "median_match_error": 0.82633620561734
+      },
+      "independent_reference_verticals": 15,
+      "before": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        },
+        "classical-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.29514034943159406,
+          "p90_lean": 0.35057294998710986,
+          "maximum_lean": 0.43965128377158513,
+          "measured_verticals": 15
+        },
+        "classical-vertical": {
+          "median_lean": 0.2778020697339989,
+          "p90_lean": 0.3377934721436242,
+          "maximum_lean": 0.4250895704218403,
+          "measured_verticals": 15
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 6.27319e-18,
+            "pitch": -8.007811,
+            "rotation": 0.2401309,
+            "field_of_view": 83.97006,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.00032757953,
+              -0.11724115
+            ]
+          },
+          "reason": "13 vertical straight edges agree; residual 0.49\u00b0",
+          "accepted_edges": 13,
+          "residual_degrees": 0.4901191945923942
+        },
+        "semantic-both": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.2820945,
+            "pitch": -8.008885,
+            "rotation": 0.20083015,
+            "field_of_view": 83.97006,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.0030364278,
+              -0.11724288
+            ]
+          },
+          "reason": "13 vertical, 18 horizontal straight edges agree; residual 0.49\u00b0",
+          "accepted_edges": 13,
+          "residual_degrees": 0.4905248447634513
+        }
+      }
+    },
+    {
+      "id": "c093",
+      "split": "development",
+      "source": "2018-10-05-09-43-08_DSC08754_ee5ad2322adf4efce0ac51ca9b8b86c247d55b53.arw",
+      "source_sha256": "518eaf5bf3c69abbc578d88370f19ef11a07b2a3c4a605b70b9018b340dbcb50",
+      "reference_export": "2018-10-05-09-43-08_DSC08754_ee5ad2322adf4efce0ac51ca9b8b86c247d55b53.jpg",
+      "reference_mapping": {
+        "matches": 306,
+        "inliers": 159,
+        "median_match_error": 0.5001294191680716
+      },
+      "independent_reference_verticals": 161,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.18259793566205865,
+          "p90_lean": 0.3287740827288576,
+          "maximum_lean": 0.3754263708246745,
+          "measured_verticals": 161
+        },
+        "classical-vertical": {
+          "median_lean": 0.060514286603821875,
+          "p90_lean": 0.1136949136608709,
+          "maximum_lean": 0.13066834393227164,
+          "measured_verticals": 161
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.049636620405745756,
+          "p90_lean": 0.06275750427811597,
+          "maximum_lean": 0.06855195411236574,
+          "measured_verticals": 161
+        },
+        "classical-vertical": {
+          "median_lean": 0.04556820212528454,
+          "p90_lean": 0.05464257151992352,
+          "maximum_lean": 0.058650005592695745,
+          "measured_verticals": 161
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -36.40067,
+            "rotation": 0.99099165,
+            "field_of_view": 54.428654,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.012398181,
+              -1.0751239
+            ]
+          },
+          "reason": "102 vertical straight edges agree; residual 0.49\u00b0",
+          "accepted_edges": 102,
+          "residual_degrees": 0.4874486639942689
+        },
+        "semantic-both": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 22.777016,
+            "pitch": -34.53215,
+            "rotation": -12.34293,
+            "field_of_view": 54.428654,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.3411015,
+              -1.1392725
+            ]
+          },
+          "reason": "102 vertical, 41 horizontal straight edges agree; residual 0.63\u00b0",
+          "accepted_edges": 102,
+          "residual_degrees": 0.6297404053169241
+        }
+      }
+    },
+    {
+      "id": "c100",
+      "split": "development",
+      "source": "2018-10-27-08-17-53_DSC00931_cc5f3cc4a65878ba153d84ede69cb76e3358c6fc.arw",
+      "source_sha256": "d1fb9f16cd3d7dd4c887bd92ed90b36ca08f44ef66595069944b968830694b0d",
+      "reference_export": "2018-10-27-08-17-53_DSC00931_cc5f3cc4a65878ba153d84ede69cb76e3358c6fc.jpg",
+      "reference_mapping": {
+        "matches": 747,
+        "inliers": 328,
+        "median_match_error": 0.536581606009533
+      },
+      "independent_reference_verticals": 303,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.07887378995789425,
+          "p90_lean": 0.18800401387838134,
+          "maximum_lean": 0.22581973450933493,
+          "measured_verticals": 303
+        },
+        "classical-vertical": {
+          "median_lean": 0.07887378995789425,
+          "p90_lean": 0.18800401387838134,
+          "maximum_lean": 0.22581973450933493,
+          "measured_verticals": 303
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.10371656444496109,
+          "p90_lean": 0.1528689174518894,
+          "maximum_lean": 0.16990155173896143,
+          "measured_verticals": 303
+        },
+        "classical-vertical": {
+          "median_lean": 0.10222755983998791,
+          "p90_lean": 0.15681989716612046,
+          "maximum_lean": 0.17573759618988893,
+          "measured_verticals": 303
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -8.028705e-17,
+            "pitch": -51.758232,
+            "rotation": -0.7331558,
+            "field_of_view": 30.955019,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.02931721,
+              -3.4365017
+            ]
+          },
+          "reason": "97 vertical straight edges agree; residual 0.34\u00b0",
+          "accepted_edges": 97,
+          "residual_degrees": 0.33532652032616483
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "accepted_edges": 97,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c104",
+      "split": "development",
+      "source": "2019-05-19-15-08-41_DSCF2407_bb3958741931b13f8c4bddf9f2a5f922bc6c5804.raf",
+      "source_sha256": "e23daf922f150834e86455533258243715a0ab7bca27c5edfaf42ea3288e0f4d",
+      "reference_export": "2019-05-19-15-08-41_DSCF2407_bb3958741931b13f8c4bddf9f2a5f922bc6c5804.jpg",
+      "reference_mapping": {
+        "matches": 3225,
+        "inliers": 2147,
+        "median_match_error": 1.1265523848173198
+      },
+      "independent_reference_verticals": 21,
+      "before": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        },
+        "classical-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.2180241372607134,
+          "p90_lean": 0.5721838742841117,
+          "maximum_lean": 0.7791672233022567,
+          "measured_verticals": 21
+        },
+        "classical-vertical": {
+          "median_lean": 0.5047061364275047,
+          "p90_lean": 1.1249104854767245,
+          "maximum_lean": 1.5936224315549234,
+          "measured_verticals": 21
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 5.078654e-17,
+            "pitch": -11.894083,
+            "rotation": -1.9003321,
+            "field_of_view": 51.354427,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0072637885,
+              -0.2919011
+            ]
+          },
+          "reason": "29 vertical straight edges agree; residual 0.62\u00b0",
+          "accepted_edges": 29,
+          "residual_degrees": 0.6246226963969138
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "The fitted correction leaves inconsistent architectural lines",
+          "accepted_edges": 29,
+          "residual_degrees": 1.557564364860287
+        }
+      }
+    },
+    {
+      "id": "c107",
+      "split": "development",
+      "source": "2019-06-16-10-51-11_DSCF2615_9d61ce6dd2a564cc58558fc513bf9fe10498b12c.raf",
+      "source_sha256": "897fac34f819863a5cae9a6a6bb8b67c12d27247898d1b766bbbad37427281e4",
+      "reference_export": "2019-06-16-10-51-11_DSCF2615_9d61ce6dd2a564cc58558fc513bf9fe10498b12c.jpg",
+      "reference_mapping": {
+        "matches": 1108,
+        "inliers": 824,
+        "median_match_error": 1.1553239283275363
+      },
+      "independent_reference_verticals": 86,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.1613480691042758,
+          "p90_lean": 0.471633355555449,
+          "maximum_lean": 0.5798878819090634,
+          "measured_verticals": 86
+        },
+        "classical-vertical": {
+          "median_lean": 0.13986631640590275,
+          "p90_lean": 0.41952370804189065,
+          "maximum_lean": 0.5148406509782135,
+          "measured_verticals": 86
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.09303372223763172,
+          "p90_lean": 0.10474326002688422,
+          "maximum_lean": 0.10944094641892452,
+          "measured_verticals": 86
+        },
+        "classical-vertical": {
+          "median_lean": 0.08185029461711596,
+          "p90_lean": 0.14177769554682434,
+          "maximum_lean": 0.16581888587196092,
+          "measured_verticals": 86
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -19.013008,
+            "rotation": -1.3510424,
+            "field_of_view": 39.656918,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.011265812,
+              -0.35825884
+            ]
+          },
+          "reason": "86 vertical straight edges agree; residual 0.40\u00b0",
+          "accepted_edges": 86,
+          "residual_degrees": 0.4043822963513106
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "accepted_edges": 86,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c119",
+      "split": "development",
+      "source": "2020-09-09-12-33-28_DSCF6167_1b77c280e976a93c30cc0355602dd51da90656ed.raf",
+      "source_sha256": "8b7cb3cc72aca4bc54f55d31365d41976ef4c1243ba640d1815bf48cef587740",
+      "reference_export": "2020-09-09-12-33-28_DSCF6167_1b77c280e976a93c30cc0355602dd51da90656ed.jpg",
+      "reference_mapping": {
+        "matches": 3361,
+        "inliers": 3255,
+        "median_match_error": 0.2391022081059203
+      },
+      "independent_reference_verticals": 26,
+      "before": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        },
+        "classical-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.1399422270580009,
+          "p90_lean": 0.1783621708891116,
+          "maximum_lean": 0.19135389199025762,
+          "measured_verticals": 26
+        },
+        "classical-vertical": {
+          "median_lean": 0.08917271517354008,
+          "p90_lean": 0.1637079764008204,
+          "maximum_lean": 0.18891195068000885,
+          "measured_verticals": 26
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -13.599516,
+            "rotation": 0.32421574,
+            "field_of_view": 46.79627,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.0015818226,
+              -0.37271804
+            ]
+          },
+          "reason": "19 vertical straight edges agree; residual 0.50\u00b0",
+          "accepted_edges": 19,
+          "residual_degrees": 0.4950436617257169
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "The estimated camera pose is too extreme for a reliable automatic correction",
+          "accepted_edges": 19,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c120",
+      "split": "development",
+      "source": "2020-09-22-16-51-47_DSCF6405_17f666cffa632180545224d4fd49b5604c4b8ce2.raf",
+      "source_sha256": "d9bacd5a87f4b776fb8ea6372d22c27c41444f16255f835e69e53a0b18c96a1a",
+      "reference_export": "2020-09-22-16-51-47_DSCF6405_17f666cffa632180545224d4fd49b5604c4b8ce2.jpg",
+      "reference_mapping": {
+        "matches": 371,
+        "inliers": 278,
+        "median_match_error": 0.5339495797621279
+      },
+      "independent_reference_verticals": 12,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.38733170971107883,
+          "p90_lean": 0.5081564300510234,
+          "maximum_lean": 0.5244674708717544,
+          "measured_verticals": 12
+        },
+        "classical-vertical": {
+          "median_lean": 0.28794304348528765,
+          "p90_lean": 0.6181158240345151,
+          "maximum_lean": 0.662684747228477,
+          "measured_verticals": 12
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.09945564782597852,
+          "p90_lean": 0.14106870803727287,
+          "maximum_lean": 0.20513722910393103,
+          "measured_verticals": 12
+        },
+        "classical-vertical": {
+          "median_lean": 0.10500207997632674,
+          "p90_lean": 0.18888087907103562,
+          "maximum_lean": 0.32398687323632447,
+          "measured_verticals": 12
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -1.3712182,
+            "rotation": -0.5797609,
+            "field_of_view": 87.75441,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.00012594514,
+              -0.016595067
+            ]
+          },
+          "reason": "7 vertical straight edges agree; residual 0.34\u00b0",
+          "accepted_edges": 7,
+          "residual_degrees": 0.3395829797319697
+        },
+        "semantic-both": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 18.996014,
+            "pitch": -1.1078788,
+            "rotation": -0.9944978,
+            "field_of_view": 87.75441,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.17883869,
+              -0.017549122
+            ]
+          },
+          "reason": "7 vertical, 7 horizontal straight edges agree; residual 0.34\u00b0",
+          "accepted_edges": 7,
+          "residual_degrees": 0.33759744829089194
+        }
+      }
+    },
+    {
+      "id": "c122",
+      "split": "development",
+      "source": "2020-11-25-17-42-20_DSCF6843_2d8721178de3149fbfe56589de5d64a703ddc959.raf",
+      "source_sha256": "21becdaa9475767599e2d381445e8a769e0959e81541cba663c47a00e9e27573",
+      "reference_export": "2020-11-25-17-42-20_DSCF6843_2d8721178de3149fbfe56589de5d64a703ddc959.jpg",
+      "reference_mapping": {
+        "matches": 1905,
+        "inliers": 1698,
+        "median_match_error": 0.5183651317974054
+      },
+      "independent_reference_verticals": 40,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.19599588785103447,
+          "p90_lean": 0.3267445796843394,
+          "maximum_lean": 0.3950424026700525,
+          "measured_verticals": 40
+        },
+        "classical-vertical": {
+          "median_lean": 0.19599588785103447,
+          "p90_lean": 0.3267445796843394,
+          "maximum_lean": 0.3950424026700525,
+          "measured_verticals": 40
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.314674952587608,
+          "p90_lean": 0.627601964719832,
+          "maximum_lean": 0.7279791100868928,
+          "measured_verticals": 40
+        },
+        "classical-vertical": {
+          "median_lean": 0.314674952587608,
+          "p90_lean": 0.627601964719832,
+          "maximum_lean": 0.7279791100868928,
+          "measured_verticals": 40
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 6.254289e-18,
+            "pitch": -6.6650176,
+            "rotation": 0.26059893,
+            "field_of_view": 87.75441,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.0002763681,
+              -0.08101654
+            ]
+          },
+          "reason": "38 vertical straight edges agree; residual 0.50\u00b0",
+          "accepted_edges": 38,
+          "residual_degrees": 0.5005564972119588
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "accepted_edges": 38,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "london",
+      "split": "development",
+      "source": "DSCF0027.raf",
+      "source_sha256": "65b226c1850a580711e45af1df7bc954193be1dabbdd6fecd5026769d65f156b",
+      "reference_export": "2025-09-02-20-48-07_DSCF0027_09f56d9d8fdc881793ae57403e495a38f2c38a03.jpg",
+      "reference_mapping": {
+        "matches": 1060,
+        "inliers": 966,
+        "median_match_error": 0.39458463046187037
+      },
+      "independent_reference_verticals": 83,
+      "before": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        },
+        "classical-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.10911126681250684,
+          "p90_lean": 0.2013725648155659,
+          "maximum_lean": 0.3316220489507959,
+          "measured_verticals": 83
+        },
+        "classical-vertical": {
+          "median_lean": 0.11868539142457084,
+          "p90_lean": 0.21869701552356016,
+          "maximum_lean": 0.33927786426195766,
+          "measured_verticals": 83
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -11.269135,
+            "rotation": -0.82435375,
+            "field_of_view": 96.74222,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0012739188,
+              -0.11804824
+            ]
+          },
+          "reason": "43 vertical straight edges agree; residual 0.53\u00b0",
+          "accepted_edges": 43,
+          "residual_degrees": 0.5272726857249409
+        },
+        "semantic-both": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -0.49201426,
+            "pitch": -11.275674,
+            "rotation": -0.7281773,
+            "field_of_view": 96.74222,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.005016798,
+              -0.118055284
+            ]
+          },
+          "reason": "43 vertical, 8 horizontal straight edges agree; residual 0.53\u00b0",
+          "accepted_edges": 43,
+          "residual_degrees": 0.5253137332160132
+        }
+      }
+    },
+    {
+      "id": "c129",
+      "split": "held_out",
+      "source": "2023-02-10-07-50-50_DSCF8535_9867a5468fcbc4192693b09135bc2be111976bf2.raf",
+      "source_sha256": "bfcf255c3bbc016082029b072c3804fb62ae9df20c8bb42c01bc32d94623fc24",
+      "reference_export": "2023-02-10-07-50-50_DSCF8535_9867a5468fcbc4192693b09135bc2be111976bf2.jpg",
+      "reference_mapping": {
+        "matches": 3707,
+        "inliers": 3533,
+        "median_match_error": 0.1759000022493231
+      },
+      "independent_reference_verticals": 144,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.057102081936606305,
+          "p90_lean": 0.17185757040803126,
+          "maximum_lean": 0.18825977849461242,
+          "measured_verticals": 144
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.08066874258188726,
+          "p90_lean": 0.16216353374177742,
+          "maximum_lean": 0.170235897807938,
+          "measured_verticals": 144
+        },
+        "classical-vertical": {
+          "median_lean": 0.08099143855472704,
+          "p90_lean": 0.1592616276796907,
+          "maximum_lean": 0.16701458964253627,
+          "measured_verticals": 144
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 6.2210293e-18,
+            "pitch": -3.0837953,
+            "rotation": -0.64894205,
+            "field_of_view": 36.125713,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.00093547424,
+              -0.061942857
+            ]
+          },
+          "reason": "99 vertical straight edges agree; residual 0.41\u00b0",
+          "accepted_edges": 99,
+          "residual_degrees": 0.40771029856192353
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "accepted_edges": 99,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c135",
+      "split": "held_out",
+      "source": "2023-02-19-13-23-44_DSCF9937_76696c8c584a17d946f42b1043c4e71aa5240917.raf",
+      "source_sha256": "cd21c26d6031deb9316304cadc4f56fac5903d3bb332e3b3bd0e5380fe77dcbf",
+      "reference_export": "2023-02-19-13-23-44_DSCF9937_76696c8c584a17d946f42b1043c4e71aa5240917.jpg",
+      "reference_mapping": {
+        "matches": 4080,
+        "inliers": 3965,
+        "median_match_error": 0.21674389573334712
+      },
+      "independent_reference_verticals": 54,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.19657474536628428,
+          "p90_lean": 0.2635297696827668,
+          "maximum_lean": 0.31576284522862197,
+          "measured_verticals": 54
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.13821809246465233,
+          "p90_lean": 0.2778174289217776,
+          "maximum_lean": 0.3867244641056327,
+          "measured_verticals": 54
+        },
+        "classical-vertical": {
+          "median_lean": 0.13467570647956165,
+          "p90_lean": 0.27504695311012767,
+          "maximum_lean": 0.38455621027280645,
+          "measured_verticals": 54
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -12.582007,
+            "rotation": -0.8889533,
+            "field_of_view": 87.80719,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.0017989625,
+              -0.15458582
+            ]
+          },
+          "reason": "34 vertical straight edges agree; residual 0.51\u00b0",
+          "accepted_edges": 34,
+          "residual_degrees": 0.5089611331785254
+        },
+        "semantic-both": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.5375124,
+            "pitch": -12.573332,
+            "rotation": -1.0060043,
+            "field_of_view": 87.80719,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.0029584914,
+              -0.15458742
+            ]
+          },
+          "reason": "34 vertical, 35 horizontal straight edges agree; residual 0.51\u00b0",
+          "accepted_edges": 34,
+          "residual_degrees": 0.506803385779387
+        }
+      }
+    },
+    {
+      "id": "c148",
+      "split": "held_out",
+      "source": "2024-01-05-11-17-04_DSCF5050_d5e3f37e4577aaeb13dc605c622b7c0fe392df45.raf",
+      "source_sha256": "227af1e2737d7d9f32af8b15c86753d22ed5455040d0e72401d2381fbf6cb7a7",
+      "reference_export": "2024-01-05-11-17-04_DSCF5050_d5e3f37e4577aaeb13dc605c622b7c0fe392df45.jpg",
+      "reference_mapping": {
+        "matches": 3383,
+        "inliers": 3066,
+        "median_match_error": 0.5481398211744692
+      },
+      "independent_reference_verticals": 80,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.10593240866245207,
+          "p90_lean": 0.18044488589983068,
+          "maximum_lean": 0.1874212642142338,
+          "measured_verticals": 80
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.15291105567691718,
+          "p90_lean": 0.2978244415305012,
+          "maximum_lean": 0.3239842063200179,
+          "measured_verticals": 80
+        },
+        "classical-vertical": {
+          "median_lean": 0.11308773313318496,
+          "p90_lean": 0.27225413693367745,
+          "maximum_lean": 0.29384505857967214,
+          "measured_verticals": 80
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -2.5239607e-17,
+            "pitch": -10.105046,
+            "rotation": 1.0324613,
+            "field_of_view": 87.81066,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.0016682001,
+              -0.1234209
+            ]
+          },
+          "reason": "74 vertical straight edges agree; residual 0.54\u00b0",
+          "accepted_edges": 74,
+          "residual_degrees": 0.5423708782514427
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "accepted_edges": 74,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c157",
+      "split": "held_out",
+      "source": "2024-02-10-12-02-18_DSCF6575_6f36b728ffb0da14fdcdcb66e8c86489efb0e6a8.raf",
+      "source_sha256": "e7f97689a64e093404bdc4465c024d3cf96eda8452798028a998fa1f810638d3",
+      "reference_export": "2024-02-10-12-02-18_DSCF6575_6f36b728ffb0da14fdcdcb66e8c86489efb0e6a8.jpg",
+      "reference_mapping": {
+        "matches": 6507,
+        "inliers": 6443,
+        "median_match_error": 0.13603117623605887
+      },
+      "independent_reference_verticals": 0,
+      "before": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        },
+        "classical-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "accepted_edges": 0,
+          "residual_degrees": null
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "accepted_edges": 0,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c172",
+      "split": "held_out",
+      "source": "2024-09-13-14-44-37_DSCF0400_684095afdf97abd965825b93fa0a0a4968f41940.raf",
+      "source_sha256": "edb85acf4f149b4936e45d78650d115e7ef0f6fbc3952a604d64b4cc099f3d50",
+      "reference_export": "2024-09-13-14-44-37_DSCF0400_684095afdf97abd965825b93fa0a0a4968f41940.jpg",
+      "reference_mapping": {
+        "matches": 3005,
+        "inliers": 2772,
+        "median_match_error": 0.440331446655699
+      },
+      "independent_reference_verticals": 2,
+      "before": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.4940886356056685,
+          "p90_lean": 0.5565422103194396,
+          "maximum_lean": 0.5721556039978823,
+          "measured_verticals": 2
+        },
+        "classical-vertical": {
+          "median_lean": 0.4876643095298644,
+          "p90_lean": 0.5500599990671918,
+          "maximum_lean": 0.5656589214515237,
+          "measured_verticals": 2
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": -32.109978,
+            "rotation": -1.6100785,
+            "field_of_view": 96.73471,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.007836345,
+              -0.37171793
+            ]
+          },
+          "reason": "55 vertical straight edges agree; residual 0.49\u00b0",
+          "accepted_edges": 55,
+          "residual_degrees": 0.48635468298274975
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "The fitted correction leaves inconsistent architectural lines",
+          "accepted_edges": 55,
+          "residual_degrees": 1.3445507417805511
+        }
+      }
+    },
+    {
+      "id": "c175",
+      "split": "held_out",
+      "source": "2024-09-16-15-35-39_DSCF0922_62fbf07e24cfb2c4b6c57961967c8dd260c6a246.raf",
+      "source_sha256": "f6d278fedf41f04b67d2cb9bb7d3ef2ee68778d93b4aed31e4745ad8b5ec49fa",
+      "reference_export": "2024-09-16-15-35-39_DSCF0922_62fbf07e24cfb2c4b6c57961967c8dd260c6a246.jpg",
+      "reference_mapping": {
+        "matches": 2046,
+        "inliers": 1869,
+        "median_match_error": 0.3574096345687617
+      },
+      "independent_reference_verticals": 184,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.3938413721969641,
+          "p90_lean": 0.4890588550572148,
+          "maximum_lean": 0.5112543032650915,
+          "measured_verticals": 184
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.3808492829527621,
+          "p90_lean": 0.4708120184042671,
+          "maximum_lean": 0.49178268439909584,
+          "measured_verticals": 184
+        },
+        "classical-vertical": {
+          "median_lean": 0.3811015565134118,
+          "p90_lean": 0.4818872206138058,
+          "maximum_lean": 0.5053804915202553,
+          "measured_verticals": 184
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -1.1100183e-16,
+            "pitch": -26.438643,
+            "rotation": -2.1907418,
+            "field_of_view": 96.74504,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.008446141,
+              -0.29438576
+            ]
+          },
+          "reason": "65 vertical straight edges agree; residual 0.53\u00b0",
+          "accepted_edges": 65,
+          "residual_degrees": 0.5304929411998263
+        },
+        "semantic-both": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -2.2787623,
+            "pitch": -26.498583,
+            "rotation": -1.1749729,
+            "field_of_view": 96.74504,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.02429608,
+              -0.29477224
+            ]
+          },
+          "reason": "65 vertical, 52 horizontal straight edges agree; residual 0.58\u00b0",
+          "accepted_edges": 65,
+          "residual_degrees": 0.5841706739602969
+        }
+      }
+    },
+    {
+      "id": "c178",
+      "split": "held_out",
+      "source": "2024-09-18-16-25-37_DSCF1294_1729c37c723406e30ac65bb991a61c3a70ac2b89.raf",
+      "source_sha256": "31c9f808ec09416eca7ba7ee2d798c0782599bed27379ae4e1e7dd053bd9e5d6",
+      "reference_export": "2024-09-18-16-25-37_DSCF1294_1729c37c723406e30ac65bb991a61c3a70ac2b89.jpg",
+      "reference_mapping": {
+        "matches": 1798,
+        "inliers": 1611,
+        "median_match_error": 0.38513653669548265
+      },
+      "independent_reference_verticals": 57,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.2967279150316721,
+          "p90_lean": 0.49357252621068004,
+          "maximum_lean": 0.5826289688662831,
+          "measured_verticals": 57
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.2701887967373036,
+          "p90_lean": 0.4869672030421245,
+          "maximum_lean": 0.585042154515106,
+          "measured_verticals": 57
+        },
+        "classical-vertical": {
+          "median_lean": 0.2702065426552368,
+          "p90_lean": 0.48698759304705425,
+          "maximum_lean": 0.5850637407661576,
+          "measured_verticals": 57
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 5.4725075e-17,
+            "pitch": -24.75509,
+            "rotation": 0.5805991,
+            "field_of_view": 96.61643,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              -0.0020809476,
+              -0.27379864
+            ]
+          },
+          "reason": "77 vertical straight edges agree; residual 0.41\u00b0",
+          "accepted_edges": 77,
+          "residual_degrees": 0.4061426412060804
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Vertical evidence found, but no unambiguous horizontal fa\u00e7ade direction; try Auto vertical",
+          "accepted_edges": 77,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c187",
+      "split": "held_out",
+      "source": "2025-03-08-11-21-07_DSCF4790_7eeee24442fa392a0c01b6ace7144a0d3e90e565.raf",
+      "source_sha256": "13b0a00778b9ae5d3f3e2f3f805187f8729d0d0c92b51020c14f96d8174658d9",
+      "reference_export": "2025-03-08-11-21-07_DSCF4790_7eeee24442fa392a0c01b6ace7144a0d3e90e565.jpg",
+      "reference_mapping": {
+        "matches": 2874,
+        "inliers": 2835,
+        "median_match_error": 0.18574485896747742
+      },
+      "independent_reference_verticals": 6,
+      "before": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        },
+        "classical-vertical": {
+          "abstained": "Not enough consistent, spatially separated straight architectural edges"
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "accepted_edges": 0,
+          "residual_degrees": null
+        },
+        "semantic-both": {
+          "solution": null,
+          "reason": "Not enough consistent, spatially separated straight architectural edges",
+          "accepted_edges": 0,
+          "residual_degrees": null
+        }
+      }
+    },
+    {
+      "id": "c189",
+      "split": "held_out",
+      "source": "2025-06-14-17-49-40_DSCF7086_41b6442699b561a7cf1e803c2f0e7ab374ce026b.raf",
+      "source_sha256": "d98bbadd9f9e4eed0073c3a275af04c61cf2306d969678254d10b9c87ba6afc4",
+      "reference_export": "2025-06-14-17-49-40_DSCF7086_41b6442699b561a7cf1e803c2f0e7ab374ce026b.jpg",
+      "reference_mapping": {
+        "matches": 1817,
+        "inliers": 1667,
+        "median_match_error": 0.30710798072480966
+      },
+      "independent_reference_verticals": 62,
+      "before": {
+        "semantic-vertical": {
+          "median_lean": 0.2742251009966842,
+          "p90_lean": 1.134595532022009,
+          "maximum_lean": 1.32453111776215,
+          "measured_verticals": 62
+        }
+      },
+      "after": {
+        "semantic-vertical": {
+          "median_lean": 0.07884462150128638,
+          "p90_lean": 0.17055464866272135,
+          "maximum_lean": 0.2534280847955117,
+          "measured_verticals": 62
+        },
+        "classical-vertical": {
+          "median_lean": 0.08951980492780626,
+          "p90_lean": 0.16231552713083378,
+          "maximum_lean": 0.25999523354833326,
+          "measured_verticals": 62
+        }
+      },
+      "pose": {
+        "semantic-vertical": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": 0.0,
+            "pitch": 1.2747995,
+            "rotation": 0.5781418,
+            "field_of_view": 80.31378,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.00013305702,
+              0.00988946
+            ]
+          },
+          "reason": "34 vertical straight edges agree; residual 0.57\u00b0",
+          "accepted_edges": 34,
+          "residual_degrees": 0.5686042190141316
+        },
+        "semantic-both": {
+          "solution": {
+            "distortion": [
+              0.0,
+              0.0
+            ],
+            "chromatic_aberration": [
+              0.0,
+              0.0
+            ],
+            "yaw": -30.935009,
+            "pitch": 1.3906542,
+            "rotation": -0.15934989,
+            "field_of_view": 80.31378,
+            "crop": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "scale": 1.0,
+            "shift": [
+              0.35520336,
+              0.011530066
+            ]
+          },
+          "reason": "34 vertical, 9 horizontal straight edges agree; residual 0.70\u00b0",
+          "accepted_edges": 34,
+          "residual_degrees": 0.697135435288399
+        }
+      }
+    }
+  ],
+  "checks": {
+    "tests-final": {
+      "passed": 136,
+      "ignored": 31
+    },
+    "gpu-vulkan": {
+      "passed": 1,
+      "ignored": 0
+    },
+    "gpu-cuda": {
+      "passed": 1,
+      "ignored": 0
+    },
+    "tests-default": {
+      "passed": 125,
+      "ignored": 16
+    },
+    "strict_clippy": {
+      "toolchain": "1.99.0",
+      "features": [
+        "cuda",
+        "moebius",
+        "raw-ml",
+        "sam3"
+      ],
+      "all_targets": true,
+      "warnings_as_errors": true,
+      "passed": true
+    }
+  },
+  "assets": {
+    "docs/images/standard-london-after.jpg": {
+      "bytes": 426586,
+      "sha256": "874a0619641097f05821c380917c97796d01ae67d2ad66fcd7402da167d7e865"
+    },
+    "docs/images/editor-perspective.jpg": {
+      "bytes": 229816,
+      "sha256": "a1a0ba84a979e58d40978a45394268aaae6e2eb70a18316e74ac18ebeddd6d79"
+    },
+    "docs/images/standard-london-before.json": {
+      "bytes": 1389,
+      "sha256": "deec0eed27d1e474d46dbfc1864dfe63b5495251163eff32dad05f8ccbdea83d"
+    },
+    "docs/images/standard-london-before.jpg": {
+      "bytes": 381823,
+      "sha256": "144ae52655044bcdde944449baa5588c79de9562d71d28ccf4c7290435169d0d"
+    },
+    "docs/images/editor-colour.jpg": {
+      "bytes": 207188,
+      "sha256": "cfc7143cf8d802ea2855947be2b15baf7ee31c4c651fcda7be5b28fcf6b26260"
+    },
+    "docs/images/standard-london-after.json": {
+      "bytes": 1589,
+      "sha256": "987f2fd0e92c4b0e0633cf8971f878f48d1fe0f7bf08f95d00732191e75a319e"
+    }
+  },
+  "native_ui": {
+    "automatic_both_same_camera_pose_as_example": true,
+    "undo_pose_and_composition_byte_identical": true,
+    "redo_automatic_pose_and_centering": true
+  },
+  "original_integrity": [
+    {
+      "id": "c002",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c004",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c012",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c021",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c055",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c071",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c088",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c093",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c100",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c104",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c107",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c119",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c120",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c122",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c129",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c135",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c148",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c157",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c172",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c175",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c178",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c187",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    },
+    {
+      "id": "c189",
+      "raw_unchanged": true,
+      "darktable_xmp_unchanged": true
+    }
+  ]
+}

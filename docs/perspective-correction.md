@@ -20,11 +20,14 @@ an error and writes neither edits nor an export. Exports default to a 1440-pixel
 maximum edge; `--max-edge` controls output size. Analysis remains a bounded
 preview regardless of the original's resolution.
 
-The independent Rust detector uses lens-corrected pixels before existing
-perspective, crop, retouch or generated layers. It verifies continuous Scharr
+The independent Rust detector uses four scene-linear samples per analysis pixel,
+then normalizes exposure before tone mapping. Existing exposure, colour looks,
+perspective, crop, retouch and generated layers do not influence its evidence.
+It verifies continuous subpixel Scharr
 edge support, fits the entire segment, rejects residual bow, follows the edge
 beyond its endpoints to reject quantized arc tangents, and suppresses duplicate
-edges. Deterministic robust consensus requires at least four agreeing edges,
+edges. Collinear interrupted window/masonry fragments supply long baselines.
+Deterministic robust consensus requires at least four agreeing edges,
 spatial separation, adequate support and no comparably supported competing
 direction. Apparent verticals converging inside the image, extreme poses and
 inconsistent corrected lines cause abstention. Masks select photographic edges;
@@ -32,10 +35,18 @@ mask boundaries never supply line evidence.
 
 Vanishing points remain homogeneous, including points at infinity. Square-pixel
 coordinates handle portrait and landscape images. The solver fits camera
-directions and decomposes their orthogonal rotation into the existing pinhole
+directions with robust angular uncertainty. A near-upright gravity prior prevents
+steep receding façades from dominating the vertical family. Horizontal candidates
+are selected after vertical alignment and constrained to the resulting horizon.
+The solver decomposes the orthogonal rotation into the existing pinhole
 controls. A translation keeps the original center centered. Everything is folded
 into the existing backward homography, shared by CPU, CUDA, Vulkan and Metal;
 there is no additional full-image resampling pass.
+
+The wider cooked-reference evaluation covers 22 architectural photographs and
+two non-architectural controls, including seven architecture cases reserved from
+development. Results and remaining reference-alignment discrepancies are in
+[the evaluation journal](2026-10-11-general-perspective-evaluation.md).
 
 New RAW documents use an actual EXIF 35 mm equivalent focal length when available
 in RAF's embedded EXIF or a TIFF EXIF directory. The conversion uses the

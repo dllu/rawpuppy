@@ -478,12 +478,17 @@ impl Editor {
     }
 }
 
-fn slider(
+pub(super) fn slider(
     ui: &mut egui::Ui,
     value: &mut f32,
     range: std::ops::RangeInclusive<f32>,
     label: &str,
     suffix: &str,
 ) {
-    ui.add(egui::Slider::new(value, range).text(label).suffix(suffix));
+    ui.add(
+        egui::Slider::new(value, range)
+            .clamping(egui::SliderClamping::Edits)
+            .text(label)
+            .suffix(suffix),
+    );
 }

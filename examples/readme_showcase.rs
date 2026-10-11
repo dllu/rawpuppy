@@ -7,6 +7,7 @@ use rawpuppy::{
     edits::{Edits, ToneMapper},
     export,
     input::SensorImage,
+    perspective::{Engine, MaskProvider, Mode},
     render::{Backend, Renderer},
     sidecar,
 };
@@ -31,12 +32,20 @@ fn main() -> Result<()> {
     after.tone.mapper = ToneMapper::AgxSdr;
     after.scene.exposure = 2.1;
     after.tone.saturation = 1.04;
-    // Both-axis pinhole alignment, fitted from corresponding façade features
-    // in the user's reference export. No Darktable implementation is used.
-    // Refine the reference fit with the main façade's roof/base and verticals.
-    after.geometry.pitch = -12.227947;
-    after.geometry.yaw = -0.205753;
-    after.geometry.rotation = -0.793441;
+    let report = Engine::default().run(
+        &mut renderer,
+        source.clone(),
+        &after,
+        Mode::Both,
+        MaskProvider::Auto,
+    )?;
+    eprintln!(
+        "Automatic perspective: {} · {}",
+        report.mask_provider, report.reason
+    );
+    after.geometry = report.solution.context("No reliable two-axis correction")?;
+    // Preserve this photograph's chosen composition. Pose is estimated by the
+    // same general detector as the editor; reference exports never enter it.
     after.geometry.scale = 1.0821165;
     after.geometry.shift = [0.01581575, -0.3030224];
     after.geometry.crop = [0., 0., 1., 1.];
