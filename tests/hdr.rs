@@ -102,6 +102,14 @@ fn hdr_egui_white_and_coverage_match_the_linear_photo_signal() {
         let texture =
             Texture::upload(&device, &queue, &Frame::from_rendered(&photo, 1.).unwrap()).unwrap();
         texture.set_white_scale(&queue, scale).unwrap();
+        let crop = Rendered {
+            width: 2,
+            height: 2,
+            pixels: [10., 20., 30., 40.].map(|v| [v, v, v, 1.]).to_vec(),
+        };
+        let cropped =
+            Texture::upload(&device, &queue, &Frame::from_rendered(&crop, 1.).unwrap()).unwrap();
+        cropped.set_white_scale(&queue, scale).unwrap();
         let ctx = egui::Context::default();
         let mut output = ctx.run_ui(
             egui::RawInput {
@@ -128,6 +136,11 @@ fn hdr_egui_white_and_coverage_match_the_linear_photo_signal() {
                     egui::pos2(4., 0.),
                     egui::pos2(8., 8.),
                 )));
+                painter.add(cropped.callback_with_uv(
+                    &device,
+                    egui::Rect::from_min_max(egui::pos2(4., 4.), egui::pos2(8., 8.)),
+                    egui::Rect::from_min_max(egui::pos2(0.5, 0.5), egui::pos2(1., 1.)),
+                ));
             },
         );
         let jobs = ctx.tessellate(output.shapes, 1.);
@@ -244,6 +257,10 @@ fn hdr_egui_white_and_coverage_match_the_linear_photo_signal() {
             "GUI alpha {}",
             pixel(2, 6)
         );
+        // The cropped callback samples the bottom-right quarter on both axes.
+        // At (5, 5) linear filtering gives 10 + 0.875 * 10 + 0.875 * 20.
+        assert!((pixel(5, 5) - 36.25 * scale).abs() < 0.06);
+        assert!((pixel(7, 7) - 40. * scale).abs() < 0.06);
         drop(bytes);
         buffer.unmap();
     });

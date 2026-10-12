@@ -198,6 +198,7 @@ impl Editor {
                 }
                 Reply::Preview {
                     id,
+                    region,
                     size,
                     pixels,
                     histogram,
@@ -225,6 +226,7 @@ impl Editor {
                                 ));
                             }
                             self.hdr_texture = None;
+                            self.texture_region = region;
                         }
                         PreviewPixels::Hdr(hdr) => {
                             let state = self.presentation.as_ref().unwrap();
@@ -232,6 +234,7 @@ impl Editor {
                                 Ok(texture) => {
                                     self.hdr_texture = Some(texture);
                                     self.texture = None;
+                                    self.texture_region = region;
                                 }
                                 Err(error) => {
                                     self.error = Some(error.to_string());

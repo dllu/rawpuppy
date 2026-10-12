@@ -131,11 +131,32 @@ impl Editor {
                 let visible = Vec2::new(full.x.min(available.x), full.y.min(available.y));
                 let center = ui.available_rect_before_wrap().center();
                 let rect = Rect::from_center_size(center, visible);
+                let response = ui.allocate_rect(rect, egui::Sense::click_and_drag());
+                // Apply navigation before calculating the viewport sent to the worker.
+                if response.hovered() {
+                    let scroll = ui.input(|i| i.smooth_scroll_delta.y);
+                    if scroll.abs() > 0.1 {
+                        self.zoom = (self.zoom * (scroll * 0.002).exp()).max(1.);
+                    }
+                }
+                if response.double_clicked() {
+                    self.zoom = 1.;
+                    self.center = [0.5; 2];
+                }
+                if response.dragged()
+                    && (self.tool == Tool::View || ui.input(|i| i.pointer.middle_down()))
+                {
+                    let delta = ui.input(|i| i.pointer.delta());
+                    self.center[0] -= delta.x / full.x;
+                    self.center[1] -= delta.y / full.y;
+                }
+                let full = Vec2::new(w, h) * fit * self.zoom;
+                let visible = Vec2::new(full.x.min(available.x), full.y.min(available.y));
+                let rect = Rect::from_center_size(center, visible);
                 #[cfg(debug_assertions)]
                 {
                     self.probe_photo_rect = Some(rect);
                 }
-                let response = ui.allocate_rect(rect, egui::Sense::click_and_drag());
                 let fraction = [visible.x / full.x, visible.y / full.y];
                 for (i, f) in fraction.iter().enumerate() {
                     self.center[i] = self.center[i].clamp(f * 0.5, 1. - f * 0.5);
@@ -172,16 +193,17 @@ impl Editor {
                         );
                     }
                 }
-                if let Some(texture) = &self.texture {
-                    ui.painter().image(
-                        texture.id(),
-                        rect,
-                        Rect::from_min_max(Pos2::ZERO, Pos2::new(1., 1.)),
-                        Color32::WHITE,
-                    );
-                }
-                if let Some(texture) = &self.hdr_texture {
-                    ui.painter().add(texture.callback(rect));
+                // A pending preview covers its rendered region, not the new viewport.
+                // Reproject and clip it so zoom/pan never stretches stale pixels.
+                if let Some((photo_rect, uv)) = preview_placement(rect, region, self.texture_region)
+                {
+                    let painter = ui.painter().with_clip_rect(rect);
+                    if let Some(texture) = &self.texture {
+                        painter.image(texture.id(), photo_rect, uv, Color32::WHITE);
+                    }
+                    if let (Some(texture), Some(state)) = (&self.hdr_texture, &self.presentation) {
+                        painter.add(texture.callback_with_uv(&state.device, photo_rect, uv));
+                    }
                 }
                 if self.grid {
                     for i in 1..6 {
@@ -202,34 +224,15 @@ impl Editor {
                         );
                     }
                 }
-                if response.hovered() {
-                    let scroll = ui.input(|i| i.smooth_scroll_delta.y);
-                    if scroll.abs() > 0.1 {
-                        self.zoom = (self.zoom * (scroll * 0.002).exp()).max(1.);
-                        self.changed();
-                    }
-                    if matches!(self.tool, Tool::Clone | Tool::Heal | Tool::Mask)
-                        && let Some(pos) = response.hover_pos()
-                    {
-                        ui.painter().circle_stroke(
-                            pos,
-                            self.radius * w * fit * self.zoom,
-                            egui::Stroke::new(1., ACCENT),
-                        );
-                    }
-                }
-                if response.double_clicked() {
-                    self.zoom = 1.;
-                    self.center = [0.5; 2];
-                    self.changed();
-                }
-                if response.dragged()
-                    && (self.tool == Tool::View || ui.input(|i| i.pointer.middle_down()))
+                if response.hovered()
+                    && matches!(self.tool, Tool::Clone | Tool::Heal | Tool::Mask)
+                    && let Some(pos) = response.hover_pos()
                 {
-                    let delta = ui.input(|i| i.pointer.delta());
-                    self.center[0] -= delta.x / full.x;
-                    self.center[1] -= delta.y / full.y;
-                    self.changed();
+                    ui.painter().circle_stroke(
+                        pos,
+                        self.radius * w * fit * self.zoom,
+                        egui::Stroke::new(1., ACCENT),
+                    );
                 }
                 for dab in &self.mask {
                     let pos = Pos2::new(
@@ -362,6 +365,27 @@ impl Editor {
             self.changed();
         }
     }
+}
+
+fn preview_placement(rect: Rect, region: [f32; 4], texture: [f32; 4]) -> Option<(Rect, Rect)> {
+    let view = Rect::from_min_size(
+        Pos2::new(region[0], region[1]),
+        Vec2::new(region[2], region[3]),
+    );
+    let source = Rect::from_min_size(
+        Pos2::new(texture[0], texture[1]),
+        Vec2::new(texture[2], texture[3]),
+    );
+    let overlap = view.intersect(source);
+    if !overlap.is_positive() {
+        return None;
+    }
+    let screen = |p: Pos2| rect.min + (p - view.min) / view.size() * rect.size();
+    let uv = |p: Pos2| Pos2::ZERO + (p - source.min) / source.size();
+    Some((
+        Rect::from_min_max(screen(overlap.min), screen(overlap.max)),
+        Rect::from_min_max(uv(overlap.min), uv(overlap.max)),
+    ))
 }
 
 pub(super) fn primary_stroke(response: &egui::Response) -> bool {

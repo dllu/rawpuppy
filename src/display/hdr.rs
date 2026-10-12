@@ -99,6 +99,8 @@ pub struct Texture {
     _texture: wgpu::Texture,
     white_buffer: wgpu::Buffer,
     white_scale: Mutex<f32>,
+    region_layout: wgpu::BindGroupLayout,
+    full_region: wgpu::BindGroup,
     pub size: [u32; 2],
 }
 impl Texture {
@@ -199,9 +201,27 @@ impl Texture {
             ],
         });
         let shader = device.create_shader_module(wgpu::include_wgsl!("hdr.wgsl"));
+        let region_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("HDR preview UV layout"),
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
+        });
+        let full_region = region_binding(
+            device,
+            &region_layout,
+            egui::Rect::from_min_max(egui::Pos2::ZERO, egui::pos2(1., 1.)),
+        );
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("HDR preview pipeline"),
-            bind_group_layouts: &[Some(&layout)],
+            bind_group_layouts: &[Some(&layout), Some(&region_layout)],
             immediate_size: 0,
         });
         let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -235,6 +255,8 @@ impl Texture {
             _texture: texture,
             white_buffer,
             white_scale: Mutex::new(1.),
+            region_layout,
+            full_region,
             size: [frame.width, frame.height],
         }))
     }
@@ -257,16 +279,53 @@ impl Texture {
     }
     /// The attachment must be Rgba16Float carrying extended-linear sRGB.
     pub fn paint(&self, pass: &mut wgpu::RenderPass<'static>) {
+        self.paint_region(pass, &self.full_region);
+    }
+    fn paint_region(&self, pass: &mut wgpu::RenderPass<'static>, region: &wgpu::BindGroup) {
         pass.set_pipeline(&self.pipeline);
         pass.set_bind_group(0, &self.binding, &[]);
+        pass.set_bind_group(1, region, &[]);
         pass.draw(0..3, 0..1);
     }
     pub fn callback(self: &Arc<Self>, rect: egui::Rect) -> egui::PaintCallback {
-        egui_wgpu::Callback::new_paint_callback(rect, Quad(self.clone()))
+        egui_wgpu::Callback::new_paint_callback(rect, Quad(self.clone(), self.full_region.clone()))
+    }
+    /// Clip a pending preview to the part of its image region still visible.
+    pub fn callback_with_uv(
+        self: &Arc<Self>,
+        device: &wgpu::Device,
+        rect: egui::Rect,
+        uv: egui::Rect,
+    ) -> egui::PaintCallback {
+        if uv == egui::Rect::from_min_max(egui::Pos2::ZERO, egui::pos2(1., 1.)) {
+            return self.callback(rect);
+        }
+        let region = region_binding(device, &self.region_layout, uv);
+        egui_wgpu::Callback::new_paint_callback(rect, Quad(self.clone(), region))
     }
 }
 
-struct Quad(Arc<Texture>);
+fn region_binding(
+    device: &wgpu::Device,
+    layout: &wgpu::BindGroupLayout,
+    uv: egui::Rect,
+) -> wgpu::BindGroup {
+    let buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+        label: Some("HDR preview UV region"),
+        contents: bytemuck::cast_slice(&[uv.min.x, uv.min.y, uv.width(), uv.height()]),
+        usage: wgpu::BufferUsages::UNIFORM,
+    });
+    device.create_bind_group(&wgpu::BindGroupDescriptor {
+        label: Some("HDR preview UV region"),
+        layout,
+        entries: &[wgpu::BindGroupEntry {
+            binding: 0,
+            resource: buffer.as_entire_binding(),
+        }],
+    })
+}
+
+struct Quad(Arc<Texture>, wgpu::BindGroup);
 impl egui_wgpu::CallbackTrait for Quad {
     fn paint(
         &self,
@@ -274,6 +333,6 @@ impl egui_wgpu::CallbackTrait for Quad {
         pass: &mut wgpu::RenderPass<'static>,
         _resources: &egui_wgpu::CallbackResources,
     ) {
-        self.0.paint(pass);
+        self.0.paint_region(pass, &self.1);
     }
 }

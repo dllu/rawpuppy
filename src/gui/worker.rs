@@ -67,6 +67,7 @@ pub(super) enum Reply {
     },
     Preview {
         id: u64,
+        region: [f32; 4],
         size: [usize; 2],
         pixels: PreviewPixels,
         histogram: Vec<f32>,
@@ -284,6 +285,7 @@ pub(super) fn worker(
                 };
                 Ok(Reply::Preview {
                     id,
+                    region,
                     size,
                     pixels,
                     histogram,

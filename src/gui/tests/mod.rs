@@ -8,4 +8,6 @@ mod curves;
 mod generation;
 mod history;
 mod perspective;
+#[cfg(debug_assertions)]
+mod viewport;
 mod worker;
