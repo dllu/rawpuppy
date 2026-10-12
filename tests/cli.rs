@@ -2,6 +2,59 @@ use rawpuppy::{edits::Edits, sidecar};
 use std::process::Command;
 
 #[test]
+fn cli_automatic_backend_matches_cpu_without_a_backend_flag() {
+    let directory = tempfile::tempdir().unwrap();
+    let input = directory.path().join("input.png");
+    image::RgbImage::from_fn(17, 13, |x, y| {
+        image::Rgb([(x * 11) as u8, (y * 17) as u8, 100])
+    })
+    .save(&input)
+    .unwrap();
+    let automatic = directory.path().join("automatic.png");
+    let fallback = directory.path().join("fallback.png");
+    let cpu = directory.path().join("cpu.png");
+    for (output, use_cpu, missing_toolkit) in [
+        (&automatic, false, false),
+        (&fallback, false, true),
+        (&cpu, true, false),
+    ] {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_rawpuppy"));
+        if use_cpu {
+            command.args(["--backend", "cpu"]);
+        }
+        if missing_toolkit {
+            command.env("CUDA_PATH", directory.path().join("missing-cuda-toolkit"));
+        }
+        let result = command
+            .arg("export")
+            .arg(&input)
+            .arg(output)
+            .output()
+            .unwrap();
+        let stderr = String::from_utf8_lossy(&result.stderr);
+        assert!(result.status.success(), "{stderr}");
+        if missing_toolkit {
+            assert!(!stderr.contains("Compute: cuda"), "{stderr}");
+            assert!(!stderr.contains("CUDA initialization panicked"), "{stderr}");
+        } else if !use_cpu && std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {
+            assert!(stderr.contains("Compute: cuda"), "{stderr}");
+        }
+    }
+    let expected = image::open(cpu).unwrap().to_rgba16();
+    for output in [automatic, fallback] {
+        let actual = image::open(output).unwrap().to_rgba16();
+        assert_eq!(actual.dimensions(), expected.dimensions());
+        assert!(
+            actual
+                .as_raw()
+                .iter()
+                .zip(expected.as_raw())
+                .all(|(a, b)| a.abs_diff(*b) <= 2)
+        );
+    }
+}
+
+#[test]
 fn cli_save_only_writes_its_own_sidecar_suffix() {
     let directory = tempfile::tempdir().unwrap();
     let recipe = directory.path().join("edits.json");

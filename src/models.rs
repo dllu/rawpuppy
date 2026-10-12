@@ -7,8 +7,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-pub const LAMA_SHA256: &str = "1faef5301d78db7dda502fe59966957ec4b79dd64e16f03ed96913c7a4eb68d6";
-pub const LAMA_URL: &str = "https://huggingface.co/Carve/LaMa-ONNX/resolve/c3c0c9e468934d62e79c329e35d82dd09ff8c444/lama_fp32.onnx";
 pub const MOEBIUS_WEIGHTS_URL: &str = "https://huggingface.co/hustvl/Moebius/resolve/cd01f47fb648219d3fa605806c5ce00b713faa5e/ft_places2/diffusion_pytorch_model.bin";
 pub const MOEBIUS_WEIGHTS_SHA256: &str =
     "6525afb888e55f9b5c74fa0a5d19ca0762d720d6c716fb0f8422fbeb6868a09a";
@@ -34,9 +32,6 @@ pub fn cache_dir() -> Result<PathBuf> {
     #[cfg(not(target_os = "macos"))]
     let root = PathBuf::from(home).join(".cache");
     Ok(root.join("rawpuppy"))
-}
-pub fn lama_path() -> Result<PathBuf> {
-    Ok(cache_dir()?.join("models/lama_fp32.onnx"))
 }
 pub fn raw_model_path() -> Result<PathBuf> {
     Ok(cache_dir()?.join("models/rawnind/torchscript-v2"))
@@ -80,18 +75,6 @@ pub fn sha256(path: &Path) -> Result<String> {
         digest.update(&buffer[..n]);
     }
     Ok(format!("{:x}", digest.finalize()))
-}
-pub fn verify_lama(path: &Path) -> Result<()> {
-    ensure!(
-        sha256(path)? == LAMA_SHA256,
-        "LaMa model checksum differs from the pinned Apache-2.0 release"
-    );
-    Ok(())
-}
-pub fn fetch_lama() -> Result<PathBuf> {
-    let path = lama_path()?;
-    fetch_pinned(&path, LAMA_URL, LAMA_SHA256)?;
-    Ok(path)
 }
 pub fn fetch_moebius() -> Result<PathBuf> {
     let root = cache_dir()?.join("models/moebius");

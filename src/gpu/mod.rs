@@ -110,6 +110,21 @@ impl GpuRenderer {
             Backend::Cuda => {
                 #[cfg(feature = "cuda")]
                 {
+                    // SAFETY: these probes only load the CUDA libraries through the
+                    // configured system loader; no device calls occur before checking.
+                    ensure!(
+                        unsafe { cudarc::driver::sys::is_culib_present() },
+                        "CUDA driver library is unavailable"
+                    );
+                    ensure!(
+                        unsafe { cudarc::nvrtc::sys::is_culib_present() },
+                        "CUDA runtime compiler (NVRTC) is unavailable"
+                    );
+                    ensure!(
+                        cubecl::cuda::install::cuda_path()
+                            .is_some_and(|path| path.join("include/cuda_runtime.h").is_file()),
+                        "CUDA toolkit headers are unavailable; set CUDA_PATH to the toolkit directory"
+                    );
                     ensure!(
                         std::env::var("RUST_MIN_STACK")
                             .ok()

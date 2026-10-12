@@ -43,9 +43,10 @@ jobs:
           else
             target/debug/examples/editor_signal_probe --editor target/debug/rawpuppy --output "$RUNNER_TEMP/rawpuppy-editor-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           fi
-      - name: Optional neural inference builds
-        # Probe artifacts use only generated fixtures, not user photographs.
-        run: cargo check --features neural --locked
+      - name: Builds without CUDA or photo compute
+        run: |
+          cargo check --no-default-features --all-targets --locked
+          cargo check --no-default-features --features gpu --all-targets --locked
       - name: Retain native editor diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -53,9 +54,6 @@ jobs:
           name: native-editor-${{ runner.os }}
           path: ${{ runner.temp }}/rawpuppy-editor-*
           if-no-files-found: ignore
-      - name: CUDA adapter compilation without requiring a GPU
-        if: runner.os == 'Linux'
-        run: cargo check --features cuda --all-targets --locked
       - name: Vulkan compute parity on software GPU
         if: runner.os == 'Linux'
         env:

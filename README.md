@@ -32,8 +32,6 @@ Linux X11 windows also require `libxkbcommon-x11-0` at runtime.
 
 ```sh
 cargo build --release
-# NVIDIA CUDA (the default build uses Vulkan / Metal)
-cargo build --release --features cuda
 cargo run --release
 cargo run --release -- edit photo.raf
 cargo run --release -- inspect photo.raf
@@ -45,6 +43,19 @@ cargo run --release -- save edits.json photo.raf.rawpuppy.xmp
 cargo test
 ```
 
+To build and run with every feature enabled (CUDA, AI removal/corner filling,
+joint RAW reconstruction and SAM 3 architectural masks):
+
+```sh
+# First configure matching LibTorch 2.13; see the setup links below.
+cargo build --release --all-features
+cargo run --release --all-features -- edit photo.raf
+```
+
+The AI tools also need prepared models: [Moebius](docs/moebius.md),
+[RAW reconstruction](docs/learned-reconstruction.md), and
+[SAM 3](docs/perspective-correction.md#optional-sam-3).
+
 PNG/TIFF export is 16-bit; JPEG is 8-bit. `--color-space` selects sRGB,
 Display P3, Adobe RGB, Rec.2020, or linear sRGB, with embedded ICC profiles.
 TIFF automatically uses BigTIFF when its size requires 64-bit offsets.
@@ -52,10 +63,15 @@ EXR stores floating-point linear sRGB with explicit primaries
 (`--color-space linear-srgb`); tagged HDR input chromaticities are respected.
 Use `--overwrite` to replace an existing export. Originals are never overwritten
 by export; the CLI defaults to eight CPU workers to share the workstation.
-`--backend auto|cpu|cuda|vulkan|metal` selects photo compute. In CUDA builds, Auto
-tries CUDA, then native Vulkan/Metal, then CPU when unavailable. Auto also selects
-CPU for unsupported sources or device limits; GPU sources stay resident between
-edits. `cargo build --no-default-features` omits photo compute acceleration.
+Photo compute automatically tries CUDA, then native Vulkan/Metal, then CPU when
+unavailable; no backend flag is needed. CUDA is included in the default build and
+loaded at runtime, so building does not require a CUDA SDK. Using CUDA requires
+the NVIDIA driver and CUDA toolkit (NVRTC and headers); set `CUDA_PATH` for a
+nonstandard toolkit location. `--backend auto|cpu|cuda|vulkan|metal` overrides
+automatic selection. Auto also selects CPU for unsupported sources or device
+limits; GPU sources stay resident between
+edits. `cargo build --no-default-features` omits photo compute acceleration;
+add `--features gpu` for Vulkan/Metal without CUDA.
 Eligible coherent CUDA devices share the existing sensor/output allocations;
 [system-memory.md](docs/system-memory.md) describes selection and GB10 measurements.
 
@@ -73,6 +89,5 @@ checks and optional local SAM 3 architectural masks. See [perspective correction
 
 The optional `moebius` feature adds native AI removal and corner filling, saved as
 non-destructive layers. See [runtime setup](docs/moebius.md) and [model evaluation](docs/inpainting-research.md).
-The `neural` feature exposes `inpaint-lama` as an experimental comparison backend.
 The optional `raw-ml` feature adds experimental joint AI Bayer reconstruction
 with a reusable editor/export cache; see [setup and validation](docs/learned-reconstruction.md).

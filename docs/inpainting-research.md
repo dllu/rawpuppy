@@ -1,8 +1,8 @@
 # Inpainting selection — 2026-10-09
 
 The user requested recent models, specifically Moebius and Qwen Image 2.1.
-LaMa is retained as an explicitly experimental reference backend, not the
-application's quality target or default. Moebius now has native Rust inference,
+LaMa measurements remain historical research; its application path has been
+removed. Moebius is the sole inpainting implementation, with native Rust inference,
 editor mask painting/corner filling, and persisted non-destructive layers. See
 [runtime setup and layer behavior](moebius.md). Selection remains provisional
 until broader photography and alternative-model comparisons are complete.
@@ -22,7 +22,7 @@ Earlier measurements below retain their original settings.
 | [FLUX.2 klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) | January 2026; Apache-2.0 4B model. | Pinned, checksum-verified mask-based Diffusers comparison: about 1.8 s warm at 512 pixels, 15.56 GiB allocation. A 16-pixel inference halo improves raw removal; exact composition through the original tight mask retains fringe/shadows. A withheld actual-pixel fabric repair invents a mismatched stitch pattern; native Moebius better preserves this example's soft diagonal structure. [Local measurements](inpainting-comparison.md). |
 | [LLaDA-Image / Turbo](https://github.com/inclusionAI/LLaDA-Image) | September 4, 2026; [model card](https://huggingface.co/inclusionAI/LLaDA-Image) identifies Apache-2.0. | Pinned Turbo BF16 reference editing ran on GB10: 3.88–3.96 s warm, 46.6 GiB tensor allocation, about 208 s load. It removes the person in a full edited GFX context; exact target composition preserves other pixels but exposes strong seams. Complete snapshot is 49.3 GB including its MoE text encoder. Source/dependency/global-RNG checks and the [comparison](2026-10-10-08-56-llada-turbo-reference-editing-comparison.md) are recorded; no native application backend or universal ranking. |
 | [OSOR](https://github.com/Zhouqm-Git/osor) | June 2026; MIT code, but FLUX-Fill checkpoints are non-commercial and SDXL checkpoints use CreativeML Open RAIL++-M. | One-step object removal with learned shadow/reflection masks. Not benchmarked. Its mask expansion would need explicit handling alongside Rawpuppy's exact unpainted-pixel preservation. |
-| [LaMa ONNX](https://huggingface.co/Carve/LaMa-ONNX) | 2022 architecture; published Apache-2.0 export. | Native Rust inference, finite output, missing-pixel reconstruction and exact unmasked-sample preservation verified. Public object-removal example shows visible artifacts; insufficient to establish final quality. |
+| [LaMa ONNX](https://huggingface.co/Carve/LaMa-ONNX) | 2022 architecture; published Apache-2.0 export. Historical comparison only; application code removed. | Native Rust inference, finite output, missing-pixel reconstruction and exact unmasked-sample preservation were verified. Public object-removal example showed visible artifacts; insufficient to establish final quality. |
 
 Publisher benchmark claims are not Rawpuppy benchmarks. The Moebius paper compares
 the specialist to larger general models, but it does not prove this is the best
@@ -101,5 +101,5 @@ runtime integration alone does not resolve that comparison.
 
 Models are cached outside photograph directories. `rawpuppy fetch-moebius`
 downloads pinned artifacts and verifies them; `--features moebius` enables modern
-native generation after graph preparation. `--features neural` enables the LaMa reference
-command `inpaint-lama`. The original photos under `~/pictures/raw` were not modified.
+native generation after graph preparation. The original photos under
+`~/pictures/raw` were not modified.
