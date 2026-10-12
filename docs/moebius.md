@@ -14,6 +14,26 @@ The `LIBTORCH_USE_PYTORCH=1` alternative is supported by `tch` for matching Pyth
 installations. Do not bypass a runtime-version mismatch: PyTorch 2.14 removed
 symbols used by this binding.
 
+For a project-owned Linux CUDA 13 installation, install the complete PyTorch
+package and its dependencies together, then source the environment helper from
+the repository root:
+
+```sh
+rawpuppy_torch_root="${XDG_CACHE_HOME:-$HOME/.cache}/rawpuppy/evaluation/torch-2.13"
+python3 -m pip install --upgrade --target "$rawpuppy_torch_root" \
+  'torch==2.13.0' --index-url https://download.pytorch.org/whl/cu130
+source tools/libtorch-env.sh
+cargo build --release --all-features
+target/release/rawpuppy edit photo.raf
+```
+
+The helper sets the LibTorch build variables and replaces `LD_LIBRARY_PATH` with
+this installation's Torch and NVIDIA package libraries. System CUDA toolkit
+libraries remain available through the system loader. Set `RAWPUPPY_TORCH_ROOT`
+before sourcing to choose another complete installation. Source it in each shell
+used to build or launch the application. Install model graphs separately as
+described below.
+
 The pinned local `torch-sys` patch selects C++20/conforming mode for Windows
 MSVC builds and removes its conflicting `module` type alias. The matching 2.13
 headers use designated initializers and bit-field defaults that MSVC rejects in
