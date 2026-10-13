@@ -16,10 +16,12 @@ use rayon::prelude::*;
 use serde::Serialize;
 use std::sync::Arc;
 
+mod camera;
 mod edges;
 mod solve;
+pub use camera::{camera_for_image, camera_fov};
 use edges::extract;
-pub use solve::fit_segments;
+pub use solve::{fit_guides, fit_segments};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, clap::ValueEnum)]
 pub enum Mode {

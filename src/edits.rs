@@ -110,6 +110,38 @@ pub struct GeometryEdits {
     /// Translation in the corrected canvas, composed into the pinhole map.
     #[serde(skip_serializing_if = "zero_shift")]
     pub shift: [f32; 2],
+    /// Camera calibration and editable evidence; the derived FOV drives rendering.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub camera: Option<CameraIntrinsics>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub guides: Vec<PerspectiveGuide>,
+    /// Physical output width/height, independent of the source pixel aspect.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub crop_aspect: Option<f32>,
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct CameraIntrinsics {
+    pub focal_length_mm: f32,
+    /// Landscape sensor dimensions in millimeters.
+    pub sensor_mm: [f32; 2],
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub enum GuideAxis {
+    Vertical,
+    Horizontal,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct PerspectiveGuide {
+    /// Normalized lens-corrected image coordinates, before perspective and crop.
+    pub start: [f32; 2],
+    pub end: [f32; 2],
+    pub axis: GuideAxis,
+    pub enabled: bool,
 }
 
 fn zero_shift(value: &[f32; 2]) -> bool {
@@ -128,6 +160,9 @@ impl Default for GeometryEdits {
             crop: [0.0, 0.0, 1.0, 1.0],
             scale: 1.0,
             shift: [0.; 2],
+            camera: None,
+            guides: vec![],
+            crop_aspect: None,
         }
     }
 }
@@ -293,6 +328,24 @@ impl Edits {
                 out.geometry.field_of_view = fov;
             }
         }
+        if let Some(camera) = crate::perspective::camera_for_image(image) {
+            let frame_scale = crate::lens::Correction::compile(
+                image.metadata.lens_profile.as_ref(),
+                &out.lens,
+                image.metadata.width,
+                image.metadata.height,
+            )
+            .map_or(1., |c| c.frame_scale);
+            if let Some(fov) = crate::perspective::camera_fov(
+                camera,
+                image.metadata.width,
+                image.metadata.height,
+                frame_scale,
+            ) {
+                out.geometry.camera = Some(camera);
+                out.geometry.field_of_view = fov;
+            }
+        }
         out
     }
 
@@ -313,6 +366,21 @@ impl Edits {
         }
         ensure!(no_null(&json), "All edit values must be finite");
         let g = &self.geometry;
+        if let Some(camera) = g.camera {
+            ensure!(
+                camera.focal_length_mm > 0. && camera.sensor_mm.iter().all(|v| *v > 0.),
+                "Camera dimensions and focal length must be positive"
+            );
+        }
+        if let Some(aspect) = g.crop_aspect {
+            ensure!(aspect > 0., "Crop aspect ratio must be positive");
+        }
+        ensure!(
+            g.guides.iter().all(|line| (line.end[0] - line.start[0])
+                .hypot(line.end[1] - line.start[1])
+                > 1e-6),
+            "Perspective guides must have distinct endpoints"
+        );
         ensure!(
             g.field_of_view > 0.0 && g.field_of_view < 175.0,
             "Field of view must be between 0 and 175 degrees"

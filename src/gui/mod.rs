@@ -25,6 +25,7 @@ mod controls;
 mod curve;
 mod display_state;
 mod document;
+mod framing;
 mod history;
 #[cfg(test)]
 mod tests;
@@ -118,7 +119,7 @@ struct Editor {
     texture_region: [f32; 4],
     preview_size: [usize; 2],
     compare: bool,
-    grid: bool,
+    framing: framing::Framing,
     tool: Tool,
     clone_source: Option<[f32; 2]>,
     radius: f32,
@@ -235,7 +236,7 @@ impl Editor {
             texture_region: [0., 0., 1., 1.],
             preview_size: [1200, 900],
             compare: false,
-            grid: false,
+            framing: framing::Framing::default(),
             tool: Tool::View,
             clone_source: None,
             radius: 0.025,
@@ -322,6 +323,26 @@ impl eframe::App for Editor {
             if ctx.input(|i| i.key_pressed(egui::Key::B)) {
                 self.compare = !self.compare;
                 self.changed();
+            }
+            if ctx.input(|i| i.key_pressed(egui::Key::C)) {
+                self.set_tool(if self.tool == Tool::Crop {
+                    Tool::View
+                } else {
+                    Tool::Crop
+                });
+            }
+            if ctx.input(|i| i.key_pressed(egui::Key::P)) {
+                self.set_tool(if self.tool == Tool::Perspective {
+                    Tool::View
+                } else {
+                    Tool::Perspective
+                });
+            }
+            if matches!(self.tool, Tool::Crop | Tool::Perspective)
+                && ctx
+                    .input(|i| i.key_pressed(egui::Key::Enter) || i.key_pressed(egui::Key::Escape))
+            {
+                self.set_tool(Tool::View);
             }
         }
         if ctx.input(|i| i.viewport().close_requested()) && self.dirty() {

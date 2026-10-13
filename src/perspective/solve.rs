@@ -1,6 +1,6 @@
 //! Vanishing direction consensus and constrained pinhole rectification.
 use super::{Mode, Report, Segment};
-use crate::edits::GeometryEdits;
+use crate::edits::{GeometryEdits, GuideAxis, PerspectiveGuide};
 use anyhow::{Result, ensure};
 
 /// Fit verified source-image edges. Kept separate from raster extraction for
@@ -10,6 +10,44 @@ pub fn fit_segments(
     analysis_size: [usize; 2],
     geometry: &GeometryEdits,
     mode: Mode,
+) -> Result<Report> {
+    fit(segments, analysis_size, geometry, mode, None)
+}
+
+/// Explicitly labeled user evidence can establish a direction with two lines.
+/// Automatic detection retains its stricter consensus and spatial-support gates.
+pub fn fit_guides(
+    guides: &[PerspectiveGuide],
+    size: [usize; 2],
+    geometry: &GeometryEdits,
+    mode: Mode,
+) -> Result<Report> {
+    ensure!(size.iter().all(|v| *v > 0), "Invalid guide canvas");
+    let aspect = size[1] as f64 / size[0] as f64;
+    let point = |p: [f32; 2]| [p[0] as f64 - 0.5, (p[1] as f64 - 0.5) * aspect];
+    let mut segments = vec![];
+    let mut vertical = vec![];
+    let mut horizontal = vec![];
+    for guide in guides.iter().filter(|g| g.enabled) {
+        match guide.axis {
+            GuideAxis::Vertical => vertical.push(segments.len()),
+            GuideAxis::Horizontal => horizontal.push(segments.len()),
+        }
+        segments.push(Segment {
+            start: point(guide.start),
+            end: point(guide.end),
+            straightness: 0.15,
+        });
+    }
+    fit(segments, size, geometry, mode, Some((vertical, horizontal)))
+}
+
+fn fit(
+    segments: Vec<Segment>,
+    analysis_size: [usize; 2],
+    geometry: &GeometryEdits,
+    mode: Mode,
+    labels: Option<(Vec<usize>, Vec<usize>)>,
 ) -> Result<Report> {
     ensure!(
         analysis_size.iter().all(|v| *v > 0)
@@ -39,22 +77,35 @@ pub fn fit_segments(
         reason: "Not enough consistent, spatially separated straight architectural edges".into(),
         solution: None,
     };
-    let vertical: Vec<_> = report
-        .segments
-        .iter()
-        .enumerate()
-        .filter_map(|(i, s)| {
-            let d = s.vector();
-            (d[1].abs() > d[0].abs() * 1.3).then_some(i)
-        })
-        .collect();
-    let Some(v) = consensus(&report.segments, &vertical, true, analysis_size[0], None) else {
+    let manual = labels.is_some();
+    if manual {
+        report.mask_provider = "manual".into();
+    }
+    let vertical: Vec<_> = labels.as_ref().map(|(v, _)| v.clone()).unwrap_or_else(|| {
+        report
+            .segments
+            .iter()
+            .enumerate()
+            .filter_map(|(i, s)| {
+                let d = s.vector();
+                (d[1].abs() > d[0].abs() * 1.3).then_some(i)
+            })
+            .collect()
+    });
+    let Some(v) = (if manual {
+        trusted(&report.segments, &vertical, None)
+    } else {
+        consensus(&report.segments, &vertical, true, analysis_size[0], None)
+    }) else {
+        if manual {
+            report.reason = "Draw or enable at least two separated vertical guides".into();
+        }
         return Ok(report);
     };
     report.vertical_vanishing_point = Some(v.point);
     report.vertical_inliers = v.inliers.clone();
     let aspect = analysis_size[1] as f64 / analysis_size[0] as f64;
-    if v.point[2].abs() > 1e-8 && (v.point[1] / v.point[2]).abs() < aspect * 0.6 {
+    if !manual && v.point[2].abs() > 1e-8 && (v.point[1] / v.point[2]).abs() < aspect * 0.6 {
         report.reason="The apparent verticals converge inside the photograph; they may be roof beams or other receding structures".into();
         return Ok(report);
     }
@@ -71,31 +122,37 @@ pub fn fit_segments(
     if mode == Mode::Both {
         // A façade's horizontal direction is selected after removing the
         // vertical tilt. Receding roads and sloping roofs cannot vote as vertical.
-        let horizontal: Vec<_> = report
-            .segments
-            .iter()
-            .enumerate()
-            .filter_map(|(i, s)| {
-                let project = |p: [f64; 2]| {
-                    let p = [p[0] / f, p[1] / f, 1.];
-                    let z = cross(x, y);
-                    let depth = dot(z, p);
-                    [dot(x, p) / depth, dot(y, p) / depth]
-                };
-                let a = project(s.start);
-                let b = project(s.end);
-                let d = [b[0] - a[0], b[1] - a[1]];
-                (d[0].abs() > d[1].abs() * 1.3).then_some(i)
-            })
-            .collect();
+        let horizontal: Vec<_> = labels.as_ref().map(|(_, h)| h.clone()).unwrap_or_else(|| {
+            report
+                .segments
+                .iter()
+                .enumerate()
+                .filter_map(|(i, s)| {
+                    let project = |p: [f64; 2]| {
+                        let p = [p[0] / f, p[1] / f, 1.];
+                        let z = cross(x, y);
+                        let depth = dot(z, p);
+                        [dot(x, p) / depth, dot(y, p) / depth]
+                    };
+                    let a = project(s.start);
+                    let b = project(s.end);
+                    let d = [b[0] - a[0], b[1] - a[1]];
+                    (d[0].abs() > d[1].abs() * 1.3).then_some(i)
+                })
+                .collect()
+        });
         let horizon = [y[0] / f, y[1] / f, y[2]];
-        let Some(h) = consensus(
-            &report.segments,
-            &horizontal,
-            false,
-            analysis_size[0],
-            Some(horizon),
-        ) else {
+        let Some(h) = (if manual {
+            trusted(&report.segments, &horizontal, Some(horizon))
+        } else {
+            consensus(
+                &report.segments,
+                &horizontal,
+                false,
+                analysis_size[0],
+                Some(horizon),
+            )
+        }) else {
             report.reason = "Vertical evidence found, but no unambiguous horizontal façade direction; try Auto vertical".into();
             return Ok(report);
         };
@@ -118,7 +175,12 @@ pub fn fit_segments(
     let pitch = (-z[1]).asin().to_degrees();
     let yaw = z[0].atan2(z[2]).to_degrees();
     let rotation = x[1].atan2(y[1]).to_degrees();
-    if z[2] <= 0. || pitch.abs() > 55. || yaw.abs() > 55. || rotation.abs() > 30. {
+    let limit = if manual { 84. } else { 55. };
+    if z[2] <= 0.
+        || pitch.abs() > limit
+        || yaw.abs() > limit
+        || rotation.abs() > if manual { 84. } else { 30. }
+    {
         report.reason =
             "The estimated camera pose is too extreme for a reliable automatic correction".into();
         return Ok(report);
@@ -144,7 +206,7 @@ pub fn fit_segments(
             false,
         ));
     report.residual_degrees = Some(residual);
-    if !residual.is_finite() || residual > 1. {
+    if !residual.is_finite() || residual > if manual { 2. } else { 1. } {
         report.reason = "The fitted correction leaves inconsistent architectural lines".into();
         return Ok(report);
     }
@@ -165,6 +227,54 @@ pub fn fit_segments(
 struct Consensus {
     point: [f64; 3],
     inliers: Vec<usize>,
+}
+
+fn trusted(
+    segments: &[Segment],
+    indices: &[usize],
+    constraint: Option<[f64; 3]>,
+) -> Option<Consensus> {
+    if indices.len() < 2 {
+        return None;
+    }
+    let mut matrix = [[0.; 3]; 3];
+    for &i in indices {
+        let p = segments[i].plane();
+        for r in 0..3 {
+            for c in 0..3 {
+                matrix[r][c] += segments[i].weight() * p[r] * p[c];
+            }
+        }
+    }
+    // Coincident guides leave an entire null plane and cannot determine a VP.
+    let independent = indices.iter().enumerate().any(|(a, &i)| {
+        indices[a + 1..].iter().any(|&j| {
+            let p = cross(segments[i].plane(), segments[j].plane());
+            dot(p, p) > 1e-8
+        })
+    });
+    if !independent {
+        return None;
+    }
+    let point = if let Some(constraint) = constraint {
+        let normal = normalize(constraint);
+        let u = normalize(cross(normal, [0., 0., 1.]));
+        let v = cross(normal, u);
+        let apply = |p| std::array::from_fn(|i| dot(matrix[i], p));
+        let a = dot(u, apply(u));
+        let b = dot(u, apply(v));
+        let c = dot(v, apply(v));
+        let angle = 0.5 * (2. * b).atan2(a - c);
+        normalize(std::array::from_fn(|i| {
+            -angle.sin() * u[i] + angle.cos() * v[i]
+        }))
+    } else {
+        smallest_eigenvector(matrix)
+    };
+    point.iter().all(|v| v.is_finite()).then(|| Consensus {
+        point,
+        inliers: indices.to_vec(),
+    })
 }
 fn error(s: &Segment, p: [f64; 3]) -> f64 {
     let plane = s.plane();

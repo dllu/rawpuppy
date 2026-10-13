@@ -216,6 +216,7 @@ fn automatic_perspective_is_one_undo_step_and_stale_results_do_not_change_edits(
             revision: 0,
             previous: original.clone(),
             report: report(),
+            apply: true,
         })
         .unwrap();
     app.poll(&ctx);
@@ -235,6 +236,7 @@ fn automatic_perspective_is_one_undo_step_and_stale_results_do_not_change_edits(
             revision: 0,
             previous: corrected.clone(),
             report: report(),
+            apply: true,
         })
         .unwrap();
     app.poll(&ctx);
@@ -249,6 +251,7 @@ fn automatic_perspective_is_one_undo_step_and_stale_results_do_not_change_edits(
             revision: 0,
             previous: corrected,
             report: report(),
+            apply: true,
         })
         .unwrap();
     app.poll(&ctx);

@@ -20,9 +20,9 @@ and estimation from the whole image or a drawn neutral box.
 | ![Before: converging architecture and a linear SDR preview](docs/images/standard-london-before.jpg) | ![After: corrected vertical and horizontal perspective, adjusted color and AgX tone mapping](docs/images/standard-london-after.jpg) |
 
 <details>
-<summary>Perspective controls</summary>
+<summary>Crop and perspective tools</summary>
 
-![Native perspective controls showing vertical and horizontal correction on the London hotel](docs/images/editor-perspective.jpg)
+![Native crop handles, aspect presets and composition guides on a London hotel preview](docs/images/editor-crop.png)
 
 </details>
 
@@ -84,8 +84,10 @@ Automatic display selection and platform policies are described in [display colo
 see [HDR presentation](docs/hdr-presentation.md) for signal and platform limits.
 New RAF documents use available camera distortion, vignetting and CA corrections; existing
 recipes retain their saved behavior. See [lens correction](docs/lens-correction.md).
-Geometry & lens includes **Auto vertical** and **Auto both**, with strict straight-edge
-checks and optional local SAM 3 architectural masks. See [perspective correction](docs/perspective-correction.md).
+**Perspective & crop** offers automatic detection and editable guide segments (`P`),
+draggable crop edges (`C`), aspect presets, composition grids, and automatic crops
+that exclude empty corners. Detailed geometry controls live under **Advanced geometry**.
+See [perspective and crop](docs/perspective-correction.md).
 
 The optional `moebius` feature adds native AI removal and corner filling, saved as
 non-destructive layers. See [runtime setup](docs/moebius.md) and [model evaluation](docs/inpainting-research.md).

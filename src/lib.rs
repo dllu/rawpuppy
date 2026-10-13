@@ -2,6 +2,7 @@ pub mod agx;
 pub mod calibration;
 mod camera_profiles;
 pub mod color;
+pub mod crop;
 pub mod display;
 mod dng_profiles;
 pub mod edits;

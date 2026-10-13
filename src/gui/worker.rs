@@ -28,6 +28,16 @@ pub(super) enum Work {
         edits: Edits,
         mode: crate::perspective::Mode,
         provider: crate::perspective::MaskProvider,
+        manual: bool,
+        apply: bool,
+        crop: Option<crate::crop::Constraint>,
+    },
+    AutoCrop {
+        load_id: u64,
+        revision: u64,
+        image: Arc<SensorImage>,
+        edits: Edits,
+        constraint: crate::crop::Constraint,
     },
     Calibrate {
         load_id: u64,
@@ -86,6 +96,14 @@ pub(super) enum Reply {
         revision: u64,
         previous: Edits,
         report: Box<crate::perspective::Report>,
+        apply: bool,
+    },
+    AutoCropped {
+        load_id: u64,
+        revision: u64,
+        previous: Edits,
+        crop: [f32; 4],
+        aspect: Option<f32>,
     },
     Calibrated {
         load_id: u64,
@@ -120,6 +138,7 @@ pub(super) enum ErrorScope {
     Export(u64),
     Perspective(u64),
     Calibrate(u64),
+    AutoCrop(u64),
     #[cfg(feature = "moebius")]
     Generate(u64),
 }
@@ -129,6 +148,7 @@ pub(super) enum Busy {
     Export(u64),
     Perspective(u64),
     Calibrate(u64),
+    AutoCrop(u64),
     #[cfg(feature = "moebius")]
     Generate(u64),
 }
@@ -139,6 +159,7 @@ impl ErrorScope {
             Self::Preview(id) => id == preview,
             Self::Perspective(id) => id == load,
             Self::Calibrate(id) => id == load,
+            Self::AutoCrop(id) => id == load,
             // Durable I/O failures still need to name the failed destination,
             // even after the user changes photographs.
             Self::Save(_) | Self::Export(_) => true,
@@ -152,6 +173,7 @@ impl ErrorScope {
             Self::Export(id) => Some(Busy::Export(id)),
             Self::Perspective(id) => Some(Busy::Perspective(id)),
             Self::Calibrate(id) => Some(Busy::Calibrate(id)),
+            Self::AutoCrop(id) => Some(Busy::AutoCrop(id)),
             #[cfg(feature = "moebius")]
             Self::Generate(id) => Some(Busy::Generate(id)),
             Self::Preview(_) | Self::Save(_) => None,
@@ -168,6 +190,7 @@ impl Work {
             Self::Render { id, .. } => ErrorScope::Preview(*id),
             Self::Perspective { load_id, .. } => ErrorScope::Perspective(*load_id),
             Self::Calibrate { load_id, .. } => ErrorScope::Calibrate(*load_id),
+            Self::AutoCrop { load_id, .. } => ErrorScope::AutoCrop(*load_id),
             #[cfg(feature = "moebius")]
             Self::Generate { load_id, .. } => ErrorScope::Generate(*load_id),
             Self::Save { load_id, .. } => ErrorScope::Save(*load_id),
@@ -285,7 +308,12 @@ pub(super) fn worker(
                 };
                 Ok(Reply::Preview {
                     id,
-                    region,
+                    region: [
+                        edits.geometry.crop[0] + region[0] * edits.geometry.crop[2],
+                        edits.geometry.crop[1] + region[1] * edits.geometry.crop[3],
+                        region[2] * edits.geometry.crop[2],
+                        region[3] * edits.geometry.crop[3],
+                    ],
                     size,
                     pixels,
                     histogram,
@@ -302,13 +330,54 @@ pub(super) fn worker(
                 edits,
                 mode,
                 provider,
+                manual,
+                apply,
+                crop,
             } => {
-                let report = perspective.run(&mut renderer, image, &edits, mode, provider)?;
+                let mut report = if manual {
+                    crate::perspective::fit_guides(
+                        &edits.geometry.guides,
+                        [image.metadata.width, image.metadata.height],
+                        &edits.geometry,
+                        mode,
+                    )?
+                } else {
+                    perspective.run(&mut renderer, image.clone(), &edits, mode, provider)?
+                };
+                if apply && let (Some(geometry), Some(constraint)) = (&mut report.solution, crop) {
+                    let mut corrected = edits.clone();
+                    corrected.geometry = geometry.clone();
+                    geometry.crop = crate::crop::largest(&image, &corrected, constraint)?;
+                    geometry.crop_aspect = match constraint {
+                        crate::crop::Constraint::LargestArea => None,
+                        crate::crop::Constraint::Aspect(r) => Some(r),
+                    };
+                }
                 Ok(Reply::Perspective {
                     load_id,
                     revision,
                     previous: edits,
                     report: Box::new(report),
+                    apply,
+                })
+            }
+            Work::AutoCrop {
+                load_id,
+                revision,
+                image,
+                edits,
+                constraint,
+            } => {
+                let crop = crate::crop::largest(&image, &edits, constraint)?;
+                Ok(Reply::AutoCropped {
+                    load_id,
+                    revision,
+                    previous: edits,
+                    crop,
+                    aspect: match constraint {
+                        crate::crop::Constraint::LargestArea => None,
+                        crate::crop::Constraint::Aspect(r) => Some(r),
+                    },
                 })
             }
             Work::Calibrate {

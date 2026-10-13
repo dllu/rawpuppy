@@ -55,11 +55,21 @@ impl Editor {
         self.preview_pending = true;
     }
     pub(super) fn undo(&mut self) {
+        self.framing.cancel_drag();
         if self.history.undo(&mut self.edits) {
+            self.sync_framing_aspect();
             self.changed();
         }
     }
     pub(super) fn auto_perspective(&mut self, mode: crate::perspective::Mode) {
+        self.start_perspective(mode, false, true);
+    }
+    pub(super) fn start_perspective(
+        &mut self,
+        mode: crate::perspective::Mode,
+        manual: bool,
+        apply: bool,
+    ) {
         if self.busy.is_some() {
             return;
         }
@@ -80,11 +90,35 @@ impl Editor {
                 } else {
                     crate::perspective::MaskProvider::Classical
                 },
+                manual,
+                apply,
+                crop: self
+                    .framing
+                    .crop_constraint(self.edits.geometry.crop_aspect),
+            });
+        }
+    }
+    pub(super) fn auto_crop(&mut self, constraint: crate::crop::Constraint) {
+        if self.busy.is_some() {
+            return;
+        }
+        self.finish_edit_gesture();
+        if let Some(image) = self.image.clone() {
+            self.busy = Some(Busy::AutoCrop(self.load_generation));
+            self.status = "Finding the largest crop without empty corners…".into();
+            self.send(Work::AutoCrop {
+                load_id: self.load_generation,
+                revision: self.history.revision(),
+                image,
+                edits: self.edits.clone(),
+                constraint,
             });
         }
     }
     pub(super) fn redo(&mut self) {
+        self.framing.cancel_drag();
         if self.history.redo(&mut self.edits) {
+            self.sync_framing_aspect();
             self.changed();
         }
     }
@@ -191,6 +225,8 @@ impl Editor {
                     self.busy = None;
                     self.perspective_status = None;
                     self.calibration_status = None;
+                    self.framing = framing::Framing::default();
+                    self.sync_framing_aspect();
                     self.calibration_box = None;
                     self.tool = Tool::View;
                     self.changed();
@@ -260,24 +296,80 @@ impl Editor {
                     revision,
                     previous,
                     report,
+                    apply,
                 } if load_id == self.load_generation => {
                     ErrorScope::Perspective(load_id).finish_busy(&mut self.busy);
                     if previous == self.edits && revision == self.history.revision() {
-                        self.perspective_status =
-                            Some(format!("{} · {}", report.mask_provider, report.reason));
-                        if let Some(geometry) = report.solution {
-                            self.edits.geometry = geometry;
-                            self.remember(previous);
-                            self.grid = true;
-                            self.status =
-                                "Automatic perspective ready; save edits to keep it".into();
-                        } else {
-                            self.status =
-                                "Automatic perspective found insufficient evidence".into();
+                        self.perspective_status = Some(report.reason.clone());
+                        let aspect =
+                            report.analysis_size[1] as f64 / report.analysis_size[0] as f64;
+                        let guides: Vec<_> = report
+                            .segments
+                            .iter()
+                            .enumerate()
+                            .map(|(i, s)| {
+                                let point = |p: [f64; 2]| {
+                                    [(p[0] + 0.5) as f32, (p[1] / aspect + 0.5) as f32]
+                                };
+                                let vertical = report.vertical_inliers.contains(&i);
+                                let horizontal = report.horizontal_inliers.contains(&i);
+                                crate::edits::PerspectiveGuide {
+                                    start: point(s.start),
+                                    end: point(s.end),
+                                    axis: if vertical
+                                        || !horizontal
+                                            && (s.end[1] - s.start[1]).abs()
+                                                > (s.end[0] - s.start[0]).abs()
+                                    {
+                                        crate::edits::GuideAxis::Vertical
+                                    } else {
+                                        crate::edits::GuideAxis::Horizontal
+                                    },
+                                    enabled: vertical || horizontal,
+                                }
+                            })
+                            .collect();
+                        // Manual fitting preserves excluded lines and the user's explicit labels.
+                        if report.mask_provider != "manual" {
+                            self.edits.geometry.guides = guides;
+                            self.framing.selected = None;
                         }
+                        if apply && let Some(mut geometry) = report.solution {
+                            geometry.guides = self.edits.geometry.guides.clone();
+                            self.edits.geometry = geometry;
+                            self.status = "Perspective applied; drag guides to refine it".into();
+                        } else {
+                            self.status = if apply {
+                                "Review the detected guides before correcting perspective".into()
+                            } else {
+                                "Guides ready; review or draw lines, then apply correction".into()
+                            };
+                        }
+                        self.remember(previous);
+                        self.sync_framing_aspect();
+                        self.set_tool(Tool::Perspective);
                     } else {
                         self.status =
                             "Perspective result discarded because the edits changed".into();
+                    }
+                }
+                Reply::AutoCropped {
+                    load_id,
+                    revision,
+                    previous,
+                    crop,
+                    aspect,
+                } if load_id == self.load_generation => {
+                    ErrorScope::AutoCrop(load_id).finish_busy(&mut self.busy);
+                    if previous == self.edits && revision == self.history.revision() {
+                        self.edits.geometry.crop = crop;
+                        self.edits.geometry.crop_aspect = aspect;
+                        self.sync_framing_aspect();
+                        self.remember(previous);
+                        self.set_tool(Tool::Crop);
+                        self.status = "Crop fitted; drag its edges to adjust".into();
+                    } else {
+                        self.status = "Crop result discarded because the edits changed".into();
                     }
                 }
                 Reply::Calibrated {
@@ -378,6 +470,7 @@ impl Editor {
                             ErrorScope::Export(_) => "Could not export photo",
                             ErrorScope::Perspective(_) => "Could not analyze perspective",
                             ErrorScope::Calibrate(_) => "Could not estimate illuminant",
+                            ErrorScope::AutoCrop(_) => "Could not fit a crop",
                             #[cfg(feature = "moebius")]
                             ErrorScope::Generate(_) => "Could not generate fill",
                         }

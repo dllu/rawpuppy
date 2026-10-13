@@ -8,6 +8,8 @@ pub(super) enum Tool {
     Heal,
     Mask,
     Calibration,
+    Crop,
+    Perspective,
 }
 
 #[derive(Default)]
@@ -113,6 +115,31 @@ impl Editor {
                         self.compare = !self.compare;
                         self.changed();
                     }
+                    if ui
+                        .selectable_label(self.tool == Tool::Crop, "Crop")
+                        .clicked()
+                    {
+                        self.set_tool(if self.tool == Tool::Crop {
+                            Tool::View
+                        } else {
+                            Tool::Crop
+                        });
+                    }
+                    if ui
+                        .selectable_label(self.tool == Tool::Perspective, "Perspective")
+                        .clicked()
+                    {
+                        self.set_tool(if self.tool == Tool::Perspective {
+                            Tool::View
+                        } else {
+                            Tool::Perspective
+                        });
+                    }
+                    if matches!(self.tool, Tool::Crop | Tool::Perspective)
+                        && ui.button("Done").clicked()
+                    {
+                        self.set_tool(Tool::View);
+                    }
                     ui.add_space(12.);
                     if matches!(self.tool, Tool::Clone | Tool::Heal) {
                         ui.label(
@@ -122,8 +149,13 @@ impl Editor {
                     }
                 });
                 let image = self.image.as_ref().unwrap();
-                let w = image.metadata.width as f32 * self.edits.geometry.crop[2];
-                let h = image.metadata.height as f32 * self.edits.geometry.crop[3];
+                let crop = if matches!(self.tool, Tool::Crop | Tool::Perspective) {
+                    [0., 0., 1., 1.]
+                } else {
+                    self.edits.geometry.crop
+                };
+                let w = image.metadata.width as f32 * crop[2];
+                let h = image.metadata.height as f32 * crop[3];
                 let available = ui.available_size().max(Vec2::splat(1.));
                 let fit = (available.x / w).min(available.y / h);
                 self.fit_scale = fit;
@@ -172,9 +204,13 @@ impl Editor {
                     (visible.x * scale).round().clamp(1., 8192.) as usize,
                     (visible.y * scale).round().clamp(1., 8192.) as usize,
                 ];
-                if region != self.viewport || size != self.preview_size {
+                if region != self.viewport
+                    || size != self.preview_size
+                    || crop != self.framing.render_crop
+                {
                     self.viewport = region;
                     self.preview_size = size;
+                    self.framing.render_crop = crop;
                     self.changed();
                 }
                 // Checkerboard makes out-of-image perspective corners visible.
@@ -195,7 +231,14 @@ impl Editor {
                 }
                 // A pending preview covers its rendered region, not the new viewport.
                 // Reproject and clip it so zoom/pan never stretches stale pixels.
-                if let Some((photo_rect, uv)) = preview_placement(rect, region, self.texture_region)
+                let canvas_region = [
+                    crop[0] + region[0] * crop[2],
+                    crop[1] + region[1] * crop[3],
+                    region[2] * crop[2],
+                    region[3] * crop[3],
+                ];
+                if let Some((photo_rect, uv)) =
+                    preview_placement(rect, canvas_region, self.texture_region)
                 {
                     let painter = ui.painter().with_clip_rect(rect);
                     if let Some(texture) = &self.texture {
@@ -205,25 +248,7 @@ impl Editor {
                         painter.add(texture.callback_with_uv(&state.device, photo_rect, uv));
                     }
                 }
-                if self.grid {
-                    for i in 1..6 {
-                        let t = i as f32 / 6.;
-                        ui.painter().line_segment(
-                            [
-                                Pos2::new(rect.left() + t * rect.width(), rect.top()),
-                                Pos2::new(rect.left() + t * rect.width(), rect.bottom()),
-                            ],
-                            egui::Stroke::new(1., Color32::from_white_alpha(80)),
-                        );
-                        ui.painter().line_segment(
-                            [
-                                Pos2::new(rect.left(), rect.top() + t * rect.height()),
-                                Pos2::new(rect.right(), rect.top() + t * rect.height()),
-                            ],
-                            egui::Stroke::new(1., Color32::from_white_alpha(80)),
-                        );
-                    }
-                }
+                self.framing_overlay(ui, &response, rect, canvas_region);
                 if response.hovered()
                     && matches!(self.tool, Tool::Clone | Tool::Heal | Tool::Mask)
                     && let Some(pos) = response.hover_pos()
@@ -235,14 +260,18 @@ impl Editor {
                     );
                 }
                 for dab in &self.mask {
+                    let c = self.edits.geometry.crop;
+                    let point = [c[0] + dab.center[0] * c[2], c[1] + dab.center[1] * c[3]];
                     let pos = Pos2::new(
-                        rect.left() + (dab.center[0] - region[0]) / region[2] * rect.width(),
-                        rect.top() + (dab.center[1] - region[1]) / region[3] * rect.height(),
+                        rect.left()
+                            + (point[0] - canvas_region[0]) / canvas_region[2] * rect.width(),
+                        rect.top()
+                            + (point[1] - canvas_region[1]) / canvas_region[3] * rect.height(),
                     );
                     if rect.contains(pos) {
                         ui.painter().circle_filled(
                             pos,
-                            dab.radius * full.x,
+                            dab.radius * full.x * c[2] / crop[2],
                             Color32::from_rgba_unmultiplied(225, 150, 100, 75),
                         );
                     }
@@ -345,11 +374,24 @@ impl Editor {
                     } else {
                         self.edits.clone()
                     };
+                    // Extend the cropped coordinates to show the whole canvas;
+                    // retain the recipe so retouch and fills stay registered.
+                    let render_region = if matches!(self.tool, Tool::Crop | Tool::Perspective) {
+                        let c = edits.geometry.crop;
+                        [
+                            (canvas_region[0] - c[0]) / c[2],
+                            (canvas_region[1] - c[1]) / c[3],
+                            canvas_region[2] / c[2],
+                            canvas_region[3] / c[3],
+                        ]
+                    } else {
+                        self.viewport
+                    };
                     self.send(Work::Render {
                         id: self.generation,
                         image: self.image.as_ref().unwrap().clone(),
                         edits,
-                        region: self.viewport,
+                        region: render_region,
                         size: self.preview_size,
                         profile: self.display_resolved.icc.clone(),
                         hdr: self.hdr_white_scale.is_some(),

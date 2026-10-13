@@ -53,6 +53,97 @@ impl Editor {
                 let previous = self.edits.clone();
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.add_enabled_ui(self.image.is_some() && !self.compare && self.busy.is_none(), |ui| {
+                        let framing_panel = egui::CollapsingHeader::new("Perspective & crop").open(Some(self.framing.panel_open)).show(ui, |ui| {
+                            self.framing_controls(ui);
+                            egui::CollapsingHeader::new("Camera lens corrections").show(ui, |ui| {
+                            if let Some(name) = source_image.as_ref().and_then(|i| i.metadata.lens_model.as_ref()) {
+                                ui.label(egui::RichText::new(name).small().color(Color32::GRAY));
+                            }
+                            let profile = source_image.as_ref().and_then(|i| i.metadata.lens_profile.as_ref());
+                            let available = profile.is_some_and(|p| p.distortion.is_some() || p.vignette.is_some() || p.has_chromatic_aberration());
+                            let mut enabled = self.edits.lens.mode != LensMode::Off;
+                            if ui.add_enabled(available, egui::Checkbox::new(&mut enabled, "Camera lens corrections")).changed() {
+                                self.edits.lens = if enabled {
+                                    LensEdits { mode: LensMode::EmbeddedV1, distortion: profile.is_some_and(|p| p.distortion.is_some()), vignette: profile.is_some_and(|p| p.vignette.is_some()), chromatic_aberration: profile.is_some_and(|p| p.has_chromatic_aberration()), auto_frame: true }
+                                } else { LensEdits::default() };
+                            }
+                            if enabled {
+                                ui.horizontal(|ui| {
+                                    ui.add_enabled(profile.is_some_and(|p| p.distortion.is_some()), egui::Checkbox::new(&mut self.edits.lens.distortion, "Distortion"));
+                                    ui.add_enabled(profile.is_some_and(|p| p.vignette.is_some()), egui::Checkbox::new(&mut self.edits.lens.vignette, "Vignetting"));
+                                });
+                                ui.add_enabled(profile.is_some_and(|p| p.has_chromatic_aberration()), egui::Checkbox::new(&mut self.edits.lens.chromatic_aberration, "Chromatic aberration"));
+                                ui.checkbox(&mut self.edits.lens.auto_frame, "Avoid camera correction gaps");
+                            }
+                            if let Some(error) = source_image.as_ref().and_then(|i| i.metadata.lens_profile_error.as_ref()) {
+                                ui.label(egui::RichText::new("Camera correction data unavailable").small()).on_hover_text(error);
+                            }
+                            });
+                            egui::CollapsingHeader::new("Advanced geometry").show(ui, |ui| {
+                            slider(
+                                ui,
+                                &mut self.edits.geometry.rotation,
+                                -180.0..=180.0,
+                                "Rotate",
+                                "°",
+                            );
+                            slider(
+                                ui,
+                                &mut self.edits.geometry.pitch,
+                                -65.0..=65.0,
+                                "Vertical",
+                                "°",
+                            );
+                            slider(
+                                ui,
+                                &mut self.edits.geometry.yaw,
+                                -65.0..=65.0,
+                                "Horizontal",
+                                "°",
+                            );
+                            slider(
+                                ui,
+                                &mut self.edits.geometry.field_of_view,
+                                10.0..=120.0,
+                                "Field of view",
+                                "°",
+                            );
+                            slider(ui, &mut self.edits.geometry.scale, 0.5..=3.0, "Scale", "×");
+                            slider(ui, &mut self.edits.geometry.shift[0], -1.0..=1.0, "Shift X", "");
+                            slider(ui, &mut self.edits.geometry.shift[1], -1.0..=1.0, "Shift Y", "");
+                            slider(
+                                ui,
+                                &mut self.edits.geometry.distortion[0],
+                                -0.5..=0.5,
+                                "Distortion",
+                                "",
+                            );
+                            slider(
+                                ui,
+                                &mut self.edits.geometry.distortion[1],
+                                -0.5..=0.5,
+                                "Distortion edge",
+                                "",
+                            );
+                            slider(
+                                ui,
+                                &mut self.edits.geometry.chromatic_aberration[0],
+                                -0.02..=0.02,
+                                "Red fringe",
+                                "",
+                            );
+                            slider(
+                                ui,
+                                &mut self.edits.geometry.chromatic_aberration[1],
+                                -0.02..=0.02,
+                                "Blue fringe",
+                                "",
+                            );
+                            #[cfg(feature="sam3")]
+                            ui.checkbox(&mut self.perspective_mask,"Architecture mask (SAM 3)");
+                            });
+                        });
+                        if framing_panel.header_response.clicked() { self.framing.panel_open = !self.framing.panel_open; }
                         egui::CollapsingHeader::new("Light")
                             .default_open(true)
                             .show(ui, |ui| {
@@ -136,134 +227,6 @@ impl Editor {
                                     }
                                 });
                             });
-                        egui::CollapsingHeader::new("Geometry & lens").show(ui, |ui| {
-                            ui.horizontal(|ui| {
-                                if ui.button("Auto vertical").on_hover_text("Align reliable vertical architecture; preserve the view's horizontal perspective").clicked() {self.auto_perspective(crate::perspective::Mode::Vertical);}
-                                if ui.button("Auto both").on_hover_text("Align one unambiguous façade's vertical and horizontal directions").clicked() {self.auto_perspective(crate::perspective::Mode::Both);}
-                            });
-                            #[cfg(feature="sam3")]
-                            ui.checkbox(&mut self.perspective_mask,"Architecture mask (SAM 3)").on_hover_text("Use the installed local model to exclude trees and people. Without a model, automatic correction uses the classical detector.");
-                            if let Some(message)=&self.perspective_status {ui.label(egui::RichText::new(message).small().color(Color32::GRAY));}
-                            if let Some(name) = source_image.as_ref().and_then(|i| i.metadata.lens_model.as_ref()) {
-                                ui.label(egui::RichText::new(name).small().color(Color32::GRAY));
-                            }
-                            let profile = source_image.as_ref().and_then(|i| i.metadata.lens_profile.as_ref());
-                            let available = profile.is_some_and(|p| p.distortion.is_some() || p.vignette.is_some() || p.has_chromatic_aberration());
-                            let mut enabled = self.edits.lens.mode != LensMode::Off;
-                            if ui.add_enabled(available, egui::Checkbox::new(&mut enabled, "Camera lens corrections")).changed() {
-                                self.edits.lens = if enabled {
-                                    LensEdits { mode: LensMode::EmbeddedV1, distortion: profile.is_some_and(|p| p.distortion.is_some()), vignette: profile.is_some_and(|p| p.vignette.is_some()), chromatic_aberration: profile.is_some_and(|p| p.has_chromatic_aberration()), auto_frame: true }
-                                } else { LensEdits::default() };
-                            }
-                            if enabled {
-                                ui.horizontal(|ui| {
-                                    ui.add_enabled(profile.is_some_and(|p| p.distortion.is_some()), egui::Checkbox::new(&mut self.edits.lens.distortion, "Distortion"));
-                                    ui.add_enabled(profile.is_some_and(|p| p.vignette.is_some()), egui::Checkbox::new(&mut self.edits.lens.vignette, "Vignetting"));
-                                });
-                                ui.add_enabled(profile.is_some_and(|p| p.has_chromatic_aberration()), egui::Checkbox::new(&mut self.edits.lens.chromatic_aberration, "Chromatic aberration"));
-                                ui.checkbox(&mut self.edits.lens.auto_frame, "Avoid camera correction gaps");
-                            }
-                            if let Some(error) = source_image.as_ref().and_then(|i| i.metadata.lens_profile_error.as_ref()) {
-                                ui.label(egui::RichText::new("Camera correction data unavailable").small()).on_hover_text(error);
-                            }
-                            slider(
-                                ui,
-                                &mut self.edits.geometry.rotation,
-                                -180.0..=180.0,
-                                "Rotate",
-                                "°",
-                            );
-                            slider(
-                                ui,
-                                &mut self.edits.geometry.pitch,
-                                -65.0..=65.0,
-                                "Vertical",
-                                "°",
-                            );
-                            slider(
-                                ui,
-                                &mut self.edits.geometry.yaw,
-                                -65.0..=65.0,
-                                "Horizontal",
-                                "°",
-                            );
-                            slider(
-                                ui,
-                                &mut self.edits.geometry.field_of_view,
-                                10.0..=120.0,
-                                "Field of view",
-                                "°",
-                            );
-                            slider(ui, &mut self.edits.geometry.scale, 0.5..=3.0, "Scale", "×");
-                            slider(ui, &mut self.edits.geometry.shift[0], -1.0..=1.0, "Shift X", "");
-                            slider(ui, &mut self.edits.geometry.shift[1], -1.0..=1.0, "Shift Y", "");
-                            slider(
-                                ui,
-                                &mut self.edits.geometry.distortion[0],
-                                -0.5..=0.5,
-                                "Distortion",
-                                "",
-                            );
-                            slider(
-                                ui,
-                                &mut self.edits.geometry.distortion[1],
-                                -0.5..=0.5,
-                                "Distortion edge",
-                                "",
-                            );
-                            slider(
-                                ui,
-                                &mut self.edits.geometry.chromatic_aberration[0],
-                                -0.02..=0.02,
-                                "Red fringe",
-                                "",
-                            );
-                            slider(
-                                ui,
-                                &mut self.edits.geometry.chromatic_aberration[1],
-                                -0.02..=0.02,
-                                "Blue fringe",
-                                "",
-                            );
-                            ui.checkbox(&mut self.grid, "Alignment grid");
-                            ui.label("Crop");
-                            let c = &mut self.edits.geometry.crop;
-                            ui.horizontal(|ui| {
-                                ui.label("x");
-                                ui.add(
-                                    egui::DragValue::new(&mut c[0])
-                                        .speed(0.005)
-                                        .range(0.0..=0.99),
-                                );
-                                ui.label("y");
-                                ui.add(
-                                    egui::DragValue::new(&mut c[1])
-                                        .speed(0.005)
-                                        .range(0.0..=0.99),
-                                );
-                            });
-                            c[2] = c[2].min(1. - c[0]);
-                            c[3] = c[3].min(1. - c[1]);
-                            let max_width = 1. - c[0];
-                            let max_height = 1. - c[1];
-                            ui.horizontal(|ui| {
-                                ui.label("w");
-                                ui.add(
-                                    egui::DragValue::new(&mut c[2])
-                                        .speed(0.005)
-                                        .range(0.01..=max_width),
-                                );
-                                ui.label("h");
-                                ui.add(
-                                    egui::DragValue::new(&mut c[3])
-                                        .speed(0.005)
-                                        .range(0.01..=max_height),
-                                );
-                            });
-                            if ui.small_button("Reset crop").clicked() {
-                                *c = [0., 0., 1., 1.];
-                            }
-                        });
                         egui::CollapsingHeader::new("Sensor & detail").show(ui, |ui| {
                             egui::ComboBox::from_label("Reconstruction")
                                 .selected_text(match self.edits.raw.reconstruction {
@@ -465,6 +428,11 @@ impl Editor {
                         }
                     });
                 });
+                if previous.lens != self.edits.lens && let (Some(camera), Some(image)) = (self.edits.geometry.camera, &source_image) {
+                    let m = &image.metadata;
+                    let frame = crate::lens::Correction::compile(m.lens_profile.as_ref(), &self.edits.lens, m.width, m.height).map_or(1., |c| c.frame_scale);
+                    if let Some(fov) = crate::perspective::camera_fov(camera, m.width, m.height, frame).filter(|f| *f < 175.) { self.edits.geometry.field_of_view = fov; }
+                }
                 if previous != self.edits {
                     if ui.input(|i| i.pointer.primary_down()) {
                         self.history.begin_gesture(previous);
@@ -473,7 +441,7 @@ impl Editor {
                         self.remember(previous);
                     }
                 }
-                if !ui.input(|i| i.pointer.primary_down()) {self.finish_edit_gesture();}
+                if !ui.input(|i| i.pointer.primary_down()) && !self.framing.dragging() {self.finish_edit_gesture();}
             });
     }
 }

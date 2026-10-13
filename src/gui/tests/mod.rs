@@ -4,6 +4,8 @@ use super::*;
 mod brushes;
 mod calibration;
 mod curves;
+#[cfg(debug_assertions)]
+mod framing;
 #[cfg(feature = "moebius")]
 mod generation;
 mod history;
