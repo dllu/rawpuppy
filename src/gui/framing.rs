@@ -13,7 +13,7 @@ pub(super) enum Grid {
     Architecture,
 }
 impl Grid {
-    fn label(self) -> &'static str {
+    pub(super) fn label(self) -> &'static str {
         match self {
             Self::None => "None",
             Self::Thirds => "Rule of thirds",
@@ -78,6 +78,7 @@ enum AutoCrop {
 
 pub(super) struct Framing {
     pub grid: Grid,
+    pub show_grid: bool,
     pub render_crop: [f32; 4],
     pub panel_open: bool,
     aspect: Aspect,
@@ -92,6 +93,7 @@ impl Default for Framing {
     fn default() -> Self {
         Self {
             grid: Grid::Thirds,
+            show_grid: false,
             render_crop: [0., 0., 1., 1.],
             panel_open: false,
             aspect: Aspect::Free,
@@ -175,13 +177,18 @@ impl Editor {
     }
     pub(super) fn set_tool(&mut self, tool: Tool) {
         if self.tool != tool {
+            let was_full_canvas = matches!(self.tool, Tool::Crop | Tool::Perspective);
             self.finish_edit_gesture();
             self.framing.crop_drag = None;
             self.framing.guide_drag = None;
+            self.adjustment_drag = None;
             self.tool = tool;
-            self.framing.panel_open = matches!(tool, Tool::Crop | Tool::Perspective);
-            self.zoom = 1.;
-            self.center = [0.5; 2];
+            self.framing.panel_open =
+                matches!(tool, Tool::Crop | Tool::Perspective | Tool::Straighten);
+            if matches!(tool, Tool::Crop | Tool::Perspective) || was_full_canvas {
+                self.zoom = 1.;
+                self.center = [0.5; 2];
+            }
             self.changed();
         }
     }
@@ -189,6 +196,33 @@ impl Editor {
         let Some(image) = self.image.clone() else {
             return;
         };
+        super::controls::angle_slider(ui, &mut self.edits.geometry.rotation, -5. ..=5., "Rotation");
+        ui.horizontal(|ui| {
+            if ui
+                .selectable_label(self.tool == Tool::Straighten, "Draw level line")
+                .clicked()
+            {
+                self.set_tool(if self.tool == Tool::Straighten {
+                    Tool::View
+                } else {
+                    Tool::Straighten
+                });
+            }
+            if ui.small_button("−90°").clicked() {
+                self.edits.geometry.rotation =
+                    crate::geometry::wrap_rotation(self.edits.geometry.rotation - 90.);
+            }
+            if ui.small_button("+90°").clicked() {
+                self.edits.geometry.rotation =
+                    crate::geometry::wrap_rotation(self.edits.geometry.rotation + 90.);
+            }
+        });
+        if self.tool == Tool::Straighten {
+            ui.label(
+                egui::RichText::new("Draw along a horizontal or vertical edge. Esc cancels.")
+                    .small(),
+            );
+        }
         self.camera_controls(ui, &image);
         ui.horizontal(|ui| {
             if ui.button("Auto vertical").clicked() {
@@ -354,20 +388,7 @@ impl Editor {
         if let Some(ratio) = self.edits.geometry.crop_aspect {
             ui.label(egui::RichText::new(format!("Locked to {ratio:.3}:1")).small());
         }
-        egui::ComboBox::from_label("Guide grid")
-            .selected_text(self.framing.grid.label())
-            .show_ui(ui, |ui| {
-                for grid in [
-                    Grid::None,
-                    Grid::Thirds,
-                    Grid::Golden,
-                    Grid::Diagonals,
-                    Grid::Center,
-                    Grid::Architecture,
-                ] {
-                    ui.selectable_value(&mut self.framing.grid, grid, grid.label());
-                }
-            });
+        self.grid_controls(ui);
         ui.horizontal(|ui| {
             if ui.button("Largest area").clicked() {
                 self.auto_crop(crate::crop::Constraint::LargestArea);
@@ -477,10 +498,12 @@ impl Editor {
         }
         if self.tool == Tool::Crop && !self.compare && self.busy.is_none() {
             self.crop_overlay(ui, response, rect, region);
-        } else if self.tool == Tool::Perspective {
+        } else {
             let crop = to_screen_crop(rect, region, self.edits.geometry.crop);
-            draw_grid(ui.painter().with_clip_rect(rect), crop, self.framing.grid);
-            if self.edits.geometry.crop != [0., 0., 1., 1.] {
+            if self.framing.show_grid && !self.compare {
+                draw_grid(ui.painter().with_clip_rect(rect), crop, self.framing.grid);
+            }
+            if self.tool == Tool::Perspective && self.edits.geometry.crop != [0., 0., 1., 1.] {
                 ui.painter().with_clip_rect(rect).rect_stroke(
                     crop,
                     0.,
@@ -548,7 +571,9 @@ impl Editor {
                 painter.rect_filled(shade.intersect(rect), 0., Color32::from_black_alpha(135));
             }
         }
-        draw_grid(painter.clone(), crop, self.framing.grid);
+        if self.framing.show_grid {
+            draw_grid(painter.clone(), crop, self.framing.grid);
+        }
         painter.rect_stroke(
             crop,
             0.,

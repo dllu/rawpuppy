@@ -5,6 +5,21 @@ use crate::{
 };
 use anyhow::Result;
 
+pub fn wrap_rotation(degrees: f32) -> f32 {
+    (degrees + 180.).rem_euclid(360.) - 180.
+}
+
+/// Residual roll from a line in corrected-canvas coordinates. Reversing its
+/// endpoints gives the same correction; choose the nearest horizontal/vertical.
+pub fn level_angle(start: [f32; 2], end: [f32; 2], aspect: f32) -> Option<f32> {
+    let dx = end[0] - start[0];
+    let dy = (end[1] - start[1]) * aspect;
+    if !dx.is_finite() || !dy.is_finite() || dx.hypot(dy) < 1e-6 {
+        return None;
+    }
+    Some((dy.atan2(dx).to_degrees() + 45.).rem_euclid(90.) - 45.)
+}
+
 #[derive(Clone, Debug)]
 pub struct Geometry {
     pub homography: Matrix,

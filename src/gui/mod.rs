@@ -19,6 +19,7 @@ use std::{
 
 const ACCENT: Color32 = Color32::from_rgb(225, 150, 100);
 
+mod adjustments;
 mod calibration;
 mod canvas;
 mod controls;
@@ -135,6 +136,7 @@ struct Editor {
     ai_seed: i64,
     perspective_status: Option<String>,
     perspective_mask: bool,
+    adjustment_drag: Option<[[f32; 2]; 2]>,
     calibration_box: Option<[[f32; 2]; 2]>,
     calibration_status: Option<String>,
 }
@@ -252,6 +254,7 @@ impl Editor {
             ai_seed: 0,
             perspective_status: None,
             perspective_mask: true,
+            adjustment_drag: None,
             calibration_box: None,
             calibration_status: None,
         };
@@ -338,9 +341,21 @@ impl eframe::App for Editor {
                     Tool::Perspective
                 });
             }
-            if matches!(self.tool, Tool::Crop | Tool::Perspective)
-                && ctx
-                    .input(|i| i.key_pressed(egui::Key::Enter) || i.key_pressed(egui::Key::Escape))
+            if ctx.input(|i| i.key_pressed(egui::Key::G)) {
+                self.framing.show_grid = !self.framing.show_grid;
+            }
+            if ctx.input(|i| i.key_pressed(egui::Key::S)) {
+                self.set_tool(if self.tool == Tool::Straighten {
+                    Tool::View
+                } else {
+                    Tool::Straighten
+                });
+            }
+            if matches!(
+                self.tool,
+                Tool::Crop | Tool::Perspective | Tool::Straighten | Tool::Graduated
+            ) && ctx
+                .input(|i| i.key_pressed(egui::Key::Enter) || i.key_pressed(egui::Key::Escape))
             {
                 self.set_tool(Tool::View);
             }

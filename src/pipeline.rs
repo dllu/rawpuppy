@@ -21,6 +21,7 @@ pub const MODULE_ORDER: &[&str] = &[
     "tone curve",
     "split toning",
     "neural synthesis",
+    "luminance sharpening / edge-aware local contrast",
     "output color transform",
 ];
 
@@ -222,6 +223,26 @@ impl<'a> Pipeline<'a> {
 
     /// Viewport rendering reads the original at every zoom level, including 1:1.
     pub fn render_region(&self, region: [f32; 4], width: usize, height: usize) -> Result<Rendered> {
+        if !self.edits.detail.is_default() {
+            let plan = crate::detail::Plan::new(
+                &self.edits.detail,
+                region,
+                [width, height],
+                [self.geometry.width, self.geometry.height],
+            )?;
+            return crate::detail::render(&plan, region, width, height, |region, width, height| {
+                self.render_composed_region(region, width, height)
+            });
+        }
+        self.render_composed_region(region, width, height)
+    }
+
+    pub(crate) fn render_composed_region(
+        &self,
+        region: [f32; 4],
+        width: usize,
+        height: usize,
+    ) -> Result<Rendered> {
         let count = pixel_count(width, height, 1)?;
         let step = [region[2] / width as f32, region[3] / height as f32];
         let mut pixels = Vec::new();

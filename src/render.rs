@@ -216,8 +216,20 @@ impl Renderer {
             temporary.raw.reconstruction = Reconstruction::Mhc;
             temporary.raw.denoise = 0.;
             temporary.display.synthesis.clear();
-            let rendered =
-                self.render_prepared_before_synthesis(image, &temporary, region, width, height)?;
+            let rendered = if temporary.detail.is_default() {
+                self.render_prepared_before_synthesis(image, &temporary, region, width, height)?
+            } else {
+                let m = &image.metadata;
+                let source = [
+                    ((m.width as f32 * temporary.geometry.crop[2]).round() as usize).max(1),
+                    ((m.height as f32 * temporary.geometry.crop[3]).round() as usize).max(1),
+                ];
+                let plan =
+                    crate::detail::Plan::new(&temporary.detail, region, [width, height], source)?;
+                crate::detail::render(&plan, region, width, height, |r, w, h| {
+                    self.render_prepared_before_synthesis(image.clone(), &temporary, r, w, h)
+                })?
+            };
             Ok((rendered, Some(progress)))
         }
         #[cfg(not(feature = "raw-ml"))]
@@ -339,6 +351,28 @@ impl Renderer {
         width: usize,
         height: usize,
     ) -> Result<Rendered> {
+        if !edits.detail.is_default() {
+            edits.validate()?;
+            let m = &image.metadata;
+            let source = [
+                ((m.width as f32 * edits.geometry.crop[2]).round() as usize).max(1),
+                ((m.height as f32 * edits.geometry.crop[3]).round() as usize).max(1),
+            ];
+            let plan = crate::detail::Plan::new(&edits.detail, region, [width, height], source)?;
+            return crate::detail::render(&plan, region, width, height, |region, width, height| {
+                self.render_composed_region(image.clone(), edits, region, width, height)
+            });
+        }
+        self.render_composed_region(image, edits, region, width, height)
+    }
+    fn render_composed_region(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        region: [f32; 4],
+        width: usize,
+        height: usize,
+    ) -> Result<Rendered> {
         self.layers_on_gpu = false;
         #[cfg(feature = "gpu")]
         if !edits.display.synthesis.is_empty() {
@@ -403,7 +437,7 @@ impl Renderer {
         }
         #[cfg(feature = "gpu")]
         if let Some(gpu) = &mut self.gpu {
-            match gpu.render_region(image.clone(), edits, region, width, height) {
+            match gpu.render_composed_region(image.clone(), edits, region, width, height) {
                 Ok(image) => {
                     self.label = gpu.name().into();
                     return Ok(image);
@@ -412,7 +446,7 @@ impl Renderer {
                 Err(e) => return Err(e),
             }
         }
-        Pipeline::compile(&image, edits)?.render_region(region, width, height)
+        Pipeline::compile(&image, edits)?.render_composed_region(region, width, height)
     }
 
     #[cfg(feature = "moebius")]
@@ -432,6 +466,7 @@ impl Renderer {
         let (w, h) = Pipeline::compile(&image, edits)?.dimensions(None);
         let color_revision = image.metadata.color_revision;
         let mut context_edits = edits.clone();
+        context_edits.detail = Default::default();
         let hash = crate::synthesis::recipe_hash(edits)?;
         context_edits.display.synthesis.retain(|fill| {
             fill.recipe_sha256 == hash && fill.source_color_revision == color_revision

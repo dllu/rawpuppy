@@ -10,6 +10,8 @@ pub(super) enum Tool {
     Calibration,
     Crop,
     Perspective,
+    Straighten,
+    Graduated,
 }
 
 #[derive(Default)]
@@ -102,7 +104,7 @@ impl Editor {
                     });
                     return;
                 }
-                ui.horizontal(|ui| {
+                ui.horizontal_wrapped(|ui| {
                     if ui.small_button("Fit").clicked() {
                         self.zoom = 1.;
                         self.center = [0.5; 2];
@@ -135,8 +137,31 @@ impl Editor {
                             Tool::Perspective
                         });
                     }
-                    if matches!(self.tool, Tool::Crop | Tool::Perspective)
-                        && ui.button("Done").clicked()
+                    if ui
+                        .selectable_label(self.tool == Tool::Straighten, "Straighten")
+                        .on_hover_text("Draw along a horizon or vertical edge · S")
+                        .clicked()
+                    {
+                        self.set_tool(if self.tool == Tool::Straighten {
+                            Tool::View
+                        } else {
+                            Tool::Straighten
+                        });
+                    }
+                    if ui
+                        .selectable_label(self.framing.show_grid, "Grid")
+                        .on_hover_text("Toggle alignment grid · G")
+                        .clicked()
+                    {
+                        self.framing.show_grid = !self.framing.show_grid;
+                    }
+                    ui.menu_button("Guides", |ui| {
+                        self.grid_controls(ui);
+                    });
+                    if matches!(
+                        self.tool,
+                        Tool::Crop | Tool::Perspective | Tool::Straighten | Tool::Graduated
+                    ) && ui.button("Done").clicked()
                     {
                         self.set_tool(Tool::View);
                     }
@@ -166,9 +191,23 @@ impl Editor {
                 let response = ui.allocate_rect(rect, egui::Sense::click_and_drag());
                 // Apply navigation before calculating the viewport sent to the worker.
                 if response.hovered() {
-                    let scroll = ui.input(|i| i.smooth_scroll_delta.y);
+                    let resize_brush = matches!(self.tool, Tool::Clone | Tool::Heal | Tool::Mask)
+                        && ui.input(|i| i.modifiers.shift);
+                    let scroll = ui.input(|i| {
+                        let delta = i.smooth_scroll_delta;
+                        // egui maps Shift-wheel to horizontal scrolling.
+                        if resize_brush && delta.x.abs() > delta.y.abs() {
+                            delta.x
+                        } else {
+                            delta.y
+                        }
+                    });
                     if scroll.abs() > 0.1 {
-                        self.zoom = (self.zoom * (scroll * 0.002).exp()).max(1.);
+                        if resize_brush {
+                            self.radius = (self.radius * (scroll * 0.003).exp()).clamp(0.002, 0.15);
+                        } else {
+                            self.zoom = (self.zoom * (scroll * 0.002).exp()).max(1.);
+                        }
                     }
                 }
                 if response.double_clicked() {
@@ -249,6 +288,7 @@ impl Editor {
                     }
                 }
                 self.framing_overlay(ui, &response, rect, canvas_region);
+                self.adjustment_overlay(ui, &response, rect, canvas_region);
                 if response.hovered()
                     && matches!(self.tool, Tool::Clone | Tool::Heal | Tool::Mask)
                     && let Some(pos) = response.hover_pos()

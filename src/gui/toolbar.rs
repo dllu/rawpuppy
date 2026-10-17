@@ -69,7 +69,7 @@ impl Editor {
                         ui.add_space(12.);
                         ui.label(
                             egui::RichText::new(
-                                "B compare  ·  F fit  ·  1 actual pixels  ·  ⌘/Ctrl S save",
+                                "S straighten  ·  G grid  ·  B compare  ·  F fit  ·  1 actual pixels",
                             )
                             .small()
                             .color(Color32::GRAY),

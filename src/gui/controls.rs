@@ -5,16 +5,13 @@ impl Editor {
     pub(super) fn controls(&mut self, ui: &mut egui::Ui) {
         let source_image = self.image.clone();
         egui::Panel::right("edits")
-            .exact_size(310.)
+            .exact_size(330.)
             .resizable(false)
+            .frame(egui::Frame::new().fill(ui.visuals().panel_fill).inner_margin(12.))
             .show(ui, |ui| {
                 ui.add_space(12.);
                 if let Some(image) = &self.image {
-                    ui.label(
-                        egui::RichText::new(&image.metadata.model)
-                            .size(17.)
-                            .strong(),
-                    );
+                    ui.add(egui::Label::new(egui::RichText::new(&image.metadata.model).size(17.).strong()).wrap()).on_hover_text(&image.metadata.model);
                     ui.label(
                         egui::RichText::new(format!(
                             "{} × {} · {:.1} MP",
@@ -80,13 +77,6 @@ impl Editor {
                             }
                             });
                             egui::CollapsingHeader::new("Advanced geometry").show(ui, |ui| {
-                            slider(
-                                ui,
-                                &mut self.edits.geometry.rotation,
-                                -180.0..=180.0,
-                                "Rotate",
-                                "°",
-                            );
                             slider(
                                 ui,
                                 &mut self.edits.geometry.pitch,
@@ -175,6 +165,10 @@ impl Editor {
                                     "Graduated ND",
                                     " EV",
                                 );
+                                if ui.selectable_label(self.tool == Tool::Graduated, "Draw graduated filter").clicked() {
+                                    self.set_tool(if self.tool == Tool::Graduated { Tool::View } else { Tool::Graduated });
+                                }
+                                if self.tool == Tool::Graduated { ui.label(egui::RichText::new("Drag from unchanged to filtered · Esc cancels").small()); }
                                 if self.edits.scene.graduated.exposure != 0. {
                                     slider(
                                         ui,
@@ -227,7 +221,12 @@ impl Editor {
                                     }
                                 });
                             });
-                        egui::CollapsingHeader::new("Sensor & detail").show(ui, |ui| {
+                        egui::CollapsingHeader::new("Detail").default_open(true).show(ui, |ui| {
+                            slider(ui, &mut self.edits.detail.sharpen, 0. ..=1., "Sharpen", "");
+                            slider(ui, &mut self.edits.detail.local_contrast, 0. ..=1., "Local contrast", "");
+                            ui.label(egui::RichText::new("View at 100% to judge fine detail.").small().color(Color32::GRAY));
+                        });
+                        egui::CollapsingHeader::new("Sensor").show(ui, |ui| {
                             egui::ComboBox::from_label("Reconstruction")
                                 .selected_text(match self.edits.raw.reconstruction {
                                     Reconstruction::Mhc => "Standard",
@@ -303,7 +302,7 @@ impl Editor {
                                 ui.selectable_value(&mut self.tool, Tool::Heal, "Heal");
                             });
                             ui.label(
-                                egui::RichText::new("Alt-click a source, then paint a target.")
+                                    egui::RichText::new("Alt-click a source, then paint. Shift-scroll resizes the brush.")
                                     .small(),
                             );
                             slider(ui, &mut self.radius, 0.002..=0.15, "Brush size", "");
@@ -453,10 +452,36 @@ pub(super) fn slider(
     label: &str,
     suffix: &str,
 ) {
+    let control = egui::Slider::new(value, range.clone())
+        .clamping(egui::SliderClamping::Edits)
+        .text(label)
+        .suffix(suffix)
+        .drag_value_speed(if suffix == "°" {
+            0.1
+        } else {
+            (*range.end() - *range.start()) as f64 / 500.
+        });
+    ui.add(if suffix == "°" {
+        control.step_by(0.1)
+    } else {
+        control
+    });
+}
+
+/// Small corrections are the normal case; numeric input still accepts any roll.
+pub(super) fn angle_slider(
+    ui: &mut egui::Ui,
+    value: &mut f32,
+    range: std::ops::RangeInclusive<f32>,
+    label: &str,
+) -> egui::Response {
     ui.add(
         egui::Slider::new(value, range)
-            .clamping(egui::SliderClamping::Edits)
-            .text(label)
-            .suffix(suffix),
-    );
+            .clamping(egui::SliderClamping::Never)
+            .step_by(0.1)
+            .drag_value_speed(0.1)
+            .max_decimals(2)
+            .suffix("°")
+            .text(label),
+    )
 }

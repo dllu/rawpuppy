@@ -56,6 +56,7 @@ impl Editor {
     }
     pub(super) fn undo(&mut self) {
         self.framing.cancel_drag();
+        self.adjustment_drag = None;
         if self.history.undo(&mut self.edits) {
             self.sync_framing_aspect();
             self.changed();
@@ -117,6 +118,7 @@ impl Editor {
     }
     pub(super) fn redo(&mut self) {
         self.framing.cancel_drag();
+        self.adjustment_drag = None;
         if self.history.redo(&mut self.edits) {
             self.sync_framing_aspect();
             self.changed();
@@ -227,6 +229,7 @@ impl Editor {
                     self.calibration_status = None;
                     self.framing = framing::Framing::default();
                     self.sync_framing_aspect();
+                    self.adjustment_drag = None;
                     self.calibration_box = None;
                     self.tool = Tool::View;
                     self.changed();

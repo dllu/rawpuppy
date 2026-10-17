@@ -13,6 +13,8 @@ pub struct Edits {
     pub scene: SceneEdits,
     pub tone: ToneEdits,
     pub display: DisplayEdits,
+    #[serde(skip_serializing_if = "DetailEdits::is_default")]
+    pub detail: DetailEdits,
 }
 
 impl Default for Edits {
@@ -25,7 +27,21 @@ impl Default for Edits {
             scene: SceneEdits::default(),
             tone: ToneEdits::default(),
             display: DisplayEdits::default(),
+            detail: DetailEdits::default(),
         }
+    }
+}
+
+/// Final luminance-only spatial enhancement. Historical recipes remain off.
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[serde(default, deny_unknown_fields)]
+pub struct DetailEdits {
+    pub sharpen: f32,
+    pub local_contrast: f32,
+}
+impl DetailEdits {
+    pub fn is_default(&self) -> bool {
+        self.sharpen == 0. && self.local_contrast == 0.
     }
 }
 
@@ -290,6 +306,7 @@ impl Edits {
     /// their explicit/default-off state so historical rendering and hashes survive.
     pub fn for_image(image: &crate::input::SensorImage) -> Self {
         let mut out = Self::default();
+        out.detail.sharpen = 0.2;
         if crate::calibration::Illuminant::Camera
             .xy(&image.metadata)
             .and_then(crate::calibration::adaptation)
@@ -350,6 +367,11 @@ impl Edits {
     }
 
     pub fn validate(&self) -> Result<()> {
+        ensure!(
+            (0. ..=1.).contains(&self.detail.sharpen)
+                && (0. ..=1.).contains(&self.detail.local_contrast),
+            "Detail amounts must be in [0,1]"
+        );
         ensure!(
             self.version == 1,
             "Unsupported edit recipe version {}",

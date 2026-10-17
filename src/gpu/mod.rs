@@ -195,6 +195,28 @@ impl GpuRenderer {
         width: usize,
         height: usize,
     ) -> Result<Rendered> {
+        if !edits.detail.is_default() {
+            let pipeline = Pipeline::compile(&image, edits)?;
+            let plan = crate::detail::Plan::new(
+                &edits.detail,
+                region,
+                [width, height],
+                [pipeline.geometry.width, pipeline.geometry.height],
+            )?;
+            return crate::detail::render(&plan, region, width, height, |r, w, h| {
+                self.render_composed_region(image.clone(), edits, r, w, h)
+            });
+        }
+        self.render_composed_region(image, edits, region, width, height)
+    }
+    pub(crate) fn render_composed_region(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        region: [f32; 4],
+        width: usize,
+        height: usize,
+    ) -> Result<Rendered> {
         self.render_region_tiled(image, edits, region, width, height, 64 * 1024 * 1024)
     }
     fn render_region_tiled(

@@ -186,6 +186,7 @@ pub fn preview(
     analysis.raw.hot_pixels = true;
     analysis.display = Default::default();
     analysis.scene = Edits::for_image(&image).scene;
+    analysis.detail = Default::default();
     analysis.tone.mapper = ToneMapper::Linear;
     analysis.tone.saturation = 1.;
     let (width, height) = renderer.dimensions(image.clone(), &analysis, Some(1440))?;

@@ -1,0 +1,96 @@
+{
+  "image": {
+    "name": "DSCF0027, Standard London",
+    "dimensions": [
+      11648,
+      8736
+    ],
+    "raw_sha256": "65b226c1850a580711e45af1df7bc954193be1dabbdd6fecd5026769d65f156b",
+    "darktable_xmp_sha256": "b94071a9522cb32d0e78e4e24a9fd0533f1000192e24de8dc559b78bd47727a0",
+    "raw_matches_prior_hash": true,
+    "xmp_matches_prior_owned_copy": true
+  },
+  "tests": {
+    "passed": 161,
+    "failed": 0,
+    "ignored": 32
+  },
+  "native_level": {
+    "before_rotation": -0.7281773,
+    "after_rotation": -0.19146729,
+    "expected_delta_degrees": 0.536715,
+    "only_roll_changed": true
+  },
+  "native_undo": {
+    "exact_undo": true,
+    "rotation": -0.7281773
+  },
+  "native_gradient": {
+    "only_graduated_filter_changed": true,
+    "filter": {
+      "exposure": -1.0,
+      "angle": 174.96933,
+      "center": [
+        0.5271514,
+        0.44444445
+      ],
+      "width": 0.5399588
+    }
+  },
+  "gpu_parity": {
+    "backends": [
+      "Vulkan",
+      "CUDA system memory"
+    ],
+    "max_absolute_channel_tolerance": 3e-05,
+    "passed": true
+  },
+  "export_single_runs": {
+    "baseline": {
+      "render_seconds": 1.18,
+      "decode_seconds": 0.42,
+      "export_seconds": 1.67,
+      "max_rss_kib": 2804548
+    },
+    "detail": {
+      "sharpen": 0.2,
+      "local_contrast": 0.2,
+      "render_seconds": 7.22,
+      "decode_seconds": 1.39,
+      "export_seconds": 1.72,
+      "max_rss_kib": 2813948
+    },
+    "caveat": "Single runs with other work active; not a controlled benchmark."
+  },
+  "limitations": [
+    "Spatial detail runs on CPU after native GPU composition.",
+    "Metal was not physically tested.",
+    "No lens deconvolution or focus reconstruction."
+  ],
+  "checks": {
+    "all_features_tests": true,
+    "strict_clippy_1_99_all_targets": true,
+    "cargo_fmt": true,
+    "git_diff_check": true
+  },
+  "artifacts_workspace": "/tmp/rawpuppy-validation/usability-2026-10-16",
+  "no_default_features_tests": {
+    "passed": 145,
+    "failed": 0,
+    "ignored": 6
+  },
+  "native_screenshot": {
+    "path": "docs/images/editor-straighten.jpg",
+    "sha256": "0991d6e4e0d19a39f2bda314ab7b213e9703c9f657df789be2ade50536c9ef08",
+    "dimensions": [
+      1280,
+      853
+    ]
+  },
+  "additional_no_default_detail_tests": {
+    "passed": 4,
+    "failed": 0,
+    "ignored": 0
+  },
+  "owned_native_processes_closed": true
+}

@@ -146,6 +146,7 @@ pub fn recipe_hash(edits: &Edits) -> Result<String> {
     base.geometry.guides.clear();
     base.geometry.camera = None;
     base.geometry.crop_aspect = None;
+    base.detail = Default::default();
     Ok(format!("{:x}", Sha256::digest(serde_json::to_vec(&base)?)))
 }
 pub fn valid_hash(hash: &str) -> bool {
