@@ -1,6 +1,7 @@
 //! Native widget, worker and document-history integration tests.
 use super::*;
 
+mod autosave;
 mod brushes;
 mod calibration;
 mod curves;

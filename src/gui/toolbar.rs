@@ -17,14 +17,7 @@ impl Editor {
                     self.choose_photo();
                 }
                 ui.add_enabled_ui(self.image.is_some() && self.busy.is_none(), |ui| {
-                    if ui
-                        .button(if self.dirty() {
-                            "Save edits •"
-                        } else {
-                            "Save edits"
-                        })
-                        .clicked()
-                    {
+                    if ui.button("Save edits").clicked() {
                         self.save();
                     }
                     if ui.button("Export…").clicked() {

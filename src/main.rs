@@ -176,8 +176,15 @@ fn main() -> Result<()> {
             })?;
             edits.geometry = geometry;
             if let Some(output) = output {
+                let capture = image.metadata.capture.clone();
                 let rendered = renderer.render(image, &edits, Some(max_edge))?;
-                export::write(&output, &rendered, OutputSpace::Srgb, overwrite)?;
+                export::write_with_metadata(
+                    &output,
+                    &rendered,
+                    OutputSpace::Srgb,
+                    overwrite,
+                    &capture,
+                )?;
             }
             if save_edits {
                 sidecar::save(&sidecar::path_for(&input), &edits)?;
@@ -213,9 +220,10 @@ fn main() -> Result<()> {
             }
             let mut renderer = Renderer::new(cli.backend);
             renderer.set_document(input.clone());
+            let capture = image.metadata.capture.clone();
             let rendered = renderer.render(image, &edits, max_edge)?;
             let processed = start.elapsed();
-            export::write(&output, &rendered, color_space, overwrite)?;
+            export::write_with_metadata(&output, &rendered, color_space, overwrite, &capture)?;
             eprintln!("Compute: {}", renderer.label());
             eprintln!(
                 "{} × {} → {} · decode {:.2}s · render {:.2}s · export {:.2}s",
@@ -296,8 +304,9 @@ fn main() -> Result<()> {
                     edits.display.synthesis.push(fill);
                 }
             }
+            let capture = image.metadata.capture.clone();
             let rendered = renderer.render(image, &edits, max_edge)?;
-            export::write(&output, &rendered, color_space, overwrite)?;
+            export::write_with_metadata(&output, &rendered, color_space, overwrite, &capture)?;
             if save_edits {
                 sidecar::save(&sidecar::path_for(&input), &edits)?;
             }

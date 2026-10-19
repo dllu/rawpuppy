@@ -1,9 +1,10 @@
 # Rawpuppy
 
 A minimal, opinionated, non-destructive RAW photo editor in Rust. One photo,
-a fixed processing order, and edits saved as `photo.raf.rawpuppy.xmp` independently
+a fixed processing order, and edits saved automatically as `photo.raf.rawpuppy.xmp` independently
 of other editors. Development is ongoing; current capabilities and remaining
 requirements are recorded in [docs](docs).
+JPEG is the default export. JPEG, PNG and TIFF preserve photographic EXIF metadata.
 The CLI `save` command requires the `.rawpuppy.xmp` suffix for its output.
 
 ![Rawpuppy editing a 101.8 MP GFX photograph of The Standard, London, with exposure and color calibration controls](docs/images/editor-colour.jpg)
@@ -78,7 +79,8 @@ Eligible coherent CUDA devices share the existing sensor/output allocations;
 [system-memory.md](docs/system-memory.md) describes selection and GB10 measurements.
 
 In the editor: drop a photo to open it, scroll to zoom, drag to pan, `F` to fit,
-`1` for actual pixels, and `B` to compare. Save with `Ctrl/Cmd S`; undo with
+`1` for actual pixels, and `B` to compare. Edits save automatically; `Ctrl/Cmd S`
+flushes immediately. Undo with
 `Ctrl/Cmd Z`. Clone/heal uses Alt-click to choose a source. A custom monitor ICC
 can be selected in the editor or passed with `edit --display-profile monitor.icc`.
 Automatic display selection and platform policies are described in [display color](docs/display-color.md).

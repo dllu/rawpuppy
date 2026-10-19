@@ -3,9 +3,23 @@ use super::*;
 
 impl Editor {
     pub(super) fn send(&mut self, work: Work) {
-        if self.tx.send(work).is_err() {
-            self.error = Some("Photo worker stopped".into());
+        let saving = matches!(work, Work::Save { .. });
+        let tx = if saving { &self.save_tx } else { &self.tx };
+        if tx.send(work).is_err() {
+            self.error = Some(
+                if saving {
+                    "Sidecar writer stopped"
+                } else {
+                    "Photo worker stopped"
+                }
+                .into(),
+            );
             self.busy = None;
+            if saving {
+                self.autosave.in_flight = None;
+                self.autosave.failed = true;
+                self.close_after_save = false;
+            }
         }
     }
     pub(super) fn open(&mut self, path: PathBuf) {
@@ -19,8 +33,11 @@ impl Editor {
         });
     }
     pub(super) fn request_open(&mut self, path: PathBuf) {
+        self.finish_edit_gesture();
         if self.dirty() {
             self.pending = Some(Pending::Open(path));
+            self.close_after_save = true;
+            self.save();
         } else {
             self.open(path);
         }
@@ -125,10 +142,12 @@ impl Editor {
         }
     }
     pub(super) fn save(&mut self) {
-        if matches!(self.busy, Some(Busy::Load(_))) {
+        if matches!(self.busy, Some(Busy::Load(_))) || self.autosave.in_flight.is_some() {
             return;
         }
         if let Some(path) = &self.path {
+            self.autosave.failed = false;
+            self.autosave.in_flight = Some(self.edits.clone());
             self.status = "Saving edits…".into();
             self.send(Work::Save {
                 load_id: self.load_generation,
@@ -173,10 +192,10 @@ impl Editor {
         let default = original.file_stem().unwrap_or_default().to_string_lossy();
         if let Some(path) = rfd::FileDialog::new()
             .set_title("Export photograph")
-            .set_file_name(format!("{default}.png"))
+            .set_file_name(format!("{default}.jpg"))
+            .add_filter("JPEG", &["jpg", "jpeg"])
             .add_filter("16-bit PNG", &["png"])
             .add_filter("16-bit TIFF", &["tif", "tiff"])
-            .add_filter("JPEG", &["jpg", "jpeg"])
             .add_filter("Float EXR", &["exr"])
             .save_file()
         {
@@ -215,6 +234,7 @@ impl Editor {
                     self.edits = edits.clone();
                     self.saved = edits;
                     self.history = History::default();
+                    self.autosave = autosave::Autosave::default();
                     self.texture = None;
                     self.hdr_texture = None;
                     self.histogram.clear();
@@ -409,12 +429,15 @@ impl Editor {
                         .is_some_and(|p| sidecar::path_for(p) == path) =>
                 {
                     self.saved = edits;
+                    self.autosave.in_flight = None;
                     if self.busy.is_none() {
                         self.status = "Edits saved".into();
                     }
                     if self.close_after_save && !self.dirty() {
                         self.close_after_save = false;
                         self.perform_pending(ctx);
+                    } else if self.close_after_save {
+                        self.save();
                     }
                 }
                 #[cfg(feature = "moebius")]
@@ -481,6 +504,8 @@ impl Editor {
                     }
                     if matches!(scope, ErrorScope::Save(id) if id == self.load_generation) {
                         self.close_after_save = false;
+                        self.autosave.in_flight = None;
+                        self.autosave.failed = true;
                     }
                 }
                 _ => {}
@@ -490,7 +515,10 @@ impl Editor {
     pub(super) fn perform_pending(&mut self, ctx: &egui::Context) {
         self.close_after_save = false;
         match self.pending.take() {
-            Some(Pending::Close) => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
+            Some(Pending::Close) => {
+                self.autosave.closing = true;
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
             Some(Pending::Open(path)) => self.open(path),
             None => {}
         }

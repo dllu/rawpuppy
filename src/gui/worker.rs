@@ -503,8 +503,9 @@ pub(super) fn worker(
                     path.canonicalize().ok().as_ref() != Some(&original.canonicalize()?),
                     "Export cannot overwrite the original"
                 );
+                let capture = image.metadata.capture.clone();
                 let rendered = renderer.render(image, &edits, None)?;
-                export::write(&path, &rendered, space, true)?;
+                export::write_with_metadata(&path, &rendered, space, true, &capture)?;
                 Ok(Reply::Exported { load_id, path })
             }
         })();

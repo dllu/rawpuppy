@@ -20,6 +20,7 @@ use std::{
 const ACCENT: Color32 = Color32::from_rgb(225, 150, 100);
 
 mod adjustments;
+mod autosave;
 mod calibration;
 mod canvas;
 mod controls;
@@ -81,6 +82,8 @@ struct Editor {
     #[cfg(debug_assertions)]
     probe_photo_rect: Option<Rect>,
     tx: mpsc::Sender<Work>,
+    save_tx: mpsc::Sender<Work>,
+    autosave: autosave::Autosave,
     rx: mpsc::Receiver<Reply>,
     image: Option<Arc<SensorImage>>,
     path: Option<PathBuf>,
@@ -155,6 +158,18 @@ impl Editor {
         visuals.extreme_bg_color = Color32::from_rgb(20, 22, 24);
         visuals.selection.bg_fill = ACCENT.gamma_multiply(0.4);
         visuals.widgets.active.bg_fill = ACCENT.gamma_multiply(0.6);
+        // Selectable buttons omit the idle frame; a hover border would otherwise
+        // add layout space. Use fill/text feedback with identical metrics.
+        for widget in [
+            &mut visuals.widgets.noninteractive,
+            &mut visuals.widgets.inactive,
+            &mut visuals.widgets.hovered,
+            &mut visuals.widgets.active,
+            &mut visuals.widgets.open,
+        ] {
+            widget.bg_stroke.width = 0.;
+            widget.expansion = 0.;
+        }
         cc.egui_ctx.set_visuals(visuals);
         let mut style = (*cc.egui_ctx.style_of(egui::Theme::Dark)).clone();
         style.spacing.item_spacing = Vec2::new(10., 9.);
@@ -181,6 +196,13 @@ impl Editor {
             })
             .expect("Starting display profile worker");
         let ctx = cc.egui_ctx.clone();
+        let (save_tx, save_rx) = mpsc::channel();
+        let save_reply = reply_tx.clone();
+        let save_ctx = ctx.clone();
+        std::thread::Builder::new()
+            .name("sidecar-writer".into())
+            .spawn(move || autosave::save_worker(save_rx, save_reply, save_ctx))
+            .expect("Starting sidecar writer");
         std::thread::Builder::new()
             .name("photo-worker".into())
             .spawn(move || worker(work_rx, reply_tx, ctx, backend))
@@ -191,6 +213,8 @@ impl Editor {
             #[cfg(debug_assertions)]
             probe_photo_rect: None,
             tx,
+            save_tx,
+            autosave: Default::default(),
             rx,
             image: None,
             path: None,
@@ -271,6 +295,9 @@ impl eframe::App for Editor {
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         let ctx = ui.ctx().clone();
         self.poll(&ctx);
+        if self.autosave.closing {
+            return;
+        }
         self.refresh_display(frame, &ctx);
         #[cfg(debug_assertions)]
         if let Some(probe) = &mut self.probe
@@ -363,10 +390,14 @@ impl eframe::App for Editor {
         if ctx.input(|i| i.viewport().close_requested()) && self.dirty() {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
             self.pending = Some(Pending::Close);
+            self.finish_edit_gesture();
+            self.close_after_save = true;
+            self.save();
         }
         self.toolbar(ui);
         self.controls(ui);
         self.canvas(ui);
+        self.autosave_tick(&ctx);
         if let Some(message) = self.error.clone() {
             egui::Window::new("Could not complete operation")
                 .collapsible(false)
@@ -380,7 +411,7 @@ impl eframe::App for Editor {
                     }
                 });
         }
-        if self.pending.is_some() {
+        if self.pending.is_some() && !self.close_after_save {
             egui::Window::new("Save your edits?")
                 .collapsible(false)
                 .resizable(false)

@@ -12,6 +12,8 @@ use std::path::Path;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Metadata {
+    #[serde(skip)]
+    pub capture: crate::metadata::Capture,
     pub make: String,
     pub model: String,
     pub sensor_width: usize,
@@ -403,6 +405,7 @@ impl SensorImage {
             (v.n > 0 && v.d > 0).then(|| v.n as f32 / v.d as f32)
         };
         let metadata = Metadata {
+            capture: crate::metadata::Capture::from_raw(raw_metadata.as_ref(), &source)?,
             make: raw.clean_make.clone(),
             model: raw.clean_model.clone(),
             sensor_width: raw.width,
@@ -460,6 +463,11 @@ impl SensorImage {
         let mut reader = image::ImageReader::open(path)?.with_guessed_format()?;
         reader.no_limits();
         let mut decoder = reader.into_decoder()?;
+        let capture = decoder
+            .exif_metadata()?
+            .map(|bytes| crate::metadata::Capture::from_exif(&bytes))
+            .transpose()?
+            .unwrap_or_default();
         let orientation = decoder.orientation()?;
         let icc = decoder.icc_profile()?;
         let grayscale = matches!(
@@ -484,6 +492,7 @@ impl SensorImage {
                 .for_each(|v| *v = color::srgb_decode(*v));
         }
         let metadata = Metadata {
+            capture,
             make: String::new(),
             model: "RGB image".into(),
             sensor_width: width,
@@ -644,6 +653,7 @@ impl SensorImage {
                 .for_each(|v| *v = color::srgb_decode(*v));
         }
         let mut image = Self::from_rgb(width, height, data)?;
+        image.metadata.capture = crate::metadata::Capture::from_tiff(std::fs::File::open(path)?)?;
         image.metadata.model = "TIFF image".into();
         image.metadata.bits = bits as usize;
         image.orientation = orientation;
@@ -667,6 +677,7 @@ impl SensorImage {
         Ok(Self {
             reconstruction: Reconstruction::Mhc,
             metadata: Metadata {
+                capture: Default::default(),
                 make: String::new(),
                 model: "Linear RGB".into(),
                 sensor_width: width,

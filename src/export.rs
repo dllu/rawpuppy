@@ -150,9 +150,20 @@ fn rgba16_pixel(p: &[f32; 4], matrix: color::Matrix, space: OutputSpace) -> [u16
     ]
 }
 
+#[cfg(test)]
 fn write_png(writer: impl Write + Send, image: &Rendered, space: OutputSpace) -> Result<()> {
+    write_png_metadata(writer, image, space, None)
+}
+
+fn write_png_metadata(
+    writer: impl Write + Send,
+    image: &Rendered,
+    space: OutputSpace,
+    exif: Option<&[u8]>,
+) -> Result<()> {
     let mut info = png::Info::with_size(u32::try_from(image.width)?, u32::try_from(image.height)?);
     info.icc_profile = Some(Cow::Owned(profile(space)?.icc()?));
+    info.exif_metadata = exif.map(|bytes| Cow::Owned(bytes.to_vec()));
     let mut encoder = png::Encoder::with_info(writer, info)?;
     encoder.set_color(png::ColorType::Rgba);
     encoder.set_depth(png::BitDepth::Sixteen);
@@ -220,6 +231,7 @@ fn tiff_layout(width: u32, height: u32, icc_bytes: usize) -> (u32, bool) {
     (rows as u32, bound > u64::from(u32::MAX))
 }
 
+#[cfg(test)]
 fn write_tiff<K: tiff::encoder::TiffKind>(
     writer: impl Write + Seek,
     image: &Rendered,
@@ -227,12 +239,32 @@ fn write_tiff<K: tiff::encoder::TiffKind>(
     icc: &[u8],
     rows_per_strip: u32,
 ) -> Result<()> {
+    write_tiff_metadata::<K>(writer, image, space, icc, rows_per_strip, None)
+}
+fn write_tiff_metadata<K: tiff::encoder::TiffKind>(
+    writer: impl Write + Seek,
+    image: &Rendered,
+    space: OutputSpace,
+    icc: &[u8],
+    rows_per_strip: u32,
+    capture: Option<&crate::metadata::Capture>,
+) -> Result<()> {
     let mut encoder = tiff::encoder::TiffEncoder::<_, K>::new_generic(writer)?;
+    let pointers = capture
+        .map(|c| c.directories(&mut encoder))
+        .transpose()?
+        .unwrap_or_default();
     let mut output = encoder.new_image::<tiff::encoder::colortype::RGBA16>(
         u32::try_from(image.width)?,
         u32::try_from(image.height)?,
     )?;
     output.rows_per_strip(rows_per_strip)?;
+    if let Some(capture) = capture {
+        capture.root(output.encoder())?;
+    }
+    for (tag, offset) in pointers {
+        output.encoder().write_tag_buf(tag, &offset)?;
+    }
     output
         .encoder()
         .write_tag(tiff::tags::Tag::IccProfile, icc)?;
@@ -285,6 +317,25 @@ pub fn write_linear_exr(
 }
 
 pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool) -> Result<()> {
+    write_impl(path, image, space, overwrite, None)
+}
+
+pub fn write_with_metadata(
+    path: &Path,
+    image: &Rendered,
+    space: OutputSpace,
+    overwrite: bool,
+    capture: &crate::metadata::Capture,
+) -> Result<()> {
+    write_impl(path, image, space, overwrite, Some(capture))
+}
+fn write_impl(
+    path: &Path,
+    image: &Rendered,
+    space: OutputSpace,
+    overwrite: bool,
+    capture: Option<&crate::metadata::Capture>,
+) -> Result<()> {
     let extension = path
         .extension()
         .and_then(|x| x.to_str())
@@ -295,6 +346,12 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
         "Invalid rendered image"
     );
     let (width, height) = (u32::try_from(image.width)?, u32::try_from(image.height)?);
+    let capture = capture.map(|c| c.for_output(width, height, space));
+    let exif = if matches!(extension.as_str(), "jpg" | "jpeg" | "png") {
+        capture.as_ref().map(|c| c.encode()).transpose()?
+    } else {
+        None
+    };
     let parent = path
         .parent()
         .filter(|p| !p.as_os_str().is_empty())
@@ -303,25 +360,32 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
     {
         let mut writer = BufWriter::new(temporary.as_file_mut());
         match extension.as_str() {
-            "png" => write_png(&mut writer, image, space)?,
+            "png" => write_png_metadata(&mut writer, image, space, exif.as_deref())?,
             "tif" | "tiff" => {
                 let icc = profile(space)?.icc()?;
-                let (rows, big) = tiff_layout(width, height, icc.len());
+                let (rows, big) = tiff_layout(
+                    width,
+                    height,
+                    icc.len()
+                        .saturating_add(capture.as_ref().map_or(0, |c| c.byte_len())),
+                );
                 if big {
-                    write_tiff::<tiff::encoder::TiffKindBig>(
+                    write_tiff_metadata::<tiff::encoder::TiffKindBig>(
                         &mut writer,
                         image,
                         space,
                         &icc,
                         rows,
+                        capture.as_ref(),
                     )?;
                 } else {
-                    write_tiff::<tiff::encoder::TiffKindStandard>(
+                    write_tiff_metadata::<tiff::encoder::TiffKindStandard>(
                         &mut writer,
                         image,
                         space,
                         &icc,
                         rows,
+                        capture.as_ref(),
                     )?;
                 }
             }
@@ -333,6 +397,9 @@ pub fn write(path: &Path, image: &Rendered, space: OutputSpace, overwrite: bool)
                 let mut encoder =
                     image::codecs::jpeg::JpegEncoder::new_with_quality(&mut writer, 95);
                 encoder.set_icc_profile(profile(space)?.icc()?)?;
+                if let Some(exif) = exif {
+                    encoder.set_exif_metadata(exif)?;
+                }
                 // Convert bounded stripes in parallel from the immutable float
                 // source instead of retaining full RGBA/RGB copies.
                 encoder.encode_image(&JpegView::new(image, space)?)?;

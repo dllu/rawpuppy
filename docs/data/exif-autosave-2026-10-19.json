@@ -1,0 +1,117 @@
+{
+  "all_features_tests": {
+    "passed": 168,
+    "failed": 0,
+    "ignored": 32
+  },
+  "no_default_features_tests": {
+    "passed": 153,
+    "failed": 0,
+    "ignored": 6
+  },
+  "strict_clippy_1_99_all_features_all_targets": true,
+  "formatting": true,
+  "real_raw_sha256": "65b226c1850a580711e45af1df7bc954193be1dabbdd6fecd5026769d65f156b",
+  "real_export_checks": {
+    "jpg": {
+      "dimensions": [
+        480,
+        360
+      ],
+      "orientation": 1,
+      "color_space": 1,
+      "software": "rawpuppy 0.1.0",
+      "matched_capture_fields": [
+        "Make",
+        "Model",
+        "LensModel",
+        "ExposureTime",
+        "FNumber",
+        "ISO",
+        "DateTimeOriginal",
+        "OffsetTimeOriginal",
+        "FocalLength",
+        "FocalLengthIn35mmFormat",
+        "Artist",
+        "Copyright",
+        "GPSLatitude",
+        "GPSLongitude"
+      ]
+    },
+    "png": {
+      "dimensions": [
+        480,
+        360
+      ],
+      "orientation": 1,
+      "color_space": 65535,
+      "software": "rawpuppy 0.1.0",
+      "matched_capture_fields": [
+        "Make",
+        "Model",
+        "LensModel",
+        "ExposureTime",
+        "FNumber",
+        "ISO",
+        "DateTimeOriginal",
+        "OffsetTimeOriginal",
+        "FocalLength",
+        "FocalLengthIn35mmFormat",
+        "Artist",
+        "Copyright",
+        "GPSLatitude",
+        "GPSLongitude"
+      ]
+    },
+    "tiff": {
+      "dimensions": [
+        480,
+        360
+      ],
+      "orientation": 1,
+      "color_space": 1,
+      "software": "rawpuppy 0.1.0",
+      "matched_capture_fields": [
+        "Make",
+        "Model",
+        "LensModel",
+        "ExposureTime",
+        "FNumber",
+        "ISO",
+        "DateTimeOriginal",
+        "OffsetTimeOriginal",
+        "FocalLength",
+        "FocalLengthIn35mmFormat",
+        "Artist",
+        "Copyright",
+        "GPSLatitude",
+        "GPSLongitude"
+      ]
+    }
+  },
+  "native_editor": {
+    "line_edit_auto_saved": true,
+    "undo_auto_saved_exactly": true,
+    "redo_flushed_on_immediate_close": true,
+    "no_manual_save_keys_used": true,
+    "editor_exit": 0
+  },
+  "unit_coverage": [
+    "GPS in embedded JPEG EXIF",
+    "BigTIFF IFD8 offsets and single image",
+    "ICC and output geometry",
+    "metadata re-import/re-export",
+    "debounce and snapshot ordering",
+    "undo and failure/retry",
+    "close/open flush",
+    "stable button rectangles across interaction states"
+  ],
+  "runtime_metadata_dependencies": [
+    "Rawler",
+    "TIFF",
+    "image",
+    "PNG"
+  ],
+  "exiftool_used_only_for_validation": true,
+  "owned_validation_workspace": "/tmp/rawpuppy-validation/metadata-autosave-2026-10-19"
+}

@@ -15,6 +15,7 @@ pub mod gui;
 pub mod highlights;
 pub mod input;
 pub mod lens;
+pub mod metadata;
 #[cfg(any(feature = "moebius", feature = "raw-ml", feature = "sam3"))]
 pub mod ml_runtime;
 pub mod models;

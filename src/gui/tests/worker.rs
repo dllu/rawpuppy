@@ -261,7 +261,7 @@ fn automatic_perspective_is_one_undo_step_and_stale_results_do_not_change_edits(
 }
 
 #[test]
-fn cancelling_save_continuation_keeps_a_later_open_request_pending() {
+fn cancelling_a_close_and_switching_photos_flushes_the_latest_snapshot() {
     let ctx = egui::Context::default();
     let mut app = Editor::new(
         &eframe::CreationContext::_new_kittest(ctx.clone()),
@@ -272,7 +272,8 @@ fn cancelling_save_continuation_keeps_a_later_open_request_pending() {
     );
     let (send, requests) = mpsc::channel();
     let (responses, receive) = mpsc::channel();
-    app.tx = send;
+    app.tx = send.clone();
+    app.save_tx = send;
     app.rx = receive;
     app.image = Some(Arc::new(
         SensorImage::from_rgb(2, 2, vec![0.2; 12]).unwrap(),
@@ -288,10 +289,11 @@ fn cancelling_save_continuation_keeps_a_later_open_request_pending() {
         edits,
     } = requests.try_recv().unwrap()
     else {
-        panic!("Expected saved snapshot");
+        panic!("Expected snapshot");
     };
     app.cancel_pending();
     let next = PathBuf::from("next-owned-photo.png");
+    app.edits.scene.exposure = 0.7;
     app.request_open(next.clone());
     responses
         .send(Reply::Saved {
@@ -302,23 +304,15 @@ fn cancelling_save_continuation_keeps_a_later_open_request_pending() {
         .unwrap();
     app.poll(&ctx);
     assert!(matches!(&app.pending,Some(Pending::Open(path)) if path==&next));
-    assert!(
-        requests.try_recv().is_err(),
-        "Delayed save implicitly approved a new open request"
-    );
-    // A fresh explicit Save decision must still continue once its matching
-    // current snapshot is durable.
-    app.edits.scene.exposure = 0.7;
-    app.close_after_save = true;
-    app.save();
     let Work::Save {
         load_id,
         path,
         edits,
     } = requests.try_recv().unwrap()
     else {
-        panic!("Expected current saved snapshot");
+        panic!("Latest edits must be saved before opening");
     };
+    assert_eq!(edits.scene.exposure, 0.7);
     responses
         .send(Reply::Saved {
             load_id,
@@ -327,7 +321,7 @@ fn cancelling_save_continuation_keeps_a_later_open_request_pending() {
         })
         .unwrap();
     app.poll(&ctx);
-    assert!(matches!(requests.try_recv().unwrap(),Work::Open{path,..} if path==next));
+    assert!(matches!(requests.try_recv().unwrap(), Work::Open {path,..} if path==next));
     assert!(app.pending.is_none() && !app.close_after_save);
 }
 #[cfg(feature = "moebius")]
