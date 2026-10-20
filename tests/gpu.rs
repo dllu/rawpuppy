@@ -13,6 +13,8 @@ fn illuminant_cat16_matches_cpu_for_signed_hdr_and_temperature_changes() {
     use rawpuppy::{calibration::Illuminant, edits::ToneMapper};
     let backend = if std::env::var_os("RAWPUPPY_TEST_CUDA").is_some() {
         Backend::Cuda
+    } else if cfg!(target_os = "macos") {
+        Backend::Metal
     } else {
         Backend::Vulkan
     };

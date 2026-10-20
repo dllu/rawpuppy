@@ -117,7 +117,10 @@ fn historical_recipes_serialize_and_render_without_new_fields_or_changes() {
     let json = include_str!("data/legacy-calibration-recipe.json");
     let mut edits: Edits = serde_json::from_str(json).unwrap();
     assert!(edits.scene.illuminant.is_legacy());
-    assert_eq!(serde_json::to_string_pretty(&edits).unwrap(), json.trim());
+    assert_eq!(
+        serde_json::to_string_pretty(&edits).unwrap(),
+        json.replace("\r\n", "\n").trim()
+    );
     edits.lens = Default::default();
     let mut image = source([0.2; 3]);
     image.metadata.as_shot = [2., 1., 1.5];

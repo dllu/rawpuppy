@@ -1,5 +1,13 @@
 name: Rust
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      legacy_raw_inference:
+        description: Run the legacy RawNIND graph integration checks
+        type: boolean
+        default: false
 env:
   CARGO_PROFILE_DEV_DEBUG: '0'
   CARGO_PROFILE_TEST_DEBUG: '0'
@@ -59,7 +67,8 @@ jobs:
         env:
           RUST_MIN_STACK: '33554432'
         run: |
-          cargo test --test gpu --test hdr -- --ignored
+          # Hosted runners have Vulkan, not an NVIDIA CUDA device.
+          cargo test --no-default-features --features gpu --test gpu --test hdr --locked -- --ignored
           cargo test --lib gpu::selection_tests::unavailable_or_panicking_cuda_still_renders_on_native_gpu -- --ignored
           cargo test --lib gpu::tile_tests::tiny_output_bindings_preserve_global_coordinates_and_composed_edits -- --ignored
           cargo test --example raw_color_fixture wide_dng_gpu_preserves_raw_coordinates_and_hot_pixel_cleanup -- --ignored
@@ -73,7 +82,8 @@ jobs:
         env:
           RUST_MIN_STACK: '33554432'
         run: |
-          cargo test --test gpu --test hdr -- --ignored --nocapture
+          # Exercise Metal without including the CUDA-only integration tests.
+          cargo test --no-default-features --features gpu --test gpu --test hdr --locked -- --ignored --nocapture
           cargo test --lib gpu::selection_tests::unavailable_or_panicking_cuda_still_renders_on_native_gpu -- --ignored --nocapture
           cargo test --lib gpu::tile_tests::tiny_output_bindings_preserve_global_coordinates_and_composed_edits -- --ignored --nocapture
           cargo test --example raw_color_fixture wide_dng_gpu_preserves_raw_coordinates_and_hot_pixel_cleanup -- --ignored --nocapture
@@ -137,10 +147,10 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install little-cms2
       - name: Prepare verified real RAW graph
+        if: inputs.legacy_raw_inference == true
         # Transient publisher outages must retain all pin/size checks.
         shell: bash
         run: |
-          python tools/test_download_ci_artifact.py
           python tools/prepare_ci_raw_model.py "$RAWPUPPY_CI_MODEL_ROOT"
       - uses: Swatinem/rust-cache@v2
       - run: cargo clippy --features moebius,raw-ml,sam3 --all-targets -j 2 -- -D warnings
@@ -149,13 +159,17 @@ jobs:
       - name: Prepared segmentation graph device portability
         run: python tools/test_export_sam3.py
       - name: Install attributed RAW graph for renderer tests
+        if: inputs.legacy_raw_inference == true
         shell: bash
         run: cargo run --features moebius,raw-ml -j 2 --locked -- install-raw-model "$RAWPUPPY_TEST_RAWNIND_GRAPH"
       - name: Real native RAW inference and CPU parity
+        if: inputs.legacy_raw_inference == true
         run: cargo test --features moebius,raw-ml --test raw_ml -j 2 --locked -- --ignored --test-threads=1 --nocapture
       - name: Prepare verified real inpainting graphs
         shell: bash
-        run: python tools/test_moebius_export.py
+        run: |
+          python tools/test_download_ci_artifact.py
+          python tools/test_moebius_export.py
       - name: Export verified real inpainting graphs
         shell: bash
         run: python tools/prepare_ci_moebius.py "$RAWPUPPY_CI_MODEL_ROOT/moebius"

@@ -67,11 +67,17 @@ The loader requires manifest version 2 and verifies the graph checksum.
 `--device cpu` also ran successfully. The real graph's native MPS checks passed
 on Apple Silicon macOS CI, including CPU parity and tiled/renderer integration.
 
-The native-learning CI matrix now covers Linux, macOS and Windows with matching
-PyTorch/LibTorch 2.13. `tools/prepare_ci_raw_model.py` downloads the published
+The native-learning CI matrix covers Linux, macOS and Windows with matching
+PyTorch/LibTorch 2.13. Routine runs compile the `raw-ml` feature and run its
+model-free checks. The legacy RawNIND download, export and seven real-model
+checks are opt-in while its replacement is developed: run the **Rust** workflow
+manually with **Run the legacy RawNIND graph integration checks** enabled.
+The current reconstruction implementation remains available unchanged.
+
+For those manual runs, `tools/prepare_ci_raw_model.py` downloads the published
 31 MB weights, verifies their exact size/hash, checks out the pinned external
 oracle, and prepares the independently expressed graph with attribution. Tests
-install it into an isolated model cache and run the seven real-model checks,
+install it into an isolated model cache and run the real-model checks,
 including all Bayer phases, wide inputs, tiles, cancellation and renderer reuse.
 The device comparison includes signed/above-white inputs and compares against
 CPU output. macOS explicitly requires MPS, with CPU operator fallback disabled.

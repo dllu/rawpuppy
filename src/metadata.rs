@@ -154,8 +154,11 @@ impl Capture {
             metadata.write_exif_tags(&mut tiff, &mut root, &mut exif)?;
             root.add_tag(ExifTag::Make, metadata.make.as_str());
             root.add_tag(ExifTag::Model, metadata.model.as_str());
-            let offset = exif.build(&mut tiff)?;
-            root.add_tag(ExifTag::ExifOffset, [offset]);
+            // A valid RAW need not contain photographic EXIF fields.
+            if !exif.is_empty() {
+                let offset = exif.build(&mut tiff)?;
+                root.add_tag(ExifTag::ExifOffset, [offset]);
+            }
             tiff.build(root)?;
             capture = Self::from_exif(bytes.get_ref())?;
         }
