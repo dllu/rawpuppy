@@ -30,6 +30,7 @@ impl Editor {
         self.send(Work::Open {
             id: self.load_generation,
             path,
+            defaults: self.preferences.config.defaults.clone(),
         });
     }
     pub(super) fn request_open(&mut self, path: PathBuf) {

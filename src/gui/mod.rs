@@ -1,4 +1,4 @@
-//! Native single-photo editor. I/O and photo rendering never run on the UI thread.
+//! Native single-photo editor. Photo I/O and rendering never run on the UI thread.
 use crate::{
     color::{self, OutputSpace},
     display,
@@ -29,6 +29,7 @@ mod display_state;
 mod document;
 mod framing;
 mod history;
+mod preferences;
 #[cfg(test)]
 mod tests;
 mod toolbar;
@@ -77,6 +78,8 @@ pub fn run(
 }
 
 struct Editor {
+    preferences: preferences::Preferences,
+    sidebar: controls::Sidebar,
     #[cfg(debug_assertions)]
     probe: Option<probe::Probe>,
     #[cfg(debug_assertions)]
@@ -152,6 +155,7 @@ impl Editor {
         backend: Backend,
         hdr_requested: bool,
     ) -> Self {
+        let (preferences, config_error) = preferences::Preferences::load();
         let mut visuals = egui::Visuals::dark();
         visuals.panel_fill = Color32::from_rgb(29, 31, 34);
         visuals.window_fill = Color32::from_rgb(35, 37, 40);
@@ -171,10 +175,7 @@ impl Editor {
             widget.expansion = 0.;
         }
         cc.egui_ctx.set_visuals(visuals);
-        let mut style = (*cc.egui_ctx.style_of(egui::Theme::Dark)).clone();
-        style.spacing.item_spacing = Vec2::new(10., 9.);
-        style.spacing.button_padding = Vec2::new(13., 7.);
-        cc.egui_ctx.set_style_of(egui::Theme::Dark, style);
+        preferences::apply_style(&cc.egui_ctx, &preferences.config.ui);
         let (tx, work_rx) = mpsc::channel();
         let (reply_tx, rx) = mpsc::channel();
         let (display_tx, display_work_rx) = mpsc::channel::<display::Request>();
@@ -208,6 +209,8 @@ impl Editor {
             .spawn(move || worker(work_rx, reply_tx, ctx, backend))
             .expect("Starting photo worker");
         let mut app = Self {
+            preferences,
+            sidebar: controls::Sidebar::default(),
             #[cfg(debug_assertions)]
             probe: probe::Probe::from_env(),
             #[cfg(debug_assertions)]
@@ -240,7 +243,7 @@ impl Editor {
             preview_pending: false,
             busy: None,
             status: "Open a photograph to begin".into(),
-            error: None,
+            error: config_error,
             profile,
             display_tx,
             display_rx,
@@ -397,6 +400,7 @@ impl eframe::App for Editor {
         self.toolbar(ui);
         self.controls(ui);
         self.canvas(ui);
+        self.preferences_window(&ctx);
         self.autosave_tick(&ctx);
         if let Some(message) = self.error.clone() {
             egui::Window::new("Could not complete operation")

@@ -76,8 +76,7 @@ impl Editor {
             _ => kelvin,
         };
         let daylight = matches!(illuminant, Illuminant::Daylight { .. });
-        if ui.add(egui::Slider::new(&mut temperature, if daylight {4000.} else {1000.}..=25000.)
-            .logarithmic(true).custom_formatter(|v, _| format!("{v:.0}")).text("Temperature").suffix(" K"))
+        if super::controls::parameter_slider(ui, &mut temperature, if daylight {4000.} else {1000.}..=25000., if daylight {4000.} else {1000.}..=25000., "Temperature", " K", true)
             .on_hover_text("Colour of the light source. Moving this control selects a spectral illuminant; custom colours may lie away from its locus.").changed() {
             illuminant = if daylight { Illuminant::Daylight { kelvin: temperature } } else { Illuminant::BlackBody { kelvin: temperature } };
         }
@@ -116,7 +115,7 @@ impl Editor {
             self.edits.scene.illuminant = illuminant;
             self.calibration_status = None;
         }
-        ui.horizontal(|ui| {
+        ui.horizontal_wrapped(|ui| {
             if ui.button("Estimate whole image").on_hover_text("Gray-world estimate: assume the image's mean colour should be neutral. Strongly coloured scenes can bias it.").clicked() {
                 self.calibration_box = None;
                 self.tool = Tool::View;
@@ -141,7 +140,7 @@ impl Editor {
                 .iter_mut()
                 .zip(["Red", "Green", "Blue"])
             {
-                ui.add(egui::Slider::new(value, 0.25..=4.).text(name).suffix("×"));
+                super::controls::slider(ui, value, 0.25..=4., name, "×");
             }
         });
     }

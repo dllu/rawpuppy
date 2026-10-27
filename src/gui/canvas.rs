@@ -148,14 +148,7 @@ impl Editor {
                             Tool::Straighten
                         });
                     }
-                    if ui
-                        .selectable_label(self.framing.show_grid, "Grid")
-                        .on_hover_text("Toggle alignment grid · G")
-                        .clicked()
-                    {
-                        self.framing.show_grid = !self.framing.show_grid;
-                    }
-                    ui.menu_button("Guides", |ui| {
+                    ui.menu_button(if self.framing.show_grid { "Grid: on" } else { "Grid" }, |ui| {
                         self.grid_controls(ui);
                     });
                     if matches!(

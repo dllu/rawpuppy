@@ -95,6 +95,9 @@ to level a photo, or adjust rotation in 0.1° steps. Toggle the grid independent
 Draw a graduated filter directly on the image under **Light**. **Detail** provides subtle
 sharpening and local contrast. Detailed geometry controls live under **Advanced geometry**.
 See [perspective and crop](docs/perspective-correction.md) and [direct controls and detail](docs/detail-and-direct-controls.md).
+**Preferences…** controls text size and the wider sidebar. New photos start with
++0.7 EV, subtle saturation and sharpening; **Save as default** in supported modules
+updates the editor's [TOML preferences](docs/preferences.md).
 
 The optional `moebius` feature adds native AI removal and corner filling, saved as
 non-destructive layers. See [runtime setup](docs/moebius.md) and [model evaluation](docs/inpainting-research.md).

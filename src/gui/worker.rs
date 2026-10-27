@@ -6,6 +6,7 @@ pub(super) enum Work {
     Open {
         id: u64,
         path: PathBuf,
+        defaults: crate::config::ModuleDefaults,
     },
     Render {
         id: u64,
@@ -249,11 +250,11 @@ pub(super) fn worker(
             _ => None,
         };
         let result: Result<Reply> = (|| match work {
-            Work::Open { id, path } => {
+            Work::Open { id, path, defaults } => {
                 renderer.cancel_reconstruction();
                 last_preview = None;
                 let image = Arc::new(SensorImage::open(&path)?);
-                let edits = sidecar::load_for_default(&path, Edits::for_image(&image))?;
+                let edits = sidecar::load_for_default(&path, defaults.for_image(&image))?;
                 renderer.set_document(path.clone());
                 Ok(Reply::Opened {
                     id,

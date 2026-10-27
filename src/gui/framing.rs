@@ -388,7 +388,6 @@ impl Editor {
         if let Some(ratio) = self.edits.geometry.crop_aspect {
             ui.label(egui::RichText::new(format!("Locked to {ratio:.3}:1")).small());
         }
-        self.grid_controls(ui);
         ui.horizontal(|ui| {
             if ui.button("Largest area").clicked() {
                 self.auto_crop(crate::crop::Constraint::LargestArea);

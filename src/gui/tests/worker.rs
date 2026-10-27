@@ -53,11 +53,13 @@ fn malformed_raw_does_not_stop_the_editor_worker() {
     send.send(Work::Open {
         id: 1,
         path: invalid.clone(),
+        defaults: Default::default(),
     })
     .unwrap();
     send.send(Work::Open {
         id: 2,
         path: valid.clone(),
+        defaults: Default::default(),
     })
     .unwrap();
     let reply = receive
@@ -483,6 +485,7 @@ fn durable_failures_preserve_newer_activity_and_the_worker_recovers() {
     send.send(Work::Open {
         id: 2,
         path: original.clone(),
+        defaults: Default::default(),
     })
     .unwrap();
     for (expected, destination) in [
@@ -656,6 +659,7 @@ fn failed_old_load_is_identified_before_a_new_document_completes() {
     send.send(Work::Open {
         id: 1,
         path: directory.path().join("missing.raf"),
+        defaults: Default::default(),
     })
     .unwrap();
     let Reply::Error { scope, .. } = receive
@@ -668,6 +672,7 @@ fn failed_old_load_is_identified_before_a_new_document_completes() {
     send.send(Work::Open {
         id: 2,
         path: path.clone(),
+        defaults: Default::default(),
     })
     .unwrap();
     let Reply::Opened {

@@ -1,17 +1,126 @@
 //! Photo controls and coalesced parameter gestures.
 use super::*;
+use crate::config::Module;
+
+#[derive(Clone, Copy)]
+pub(super) enum Section {
+    Framing,
+    Light,
+    Color,
+    Detail,
+    Sensor,
+    Tone,
+    Split,
+    Retouch,
+    Ai,
+    Output,
+}
+impl Section {
+    fn label(self) -> &'static str {
+        match self {
+            Self::Framing => "Perspective & crop",
+            Self::Light => "Light",
+            Self::Color => "Color calibration",
+            Self::Detail => "Detail",
+            Self::Sensor => "Sensor",
+            Self::Tone => "Tone",
+            Self::Split => "Split toning",
+            Self::Retouch => "Retouch",
+            Self::Ai => "AI removal & corner fill",
+            Self::Output => "Output & display",
+        }
+    }
+}
+
+#[derive(Default)]
+pub(super) struct Sidebar {
+    heights: [Option<f32>; 10],
+    overrides: [Option<bool>; 10],
+    open: [bool; 10],
+    last_width: Option<f32>,
+    resizing: bool,
+}
+impl Sidebar {
+    pub(super) fn reset_measurements(&mut self) {
+        self.heights = [None; 10];
+        self.last_width = None;
+        self.resizing = false;
+    }
+
+    fn plan(&mut self, height: f32, font_size: f32, expand: bool, framing: bool) {
+        let scale = font_size / 18.;
+        let estimated = [650., 230., 360., 200., 260., 310., 180., 280., 480., 250.];
+        // Reserve all headers plus the reset button, including spacing and margins.
+        let mut remaining = height - (10. * (font_size + 20.) + font_size + 22.);
+        self.open =
+            std::array::from_fn(|i| self.overrides[i].unwrap_or(i == Section::Light as usize));
+        if framing {
+            self.open[Section::Framing as usize] = true;
+        }
+        for (i, estimate) in estimated.iter().enumerate() {
+            if self.open[i] {
+                remaining -= self.heights[i].unwrap_or(estimate * scale);
+            }
+        }
+        if expand {
+            for section in [
+                Section::Color,
+                Section::Detail,
+                Section::Tone,
+                Section::Sensor,
+                Section::Framing,
+                Section::Split,
+                Section::Retouch,
+                Section::Ai,
+                Section::Output,
+            ] {
+                let i = section as usize;
+                let height = self.heights[i].unwrap_or(estimated[i] * scale);
+                if !self.open[i] && self.overrides[i].is_none() && height + 8. <= remaining {
+                    self.open[i] = true;
+                    remaining -= height;
+                }
+            }
+        }
+    }
+
+    fn show<R>(
+        &mut self,
+        section: Section,
+        ui: &mut egui::Ui,
+        body: impl FnOnce(&mut egui::Ui) -> R,
+    ) -> egui::CollapsingResponse<R> {
+        let i = section as usize;
+        let response = egui::CollapsingHeader::new(section.label())
+            .open(Some(self.open[i]))
+            .show(ui, body);
+        if response.header_response.clicked() {
+            self.overrides[i] = Some(!self.open[i]);
+            ui.ctx().request_repaint();
+        }
+        if response.fully_open()
+            && let Some(body) = &response.body_response
+        {
+            self.heights[i] = Some(body.rect.height() + ui.spacing().item_spacing.y);
+        }
+        response
+    }
+}
 
 impl Editor {
     pub(super) fn controls(&mut self, ui: &mut egui::Ui) {
         let source_image = self.image.clone();
-        egui::Panel::right("edits")
-            .exact_size(330.)
-            .resizable(false)
+        let mut sidebar = std::mem::take(&mut self.sidebar);
+        let panel = egui::Panel::right("edits")
+            .default_size(self.preferences.config.ui.sidebar_width)
+            .min_size(300.)
+            .max_size(720_f32.min(ui.available_width() * 0.6))
+            .resizable(true)
             .frame(egui::Frame::new().fill(ui.visuals().panel_fill).inner_margin(12.))
             .show(ui, |ui| {
                 ui.add_space(12.);
                 if let Some(image) = &self.image {
-                    ui.add(egui::Label::new(egui::RichText::new(&image.metadata.model).size(17.).strong()).wrap()).on_hover_text(&image.metadata.model);
+                    ui.add(egui::Label::new(egui::RichText::new(&image.metadata.model).heading().strong()).wrap()).on_hover_text(&image.metadata.model);
                     ui.label(
                         egui::RichText::new(format!(
                             "{} × {} · {:.1} MP",
@@ -23,7 +132,7 @@ impl Editor {
                         .color(Color32::GRAY),
                     );
                 } else {
-                    ui.label(egui::RichText::new("Develop").size(17.).strong());
+                    ui.label(egui::RichText::new("Develop").heading().strong());
                 }
                 if !self.histogram.is_empty() {
                     let (rect, _) = ui.allocate_exact_size(
@@ -48,9 +157,10 @@ impl Editor {
                 }
                 ui.separator();
                 let previous = self.edits.clone();
+                sidebar.plan(ui.available_height(), self.preferences.config.ui.font_size, self.preferences.config.ui.expand_sections, self.framing.panel_open);
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.add_enabled_ui(self.image.is_some() && !self.compare && self.busy.is_none(), |ui| {
-                        let framing_panel = egui::CollapsingHeader::new("Perspective & crop").open(Some(self.framing.panel_open)).show(ui, |ui| {
+                        let framing_panel = sidebar.show(Section::Framing, ui, |ui| {
                             self.framing_controls(ui);
                             egui::CollapsingHeader::new("Camera lens corrections").show(ui, |ui| {
                             if let Some(name) = source_image.as_ref().and_then(|i| i.metadata.lens_model.as_ref()) {
@@ -133,17 +243,16 @@ impl Editor {
                             ui.checkbox(&mut self.perspective_mask,"Architecture mask (SAM 3)");
                             });
                         });
-                        if framing_panel.header_response.clicked() { self.framing.panel_open = !self.framing.panel_open; }
-                        egui::CollapsingHeader::new("Light")
-                            .default_open(true)
-                            .show(ui, |ui| {
+                        if framing_panel.header_response.clicked() { self.framing.panel_open = false; }
+                        sidebar.show(Section::Light, ui, |ui| {
                                 slider(
                                     ui,
                                     &mut self.edits.scene.exposure,
-                                    -8.0..=8.0,
+                                    -2.0..=2.0,
                                     "Exposure",
                                     " EV",
                                 );
+                                egui::CollapsingHeader::new("Vignetting").show(ui, |ui| {
                                 slider(
                                     ui,
                                     &mut self.edits.scene.vignette[0],
@@ -158,6 +267,8 @@ impl Editor {
                                     "Vignette edge",
                                     " EV",
                                 );
+                                });
+                                egui::CollapsingHeader::new("Graduated filter").default_open(self.tool == Tool::Graduated).show(ui, |ui| {
                                 slider(
                                     ui,
                                     &mut self.edits.scene.graduated.exposure,
@@ -192,10 +303,10 @@ impl Editor {
                                         "",
                                     );
                                 }
+                                });
+                                self.module_defaults_button(ui, Module::Light);
                             });
-                        egui::CollapsingHeader::new("Color calibration")
-                            .default_open(true)
-                            .show(ui, |ui| {
+                        sidebar.show(Section::Color, ui, |ui| {
                                 self.calibration_controls(ui);
                                 slider(
                                     ui,
@@ -220,13 +331,15 @@ impl Editor {
                                         });
                                     }
                                 });
+                                self.module_defaults_button(ui, Module::Color);
                             });
-                        egui::CollapsingHeader::new("Detail").default_open(true).show(ui, |ui| {
+                        sidebar.show(Section::Detail, ui, |ui| {
                             slider(ui, &mut self.edits.detail.sharpen, 0. ..=1., "Sharpen", "");
                             slider(ui, &mut self.edits.detail.local_contrast, 0. ..=1., "Local contrast", "");
                             ui.label(egui::RichText::new("View at 100% to judge fine detail.").small().color(Color32::GRAY));
+                            self.module_defaults_button(ui, Module::Detail);
                         });
-                        egui::CollapsingHeader::new("Sensor").show(ui, |ui| {
+                        sidebar.show(Section::Sensor, ui, |ui| {
                             egui::ComboBox::from_label("Reconstruction")
                                 .selected_text(match self.edits.raw.reconstruction {
                                     Reconstruction::Mhc => "Standard",
@@ -259,8 +372,9 @@ impl Editor {
                                 "Sensor denoise",
                                 "",
                             ); }
+                            self.module_defaults_button(ui, Module::Sensor);
                         });
-                        egui::CollapsingHeader::new("Tone").show(ui, |ui| {
+                        sidebar.show(Section::Tone, ui, |ui| {
                             ui.horizontal(|ui| {
                                 ui.selectable_value(
                                     &mut self.edits.tone.mapper,
@@ -278,7 +392,7 @@ impl Editor {
                             }
                             curve_editor(ui, &mut self.edits.display.curve);
                         });
-                        egui::CollapsingHeader::new("Split toning").show(ui, |ui| {
+                        sidebar.show(Section::Split, ui, |ui| {
                             slider(
                                 ui,
                                 &mut self.edits.display.split_strength,
@@ -295,7 +409,7 @@ impl Editor {
                                 ui.color_edit_button_rgb(&mut self.edits.display.highlights);
                             });
                         });
-                        egui::CollapsingHeader::new("Retouch").show(ui, |ui| {
+                        sidebar.show(Section::Retouch, ui, |ui| {
                             ui.horizontal(|ui| {
                                 ui.selectable_value(&mut self.tool, Tool::View, "Pan");
                                 ui.selectable_value(&mut self.tool, Tool::Clone, "Clone");
@@ -312,7 +426,7 @@ impl Editor {
                                 self.edits.display.retouch.clear();
                             }
                         });
-                        egui::CollapsingHeader::new("AI removal & corner fill").show(ui, |ui| {
+                        sidebar.show(Section::Ai, ui, |ui| {
                             let stale = crate::synthesis::recipe_hash(&self.edits).is_ok_and(|h| {
                                 self.edits
                                     .display
@@ -327,10 +441,14 @@ impl Editor {
                                     ui.selectable_value(&mut self.tool, Tool::View, "Pan");
                                 });
                                 slider(ui, &mut self.radius, 0.002..=0.15, "Brush size", "");
-                                ui.add(
-                                    egui::Slider::new(&mut self.ai_steps, 2..=50)
-                                        .text("Sampling steps"),
-                                );
+                                ui.horizontal(|ui| {
+                                    ui.label("Sampling steps");
+                                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                                        ui.add(egui::DragValue::new(&mut self.ai_steps).range(2..=50).speed(1.));
+                                    });
+                                });
+                                ui.spacing_mut().slider_width = ui.available_width();
+                                ui.add(egui::Slider::new(&mut self.ai_steps, 2..=50).show_value(false));
                                 ui.horizontal(|ui| {
                                     ui.label("Seed");
                                     ui.add(egui::DragValue::new(&mut self.ai_seed));
@@ -381,7 +499,7 @@ impl Editor {
                                 self.edits.display.synthesis.clear();
                             }
                         });
-                        ui.separator();
+                        sidebar.show(Section::Output, ui, |ui| {
                         egui::ComboBox::from_label("Export color")
                             .selected_text(format!("{:?}", self.space))
                             .show_ui(ui, |ui| {
@@ -422,8 +540,10 @@ impl Editor {
                             .small()
                             .color(Color32::GRAY),
                         );
+                        });
                         if ui.small_button("Reset all edits").clicked() {
-                            self.edits = source_image.as_ref().map_or_else(Edits::default, |i| Edits::for_image(i));
+                            self.edits = source_image.as_ref().map_or_else(Edits::default, |i| self.preferences.config.defaults.for_image(i));
+                            self.sync_framing_aspect();
                         }
                     });
                 });
@@ -442,6 +562,30 @@ impl Editor {
                 }
                 if !ui.input(|i| i.pointer.primary_down()) && !self.framing.dragging() {self.finish_edit_gesture();}
             });
+        let width = panel.response.rect.width();
+        if sidebar
+            .last_width
+            .is_some_and(|last| (width - last).abs() > 0.5)
+        {
+            sidebar.heights = [None; 10];
+        }
+        if ui.input(|i| i.pointer.primary_down())
+            && sidebar
+                .last_width
+                .is_some_and(|last| (width - last).abs() > 0.5)
+        {
+            sidebar.resizing = true;
+        }
+        if sidebar.resizing && !ui.input(|i| i.pointer.primary_down()) {
+            sidebar.resizing = false;
+            let mut config = self.preferences.config.clone();
+            config.ui.sidebar_width = width.clamp(300., 720.);
+            if let Err(error) = self.preferences.save(config) {
+                self.error = Some(format!("{error:#}"));
+            }
+        }
+        sidebar.last_width = Some(width);
+        self.sidebar = sidebar;
     }
 }
 
@@ -451,21 +595,76 @@ pub(super) fn slider(
     range: std::ops::RangeInclusive<f32>,
     label: &str,
     suffix: &str,
-) {
-    let control = egui::Slider::new(value, range.clone())
-        .clamping(egui::SliderClamping::Edits)
-        .text(label)
-        .suffix(suffix)
-        .drag_value_speed(if suffix == "°" {
-            0.1
-        } else {
-            (*range.end() - *range.start()) as f64 / 500.
-        });
-    ui.add(if suffix == "°" {
-        control.step_by(0.1)
+) -> egui::Response {
+    let numeric_range = if suffix == " EV" {
+        -32. ..=32.
     } else {
-        control
-    });
+        range.clone()
+    };
+    parameter_slider(ui, value, range, numeric_range, label, suffix, false)
+}
+
+/// Label and precise input above a track spanning the entire available width.
+/// Rendering a value outside the track range must never silently change it.
+pub(super) fn parameter_slider(
+    ui: &mut egui::Ui,
+    value: &mut f32,
+    drag_range: std::ops::RangeInclusive<f32>,
+    numeric_range: std::ops::RangeInclusive<f32>,
+    label: &str,
+    suffix: &str,
+    logarithmic: bool,
+) -> egui::Response {
+    ui.push_id(label, |ui| {
+        ui.scope(|ui| {
+            ui.spacing_mut().item_spacing.y = 3.;
+            let speed = match suffix {
+                "°" => 0.1,
+                " EV" => 0.01,
+                " K" => 10.,
+                _ => (*drag_range.end() - *drag_range.start()) as f64 / 500.,
+            };
+            let numeric = ui
+                .horizontal(|ui| {
+                    ui.label(label);
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        let input = egui::DragValue::new(value)
+                            .speed(speed)
+                            .range(numeric_range)
+                            .clamp_existing_to_range(false)
+                            .suffix(suffix)
+                            .max_decimals(if suffix == " K" {
+                                0
+                            } else if *drag_range.end() - *drag_range.start() < 0.2 {
+                                4
+                            } else {
+                                3
+                            });
+                        ui.add(if suffix == " EV" || suffix == "°" {
+                            input.min_decimals(2)
+                        } else {
+                            input
+                        })
+                        .on_hover_text("Drag for fine adjustment, or click to type a value")
+                    })
+                    .inner
+                })
+                .inner;
+            ui.spacing_mut().slider_width = ui.available_width();
+            let control = egui::Slider::new(value, drag_range)
+                .show_value(false)
+                .clamping(egui::SliderClamping::Never)
+                .logarithmic(logarithmic);
+            let control = match suffix {
+                "°" => control.step_by(0.1),
+                " EV" => control.step_by(0.01),
+                _ => control,
+            };
+            ui.add(control).union(numeric)
+        })
+        .inner
+    })
+    .inner
 }
 
 /// Small corrections are the normal case; numeric input still accepts any roll.
@@ -475,13 +674,32 @@ pub(super) fn angle_slider(
     range: std::ops::RangeInclusive<f32>,
     label: &str,
 ) -> egui::Response {
-    ui.add(
-        egui::Slider::new(value, range)
-            .clamping(egui::SliderClamping::Never)
-            .step_by(0.1)
-            .drag_value_speed(0.1)
-            .max_decimals(2)
-            .suffix("°")
-            .text(label),
-    )
+    parameter_slider(ui, value, range, -f32::MAX..=f32::MAX, label, "°", false)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn height_budget_expands_sections_and_keeps_manual_choices() {
+        let mut sidebar = Sidebar::default();
+        sidebar.plan(600., 18., true, false);
+        assert!(sidebar.open[Section::Light as usize]);
+        assert!(!sidebar.open[Section::Color as usize]);
+        let compact = sidebar.open.iter().filter(|v| **v).count();
+        sidebar.plan(1800., 18., true, false);
+        assert!(sidebar.open[Section::Color as usize]);
+        assert!(sidebar.open[Section::Detail as usize]);
+        assert!(sidebar.open.iter().filter(|v| **v).count() > compact);
+        sidebar.overrides[Section::Color as usize] = Some(false);
+        sidebar.overrides[Section::Sensor as usize] = Some(true);
+        sidebar.plan(2400., 18., true, false);
+        assert!(!sidebar.open[Section::Color as usize]);
+        sidebar.plan(600., 18., true, false);
+        assert!(sidebar.open[Section::Sensor as usize]);
+        sidebar.plan(2400., 18., false, true);
+        assert!(sidebar.open[Section::Framing as usize]);
+        assert!(!sidebar.open[Section::Detail as usize]);
+    }
 }

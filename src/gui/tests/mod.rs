@@ -10,6 +10,7 @@ mod framing;
 #[cfg(feature = "moebius")]
 mod generation;
 mod history;
+mod usability;
 mod perspective;
 #[cfg(debug_assertions)]
 mod viewport;
