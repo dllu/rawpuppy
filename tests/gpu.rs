@@ -704,12 +704,25 @@ fn check_backend(backend: Backend, memory: CudaMemoryMode) {
                     mode,
                 });
             }
-            for tone in [
-                rawpuppy::edits::ToneMapper::AgxSdr,
-                rawpuppy::edits::ToneMapper::Agx,
-                rawpuppy::edits::ToneMapper::Linear,
+            use rawpuppy::edits::ToneMapper;
+            for (tone, adjustable) in [
+                (ToneMapper::AgxSdr, false),
+                (ToneMapper::AgxSdr, true),
+                (ToneMapper::Agx, false),
+                (ToneMapper::Linear, false),
             ] {
                 edits.tone.mapper = tone;
+                edits.tone.agx = Default::default();
+                if adjustable {
+                    edits.tone.agx.black_ev = -6.4;
+                    edits.tone.agx.white_ev = 4.8;
+                    edits.tone.agx.toe_power = 2.3;
+                    edits.tone.agx.pivot_output = 0.22;
+                    edits.tone.agx.preserve_hue = 0.8;
+                    edits.tone.agx.primaries.rotation = [12., -3., 18.];
+                    edits.tone.agx.primaries.attenuation = [0.1, 0.25, 0.2];
+                    edits.tone.agx.primaries.reverse_all = true;
+                }
                 let reference = Pipeline::compile(&image, &edits)
                     .unwrap()
                     .render(None)

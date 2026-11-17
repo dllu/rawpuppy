@@ -3,6 +3,16 @@
 use crate::color::{self, Matrix};
 use std::sync::OnceLock;
 
+mod controls;
+mod levels;
+#[cfg(feature = "gpu")]
+pub(crate) use controls::CURVE_SAMPLES;
+pub use controls::{
+    AgxEdits, BLACK_EV, BasePrimaries, MID_GRAY, PIVOT_MARGIN, Primaries, WHITE_EV,
+};
+pub(crate) use controls::{Curve, Formation, relative_ev};
+pub(crate) use levels::{Pick, estimate};
+
 pub const GRID: usize = 97;
 pub const TO_REC2020: Matrix = [
     [0.6274039, 0.32928303, 0.043313067],
@@ -41,9 +51,7 @@ pub fn shaper(x: f32) -> f32 {
 pub fn map(rgb: [f32; 3]) -> [f32; 3] {
     map_lattice(rgb, lattice(), GRID)
 }
-/// Evaluate an independently prepared lattice for offline accuracy comparisons.
-#[doc(hidden)]
-pub fn map_lattice(rgb: [f32; 3], data: &[f32], grid: usize) -> [f32; 3] {
+pub(crate) fn rec2020_in_gamut(rgb: [f32; 3]) -> [f32; 3] {
     let mut v = color::apply(TO_REC2020, rgb);
     let min = v.into_iter().fold(f32::INFINITY, f32::min);
     if min < 0. {
@@ -56,16 +64,25 @@ pub fn map_lattice(rgb: [f32; 3], data: &[f32], grid: usize) -> [f32; 3] {
             [0.; 3]
         };
     }
-    let rgb = color::apply(
-        TO_SRGB,
-        sample(v.map(|x| shaper(x) * (grid - 1) as f32), data, grid),
-    );
+    v
+}
+
+pub(crate) fn roundoff(x: f32) -> f32 {
     // Remove tiny profile/matrix roundoff at black and white, retaining real
     // out-of-sRGB coordinates for wide-gamut output conversions.
-    rgb.map(|x| {
-        let edge = x.clamp(0., 1.);
-        if (x - edge).abs() < 0.000002 { edge } else { x }
-    })
+    let edge = x.clamp(0., 1.);
+    if (x - edge).abs() < 0.000002 { edge } else { x }
+}
+
+/// Evaluate an independently prepared lattice for offline accuracy comparisons.
+#[doc(hidden)]
+pub fn map_lattice(rgb: [f32; 3], data: &[f32], grid: usize) -> [f32; 3] {
+    let v = rec2020_in_gamut(rgb);
+    color::apply(
+        TO_SRGB,
+        sample(v.map(|x| shaper(x) * (grid - 1) as f32), data, grid),
+    )
+    .map(roundoff)
 }
 fn sample(uv: [f32; 3], data: &[f32], grid: usize) -> [f32; 3] {
     let cell = uv.map(|v| (v.floor() as usize).min(grid - 2));

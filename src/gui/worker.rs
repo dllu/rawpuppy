@@ -40,6 +40,14 @@ pub(super) enum Work {
         edits: Edits,
         constraint: crate::crop::Constraint,
     },
+    AgxLevels {
+        load_id: u64,
+        revision: u64,
+        image: Arc<SensorImage>,
+        edits: Edits,
+        region: [f32; 4],
+        pick: crate::agx::Pick,
+    },
     Calibrate {
         load_id: u64,
         revision: u64,
@@ -106,6 +114,12 @@ pub(super) enum Reply {
         crop: [f32; 4],
         aspect: Option<f32>,
     },
+    AgxEstimated {
+        load_id: u64,
+        revision: u64,
+        previous: Edits,
+        agx: crate::agx::AgxEdits,
+    },
     Calibrated {
         load_id: u64,
         revision: u64,
@@ -139,6 +153,7 @@ pub(super) enum ErrorScope {
     Export(u64),
     Perspective(u64),
     Calibrate(u64),
+    AgxLevels(u64),
     AutoCrop(u64),
     #[cfg(feature = "moebius")]
     Generate(u64),
@@ -149,6 +164,7 @@ pub(super) enum Busy {
     Export(u64),
     Perspective(u64),
     Calibrate(u64),
+    AgxLevels(u64),
     AutoCrop(u64),
     #[cfg(feature = "moebius")]
     Generate(u64),
@@ -159,7 +175,7 @@ impl ErrorScope {
             Self::Load(id) => id == load,
             Self::Preview(id) => id == preview,
             Self::Perspective(id) => id == load,
-            Self::Calibrate(id) => id == load,
+            Self::Calibrate(id) | Self::AgxLevels(id) => id == load,
             Self::AutoCrop(id) => id == load,
             // Durable I/O failures still need to name the failed destination,
             // even after the user changes photographs.
@@ -174,6 +190,7 @@ impl ErrorScope {
             Self::Export(id) => Some(Busy::Export(id)),
             Self::Perspective(id) => Some(Busy::Perspective(id)),
             Self::Calibrate(id) => Some(Busy::Calibrate(id)),
+            Self::AgxLevels(id) => Some(Busy::AgxLevels(id)),
             Self::AutoCrop(id) => Some(Busy::AutoCrop(id)),
             #[cfg(feature = "moebius")]
             Self::Generate(id) => Some(Busy::Generate(id)),
@@ -191,6 +208,7 @@ impl Work {
             Self::Render { id, .. } => ErrorScope::Preview(*id),
             Self::Perspective { load_id, .. } => ErrorScope::Perspective(*load_id),
             Self::Calibrate { load_id, .. } => ErrorScope::Calibrate(*load_id),
+            Self::AgxLevels { load_id, .. } => ErrorScope::AgxLevels(*load_id),
             Self::AutoCrop { load_id, .. } => ErrorScope::AutoCrop(*load_id),
             #[cfg(feature = "moebius")]
             Self::Generate { load_id, .. } => ErrorScope::Generate(*load_id),
@@ -379,6 +397,22 @@ pub(super) fn worker(
                         crate::crop::Constraint::LargestArea => None,
                         crate::crop::Constraint::Aspect(r) => Some(r),
                     },
+                })
+            }
+            Work::AgxLevels {
+                load_id,
+                revision,
+                image,
+                edits,
+                region,
+                pick,
+            } => {
+                let agx = renderer.estimate_agx(image, &edits, region, pick)?;
+                Ok(Reply::AgxEstimated {
+                    load_id,
+                    revision,
+                    previous: edits,
+                    agx,
                 })
             }
             Work::Calibrate {

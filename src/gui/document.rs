@@ -396,6 +396,21 @@ impl Editor {
                         self.status = "Crop result discarded because the edits changed".into();
                     }
                 }
+                Reply::AgxEstimated {
+                    load_id,
+                    revision,
+                    previous,
+                    agx,
+                } if load_id == self.load_generation => {
+                    ErrorScope::AgxLevels(load_id).finish_busy(&mut self.busy);
+                    if previous == self.edits && revision == self.history.revision() {
+                        self.edits.tone.agx = agx;
+                        self.remember(previous);
+                        self.status = "AgX updated from scene exposure".into();
+                    } else {
+                        self.status = "AgX sample discarded because the edits changed".into();
+                    }
+                }
                 Reply::Calibrated {
                     load_id,
                     revision,
@@ -498,6 +513,7 @@ impl Editor {
                             ErrorScope::Perspective(_) => "Could not analyze perspective",
                             ErrorScope::Calibrate(_) => "Could not estimate illuminant",
                             ErrorScope::AutoCrop(_) => "Could not fit a crop",
+                            ErrorScope::AgxLevels(_) => "Could not estimate AgX levels",
                             #[cfg(feature = "moebius")]
                             ErrorScope::Generate(_) => "Could not generate fill",
                         }

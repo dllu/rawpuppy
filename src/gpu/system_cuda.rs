@@ -369,12 +369,14 @@ impl SystemCuda {
             self.prepared = None;
         }
         let tile_pixels = output_tile_pixels(tile_bytes)?;
-        let lattice: &[f32] = if edits.tone.mapper == ToneMapper::AgxSdr {
+        let uses_lattice =
+            edits.tone.mapper == ToneMapper::AgxSdr && pipeline.agx_formation.is_none();
+        let lattice: &[f32] = if uses_lattice {
             crate::agx::lattice()
         } else {
             &[0.]
         };
-        if edits.tone.mapper == ToneMapper::AgxSdr && !self.lattice_advised {
+        if uses_lattice && !self.lattice_advised {
             advise_owned(lattice, true);
             self.lattice_advised = true;
         }

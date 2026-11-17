@@ -34,6 +34,7 @@ pub struct Pipeline<'a> {
     pub gradient: [f32; 2],
     pub retouch_index: Vec<Vec<usize>>,
     pub heal_offsets: Vec<[f32; 3]>,
+    pub(crate) agx_formation: Option<crate::agx::Formation>,
 }
 
 #[derive(Debug)]
@@ -75,6 +76,10 @@ impl<'a> Pipeline<'a> {
                 }
             }
         }
+        let agx_formation = (edits.tone.mapper == ToneMapper::AgxSdr
+            && !edits.tone.agx.uses_lattice())
+        .then(|| crate::agx::Formation::compile(&edits.tone.agx))
+        .transpose()?;
         let mut pipeline = Self {
             source,
             edits,
@@ -84,6 +89,7 @@ impl<'a> Pipeline<'a> {
             gradient: [s, c],
             retouch_index,
             heal_offsets: Vec::new(),
+            agx_formation,
         };
         pipeline.heal_offsets = edits
             .display
@@ -101,23 +107,15 @@ impl<'a> Pipeline<'a> {
         Ok(pipeline)
     }
 
-    fn base(&self, uv: [f32; 2]) -> [f32; 4] {
-        let Some(p) = self.geometry.map(uv, 1) else {
-            return [0.; 4];
-        };
-        let Some(mut rgb) = self.source.sample(p, &self.edits.raw) else {
-            return [0.; 4];
-        };
+    pub(crate) fn sample_scene(&self, uv: [f32; 2]) -> Option<[f32; 3]> {
+        let p = self.geometry.map(uv, 1)?;
+        let mut rgb = self.source.sample(p, &self.edits.raw)?;
         let recovering = self.edits.raw.recover_highlights && self.source.raw_integer;
         let mut positions = [p; 3];
         if self.geometry.ca != [0.; 2] || self.geometry.lens.chromatic_aberration {
             for channel in [0, 2] {
-                let Some(p) = self.geometry.map(uv, channel) else {
-                    return [0.; 4];
-                };
-                let Some(sample) = self.source.sample(p, &self.edits.raw) else {
-                    return [0.; 4];
-                };
+                let p = self.geometry.map(uv, channel)?;
+                let sample = self.source.sample(p, &self.edits.raw)?;
                 rgb[channel] = sample[channel];
                 positions[channel] = p;
             }
@@ -148,10 +146,19 @@ impl<'a> Pipeline<'a> {
             + grad.exposure * transition)
             .exp2()
             * camera_gain;
-        rgb = color::apply(self.calibration, rgb).map(|x| x * gain);
-        rgb = match self.edits.tone.mapper {
+        Some(color::apply(self.calibration, rgb).map(|x| x * gain))
+    }
+
+    fn base(&self, uv: [f32; 2]) -> [f32; 4] {
+        let Some(rgb) = self.sample_scene(uv) else {
+            return [0.; 4];
+        };
+        let rgb = match self.edits.tone.mapper {
             ToneMapper::Agx => color::agx_legacy(rgb),
-            ToneMapper::AgxSdr => color::agx(rgb),
+            ToneMapper::AgxSdr => match &self.agx_formation {
+                Some(formation) => formation.map(rgb),
+                None => color::agx(rgb),
+            },
             ToneMapper::Linear => rgb,
         };
         let luma = color::luminance(rgb);

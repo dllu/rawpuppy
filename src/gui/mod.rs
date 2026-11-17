@@ -20,6 +20,7 @@ use std::{
 const ACCENT: Color32 = Color32::from_rgb(225, 150, 100);
 
 mod adjustments;
+mod agx;
 mod autosave;
 mod calibration;
 mod canvas;

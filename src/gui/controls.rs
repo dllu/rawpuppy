@@ -308,13 +308,6 @@ impl Editor {
                             });
                         sidebar.show(Section::Color, ui, |ui| {
                                 self.calibration_controls(ui);
-                                slider(
-                                    ui,
-                                    &mut self.edits.tone.saturation,
-                                    0.0..=2.0,
-                                    "Saturation",
-                                    "×",
-                                );
                                 egui::CollapsingHeader::new("Channel mixer").show(ui, |ui| {
                                     for i in 0..3 {
                                         ui.horizontal(|ui| {
@@ -331,7 +324,6 @@ impl Editor {
                                         });
                                     }
                                 });
-                                self.module_defaults_button(ui, Module::Color);
                             });
                         sidebar.show(Section::Detail, ui, |ui| {
                             slider(ui, &mut self.edits.detail.sharpen, 0. ..=1., "Sharpen", "");
@@ -375,22 +367,7 @@ impl Editor {
                             self.module_defaults_button(ui, Module::Sensor);
                         });
                         sidebar.show(Section::Tone, ui, |ui| {
-                            ui.horizontal(|ui| {
-                                ui.selectable_value(
-                                    &mut self.edits.tone.mapper,
-                                    ToneMapper::AgxSdr,
-                                    "AgX",
-                                );
-                                ui.selectable_value(
-                                    &mut self.edits.tone.mapper,
-                                    ToneMapper::Linear,
-                                    "Linear / HDR",
-                                );
-                            });
-                            if self.edits.tone.mapper == ToneMapper::Agx {
-                                ui.label("This recipe keeps the older AgX approximation. Select AgX to update its rendering.");
-                            }
-                            curve_editor(ui, &mut self.edits.display.curve);
+                            self.tone_controls(ui);
                         });
                         sidebar.show(Section::Split, ui, |ui| {
                             slider(

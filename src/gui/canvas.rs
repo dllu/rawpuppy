@@ -8,6 +8,7 @@ pub(super) enum Tool {
     Heal,
     Mask,
     Calibration,
+    Agx(crate::agx::Pick),
     Crop,
     Perspective,
     Straighten,
@@ -322,7 +323,7 @@ impl Editor {
                     ]
                 });
                 let mut painting = false;
-                self.calibration_selection(ui, &response, rect, region, press);
+                self.sample_selection(ui, &response, rect, region, press);
                 if self.tool == Tool::Mask
                     && !self.compare
                     && self.busy.is_none()

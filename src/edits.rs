@@ -247,12 +247,15 @@ pub enum ToneMapper {
 pub struct ToneEdits {
     pub mapper: ToneMapper,
     pub saturation: f32,
+    #[serde(skip_serializing_if = "crate::agx::AgxEdits::is_default")]
+    pub agx: crate::agx::AgxEdits,
 }
 impl Default for ToneEdits {
     fn default() -> Self {
         Self {
             mapper: ToneMapper::AgxSdr,
             saturation: 1.0,
+            agx: Default::default(),
         }
     }
 }
@@ -438,6 +441,7 @@ impl Edits {
             self.scene.graduated.width > 0.0,
             "Graduated filter width must be positive"
         );
+        self.tone.agx.validate()?;
         ensure!(
             self.tone.saturation >= 0.0,
             "Saturation must be nonnegative"

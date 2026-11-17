@@ -123,6 +123,16 @@ impl Renderer {
         #[cfg(not(feature = "raw-ml"))]
         anyhow::bail!("This recipe uses joint AI reconstruction; build with the raw-ml feature")
     }
+    pub(crate) fn estimate_agx(
+        &mut self,
+        image: Arc<SensorImage>,
+        edits: &Edits,
+        region: [f32; 4],
+        pick: crate::agx::Pick,
+    ) -> Result<crate::agx::AgxEdits> {
+        let image = self.prepare_source(image, edits)?;
+        crate::agx::estimate(&image, edits, region, pick)
+    }
     #[cfg(feature = "raw-ml")]
     fn request_raw_job(&mut self, image: Arc<SensorImage>, hot: bool) -> Result<()> {
         if self

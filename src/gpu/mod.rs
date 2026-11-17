@@ -391,6 +391,7 @@ impl ShaderArguments {
             match edits.tone.mapper {
                 ToneMapper::Linear => 0,
                 ToneMapper::Agx => 1,
+                ToneMapper::AgxSdr if pipeline.agx_formation.is_some() => 3,
                 ToneMapper::AgxSdr => 2,
             },
             (display.curve != [[0., 0.], [1., 1.]]) as u32,
@@ -430,11 +431,23 @@ impl ShaderArguments {
         let layer_info = synthesis::arguments(
             layers, offsets, region, width, height, &mut index, max_bytes,
         )?;
+        let agx_offset = u32::try_from(params.len())?;
+        if let Some(formation) = &pipeline.agx_formation {
+            params.extend(formation.input.into_iter().flatten());
+            params.extend(formation.output.into_iter().flatten());
+            params.extend([
+                formation.black_ev,
+                formation.inv_range,
+                formation.preserve_hue,
+            ]);
+            params.extend_from_slice(&formation.curve);
+        }
         dims.extend([
             curve_offset,
             brush_offset,
             u32::try_from(layers.len())?,
             metadata_offset,
+            agx_offset,
         ]);
         ensure!(
             params.len() * 4 <= max_bytes,
@@ -573,19 +586,20 @@ impl<R: Runtime> Session<R> {
         } else {
             self.prepared = None;
         }
-        let (agx_lattice, agx_len) = if edits.tone.mapper == ToneMapper::AgxSdr {
-            let data = crate::agx::lattice();
-            ensure!(
-                data.len() * 4 <= page,
-                "AgX lattice exceeds this device's binding size"
-            );
-            let handle = self
-                .agx_lattice
-                .get_or_insert_with(|| self.client.create_from_slice(bytemuck::cast_slice(data)));
-            (handle.clone(), data.len())
-        } else {
-            (self.client.create_from_slice(&[0; 4]), 1)
-        };
+        let (agx_lattice, agx_len) =
+            if edits.tone.mapper == ToneMapper::AgxSdr && pipeline.agx_formation.is_none() {
+                let data = crate::agx::lattice();
+                ensure!(
+                    data.len() * 4 <= page,
+                    "AgX lattice exceeds this device's binding size"
+                );
+                let handle = self.agx_lattice.get_or_insert_with(|| {
+                    self.client.create_from_slice(bytemuck::cast_slice(data))
+                });
+                (handle.clone(), data.len())
+            } else {
+                (self.client.create_from_slice(&[0; 4]), 1)
+            };
         let info_buffer = self
             .client
             .create_from_slice(bytemuck::cast_slice(&layer_info));

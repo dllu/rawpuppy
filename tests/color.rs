@@ -447,3 +447,27 @@ fn old_agx_recipes_keep_their_original_transform() {
             .contains("agx_sdr_v1")
     );
 }
+
+#[test]
+fn adjustable_agx_round_trips_sidecars_without_changing_default_recipe_hashes() {
+    let original: Edits =
+        serde_json::from_str(r#"{"tone":{"mapper":"agx_sdr_v1","saturation":1.0}}"#).unwrap();
+    let mut edited = original.clone();
+    let hash = rawpuppy::synthesis::recipe_hash(&original).unwrap();
+    assert!(
+        !serde_json::to_value(&original).unwrap()["tone"]
+            .as_object()
+            .unwrap()
+            .contains_key("agx")
+    );
+    edited.tone.agx.range_margin = 0.4;
+    assert_eq!(rawpuppy::synthesis::recipe_hash(&edited).unwrap(), hash);
+    edited.tone.agx.white_ev = 4.25;
+    edited.tone.agx.primaries.rotation[0] = 12.;
+    assert_ne!(rawpuppy::synthesis::recipe_hash(&edited).unwrap(), hash);
+
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("photo.rawpuppy.xmp");
+    rawpuppy::sidecar::save(&path, &edited).unwrap();
+    assert_eq!(rawpuppy::sidecar::load(&path).unwrap(), edited);
+}

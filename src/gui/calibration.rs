@@ -161,7 +161,7 @@ impl Editor {
             });
         }
     }
-    pub(super) fn calibration_selection(
+    pub(super) fn sample_selection(
         &mut self,
         ui: &egui::Ui,
         response: &egui::Response,
@@ -169,11 +169,13 @@ impl Editor {
         region: [f32; 4],
         press: Option<[f32; 2]>,
     ) {
-        if self.tool == Tool::Calibration && ui.input(|i| i.key_pressed(egui::Key::Escape)) {
+        let tool = self.tool;
+        let sampling = matches!(tool, Tool::Calibration | Tool::Agx(_));
+        if sampling && ui.input(|i| i.key_pressed(egui::Key::Escape)) {
             self.tool = Tool::View;
             self.calibration_box = None;
         }
-        if self.tool == Tool::Calibration
+        if matches!(self.tool, Tool::Calibration | Tool::Agx(_))
             && !self.compare
             && self.busy.is_none()
             && !ui.input(|i| i.pointer.middle_down())
@@ -200,10 +202,17 @@ impl Editor {
                 if let Some(points) = self.calibration_box {
                     let selection = sampling_region(points);
                     if selection[2] > 0. && selection[3] > 0. {
-                        self.estimate_illuminant(selection);
+                        match tool {
+                            Tool::Calibration => self.estimate_illuminant(selection),
+                            Tool::Agx(pick) => self.estimate_agx(selection, pick),
+                            _ => {}
+                        }
                     }
                 }
                 self.tool = Tool::View;
+                if matches!(tool, Tool::Agx(_)) {
+                    self.calibration_box = None;
+                }
             }
         }
         if let Some(points) = self.calibration_box {

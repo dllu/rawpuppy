@@ -147,6 +147,11 @@ pub fn recipe_hash(edits: &Edits) -> Result<String> {
     base.geometry.camera = None;
     base.geometry.crop_aspect = None;
     base.detail = Default::default();
+    if base.tone.mapper != crate::edits::ToneMapper::AgxSdr {
+        base.tone.agx = Default::default();
+    } else {
+        base.tone.agx.range_margin = crate::agx::AgxEdits::default().range_margin;
+    }
     Ok(format!("{:x}", Sha256::digest(serde_json::to_vec(&base)?)))
 }
 pub fn valid_hash(hash: &str) -> bool {

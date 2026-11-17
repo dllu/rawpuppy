@@ -449,7 +449,7 @@ fn agx_roundoff(x: f32) -> f32 {
 }
 
 #[cube]
-fn photographic_tone(rgb: Pixel, p: &Array<f32>, lut: &Array<f32>) -> Pixel {
+fn rec2020_in_gamut(rgb: Pixel, p: &Array<f32>) -> Pixel {
     let mut r = p[49] * rgb.r + p[50] * rgb.g + p[51] * rgb.b;
     let mut g = p[52] * rgb.r + p[53] * rgb.g + p[54] * rgb.b;
     let mut b = p[55] * rgb.r + p[56] * rgb.g + p[57] * rgb.b;
@@ -467,9 +467,15 @@ fn photographic_tone(rgb: Pixel, p: &Array<f32>, lut: &Array<f32>) -> Pixel {
             b = 0.;
         }
     }
-    let ur = agx_shaper(r);
-    let ug = agx_shaper(g);
-    let ub = agx_shaper(b);
+    Pixel { r, g, b, a: 1. }
+}
+
+#[cube]
+fn photographic_tone(rgb: Pixel, p: &Array<f32>, lut: &Array<f32>) -> Pixel {
+    let rgb = rec2020_in_gamut(rgb, p);
+    let ur = agx_shaper(rgb.r);
+    let ug = agx_shaper(rgb.g);
+    let ub = agx_shaper(rgb.b);
     let ir = f32::min(ur.floor(), 95.) as usize;
     let ig = f32::min(ug.floor(), 95.) as usize;
     let ib = f32::min(ub.floor(), 95.) as usize;
@@ -528,6 +534,78 @@ fn photographic_tone(rgb: Pixel, p: &Array<f32>, lut: &Array<f32>) -> Pixel {
         r: agx_roundoff(p[58] * x + p[59] * y + p[60] * z),
         g: agx_roundoff(p[61] * x + p[62] * y + p[63] * z),
         b: agx_roundoff(p[64] * x + p[65] * y + p[66] * z),
+        a: 1.,
+    }
+}
+
+#[cube]
+fn agx_matrix(rgb: Pixel, p: &Array<f32>, i: usize) -> Pixel {
+    Pixel {
+        r: p[i] * rgb.r + p[i + 1] * rgb.g + p[i + 2] * rgb.b,
+        g: p[i + 3] * rgb.r + p[i + 4] * rgb.g + p[i + 5] * rgb.b,
+        b: p[i + 6] * rgb.r + p[i + 7] * rgb.g + p[i + 8] * rgb.b,
+        a: 1.,
+    }
+}
+
+#[cube]
+fn agx_curve_sample(x: f32, p: &Array<f32>, offset: usize) -> f32 {
+    let ev = (f32::max(x, 1.1754944e-38).ln() - 0.18_f32.ln()) * core::f32::consts::LOG2_E;
+    let last = crate::agx::CURVE_SAMPLES - 1;
+    let t = bounded((ev - p[offset]) * p[offset + 1], 0., 1.) * last as f32;
+    let i = f32::min(t, (last - 1) as f32) as usize;
+    let a = p[offset + 3 + i];
+    a + (p[offset + 4 + i] - a) * (t - i as f32)
+}
+
+#[cube]
+fn hue(rgb: Pixel, top: f32, chroma: f32) -> f32 {
+    if top == rgb.r {
+        (rgb.g - rgb.b) / chroma
+    } else if top == rgb.g {
+        2. + (rgb.b - rgb.r) / chroma
+    } else {
+        4. + (rgb.r - rgb.g) / chroma
+    }
+}
+
+#[cube]
+fn hue_channel(h: f32, min: f32, chroma: f32) -> f32 {
+    let sector = h - (h / 6.).floor() * 6.;
+    min + chroma * bounded((sector - 3.).abs() - 1., 0., 1.)
+}
+
+#[cube]
+fn adjustable_tone(rgb: Pixel, p: &Array<f32>, offset: usize) -> Pixel {
+    let scene = agx_matrix(rec2020_in_gamut(rgb, p), p, offset);
+    let curve = offset + 18;
+    let mut formed = Pixel {
+        r: agx_curve_sample(scene.r, p, curve),
+        g: agx_curve_sample(scene.g, p, curve),
+        b: agx_curve_sample(scene.b, p, curve),
+        a: 1.,
+    };
+    let amount = p[curve + 2];
+    if amount > 0. {
+        let max = f32::max(formed.r, f32::max(formed.g, formed.b));
+        let min = f32::min(formed.r, f32::min(formed.g, formed.b));
+        let chroma = max - min;
+        let source_max = f32::max(scene.r, f32::max(scene.g, scene.b));
+        let source_chroma = source_max - f32::min(scene.r, f32::min(scene.g, scene.b));
+        if chroma > 1e-7 && source_chroma > 1e-7 {
+            let h = hue(formed, max, chroma);
+            let delta = hue(scene, source_max, source_chroma) - h;
+            let h = h + amount * (delta - ((delta + 3.) / 6.).floor() * 6.);
+            formed.r = hue_channel(h, min, chroma);
+            formed.g = hue_channel(h + 4., min, chroma);
+            formed.b = hue_channel(h + 2., min, chroma);
+        }
+    }
+    let out = agx_matrix(formed, p, offset + 9);
+    Pixel {
+        r: agx_roundoff(out.r),
+        g: agx_roundoff(out.g),
+        b: agx_roundoff(out.b),
         a: 1.,
     }
 }
@@ -605,6 +683,8 @@ fn base(
                 calibrated = tone(calibrated);
             } else if d[17] == 2 {
                 calibrated = photographic_tone(calibrated, p, agx_lattice);
+            } else if d[17] == 3 {
+                calibrated = adjustable_tone(calibrated, p, d[32] as usize);
             }
             let l = luma(calibrated);
             Pixel {

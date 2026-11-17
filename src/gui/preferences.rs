@@ -70,19 +70,18 @@ impl Editor {
             Module::Light => {
                 "Save exposure and vignetting for new photos. Graduated filters stay with this photo."
             }
-            Module::Color => {
-                "Save saturation for new photos. Illuminant and channel calibration stay with this photo."
-            }
+            Module::Color => "Use this saturation for new photos.",
             Module::Detail => "Save sharpening and local contrast for new photos.",
             Module::Sensor => {
                 "Save hot-pixel correction, highlight recovery and denoising for new photos. Reconstruction is chosen per photo."
             }
         };
-        if ui
-            .small_button("Save as default")
-            .on_hover_text(hint)
-            .clicked()
-        {
+        let label = if matches!(module, Module::Color) {
+            "Save saturation as default"
+        } else {
+            "Save as default"
+        };
+        if ui.small_button(label).on_hover_text(hint).clicked() {
             let mut config = self.preferences.config.clone();
             config.defaults.capture(module, &self.edits);
             match self.preferences.save(config) {
@@ -105,8 +104,8 @@ impl Editor {
             });
             ui.checkbox(&mut self.preferences.draft.expand_sections, "Expand sections when there is room");
             ui.separator();
-            ui.label("Save module defaults from Light, Color calibration, Detail or Sensor. They apply to photos without saved edits and to Reset all edits.");
-            ui.label("Light saves exposure and vignetting; Color saves saturation. Calibration and local edits stay with each photo.");
+            ui.label("Save module defaults from Light, Tone, Detail or Sensor. They apply to photos without saved edits and to Reset all edits.");
+            ui.label("Light saves exposure and vignetting. Tone saves saturation.");
             if let Some(path) = &self.preferences.path {
                 ui.label(egui::RichText::new(path.display().to_string()).small().color(Color32::GRAY));
             }

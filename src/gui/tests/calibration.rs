@@ -94,14 +94,19 @@ fn calibration_is_one_undoable_step_and_stale_results_preserve_redo() {
 #[cfg(debug_assertions)]
 #[test]
 fn box_drag_samples_canvas_coordinates_at_zoom_without_painting_or_panning() {
-    for reverse in [false, true] {
+    use crate::agx::Pick;
+    for (tool, reverse) in [
+        (Tool::Calibration, false),
+        (Tool::Calibration, true),
+        (Tool::Agx(Pick::White), true),
+    ] {
         let (mut app, _, ctx) = editor();
         let (requests, receiver) = mpsc::channel();
         app.tx = requests;
         app.image = Some(Arc::new(
             SensorImage::from_rgb(400, 300, vec![0.2; 400 * 300 * 3]).unwrap(),
         ));
-        app.tool = Tool::Calibration;
+        app.tool = tool;
         app.zoom = 2.;
         app.center = [0.6, 0.4];
         app.edits.geometry.crop = [0.1, 0.2, 0.8, 0.7];
@@ -149,7 +154,8 @@ fn box_drag_samples_canvas_coordinates_at_zoom_without_painting_or_panning() {
         let request = receiver
             .try_iter()
             .find_map(|work| match work {
-                Work::Calibrate { region, .. } => Some(region),
+                Work::Calibrate { region, .. } if tool == Tool::Calibration => Some(region),
+                Work::AgxLevels { region, pick, .. } if tool == Tool::Agx(pick) => Some(region),
                 _ => None,
             })
             .expect("Drag did not start estimation");
@@ -170,4 +176,34 @@ fn box_drag_samples_canvas_coordinates_at_zoom_without_painting_or_panning() {
         assert!(app.mask.is_empty());
         assert_eq!(app.tool, Tool::View);
     }
+}
+
+#[test]
+fn auto_agx_applies_as_one_undoable_edit_and_rejects_stale_results() {
+    let (mut app, responses, ctx) = editor();
+    let original = app.edits.clone();
+    let mut agx = original.tone.agx;
+    agx.black_ev = -6.;
+    agx.white_ev = 4.;
+    let reply = || Reply::AgxEstimated {
+        load_id: 4,
+        revision: 0,
+        previous: original.clone(),
+        agx,
+    };
+    app.busy = Some(Busy::AgxLevels(4));
+    responses.send(reply()).unwrap();
+    app.poll(&ctx);
+    assert_eq!(app.edits.tone.agx, agx);
+    assert_eq!(app.history.undo_len(), 1);
+    assert_eq!(app.busy, None);
+    app.undo();
+    assert_eq!(app.edits, original);
+
+    app.busy = Some(Busy::AgxLevels(4));
+    responses.send(reply()).unwrap();
+    app.poll(&ctx);
+    assert_eq!(app.edits, original);
+    assert!(app.history.can_redo());
+    assert_eq!(app.busy, None);
 }
