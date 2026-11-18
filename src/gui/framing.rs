@@ -180,14 +180,18 @@ impl Editor {
             return;
         };
 
-        egui::CollapsingHeader::new("Crop")
-            .open((self.tool == Tool::Crop).then_some(true))
-            .show(ui, |ui| self.crop_controls(ui, &image));
-        egui::CollapsingHeader::new("Straighten & rotate")
-            .open((self.tool == Tool::Straighten).then_some(true))
-            .show(ui, |ui| self.rotation_controls(ui));
-        egui::CollapsingHeader::new("Perspective")
-            .open((self.tool == Tool::Perspective).then_some(true))
+        let current = self.tool;
+        let section = |title, tool| {
+            let active = current == tool;
+            // The forced-open tool view has its own state. Returning to Pan
+            // restores the sections the user opened by hand.
+            egui::CollapsingHeader::new(title)
+                .id_salt((title, active))
+                .open(active.then_some(true))
+        };
+        section("Crop", Tool::Crop).show(ui, |ui| self.crop_controls(ui, &image));
+        section("Straighten & rotate", Tool::Straighten).show(ui, |ui| self.rotation_controls(ui));
+        section("Perspective", Tool::Perspective)
             .show(ui, |ui| self.perspective_controls(ui, &image));
     }
 

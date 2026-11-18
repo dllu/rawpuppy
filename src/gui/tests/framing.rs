@@ -471,3 +471,31 @@ fn shift_wheel_changes_brush_size_without_zooming_or_editing_the_photo() {
     assert_eq!(app.edits, before);
     assert!(!app.history.can_undo());
 }
+
+#[test]
+fn switching_framing_tools_restores_inactive_section_visibility() {
+    let (mut app, ctx, _) = editor();
+    let mut draw_controls = |tool, time| {
+        app.set_tool(tool);
+        let output = ctx.run_ui(
+            egui::RawInput {
+                time: Some(time),
+                ..Default::default()
+            },
+            |ui| app.framing_controls(ui),
+        );
+        output
+            .shapes
+            .into_iter()
+            .filter_map(|shape| match shape.shape {
+                egui::Shape::Text(text) => Some(text.galley.text().to_owned()),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+    };
+    let crop = draw_controls(Tool::Crop, 0.);
+    assert!(crop.iter().any(|text| text == "Aspect ratio"));
+    let guides = draw_controls(Tool::Perspective, 1.);
+    assert!(guides.iter().any(|text| text == "Auto vertical"));
+    assert!(guides.iter().all(|text| text != "Aspect ratio"));
+}
