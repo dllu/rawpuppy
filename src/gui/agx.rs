@@ -1,4 +1,4 @@
-use super::{controls::parameter_slider, *};
+use super::{sliders::linear_slider, *};
 use crate::agx::{
     AgxEdits, BLACK_EV, BasePrimaries, Curve, PIVOT_MARGIN, Pick, Primaries, WHITE_EV,
 };
@@ -6,31 +6,29 @@ use std::ops::RangeInclusive;
 
 impl Editor {
     pub(super) fn tone_controls(&mut self, ui: &mut egui::Ui) {
-        ui.horizontal(|ui| {
-            ui.selectable_value(&mut self.edits.tone.mapper, ToneMapper::AgxSdr, "AgX");
-            ui.selectable_value(
-                &mut self.edits.tone.mapper,
-                ToneMapper::Linear,
-                "Linear / HDR",
-            );
-        });
-        if self.edits.tone.mapper == ToneMapper::Agx {
-            ui.label("This recipe uses legacy AgX. Select AgX to use the adjustable version.");
-        }
+        let label = |mapper| match mapper {
+            ToneMapper::Agx => "Legacy AgX",
+            ToneMapper::AgxSdr => "AgX",
+            ToneMapper::Linear => "Linear / HDR",
+        };
+        egui::ComboBox::from_label("Tone mapper")
+            .selected_text(label(self.edits.tone.mapper))
+            .show_ui(ui, |ui| {
+                let mapper = &mut self.edits.tone.mapper;
+                if *mapper == ToneMapper::Agx {
+                    ui.selectable_value(mapper, ToneMapper::Agx, label(ToneMapper::Agx));
+                }
+                for choice in [ToneMapper::AgxSdr, ToneMapper::Linear] {
+                    ui.selectable_value(mapper, choice, label(choice));
+                }
+            });
         if self.edits.tone.mapper == ToneMapper::AgxSdr {
             self.agx_controls(ui);
         } else {
             if matches!(self.tool, Tool::Agx(_)) {
-                self.tool = Tool::View;
-                self.calibration_box = None;
+                self.set_tool(Tool::View);
             }
-            control(
-                ui,
-                &mut self.edits.tone.saturation,
-                0. ..=2.,
-                "Saturation",
-                "",
-            );
+            self.saturation_control(ui);
         }
         egui::CollapsingHeader::new("Display curve").show(ui, |ui| {
             curve_editor(ui, &mut self.edits.display.curve);
@@ -38,25 +36,26 @@ impl Editor {
     }
 
     fn agx_controls(&mut self, ui: &mut egui::Ui) {
+        let mut automatic = None;
         ui.horizontal_wrapped(|ui| {
-            for (label, pick) in [
-                ("Auto levels", Pick::Both),
-                ("Auto white", Pick::White),
-                ("Auto black", Pick::Black),
-            ] {
-                if ui
-                    .button(label)
-                    .on_hover_text("Measure scene exposure across the current crop")
-                    .clicked()
-                {
-                    if matches!(self.tool, Tool::Agx(_)) {
-                        self.tool = Tool::View;
-                        self.calibration_box = None;
-                    }
-                    self.estimate_agx([0., 0., 1., 1.], pick);
-                }
+            if ui
+                .button("Auto levels")
+                .on_hover_text("Set both points from the current crop")
+                .clicked()
+            {
+                automatic = Some(Pick::Both);
             }
-            ui.menu_button("Sample area", |ui| {
+            ui.menu_button("Auto point", |ui| {
+                for (label, pick) in [("White point", Pick::White), ("Black point", Pick::Black)] {
+                    if ui.button(label).clicked() {
+                        automatic = Some(pick);
+                        ui.close();
+                    }
+                }
+            })
+            .response
+            .on_hover_text("Set one point from the current crop");
+            ui.menu_button("Pick area", |ui| {
                 for (label, pick) in [
                     ("White and black points", Pick::Both),
                     ("White point", Pick::White),
@@ -66,31 +65,41 @@ impl Editor {
                 ] {
                     if ui.button(label).clicked() {
                         self.set_tool(Tool::Agx(pick));
-                        self.calibration_box = None;
                         ui.close();
                     }
                 }
-            });
+            })
+            .response
+            .on_hover_text("Draw a rectangle on the photo to sample it");
         });
-        if matches!(self.tool, Tool::Agx(_)) {
-            ui.label(
-                egui::RichText::new("Drag a rectangle over the photo to sample it. Esc cancels.")
-                    .small(),
-            );
+        if let Some(pick) = automatic {
+            self.set_tool(Tool::View);
+            self.estimate_agx([0., 0., 1., 1.], pick);
         }
-        let tone = &mut self.edits.tone;
-        let agx = &mut tone.agx;
-        control(ui, &mut agx.white_ev, WHITE_EV, "White point", " EV");
-        control(ui, &mut agx.black_ev, BLACK_EV, "Black point", " EV");
+
+        let agx = &mut self.edits.tone.agx;
+        linear_slider(
+            ui,
+            &mut agx.white_ev,
+            *WHITE_EV.start()..=12.,
+            WHITE_EV,
+            "White point",
+            " EV",
+        );
+        linear_slider(
+            ui,
+            &mut agx.black_ev,
+            -16. ..=*BLACK_EV.end(),
+            BLACK_EV,
+            "Black point",
+            " EV",
+        );
         agx.clamp_pivot();
-        control(ui, &mut agx.contrast, 0.1..=8., "Contrast", "");
-        control(ui, &mut agx.toe_power, 0.5..=8., "Toe power", "");
-        control(ui, &mut agx.shoulder_power, 0.5..=8., "Shoulder power", "");
-        egui::CollapsingHeader::new("Curve preview").show(ui, |ui| plot_curve(ui, agx));
-        egui::CollapsingHeader::new("Advanced curve").show(ui, |ui| {
-            control(ui, &mut agx.range_margin, 0. ..=1., "Auto range margin", "").on_hover_text(
-                "Expands the measured range in stops around mid-gray. 0.1 adds 10%.",
-            );
+        linear_slider(ui, &mut agx.contrast, 0.5..=5., 0.1..=8., "Contrast", "");
+        egui::CollapsingHeader::new("Curve shaping").show(ui, |ui| {
+            plot_curve(ui, agx);
+            control(ui, &mut agx.toe_power, 0.5..=8., "Toe power", "");
+            control(ui, &mut agx.shoulder_power, 0.5..=8., "Shoulder power", "");
             control(
                 ui,
                 &mut agx.pivot_ev,
@@ -104,6 +113,11 @@ impl Editor {
                 (agx.target_black + 0.001)..=(agx.target_white - 0.001),
                 "Pivot output",
                 "",
+            );
+        });
+        egui::CollapsingHeader::new("Advanced curve").show(ui, |ui| {
+            control(ui, &mut agx.range_margin, 0. ..=1., "Auto range margin", "").on_hover_text(
+                "Expands the measured range in stops around mid-gray. 0.1 adds 10%.",
             );
             control(ui, &mut agx.toe_start, 0. ..=0.95, "Toe start", "");
             control(
@@ -149,10 +163,11 @@ impl Editor {
     }
 
     fn saturation_control(&mut self, ui: &mut egui::Ui) {
-        control(
+        linear_slider(
             ui,
             &mut self.edits.tone.saturation,
             0. ..=2.,
+            0. ..=16.,
             "Saturation",
             "×",
         );
@@ -186,11 +201,7 @@ fn control(
     label: &str,
     unit: &str,
 ) -> egui::Response {
-    let response = parameter_slider(ui, v, range.clone(), range.clone(), label, unit, false);
-    if response.changed() {
-        *v = v.clamp(*range.start(), *range.end());
-    }
-    response
+    linear_slider(ui, v, range.clone(), range, label, unit)
 }
 
 fn plot_curve(ui: &mut egui::Ui, agx: &AgxEdits) {

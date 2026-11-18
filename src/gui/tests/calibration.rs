@@ -91,7 +91,6 @@ fn calibration_is_one_undoable_step_and_stale_results_preserve_redo() {
     assert_eq!(app.history.undo_len(), 1);
     assert!(app.status.contains("discarded"));
 }
-#[cfg(debug_assertions)]
 #[test]
 fn box_drag_samples_canvas_coordinates_at_zoom_without_painting_or_panning() {
     use crate::agx::Pick;

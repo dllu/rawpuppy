@@ -175,165 +175,29 @@ impl Editor {
             );
         }
     }
-    pub(super) fn set_tool(&mut self, tool: Tool) {
-        if self.tool != tool {
-            let was_full_canvas = matches!(self.tool, Tool::Crop | Tool::Perspective);
-            self.finish_edit_gesture();
-            self.framing.crop_drag = None;
-            self.framing.guide_drag = None;
-            self.adjustment_drag = None;
-            self.tool = tool;
-            self.framing.panel_open =
-                matches!(tool, Tool::Crop | Tool::Perspective | Tool::Straighten);
-            if matches!(tool, Tool::Crop | Tool::Perspective) || was_full_canvas {
-                self.zoom = 1.;
-                self.center = [0.5; 2];
-            }
-            self.changed();
-        }
-    }
     pub(super) fn framing_controls(&mut self, ui: &mut egui::Ui) {
         let Some(image) = self.image.clone() else {
             return;
         };
-        super::controls::angle_slider(ui, &mut self.edits.geometry.rotation, -5. ..=5., "Rotation");
-        ui.horizontal(|ui| {
-            if ui
-                .selectable_label(self.tool == Tool::Straighten, "Draw level line")
-                .clicked()
-            {
-                self.set_tool(if self.tool == Tool::Straighten {
-                    Tool::View
-                } else {
-                    Tool::Straighten
-                });
-            }
-            if ui.small_button("−90°").clicked() {
-                self.edits.geometry.rotation =
-                    crate::geometry::wrap_rotation(self.edits.geometry.rotation - 90.);
-            }
-            if ui.small_button("+90°").clicked() {
-                self.edits.geometry.rotation =
-                    crate::geometry::wrap_rotation(self.edits.geometry.rotation + 90.);
-            }
-        });
-        if self.tool == Tool::Straighten {
-            ui.label(
-                egui::RichText::new("Draw along a horizontal or vertical edge. Esc cancels.")
-                    .small(),
-            );
-        }
-        self.camera_controls(ui, &image);
-        ui.horizontal(|ui| {
-            if ui.button("Auto vertical").clicked() {
-                self.auto_perspective(crate::perspective::Mode::Vertical);
-            }
-            if ui.button("Auto both").clicked() {
-                self.auto_perspective(crate::perspective::Mode::Both);
-            }
-        });
-        ui.horizontal(|ui| {
-            if ui
-                .button("Find guides")
-                .on_hover_text("Detect lines to review before applying a correction")
-                .clicked()
-            {
-                self.start_perspective(crate::perspective::Mode::Both, false, false);
-            }
-            if ui
-                .selectable_label(self.tool == Tool::Perspective, "Edit guides")
-                .clicked()
-            {
-                self.set_tool(if self.tool == Tool::Perspective {
-                    Tool::View
-                } else {
-                    Tool::Perspective
-                });
-            }
-        });
-        if self.tool == Tool::Perspective {
-            ui.label(
-                egui::RichText::new("Blue: vertical · amber: horizontal · gray: excluded").small(),
-            );
-            ui.horizontal(|ui| {
-                ui.selectable_value(&mut self.framing.axis, GuideAxis::Vertical, "Draw vertical");
-                ui.selectable_value(
-                    &mut self.framing.axis,
-                    GuideAxis::Horizontal,
-                    "Draw horizontal",
-                );
-            });
-            ui.label(
-                egui::RichText::new(
-                    "Drag to draw · drag endpoints to edit · right-click to remove",
-                )
-                .small(),
-            );
-            if let Some(index) = self
-                .framing
-                .selected
-                .filter(|i| *i < self.edits.geometry.guides.len())
-            {
-                let guide = &mut self.edits.geometry.guides[index];
-                ui.horizontal(|ui| {
-                    ui.checkbox(&mut guide.enabled, "Use line");
-                    ui.selectable_value(&mut guide.axis, GuideAxis::Vertical, "Vertical");
-                    ui.selectable_value(&mut guide.axis, GuideAxis::Horizontal, "Horizontal");
-                });
-                if ui.small_button("Remove selected line").clicked()
-                    || ui.input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::Delete))
-                {
-                    self.finish_edit_gesture();
-                    self.framing.guide_drag = None;
-                    self.edits.geometry.guides.remove(index);
-                    self.framing.selected = None;
-                }
-            }
-            ui.horizontal(|ui| {
-                if ui.button("Apply vertical").clicked() {
-                    self.start_perspective(crate::perspective::Mode::Vertical, true, true);
-                }
-                if ui.button("Apply both").clicked() {
-                    self.start_perspective(crate::perspective::Mode::Both, true, true);
-                }
-            });
-        }
-        let guides = &self.edits.geometry.guides;
-        if !guides.is_empty() {
-            ui.label(
-                egui::RichText::new(format!(
-                    "{} vertical · {} horizontal · {} excluded",
-                    guides
-                        .iter()
-                        .filter(|g| g.enabled && g.axis == GuideAxis::Vertical)
-                        .count(),
-                    guides
-                        .iter()
-                        .filter(|g| g.enabled && g.axis == GuideAxis::Horizontal)
-                        .count(),
-                    guides.iter().filter(|g| !g.enabled).count()
-                ))
-                .small(),
-            );
-            if ui.small_button("Clear guides").clicked() {
-                self.edits.geometry.guides.clear();
-                self.framing.selected = None;
-            }
-        }
-        if let Some(message) = &self.perspective_status {
-            ui.label(egui::RichText::new(message).small().color(Color32::GRAY));
-        }
-        ui.separator();
-        ui.horizontal(|ui| {
+
+        egui::CollapsingHeader::new("Crop")
+            .open((self.tool == Tool::Crop).then_some(true))
+            .show(ui, |ui| self.crop_controls(ui, &image));
+        egui::CollapsingHeader::new("Straighten & rotate")
+            .open((self.tool == Tool::Straighten).then_some(true))
+            .show(ui, |ui| self.rotation_controls(ui));
+        egui::CollapsingHeader::new("Perspective")
+            .open((self.tool == Tool::Perspective).then_some(true))
+            .show(ui, |ui| self.perspective_controls(ui, &image));
+    }
+
+    fn crop_controls(&mut self, ui: &mut egui::Ui, image: &SensorImage) {
+        ui.horizontal_wrapped(|ui| {
             if ui
                 .selectable_label(self.tool == Tool::Crop, "Crop on image")
                 .clicked()
             {
-                self.set_tool(if self.tool == Tool::Crop {
-                    Tool::View
-                } else {
-                    Tool::Crop
-                });
+                self.toggle_tool(Tool::Crop);
             }
             if ui.small_button("Reset crop").clicked() {
                 self.edits.geometry.crop = [0., 0., 1., 1.];
@@ -341,9 +205,6 @@ impl Editor {
                 self.framing.aspect = Aspect::Free;
             }
         });
-        if self.tool == Tool::Crop {
-            ui.label(egui::RichText::new("Drag edges to resize · drag inside to move").small());
-        }
         let old = (self.framing.aspect, self.framing.portrait);
         egui::ComboBox::from_label("Aspect ratio")
             .selected_text(self.framing.aspect.label())
@@ -389,7 +250,7 @@ impl Editor {
             ui.label(egui::RichText::new(format!("Locked to {ratio:.3}:1")).small());
         }
         ui.horizontal(|ui| {
-            if ui.button("Largest area").clicked() {
+            if ui.button("Fit largest area").clicked() {
                 self.auto_crop(crate::crop::Constraint::LargestArea);
             }
             if ui
@@ -404,6 +265,122 @@ impl Editor {
                 ));
             }
         });
+    }
+
+    fn rotation_controls(&mut self, ui: &mut egui::Ui) {
+        super::controls::angle_slider(ui, &mut self.edits.geometry.rotation, -5. ..=5., "Rotation");
+        ui.horizontal(|ui| {
+            if ui
+                .selectable_label(self.tool == Tool::Straighten, "Draw level line")
+                .clicked()
+            {
+                self.toggle_tool(Tool::Straighten);
+            }
+            if ui.small_button("−90°").clicked() {
+                self.edits.geometry.rotation =
+                    crate::geometry::wrap_rotation(self.edits.geometry.rotation - 90.);
+            }
+            if ui.small_button("+90°").clicked() {
+                self.edits.geometry.rotation =
+                    crate::geometry::wrap_rotation(self.edits.geometry.rotation + 90.);
+            }
+        });
+    }
+
+    fn perspective_controls(&mut self, ui: &mut egui::Ui, image: &SensorImage) {
+        ui.horizontal_wrapped(|ui| {
+            if ui.button("Auto vertical").clicked() {
+                self.auto_perspective(crate::perspective::Mode::Vertical);
+            }
+            if ui.button("Auto both").clicked() {
+                self.auto_perspective(crate::perspective::Mode::Both);
+            }
+        });
+        ui.horizontal(|ui| {
+            if ui
+                .button("Find guides…")
+                .on_hover_text("Detect lines to review before applying a correction")
+                .clicked()
+            {
+                self.start_perspective(crate::perspective::Mode::Both, false, false);
+            }
+            if ui
+                .selectable_label(self.tool == Tool::Perspective, "Edit guides")
+                .clicked()
+            {
+                self.toggle_tool(Tool::Perspective);
+            }
+        });
+        if self.tool == Tool::Perspective {
+            ui.label(
+                egui::RichText::new("Blue: vertical · amber: horizontal · gray: excluded").small(),
+            );
+            ui.horizontal(|ui| {
+                ui.selectable_value(&mut self.framing.axis, GuideAxis::Vertical, "Draw vertical");
+                ui.selectable_value(
+                    &mut self.framing.axis,
+                    GuideAxis::Horizontal,
+                    "Draw horizontal",
+                );
+            });
+            if let Some(index) = self
+                .framing
+                .selected
+                .filter(|i| *i < self.edits.geometry.guides.len())
+            {
+                let guide = &mut self.edits.geometry.guides[index];
+                ui.horizontal(|ui| {
+                    ui.checkbox(&mut guide.enabled, "Use line");
+                    ui.selectable_value(&mut guide.axis, GuideAxis::Vertical, "Vertical");
+                    ui.selectable_value(&mut guide.axis, GuideAxis::Horizontal, "Horizontal");
+                });
+                if ui.small_button("Remove selected line").clicked()
+                    || (!ui.ctx().text_edit_focused()
+                        && ui
+                            .input_mut(|i| i.consume_key(egui::Modifiers::NONE, egui::Key::Delete)))
+                {
+                    self.finish_edit_gesture();
+                    self.framing.guide_drag = None;
+                    self.edits.geometry.guides.remove(index);
+                    self.framing.selected = None;
+                }
+            }
+            ui.horizontal(|ui| {
+                if ui.button("Apply vertical").clicked() {
+                    self.start_perspective(crate::perspective::Mode::Vertical, true, true);
+                }
+                if ui.button("Apply both").clicked() {
+                    self.start_perspective(crate::perspective::Mode::Both, true, true);
+                }
+            });
+        }
+        egui::CollapsingHeader::new("Camera geometry")
+            .show(ui, |ui| self.camera_controls(ui, image));
+        let guides = &self.edits.geometry.guides;
+        if !guides.is_empty() {
+            ui.label(
+                egui::RichText::new(format!(
+                    "{} vertical · {} horizontal · {} excluded",
+                    guides
+                        .iter()
+                        .filter(|g| g.enabled && g.axis == GuideAxis::Vertical)
+                        .count(),
+                    guides
+                        .iter()
+                        .filter(|g| g.enabled && g.axis == GuideAxis::Horizontal)
+                        .count(),
+                    guides.iter().filter(|g| !g.enabled).count()
+                ))
+                .small(),
+            );
+            if ui.small_button("Clear guides").clicked() {
+                self.edits.geometry.guides.clear();
+                self.framing.selected = None;
+            }
+        }
+        if let Some(message) = &self.perspective_status {
+            ui.label(egui::RichText::new(message).small().color(Color32::GRAY));
+        }
         egui::ComboBox::from_label("After perspective")
             .selected_text(match self.framing.auto_crop {
                 AutoCrop::Off => "Keep crop",

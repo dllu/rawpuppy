@@ -57,7 +57,6 @@ fn button(pos: Pos2, button: egui::PointerButton, pressed: bool) -> egui::Event 
         modifiers: egui::Modifiers::NONE,
     }
 }
-#[cfg(debug_assertions)]
 fn canvas_frame(
     ctx: &egui::Context,
     app: &mut Editor,
@@ -111,7 +110,6 @@ fn middle_button_pans_without_painting_and_primary_drag_paints() {
     assert!(!pan);
 }
 
-#[cfg(debug_assertions)]
 #[test]
 fn cropped_clone_and_heal_match_the_visible_circular_brush() {
     use crate::pipeline::Pipeline;
@@ -196,7 +194,6 @@ fn cropped_clone_and_heal_match_the_visible_circular_brush() {
     }
 }
 
-#[cfg(debug_assertions)]
 #[test]
 fn fast_brush_drags_cover_the_path_and_separate_gestures_do_not_connect() {
     use crate::pipeline::{Pipeline, Rendered};

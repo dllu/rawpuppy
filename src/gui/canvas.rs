@@ -1,19 +1,7 @@
 //! Preview viewport, painting, brush travel and actual-pixel navigation.
 use super::*;
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub(super) enum Tool {
-    View,
-    Clone,
-    Heal,
-    Mask,
-    Calibration,
-    Agx(crate::agx::Pick),
-    Crop,
-    Perspective,
-    Straighten,
-    Graduated,
-}
+pub(super) use super::tools::Tool;
 
 #[derive(Default)]
 pub(super) struct BrushStroke {
@@ -90,12 +78,6 @@ impl Editor {
                 if self.image.is_none() {
                     ui.centered_and_justified(|ui| {
                         ui.vertical_centered(|ui| {
-                            ui.label(
-                                egui::RichText::new("One photograph. Your light.")
-                                    .size(26.)
-                                    .color(Color32::from_gray(195)),
-                            );
-                            ui.add_space(14.);
                             ui.label("Drop a RAW file here, or open a photograph.");
                             ui.add_space(18.);
                             if ui.button("Open photograph…").clicked() {
@@ -105,70 +87,9 @@ impl Editor {
                     });
                     return;
                 }
-                ui.horizontal_wrapped(|ui| {
-                    if ui.small_button("Fit").clicked() {
-                        self.zoom = 1.;
-                        self.center = [0.5; 2];
-                        self.changed();
-                    }
-                    if ui.small_button("100%").clicked() {
-                        self.actual_pixels(ui);
-                    }
-                    if ui.selectable_label(self.compare, "Before").clicked() {
-                        self.compare = !self.compare;
-                        self.changed();
-                    }
-                    if ui
-                        .selectable_label(self.tool == Tool::Crop, "Crop")
-                        .clicked()
-                    {
-                        self.set_tool(if self.tool == Tool::Crop {
-                            Tool::View
-                        } else {
-                            Tool::Crop
-                        });
-                    }
-                    if ui
-                        .selectable_label(self.tool == Tool::Perspective, "Perspective")
-                        .clicked()
-                    {
-                        self.set_tool(if self.tool == Tool::Perspective {
-                            Tool::View
-                        } else {
-                            Tool::Perspective
-                        });
-                    }
-                    if ui
-                        .selectable_label(self.tool == Tool::Straighten, "Straighten")
-                        .on_hover_text("Draw along a horizon or vertical edge · S")
-                        .clicked()
-                    {
-                        self.set_tool(if self.tool == Tool::Straighten {
-                            Tool::View
-                        } else {
-                            Tool::Straighten
-                        });
-                    }
-                    ui.menu_button(if self.framing.show_grid { "Grid: on" } else { "Grid" }, |ui| {
-                        self.grid_controls(ui);
-                    });
-                    if matches!(
-                        self.tool,
-                        Tool::Crop | Tool::Perspective | Tool::Straighten | Tool::Graduated
-                    ) && ui.button("Done").clicked()
-                    {
-                        self.set_tool(Tool::View);
-                    }
-                    ui.add_space(12.);
-                    if matches!(self.tool, Tool::Clone | Tool::Heal) {
-                        ui.label(
-                            egui::RichText::new("Alt-click source · paint to retouch")
-                                .color(ACCENT),
-                        );
-                    }
-                });
+                self.canvas_toolbar(ui);
                 let image = self.image.as_ref().unwrap();
-                let crop = if matches!(self.tool, Tool::Crop | Tool::Perspective) {
+                let crop = if self.tool.full_canvas() {
                     [0., 0., 1., 1.]
                 } else {
                     self.edits.geometry.crop
@@ -185,6 +106,13 @@ impl Editor {
                 let response = ui.allocate_rect(rect, egui::Sense::click_and_drag());
                 // Apply navigation before calculating the viewport sent to the worker.
                 if response.hovered() {
+                    if self.tool == Tool::View || ui.input(|i| i.pointer.middle_down()) {
+                        ui.ctx().set_cursor_icon(if response.dragged() {
+                            egui::CursorIcon::Grabbing
+                        } else {
+                            egui::CursorIcon::Grab
+                        });
+                    }
                     let resize_brush = matches!(self.tool, Tool::Clone | Tool::Heal | Tool::Mask)
                         && ui.input(|i| i.modifiers.shift);
                     let scroll = ui.input(|i| {
@@ -204,7 +132,7 @@ impl Editor {
                         }
                     }
                 }
-                if response.double_clicked() {
+                if self.tool == Tool::View && response.double_clicked() {
                     self.zoom = 1.;
                     self.center = [0.5; 2];
                 }
@@ -218,7 +146,7 @@ impl Editor {
                 let full = Vec2::new(w, h) * fit * self.zoom;
                 let visible = Vec2::new(full.x.min(available.x), full.y.min(available.y));
                 let rect = Rect::from_center_size(center, visible);
-                #[cfg(debug_assertions)]
+                #[cfg(any(debug_assertions, test))]
                 {
                     self.probe_photo_rect = Some(rect);
                 }
@@ -284,6 +212,7 @@ impl Editor {
                 self.framing_overlay(ui, &response, rect, canvas_region);
                 self.adjustment_overlay(ui, &response, rect, canvas_region);
                 if response.hovered()
+                    && self.busy.is_none()
                     && matches!(self.tool, Tool::Clone | Tool::Heal | Tool::Mask)
                     && let Some(pos) = response.hover_pos()
                 {
@@ -293,21 +222,38 @@ impl Editor {
                         egui::Stroke::new(1., ACCENT),
                     );
                 }
-                for dab in &self.mask {
-                    let c = self.edits.geometry.crop;
-                    let point = [c[0] + dab.center[0] * c[2], c[1] + dab.center[1] * c[3]];
-                    let pos = Pos2::new(
-                        rect.left()
-                            + (point[0] - canvas_region[0]) / canvas_region[2] * rect.width(),
-                        rect.top()
-                            + (point[1] - canvas_region[1]) / canvas_region[3] * rect.height(),
-                    );
-                    if rect.contains(pos) {
-                        ui.painter().circle_filled(
-                            pos,
-                            dab.radius * full.x * c[2] / crop[2],
-                            Color32::from_rgba_unmultiplied(225, 150, 100, 75),
+                if !self.compare && (self.tool == Tool::Mask || self.sidebar.shows_ai()) {
+                    for dab in &self.mask {
+                        let c = self.edits.geometry.crop;
+                        let point = [c[0] + dab.center[0] * c[2], c[1] + dab.center[1] * c[3]];
+                        let pos = Pos2::new(
+                            rect.left()
+                                + (point[0] - canvas_region[0]) / canvas_region[2] * rect.width(),
+                            rect.top()
+                                + (point[1] - canvas_region[1]) / canvas_region[3] * rect.height(),
                         );
+                        if rect.contains(pos) {
+                            ui.painter().circle_filled(
+                                pos,
+                                dab.radius * full.x * c[2] / crop[2],
+                                Color32::from_rgba_unmultiplied(225, 150, 100, 75),
+                            );
+                        }
+                    }
+                }
+                if self.tool.is_brush()
+                    && let Some(source) = self.clone_source
+                {
+                    let pos = rect.min
+                        + Vec2::new(
+                            (source[0] - region[0]) / region[2] * rect.width(),
+                            (source[1] - region[1]) / region[3] * rect.height(),
+                        );
+                    if rect.shrink(7.).contains(pos) {
+                        ui.painter()
+                            .circle_stroke(pos, 6., egui::Stroke::new(4., Color32::BLACK));
+                        ui.painter()
+                            .circle_stroke(pos, 6., egui::Stroke::new(1.5, ACCENT));
                     }
                 }
                 let press = ui.input(|i| {
@@ -410,7 +356,7 @@ impl Editor {
                     };
                     // Extend the cropped coordinates to show the whole canvas;
                     // retain the recipe so retouch and fills stay registered.
-                    let render_region = if matches!(self.tool, Tool::Crop | Tool::Perspective) {
+                    let render_region = if self.tool.full_canvas() {
                         let c = edits.geometry.crop;
                         [
                             (canvas_region[0] - c[0]) / c[2],

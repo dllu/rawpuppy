@@ -1,4 +1,6 @@
 //! Photo controls and coalesced parameter gestures.
+pub(super) use super::sliders::{TrackScale, angle_slider, parameter_slider, slider};
+use super::sliders::{exposure_slider, linear_slider};
 use super::*;
 use crate::config::Module;
 
@@ -18,12 +20,12 @@ pub(super) enum Section {
 impl Section {
     fn label(self) -> &'static str {
         match self {
-            Self::Framing => "Perspective & crop",
+            Self::Framing => "Crop & geometry",
             Self::Light => "Light",
             Self::Color => "Color calibration",
             Self::Detail => "Detail",
             Self::Sensor => "Sensor",
-            Self::Tone => "Tone",
+            Self::Tone => "Tone mapping",
             Self::Split => "Split toning",
             Self::Retouch => "Retouch",
             Self::Ai => "AI removal & corner fill",
@@ -47,6 +49,10 @@ impl Sidebar {
         self.resizing = false;
     }
 
+    pub(super) fn shows_ai(&self) -> bool {
+        self.open[Section::Ai as usize]
+    }
+
     fn plan(&mut self, height: f32, font_size: f32, expand: bool, framing: bool) {
         let scale = font_size / 18.;
         let estimated = [650., 230., 360., 200., 260., 310., 180., 280., 480., 250.];
@@ -64,9 +70,9 @@ impl Sidebar {
         }
         if expand {
             for section in [
+                Section::Tone,
                 Section::Color,
                 Section::Detail,
-                Section::Tone,
                 Section::Sensor,
                 Section::Framing,
                 Section::Split,
@@ -160,6 +166,83 @@ impl Editor {
                 sidebar.plan(ui.available_height(), self.preferences.config.ui.font_size, self.preferences.config.ui.expand_sections, self.framing.panel_open);
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     ui.add_enabled_ui(self.image.is_some() && !self.compare && self.busy.is_none(), |ui| {
+                        sidebar.show(Section::Light, ui, |ui| {
+                                exposure_slider(ui, &mut self.edits.scene.exposure);
+                                egui::CollapsingHeader::new("Vignetting").show(ui, |ui| {
+                                slider(
+                                    ui,
+                                    &mut self.edits.scene.vignette[0],
+                                    -3.0..=3.0,
+                                    "Vignette",
+                                    " EV",
+                                );
+                                slider(
+                                    ui,
+                                    &mut self.edits.scene.vignette[1],
+                                    -3.0..=3.0,
+                                    "Vignette edge",
+                                    " EV",
+                                );
+                                });
+                                egui::CollapsingHeader::new("Graduated filter").default_open(self.tool == Tool::Graduated).show(ui, |ui| {
+                                slider(
+                                    ui,
+                                    &mut self.edits.scene.graduated.exposure,
+                                    -4.0..=4.0,
+                                    "Graduated ND",
+                                    " EV",
+                                );
+                                if ui.selectable_label(self.tool == Tool::Graduated, "Draw graduated filter").clicked() {
+                                    self.toggle_tool(Tool::Graduated);
+                                }
+                                if self.edits.scene.graduated.exposure != 0. {
+                                    slider(
+                                        ui,
+                                        &mut self.edits.scene.graduated.angle,
+                                        -180.0..=180.0,
+                                        "Direction",
+                                        "°",
+                                    );
+                                    slider(
+                                        ui,
+                                        &mut self.edits.scene.graduated.center[1],
+                                        0.0..=1.0,
+                                        "Position",
+                                        "",
+                                    );
+                                    slider(
+                                        ui,
+                                        &mut self.edits.scene.graduated.width,
+                                        0.01..=1.0,
+                                        "Transition",
+                                        "",
+                                    );
+                                }
+                                });
+                                self.module_defaults_button(ui, Module::Light);
+                            });
+                        sidebar.show(Section::Tone, ui, |ui| {
+                            self.tone_controls(ui);
+                        });
+                        sidebar.show(Section::Color, ui, |ui| {
+                                self.calibration_controls(ui);
+                                egui::CollapsingHeader::new("Channel mixer").show(ui, |ui| {
+                                    for i in 0..3 {
+                                        ui.horizontal(|ui| {
+                                            ui.label(["R", "G", "B"][i]);
+                                            for j in 0..3 {
+                                                ui.add(
+                                                    egui::DragValue::new(
+                                                        &mut self.edits.scene.mixer[i][j],
+                                                    )
+                                                    .speed(0.01)
+                                                    .range(-3.0..=3.0),
+                                                );
+                                            }
+                                        });
+                                    }
+                                });
+                            });
                         let framing_panel = sidebar.show(Section::Framing, ui, |ui| {
                             self.framing_controls(ui);
                             egui::CollapsingHeader::new("Camera lens corrections").show(ui, |ui| {
@@ -187,28 +270,31 @@ impl Editor {
                             }
                             });
                             egui::CollapsingHeader::new("Advanced geometry").show(ui, |ui| {
-                            slider(
+                            linear_slider(
                                 ui,
                                 &mut self.edits.geometry.pitch,
                                 -65.0..=65.0,
+                                -84.99..=84.99,
                                 "Vertical",
                                 "°",
                             );
-                            slider(
+                            linear_slider(
                                 ui,
                                 &mut self.edits.geometry.yaw,
                                 -65.0..=65.0,
+                                -84.99..=84.99,
                                 "Horizontal",
                                 "°",
                             );
-                            slider(
+                            linear_slider(
                                 ui,
                                 &mut self.edits.geometry.field_of_view,
                                 10.0..=120.0,
+                                0.01..=174.99,
                                 "Field of view",
                                 "°",
                             );
-                            slider(ui, &mut self.edits.geometry.scale, 0.5..=3.0, "Scale", "×");
+                            linear_slider(ui, &mut self.edits.geometry.scale, 0.5..=3.0, 0.01..=32., "Scale", "×");
                             slider(ui, &mut self.edits.geometry.shift[0], -1.0..=1.0, "Shift X", "");
                             slider(ui, &mut self.edits.geometry.shift[1], -1.0..=1.0, "Shift Y", "");
                             slider(
@@ -244,87 +330,6 @@ impl Editor {
                             });
                         });
                         if framing_panel.header_response.clicked() { self.framing.panel_open = false; }
-                        sidebar.show(Section::Light, ui, |ui| {
-                                slider(
-                                    ui,
-                                    &mut self.edits.scene.exposure,
-                                    -2.0..=2.0,
-                                    "Exposure",
-                                    " EV",
-                                );
-                                egui::CollapsingHeader::new("Vignetting").show(ui, |ui| {
-                                slider(
-                                    ui,
-                                    &mut self.edits.scene.vignette[0],
-                                    -3.0..=3.0,
-                                    "Vignette",
-                                    " EV",
-                                );
-                                slider(
-                                    ui,
-                                    &mut self.edits.scene.vignette[1],
-                                    -3.0..=3.0,
-                                    "Vignette edge",
-                                    " EV",
-                                );
-                                });
-                                egui::CollapsingHeader::new("Graduated filter").default_open(self.tool == Tool::Graduated).show(ui, |ui| {
-                                slider(
-                                    ui,
-                                    &mut self.edits.scene.graduated.exposure,
-                                    -4.0..=4.0,
-                                    "Graduated ND",
-                                    " EV",
-                                );
-                                if ui.selectable_label(self.tool == Tool::Graduated, "Draw graduated filter").clicked() {
-                                    self.set_tool(if self.tool == Tool::Graduated { Tool::View } else { Tool::Graduated });
-                                }
-                                if self.tool == Tool::Graduated { ui.label(egui::RichText::new("Drag from unchanged to filtered · Esc cancels").small()); }
-                                if self.edits.scene.graduated.exposure != 0. {
-                                    slider(
-                                        ui,
-                                        &mut self.edits.scene.graduated.angle,
-                                        -180.0..=180.0,
-                                        "Direction",
-                                        "°",
-                                    );
-                                    slider(
-                                        ui,
-                                        &mut self.edits.scene.graduated.center[1],
-                                        0.0..=1.0,
-                                        "Position",
-                                        "",
-                                    );
-                                    slider(
-                                        ui,
-                                        &mut self.edits.scene.graduated.width,
-                                        0.01..=1.0,
-                                        "Transition",
-                                        "",
-                                    );
-                                }
-                                });
-                                self.module_defaults_button(ui, Module::Light);
-                            });
-                        sidebar.show(Section::Color, ui, |ui| {
-                                self.calibration_controls(ui);
-                                egui::CollapsingHeader::new("Channel mixer").show(ui, |ui| {
-                                    for i in 0..3 {
-                                        ui.horizontal(|ui| {
-                                            ui.label(["R", "G", "B"][i]);
-                                            for j in 0..3 {
-                                                ui.add(
-                                                    egui::DragValue::new(
-                                                        &mut self.edits.scene.mixer[i][j],
-                                                    )
-                                                    .speed(0.01)
-                                                    .range(-3.0..=3.0),
-                                                );
-                                            }
-                                        });
-                                    }
-                                });
-                            });
                         sidebar.show(Section::Detail, ui, |ui| {
                             slider(ui, &mut self.edits.detail.sharpen, 0. ..=1., "Sharpen", "");
                             slider(ui, &mut self.edits.detail.local_contrast, 0. ..=1., "Local contrast", "");
@@ -357,17 +362,15 @@ impl Editor {
                             ui.add_enabled_ui(source_image.as_ref().is_some_and(|image| image.raw_integer), |ui| {
                                 ui.checkbox(&mut self.edits.raw.recover_highlights, "Recover clipped highlights");
                             });
-                            if self.edits.raw.reconstruction == Reconstruction::Mhc { slider(
+                            if self.edits.raw.reconstruction == Reconstruction::Mhc { linear_slider(
                                 ui,
                                 &mut self.edits.raw.denoise,
                                 0.0..=0.05,
+                                0.0..=1.0,
                                 "Sensor denoise",
                                 "",
                             ); }
                             self.module_defaults_button(ui, Module::Sensor);
-                        });
-                        sidebar.show(Section::Tone, ui, |ui| {
-                            self.tone_controls(ui);
                         });
                         sidebar.show(Section::Split, ui, |ui| {
                             slider(
@@ -388,14 +391,12 @@ impl Editor {
                         });
                         sidebar.show(Section::Retouch, ui, |ui| {
                             ui.horizontal(|ui| {
-                                ui.selectable_value(&mut self.tool, Tool::View, "Pan");
-                                ui.selectable_value(&mut self.tool, Tool::Clone, "Clone");
-                                ui.selectable_value(&mut self.tool, Tool::Heal, "Heal");
+                                for (tool, label) in [(Tool::Clone, "Clone"), (Tool::Heal, "Heal")] {
+                                    if ui.selectable_label(self.tool == tool, label).clicked() {
+                                        self.toggle_tool(tool);
+                                    }
+                                }
                             });
-                            ui.label(
-                                    egui::RichText::new("Alt-click a source, then paint. Shift-scroll resizes the brush.")
-                                    .small(),
-                            );
                             slider(ui, &mut self.radius, 0.002..=0.15, "Brush size", "");
                             slider(ui, &mut self.feather, 0.0..=1.0, "Feather", "");
                             ui.label(format!("{} strokes", self.edits.display.retouch.len()));
@@ -412,11 +413,9 @@ impl Editor {
                                     .any(|f| f.recipe_sha256 != h || f.source_color_revision!=self.image.as_ref().map_or(0,|i|i.metadata.color_revision))
                             });
                             ui.add_enabled_ui(cfg!(feature = "moebius"), |ui| {
-                                ui.horizontal(|ui| {
-                                    ui.selectable_value(&mut self.tool, Tool::Mask, "Paint area")
-                                        .on_hover_text("Cover the entire object, including its edges and shadows. Only painted pixels are replaced.");
-                                    ui.selectable_value(&mut self.tool, Tool::View, "Pan");
-                                });
+                                if ui.selectable_label(self.tool == Tool::Mask, "Paint area").clicked() {
+                                    self.toggle_tool(Tool::Mask);
+                                }
                                 slider(ui, &mut self.radius, 0.002..=0.15, "Brush size", "");
                                 ui.horizontal(|ui| {
                                     ui.label("Sampling steps");
@@ -564,94 +563,6 @@ impl Editor {
         sidebar.last_width = Some(width);
         self.sidebar = sidebar;
     }
-}
-
-pub(super) fn slider(
-    ui: &mut egui::Ui,
-    value: &mut f32,
-    range: std::ops::RangeInclusive<f32>,
-    label: &str,
-    suffix: &str,
-) -> egui::Response {
-    let numeric_range = if suffix == " EV" {
-        -32. ..=32.
-    } else {
-        range.clone()
-    };
-    parameter_slider(ui, value, range, numeric_range, label, suffix, false)
-}
-
-/// Label and precise input above a track spanning the entire available width.
-/// Rendering a value outside the track range must never silently change it.
-pub(super) fn parameter_slider(
-    ui: &mut egui::Ui,
-    value: &mut f32,
-    drag_range: std::ops::RangeInclusive<f32>,
-    numeric_range: std::ops::RangeInclusive<f32>,
-    label: &str,
-    suffix: &str,
-    logarithmic: bool,
-) -> egui::Response {
-    ui.push_id(label, |ui| {
-        ui.scope(|ui| {
-            ui.spacing_mut().item_spacing.y = 3.;
-            let speed = match suffix {
-                "°" => 0.1,
-                " EV" => 0.01,
-                " K" => 10.,
-                _ => (*drag_range.end() - *drag_range.start()) as f64 / 500.,
-            };
-            let numeric = ui
-                .horizontal(|ui| {
-                    ui.label(label);
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        let input = egui::DragValue::new(value)
-                            .speed(speed)
-                            .range(numeric_range)
-                            .clamp_existing_to_range(false)
-                            .suffix(suffix)
-                            .max_decimals(if suffix == " K" {
-                                0
-                            } else if *drag_range.end() - *drag_range.start() < 0.2 {
-                                4
-                            } else {
-                                3
-                            });
-                        ui.add(if suffix == " EV" || suffix == "°" {
-                            input.min_decimals(2)
-                        } else {
-                            input
-                        })
-                        .on_hover_text("Drag for fine adjustment, or click to type a value")
-                    })
-                    .inner
-                })
-                .inner;
-            ui.spacing_mut().slider_width = ui.available_width();
-            let control = egui::Slider::new(value, drag_range)
-                .show_value(false)
-                .clamping(egui::SliderClamping::Never)
-                .logarithmic(logarithmic);
-            let control = match suffix {
-                "°" => control.step_by(0.1),
-                " EV" => control.step_by(0.01),
-                _ => control,
-            };
-            ui.add(control).union(numeric)
-        })
-        .inner
-    })
-    .inner
-}
-
-/// Small corrections are the normal case; numeric input still accepts any roll.
-pub(super) fn angle_slider(
-    ui: &mut egui::Ui,
-    value: &mut f32,
-    range: std::ops::RangeInclusive<f32>,
-    label: &str,
-) -> egui::Response {
-    parameter_slider(ui, value, range, -f32::MAX..=f32::MAX, label, "°", false)
 }
 
 #[cfg(test)]

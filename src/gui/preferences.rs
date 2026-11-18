@@ -104,8 +104,8 @@ impl Editor {
             });
             ui.checkbox(&mut self.preferences.draft.expand_sections, "Expand sections when there is room");
             ui.separator();
-            ui.label("Save module defaults from Light, Tone, Detail or Sensor. They apply to photos without saved edits and to Reset all edits.");
-            ui.label("Light saves exposure and vignetting. Tone saves saturation.");
+            ui.label("Save module defaults from Light, Tone mapping, Detail or Sensor. They apply to photos without saved edits and to Reset all edits.");
+            ui.label("Light saves exposure and vignetting. Tone mapping saves saturation.");
             if let Some(path) = &self.preferences.path {
                 ui.label(egui::RichText::new(path.display().to_string()).small().color(Color32::GRAY));
             }

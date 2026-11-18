@@ -39,6 +39,9 @@ impl Editor {
             self.adjustment_drag = None;
             return;
         }
+        if response.hovered() {
+            ui.ctx().set_cursor_icon(egui::CursorIcon::Crosshair);
+        }
         let at = |p: Pos2| {
             [
                 region[0] + (p.x - rect.left()) / rect.width() * region[2],
@@ -133,9 +136,8 @@ impl Editor {
                     g.exposure = -1.;
                 }
             }
-            if self.edits != previous {
-                self.remember(previous);
-            }
+            self.remember(previous);
+            self.set_tool(Tool::View);
         }
     }
 }

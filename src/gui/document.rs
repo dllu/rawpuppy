@@ -23,6 +23,8 @@ impl Editor {
         }
     }
     pub(super) fn open(&mut self, path: PathBuf) {
+        self.set_tool(Tool::View);
+        self.set_compare(false);
         self.load_generation = self.load_generation.wrapping_add(1);
         self.generation = self.generation.wrapping_add(1);
         self.busy = Some(Busy::Load(self.load_generation));
@@ -93,8 +95,10 @@ impl Editor {
             return;
         }
         self.finish_edit_gesture();
-        if let Some(image) = &self.image {
-            let image = image.clone();
+        if let Some(image) = self.image.clone() {
+            if !apply {
+                self.set_tool(Tool::Perspective);
+            }
             self.busy = Some(Busy::Perspective(self.load_generation));
             self.status = "Finding straight architectural edges…".into();
             self.perspective_status = None;
@@ -253,6 +257,7 @@ impl Editor {
                     self.adjustment_drag = None;
                     self.calibration_box = None;
                     self.tool = Tool::View;
+                    self.compare = false;
                     self.changed();
                     self.status = "Ready".into();
                 }
@@ -361,17 +366,17 @@ impl Editor {
                         if apply && let Some(mut geometry) = report.solution {
                             geometry.guides = self.edits.geometry.guides.clone();
                             self.edits.geometry = geometry;
-                            self.status = "Perspective applied; drag guides to refine it".into();
+                            self.status = "Perspective corrected".into();
                         } else {
                             self.status = if apply {
-                                "Review the detected guides before correcting perspective".into()
+                                "Perspective unchanged. Open Guides to review detected edges."
+                                    .into()
                             } else {
                                 "Guides ready; review or draw lines, then apply correction".into()
                             };
                         }
                         self.remember(previous);
                         self.sync_framing_aspect();
-                        self.set_tool(Tool::Perspective);
                     } else {
                         self.status =
                             "Perspective result discarded because the edits changed".into();
@@ -390,8 +395,7 @@ impl Editor {
                         self.edits.geometry.crop_aspect = aspect;
                         self.sync_framing_aspect();
                         self.remember(previous);
-                        self.set_tool(Tool::Crop);
-                        self.status = "Crop fitted; drag its edges to adjust".into();
+                        self.status = "Crop fitted".into();
                     } else {
                         self.status = "Crop result discarded because the edits changed".into();
                     }
@@ -478,7 +482,7 @@ impl Editor {
                         self.edits.display.synthesis.extend(fills);
                         self.remember(*previous);
                         self.mask.clear();
-                        self.tool = Tool::View;
+                        self.set_tool(Tool::View);
                         self.status = if empty && replace {
                             "No geometric gaps remain; save edits to keep the update".into()
                         } else if empty {

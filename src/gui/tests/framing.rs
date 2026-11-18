@@ -230,6 +230,7 @@ fn guide_correction_and_auto_crop_arrive_as_one_transaction_and_stale_results_ar
     replies.send(reply).unwrap();
     app.poll(&ctx);
     assert_eq!(app.busy, None);
+    assert_eq!(app.tool, Tool::View);
     assert_eq!(app.history.undo_len(), 1);
     assert!((app.edits.geometry.pitch - 15.).abs() < 0.001);
     let c = app.edits.geometry.crop;
@@ -254,6 +255,21 @@ fn guide_correction_and_auto_crop_arrive_as_one_transaction_and_stale_results_ar
     assert_eq!(app.edits, after);
     assert_eq!(app.busy, None);
     assert!(app.status.contains("discarded"));
+
+    app.busy = Some(Busy::AutoCrop(4));
+    replies
+        .send(Reply::AutoCropped {
+            load_id: 4,
+            revision: app.history.revision(),
+            previous: after,
+            crop: [0.1, 0.1, 0.8, 0.8],
+            aspect: None,
+        })
+        .unwrap();
+    app.poll(&ctx);
+    assert_eq!(app.edits.geometry.crop, [0.1, 0.1, 0.8, 0.8]);
+    assert_eq!(app.tool, Tool::View);
+
     drop(send);
     worker.join().unwrap();
 }
@@ -275,6 +291,7 @@ fn straighten_at_zoom_and_crop_only_changes_roll_and_is_one_undo_step() {
     drag(&mut app, &ctx, 0.1, a, b);
     let angle = (4f32 / 360.).atan().to_degrees();
     assert!((app.edits.geometry.rotation - 2.3 - angle).abs() < 0.0002);
+    assert_eq!(app.tool, Tool::View);
     let mut expected = before.clone();
     expected.geometry.rotation = app.edits.geometry.rotation;
     assert_eq!(app.edits, expected);
@@ -299,6 +316,7 @@ fn drawing_graduated_filter_sets_both_axes_direction_and_width_in_one_edit() {
     assert!((g.width - 0.6f32.hypot(0.4)).abs() < 1e-5);
     assert!((g.angle - 0.6f32.atan2(0.4).to_degrees()).abs() < 1e-4);
     assert_eq!(g.exposure, -1.);
+    assert_eq!(app.tool, Tool::View);
     assert_eq!(app.history.undo_len(), 1);
     app.undo();
     assert_eq!(app.edits, before);

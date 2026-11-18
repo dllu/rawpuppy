@@ -31,9 +31,11 @@ mod document;
 mod framing;
 mod history;
 mod preferences;
+mod sliders;
 #[cfg(test)]
 mod tests;
 mod toolbar;
+mod tools;
 mod worker;
 #[cfg(test)]
 use canvas::primary_stroke;
@@ -83,7 +85,7 @@ struct Editor {
     sidebar: controls::Sidebar,
     #[cfg(debug_assertions)]
     probe: Option<probe::Probe>,
-    #[cfg(debug_assertions)]
+    #[cfg(any(debug_assertions, test))]
     probe_photo_rect: Option<Rect>,
     tx: mpsc::Sender<Work>,
     save_tx: mpsc::Sender<Work>,
@@ -214,7 +216,7 @@ impl Editor {
             sidebar: controls::Sidebar::default(),
             #[cfg(debug_assertions)]
             probe: probe::Probe::from_env(),
-            #[cfg(debug_assertions)]
+            #[cfg(any(debug_assertions, test))]
             probe_photo_rect: None,
             tx,
             save_tx,
@@ -335,62 +337,19 @@ impl eframe::App for Editor {
         if ctx.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND, egui::Key::E)) {
             self.export();
         }
-        if ctx.input_mut(|i| {
-            i.consume_key(
-                egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
-                egui::Key::Z,
-            )
-        }) {
-            self.redo();
-        } else if ctx.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND, egui::Key::Z)) {
-            self.undo();
-        }
-        if !ctx.egui_wants_keyboard_input() {
-            if ctx.input(|i| i.key_pressed(egui::Key::F)) {
-                self.zoom = 1.;
-                self.center = [0.5; 2];
-                self.changed();
-            }
-            if ctx.input(|i| i.key_pressed(egui::Key::Num1)) {
-                self.actual_pixels(ui);
-            }
-            if ctx.input(|i| i.key_pressed(egui::Key::B)) {
-                self.compare = !self.compare;
-                self.changed();
-            }
-            if ctx.input(|i| i.key_pressed(egui::Key::C)) {
-                self.set_tool(if self.tool == Tool::Crop {
-                    Tool::View
-                } else {
-                    Tool::Crop
-                });
-            }
-            if ctx.input(|i| i.key_pressed(egui::Key::P)) {
-                self.set_tool(if self.tool == Tool::Perspective {
-                    Tool::View
-                } else {
-                    Tool::Perspective
-                });
-            }
-            if ctx.input(|i| i.key_pressed(egui::Key::G)) {
-                self.framing.show_grid = !self.framing.show_grid;
-            }
-            if ctx.input(|i| i.key_pressed(egui::Key::S)) {
-                self.set_tool(if self.tool == Tool::Straighten {
-                    Tool::View
-                } else {
-                    Tool::Straighten
-                });
-            }
-            if matches!(
-                self.tool,
-                Tool::Crop | Tool::Perspective | Tool::Straighten | Tool::Graduated
-            ) && ctx
-                .input(|i| i.key_pressed(egui::Key::Enter) || i.key_pressed(egui::Key::Escape))
-            {
-                self.set_tool(Tool::View);
+        if !ctx.text_edit_focused() {
+            if ctx.input_mut(|i| {
+                i.consume_key(
+                    egui::Modifiers::COMMAND | egui::Modifiers::SHIFT,
+                    egui::Key::Z,
+                )
+            }) {
+                self.redo();
+            } else if ctx.input_mut(|i| i.consume_key(egui::Modifiers::COMMAND, egui::Key::Z)) {
+                self.undo();
             }
         }
+        self.canvas_shortcuts(ui);
         if ctx.input(|i| i.viewport().close_requested()) && self.dirty() {
             ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
             self.pending = Some(Pending::Close);

@@ -76,7 +76,7 @@ impl Editor {
             _ => kelvin,
         };
         let daylight = matches!(illuminant, Illuminant::Daylight { .. });
-        if super::controls::parameter_slider(ui, &mut temperature, if daylight {4000.} else {1000.}..=25000., if daylight {4000.} else {1000.}..=25000., "Temperature", " K", true)
+        if super::controls::parameter_slider(ui, &mut temperature, if daylight {4000.} else {2000.}..=12000., if daylight {4000.} else {1000.}..=25000., "Temperature", " K", super::controls::TrackScale::Logarithmic)
             .on_hover_text("Colour of the light source. Moving this control selects a spectral illuminant; custom colours may lie away from its locus.").changed() {
             illuminant = if daylight { Illuminant::Daylight { kelvin: temperature } } else { Illuminant::BlackBody { kelvin: temperature } };
         }
@@ -117,18 +117,13 @@ impl Editor {
         }
         ui.horizontal_wrapped(|ui| {
             if ui.button("Estimate whole image").on_hover_text("Gray-world estimate: assume the image's mean colour should be neutral. Strongly coloured scenes can bias it.").clicked() {
-                self.calibration_box = None;
-                self.tool = Tool::View;
+                self.set_tool(Tool::View);
                 self.estimate_illuminant([0., 0., 1., 1.]);
             }
             if ui.selectable_label(self.tool == Tool::Calibration, "Draw neutral box").clicked() {
-                self.tool = if self.tool == Tool::Calibration {Tool::View} else {Tool::Calibration};
-                self.calibration_box = None;
+                self.toggle_tool(Tool::Calibration);
             }
         });
-        if self.tool == Tool::Calibration {
-            ui.label(egui::RichText::new("Drag over a neutral surface. Esc cancels.").small());
-        }
         if let Some(status) = &self.calibration_status {
             ui.label(egui::RichText::new(status).small());
         }
@@ -140,7 +135,7 @@ impl Editor {
                 .iter_mut()
                 .zip(["Red", "Green", "Blue"])
             {
-                super::controls::slider(ui, value, 0.25..=4., name, "×");
+                super::sliders::linear_slider(ui, value, 0.25..=4., 0.01..=32., name, "×");
             }
         });
     }
@@ -170,12 +165,7 @@ impl Editor {
         press: Option<[f32; 2]>,
     ) {
         let tool = self.tool;
-        let sampling = matches!(tool, Tool::Calibration | Tool::Agx(_));
-        if sampling && ui.input(|i| i.key_pressed(egui::Key::Escape)) {
-            self.tool = Tool::View;
-            self.calibration_box = None;
-        }
-        if matches!(self.tool, Tool::Calibration | Tool::Agx(_))
+        if matches!(tool, Tool::Calibration | Tool::Agx(_))
             && !self.compare
             && self.busy.is_none()
             && !ui.input(|i| i.pointer.middle_down())
@@ -198,22 +188,22 @@ impl Editor {
                         + (pos.y - rect.top()).clamp(0., rect.height()) / rect.height() * region[3],
                 ];
             }
-            if response.drag_stopped_by(egui::PointerButton::Primary) {
-                if let Some(points) = self.calibration_box {
-                    let selection = sampling_region(points);
-                    if selection[2] > 0. && selection[3] > 0. {
-                        match tool {
-                            Tool::Calibration => self.estimate_illuminant(selection),
-                            Tool::Agx(pick) => self.estimate_agx(selection, pick),
-                            _ => {}
-                        }
+            if response.drag_stopped_by(egui::PointerButton::Primary)
+                && let Some(points) = self.calibration_box.take()
+            {
+                let selection = sampling_region(points);
+                if selection[2] > 0. && selection[3] > 0. {
+                    self.set_tool(Tool::View);
+                    match tool {
+                        Tool::Calibration => self.estimate_illuminant(selection),
+                        Tool::Agx(pick) => self.estimate_agx(selection, pick),
+                        _ => {}
                     }
                 }
-                self.tool = Tool::View;
-                if matches!(tool, Tool::Agx(_)) {
-                    self.calibration_box = None;
-                }
             }
+        }
+        if !ui.input(|i| i.pointer.primary_down()) {
+            self.calibration_box = None;
         }
         if let Some(points) = self.calibration_box {
             let [a, b] = points.map(|uv| {

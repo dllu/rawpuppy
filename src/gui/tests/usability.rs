@@ -20,7 +20,7 @@ fn slider_frame(ctx: &egui::Context, value: &mut f32, time: f64, events: Vec<egu
             ..Default::default()
         },
         |ui| {
-            rect = controls::slider(ui, value, -2. ..=2., "Exposure", " EV").rect;
+            rect = sliders::exposure_slider(ui, value).rect;
         },
     );
     output.textures_delta.clear();
@@ -152,4 +152,72 @@ fn saving_a_module_default_from_the_ui_persists_without_changing_photo_history()
         panic!("Missing photo request");
     };
     assert_eq!(defaults, config.defaults);
+}
+
+#[test]
+fn escape_leaves_tools_even_after_a_canvas_button_has_focus() {
+    let ctx = egui::Context::default();
+    let mut app = Editor::new(
+        &eframe::CreationContext::_new_kittest(ctx.clone()),
+        None,
+        None,
+        Backend::Cpu,
+        false,
+    );
+    app.image = Some(Arc::new(
+        SensorImage::from_rgb(4, 4, vec![0.2; 48]).unwrap(),
+    ));
+    for tool in [
+        Tool::Crop,
+        Tool::Perspective,
+        Tool::Straighten,
+        Tool::Graduated,
+        Tool::Clone,
+        Tool::Heal,
+        Tool::Mask,
+        Tool::Calibration,
+        Tool::Agx(crate::agx::Pick::Both),
+    ] {
+        app.set_tool(tool);
+        let mut output = ctx.run_ui(
+            egui::RawInput {
+                events: vec![
+                    key(egui::Key::Escape),
+                    egui::Event::Key {
+                        key: egui::Key::Escape,
+                        physical_key: None,
+                        pressed: false,
+                        repeat: false,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ],
+                ..Default::default()
+            },
+            |ui| {
+                ctx.memory_mut(|m| m.request_focus(egui::Id::new("tool button")));
+                app.canvas_shortcuts(ui);
+            },
+        );
+        output.textures_delta.clear();
+        assert_eq!(app.tool, Tool::View, "{tool:?}");
+    }
+}
+
+#[test]
+fn comparison_and_editing_tools_are_mutually_exclusive() {
+    let ctx = egui::Context::default();
+    let mut app = Editor::new(
+        &eframe::CreationContext::_new_kittest(ctx.clone()),
+        None,
+        None,
+        Backend::Cpu,
+        false,
+    );
+    app.set_tool(Tool::Crop);
+    app.set_compare(true);
+    assert!(app.compare);
+    assert_eq!(app.tool, Tool::View);
+    app.set_tool(Tool::Clone);
+    assert!(!app.compare);
+    assert_eq!(app.tool, Tool::Clone);
 }
