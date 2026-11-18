@@ -485,13 +485,14 @@ fn switching_framing_tools_restores_inactive_section_visibility() {
     let (mut app, ctx, _) = editor();
     let mut draw_controls = |tool, time| {
         app.set_tool(tool);
-        let output = ctx.run_ui(
+        let mut output = ctx.run_ui(
             egui::RawInput {
                 time: Some(time),
                 ..Default::default()
             },
             |ui| app.framing_controls(ui),
         );
+        output.textures_delta.clear();
         output
             .shapes
             .into_iter()

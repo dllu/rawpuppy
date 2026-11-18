@@ -1035,9 +1035,10 @@ mod tests {
         let ctx = egui::Context::default();
         let rect = Rect::from_min_size(Pos2::new(10., 10.), Vec2::new(240., 120.));
         let line_counts = |fine| {
-            let output = ctx.run_ui(egui::RawInput::default(), |ui| {
+            let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
                 draw_grid(ui.painter().clone(), rect, Grid::Thirds, fine);
             });
+            output.textures_delta.clear();
             let mut main = 0;
             let mut minor = 0;
             for shape in output.shapes {
