@@ -81,4 +81,4 @@ Rawpuppy is a clean, opinionated, fast raw editor.
   - Store edits as an XMP sidecar. Figure out some way to avoid the sidecar from colliding with darktable sidecars, though.
 - Maintain a concise README describing the project and build/run instructions. Do not put detailed documentation in the README.
 - Maintain a docs directory with a journal of concrete progress you have made as markdown files. For readability you can prefix each file with the datetime and then add a concise title in the filename.
-- Commit and push whenever you make concrete progress.
+- Commit and push whenever you make concrete progress. Run cargo fmt and clippy before pushing.
