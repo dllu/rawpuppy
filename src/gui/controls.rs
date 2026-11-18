@@ -140,26 +140,8 @@ impl Editor {
                 } else {
                     ui.label(egui::RichText::new("Develop").heading().strong());
                 }
-                if !self.histogram.is_empty() {
-                    let (rect, _) = ui.allocate_exact_size(
-                        Vec2::new(ui.available_width(), 64.),
-                        egui::Sense::hover(),
-                    );
-                    let points: Vec<_> = self
-                        .histogram
-                        .iter()
-                        .enumerate()
-                        .map(|(i, v)| {
-                            Pos2::new(
-                                rect.left() + i as f32 / 127. * rect.width(),
-                                rect.bottom() - v * rect.height(),
-                            )
-                        })
-                        .collect();
-                    ui.painter().add(egui::Shape::line(
-                        points,
-                        egui::Stroke::new(1.2, Color32::from_gray(165)),
-                    ));
+                if let Some(histogram) = &self.histogram {
+                    histogram.show(ui);
                 }
                 ui.separator();
                 let previous = self.edits.clone();

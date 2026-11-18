@@ -146,7 +146,7 @@ fn zooming_out_keeps_a_rendered_subregion_at_its_image_position() {
             region: rendered_region,
             size: [16, 16],
             pixels: PreviewPixels::Sdr(vec![255; 16 * 16 * 4]),
-            histogram: vec![],
+            histogram: Histogram::from_pixels(&[]),
             elapsed: 0.,
             backend: "fixture".into(),
             managed_display: true,

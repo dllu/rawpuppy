@@ -89,7 +89,7 @@ pub(super) enum Reply {
         region: [f32; 4],
         size: [usize; 2],
         pixels: PreviewPixels,
-        histogram: Vec<f32>,
+        histogram: Histogram,
         elapsed: f64,
         backend: String,
         managed_display: bool,
@@ -304,18 +304,7 @@ pub(super) fn worker(
                     size[0],
                     size[1],
                 )?;
-                let mut histogram = vec![0f32; 128];
-                for p in &rendered.pixels {
-                    if p[3] < 0.5 {
-                        continue;
-                    }
-                    let l = color::srgb_encode(color::luminance([p[0], p[1], p[2]]));
-                    histogram[(l.clamp(0., 1.) * 127.) as usize] += 1.;
-                }
-                let peak = histogram.iter().copied().fold(1., f32::max);
-                for v in &mut histogram {
-                    *v = (*v / peak).sqrt();
-                }
+                let histogram = Histogram::from_pixels(&rendered.pixels);
                 let pixels = if hdr {
                     ensure!(
                         profile.is_none(),

@@ -29,6 +29,7 @@ mod curve;
 mod display_state;
 mod document;
 mod framing;
+mod histogram;
 mod history;
 mod preferences;
 mod sliders;
@@ -44,6 +45,7 @@ use curve::curve_editor;
 use worker::{Busy, ErrorScope, PreviewPixels, Reply, Work, worker};
 #[cfg(debug_assertions)]
 mod probe;
+use histogram::Histogram;
 use history::History;
 
 enum Pending {
@@ -101,7 +103,7 @@ struct Editor {
     presentation: Option<eframe::egui_wgpu::RenderState>,
     hdr_requested: bool,
     hdr_white_scale: Option<f32>,
-    histogram: Vec<f32>,
+    histogram: Option<Histogram>,
     generation: u64,
     load_generation: u64,
     preview_pending: bool,
@@ -240,7 +242,7 @@ impl Editor {
                             == eframe::wgpu::SurfaceColorSpace::ExtendedSrgbLinear
                 })
                 .map(|_| 1.),
-            histogram: vec![],
+            histogram: None,
             generation: 0,
             load_generation: 0,
             preview_pending: false,

@@ -24,50 +24,66 @@ impl Grid {
         }
     }
 }
-#[derive(Clone, Copy, Default, PartialEq, Eq)]
+// Presets are ordered from square to panoramic. The sidecar stores the
+// physical aspect ratio, so preset order and labels can change independently.
+const CROP_PRESETS: &[(&str, f32)] = &[
+    ("1:1", 1.),
+    ("10×8 print", 2445. / 2032.),
+    ("5:4", 5. / 4.),
+    ("14:11 · Print", 14. / 11.),
+    ("45:35 · Portrait print", 45. / 35.),
+    ("22:17 · US Letter", 22. / 17.),
+    ("4:3", 4. / 3.),
+    ("7:5", 7. / 5.),
+    ("A-series paper", std::f32::consts::SQRT_2),
+    ("3:2", 3. / 2.),
+    ("16:10", 16. / 10.),
+    ("Golden ratio", 1.618_034),
+    ("16:9", 16. / 9.),
+    ("1.85:1 · Widescreen", 1.85),
+    ("1.91:1", 1080. / 566.),
+    ("2:1 · Univisium", 2.),
+    ("2.35:1 · CinemaScope", 2.35),
+    ("2.37:1 · 21:9 ultrawide", 2.37),
+    ("2.39:1 · Anamorphic", 2.39),
+    ("65:24 · XPan", 65. / 24.),
+    ("3:1 · Panorama", 3.),
+];
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 enum Aspect {
     #[default]
     Free,
     Original,
-    Square,
-    ThreeTwo,
-    FourThree,
-    FiveFour,
-    SevenFive,
-    SixteenNine,
-    Wide,
+    Preset(usize),
     Custom,
 }
+
 impl Aspect {
+    fn choices() -> impl Iterator<Item = Self> {
+        [Self::Free, Self::Original]
+            .into_iter()
+            .chain((0..CROP_PRESETS.len()).map(Self::Preset))
+    }
+
     fn label(self) -> &'static str {
         match self {
             Self::Free => "Free",
             Self::Original => "Original",
-            Self::Square => "1:1",
-            Self::ThreeTwo => "3:2",
-            Self::FourThree => "4:3",
-            Self::FiveFour => "5:4",
-            Self::SevenFive => "7:5",
-            Self::SixteenNine => "16:9",
-            Self::Wide => "2.39:1",
+            Self::Preset(index) => CROP_PRESETS[index].0,
             Self::Custom => "Custom",
         }
     }
+
     fn ratio(self, width: usize, height: usize) -> Option<f32> {
         match self {
-            Self::Free => None,
             Self::Original => Some(width as f32 / height as f32),
-            Self::Square => Some(1.),
-            Self::ThreeTwo => Some(1.5),
-            Self::FourThree => Some(4. / 3.),
-            Self::FiveFour => Some(1.25),
-            Self::SevenFive => Some(1.4),
-            Self::SixteenNine => Some(16. / 9.),
-            Self::Wide => Some(2.39),
-            Self::Custom => None,
+            Self::Preset(index) => Some(CROP_PRESETS[index].1),
+            Self::Free | Self::Custom => None,
         }
     }
 }
+
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
 enum AutoCrop {
     #[default]
@@ -79,6 +95,7 @@ enum AutoCrop {
 pub(super) struct Framing {
     pub grid: Grid,
     pub show_grid: bool,
+    pub fine_grid: bool,
     pub render_crop: [f32; 4],
     pub panel_open: bool,
     aspect: Aspect,
@@ -94,6 +111,7 @@ impl Default for Framing {
         Self {
             grid: Grid::Thirds,
             show_grid: false,
+            fine_grid: false,
             render_crop: [0., 0., 1., 1.],
             panel_open: false,
             aspect: Aspect::Free,
@@ -119,17 +137,10 @@ impl Framing {
         };
         self.aspect = Aspect::Custom;
         self.portrait = false;
-        for aspect in [
-            Aspect::Original,
-            Aspect::Square,
-            Aspect::ThreeTwo,
-            Aspect::FourThree,
-            Aspect::FiveFour,
-            Aspect::SevenFive,
-            Aspect::SixteenNine,
-            Aspect::Wide,
-        ] {
-            let value = aspect.ratio(width, height).unwrap();
+        for aspect in Aspect::choices() {
+            let Some(value) = aspect.ratio(width, height) else {
+                continue;
+            };
             if (value - ratio).abs() < 1e-5 {
                 self.aspect = aspect;
                 self.portrait = false;
@@ -207,37 +218,34 @@ impl Editor {
                 self.edits.geometry.crop = [0., 0., 1., 1.];
                 self.edits.geometry.crop_aspect = None;
                 self.framing.aspect = Aspect::Free;
+                self.framing.portrait = false;
             }
         });
         let old = (self.framing.aspect, self.framing.portrait);
-        egui::ComboBox::from_label("Aspect ratio")
+        ui.label("Aspect ratio");
+        egui::ComboBox::from_id_salt("crop_aspect")
+            .width(ui.available_width())
             .selected_text(self.framing.aspect.label())
+            .height(420.)
             .show_ui(ui, |ui| {
-                for aspect in [
-                    Aspect::Free,
-                    Aspect::Original,
-                    Aspect::Square,
-                    Aspect::ThreeTwo,
-                    Aspect::FourThree,
-                    Aspect::FiveFour,
-                    Aspect::SevenFive,
-                    Aspect::SixteenNine,
-                    Aspect::Wide,
-                ] {
+                for aspect in Aspect::choices() {
                     ui.selectable_value(&mut self.framing.aspect, aspect, aspect.label());
                 }
             });
-        if self.framing.aspect != Aspect::Free && self.framing.aspect != Aspect::Square {
+        let preset_ratio = self
+            .framing
+            .aspect
+            .ratio(image.metadata.width, image.metadata.height);
+        if self.framing.aspect == Aspect::Free || preset_ratio == Some(1.) {
+            self.framing.portrait = false;
+        } else {
             ui.checkbox(&mut self.framing.portrait, "Swap width / height");
         }
         if old != (self.framing.aspect, self.framing.portrait) {
             let ratio = if self.framing.aspect == Aspect::Custom {
                 self.edits.geometry.crop_aspect.map(|r| 1. / r)
             } else {
-                self.framing
-                    .aspect
-                    .ratio(image.metadata.width, image.metadata.height)
-                    .map(|r| if self.framing.portrait { 1. / r } else { r })
+                preset_ratio.map(|r| if self.framing.portrait { 1. / r } else { r })
             };
             self.edits.geometry.crop_aspect = ratio;
             if ratio.is_none() && self.framing.auto_crop == AutoCrop::Aspect {
@@ -481,7 +489,12 @@ impl Editor {
         } else {
             let crop = to_screen_crop(rect, region, self.edits.geometry.crop);
             if self.framing.show_grid && !self.compare {
-                draw_grid(ui.painter().with_clip_rect(rect), crop, self.framing.grid);
+                draw_grid(
+                    ui.painter().with_clip_rect(rect),
+                    crop,
+                    self.framing.grid,
+                    self.framing.fine_grid,
+                );
             }
             if self.tool == Tool::Perspective && self.edits.geometry.crop != [0., 0., 1., 1.] {
                 ui.painter().with_clip_rect(rect).rect_stroke(
@@ -552,7 +565,12 @@ impl Editor {
             }
         }
         if self.framing.show_grid {
-            draw_grid(painter.clone(), crop, self.framing.grid);
+            draw_grid(
+                painter.clone(),
+                crop,
+                self.framing.grid,
+                self.framing.fine_grid,
+            );
         }
         painter.rect_stroke(
             crop,
@@ -862,7 +880,7 @@ pub(super) fn resize_crop(
     }
     [x0.max(0.), y0.max(0.), x1 - x0, y1 - y0]
 }
-fn draw_grid(painter: egui::Painter, rect: Rect, grid: Grid) {
+fn draw_grid(painter: egui::Painter, rect: Rect, grid: Grid, fine: bool) {
     let stroke = egui::Stroke::new(1., Color32::from_white_alpha(110));
     let fractions: &[f32] = match grid {
         Grid::None | Grid::Diagonals => &[],
@@ -871,7 +889,7 @@ fn draw_grid(painter: egui::Painter, rect: Rect, grid: Grid) {
         Grid::Center => &[0.5],
         Grid::Architecture => &[1. / 6., 2. / 6., 0.5, 4. / 6., 5. / 6.],
     };
-    for &t in fractions {
+    let draw_pair = |t: f32, stroke| {
         painter.line_segment(
             [
                 Pos2::new(rect.left() + t * rect.width(), rect.top()),
@@ -886,9 +904,71 @@ fn draw_grid(painter: egui::Painter, rect: Rect, grid: Grid) {
             ],
             stroke,
         );
+    };
+    if fine {
+        let minor = egui::Stroke::new(1., Color32::from_white_alpha(55));
+        for division in 1..12 {
+            let t = division as f32 / 12.;
+            if fractions.iter().all(|main| (main - t).abs() > 1e-5) {
+                draw_pair(t, minor);
+            }
+        }
+    }
+    for &t in fractions {
+        draw_pair(t, stroke);
     }
     if grid == Grid::Diagonals {
         painter.line_segment([rect.left_top(), rect.right_bottom()], stroke);
         painter.line_segment([rect.right_top(), rect.left_bottom()], stroke);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn panoramic_presets_fit_and_restore_both_orientations() {
+        let (width, height) = (6000, 4000);
+        for (label, expected) in [("2:1 · Univisium", 2.), ("65:24 · XPan", 65. / 24.)] {
+            let preset = Aspect::choices().find(|p| p.label() == label).unwrap();
+            assert_eq!(preset.ratio(width, height), Some(expected));
+            for portrait in [false, true] {
+                let ratio = if portrait { expected.recip() } else { expected };
+                let mut framing = Framing::default();
+                framing.sync_aspect(Some(ratio), width, height);
+                assert_eq!(framing.aspect, preset);
+                assert_eq!(framing.portrait, portrait);
+                let crop = fit_aspect([0., 0., 1., 1.], ratio * height as f32 / width as f32);
+                assert!((width as f32 * crop[2] / (height as f32 * crop[3]) - ratio).abs() < 1e-6);
+            }
+        }
+    }
+
+    #[test]
+    fn fine_grid_overlays_thirds_with_distinct_weights_and_no_duplicate_lines() {
+        let ctx = egui::Context::default();
+        let rect = Rect::from_min_size(Pos2::new(10., 10.), Vec2::new(240., 120.));
+        let line_counts = |fine| {
+            let output = ctx.run_ui(egui::RawInput::default(), |ui| {
+                draw_grid(ui.painter().clone(), rect, Grid::Thirds, fine);
+            });
+            let mut main = 0;
+            let mut minor = 0;
+            for shape in output.shapes {
+                if let egui::Shape::LineSegment { points, stroke } = shape.shape
+                    && points.iter().all(|p| rect.contains(*p))
+                {
+                    match stroke.color.a() {
+                        110 => main += 1,
+                        55 => minor += 1,
+                        _ => {}
+                    }
+                }
+            }
+            (main, minor)
+        };
+        assert_eq!(line_counts(false), (4, 0));
+        assert_eq!(line_counts(true), (4, 18));
     }
 }

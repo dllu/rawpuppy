@@ -242,7 +242,7 @@ impl Editor {
                     self.autosave = autosave::Autosave::default();
                     self.texture = None;
                     self.hdr_texture = None;
-                    self.histogram.clear();
+                    self.histogram = None;
                     self.zoom = 1.;
                     self.center = [0.5; 2];
                     self.clone_source = None;
@@ -307,7 +307,7 @@ impl Editor {
                             }
                         }
                     }
-                    self.histogram = histogram;
+                    self.histogram = Some(histogram);
                     if self.busy.is_none() {
                         self.status = if let Some([done, total]) = reconstruction_progress {
                             if total == 0 {

@@ -5,7 +5,7 @@ use super::*;
 impl Editor {
     pub(super) fn grid_controls(&mut self, ui: &mut egui::Ui) {
         ui.checkbox(&mut self.framing.show_grid, "Show grid (G)");
-        egui::ComboBox::from_label("Grid style")
+        egui::ComboBox::from_label("Main guides")
             .selected_text(self.framing.grid.label())
             .show_ui(ui, |ui| {
                 for grid in [
@@ -23,6 +23,13 @@ impl Editor {
                     }
                 }
             });
+        if ui
+            .checkbox(&mut self.framing.fine_grid, "Fine grid")
+            .changed()
+            && self.framing.fine_grid
+        {
+            self.framing.show_grid = true;
+        }
     }
 
     pub(super) fn adjustment_overlay(
