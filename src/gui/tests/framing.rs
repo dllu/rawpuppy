@@ -73,7 +73,14 @@ fn dragging_crop_edges_is_one_undo_step_and_previews_the_uncropped_canvas() {
         edits, before,
         "Framing must retain the photo's retouch/layer coordinate system"
     );
-    let at = |x, y| rect.min + Vec2::new(x * rect.width(), y * rect.height());
+    let bounds = app.framing.render_crop;
+    let at = |x, y| {
+        rect.min
+            + Vec2::new(
+                (x - bounds[0]) * rect.width() / bounds[2],
+                (y - bounds[1]) * rect.height() / bounds[3],
+            )
+    };
     drag(&mut app, &ctx, 0.1, at(0.8, 0.8), at(0.7, 0.65));
     let after = app.edits.clone();
     for (a, b) in after.geometry.crop.into_iter().zip([0.2, 0.2, 0.5, 0.45]) {
@@ -102,7 +109,7 @@ fn dragging_crop_edges_is_one_undo_step_and_previews_the_uncropped_canvas() {
                 ];
                 visible
                     .into_iter()
-                    .zip([0., 0., 1., 1.])
+                    .zip(bounds)
                     .all(|(a, b)| (a - b).abs() < 1e-5)
             })
     );
@@ -153,7 +160,8 @@ fn perspective_segments_can_be_drawn_edited_deleted_and_restored_on_a_corrected_
     assert_eq!(app.edits.geometry.guides.len(), 1);
     assert_eq!(app.history.undo_len(), 1);
     let guide = app.edits.geometry.guides[0].clone();
-    let geometry = crate::geometry::Geometry::compile(&app.edits.geometry, 600, 400).unwrap();
+    let mut geometry = crate::geometry::Geometry::compile(&app.edits.geometry, 600, 400).unwrap();
+    geometry.crop = crate::geometry::subrect(app.framing.render_crop, app.viewport);
     let expected = geometry.map([0.34, 0.85], 1).unwrap();
     for (actual, expected) in guide.end.into_iter().zip(expected) {
         assert!((actual - expected).abs() < 1e-5);
@@ -498,4 +506,32 @@ fn switching_framing_tools_restores_inactive_section_visibility() {
     let guides = draw_controls(Tool::Perspective, 1.);
     assert!(guides.iter().any(|text| text == "Auto vertical"));
     assert!(guides.iter().all(|text| text != "Aspect ratio"));
+}
+
+#[test]
+fn crop_handle_can_recover_pixels_and_extend_into_transparent_padding() {
+    let (mut app, ctx, _) = editor();
+    app.edits.geometry.shift[1] = 0.25;
+    app.set_tool(Tool::Crop);
+    let rect = frame(&mut app, &ctx, 0., vec![]);
+    let bounds = app.framing.render_crop;
+    let at_y = |y| {
+        Pos2::new(
+            rect.center().x,
+            rect.top() + (y - bounds[1]) / bounds[3] * rect.height(),
+        )
+    };
+    drag(&mut app, &ctx, 0.1, at_y(0.), at_y(-0.2));
+    assert!((app.edits.geometry.crop[1] + 0.2).abs() < 1e-5);
+    assert!((app.edits.geometry.crop[3] - 1.2).abs() < 1e-5);
+    assert_eq!(app.history.undo_len(), 1);
+    app.undo();
+    assert_eq!(app.edits.geometry.crop, crate::geometry::FULL_FRAME);
+
+    drag(&mut app, &ctx, 0.5, at_y(0.), at_y(-0.28));
+    assert!((app.edits.geometry.crop[1] + 0.28).abs() < 1e-5);
+    let pipeline =
+        crate::pipeline::Pipeline::compile(app.image.as_ref().unwrap(), &app.edits).unwrap();
+    assert_eq!(pipeline.sample([0.5, 0.01])[3], 0.);
+    assert_eq!(pipeline.sample([0.5, 0.04])[3], 1.);
 }

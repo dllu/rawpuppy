@@ -120,7 +120,7 @@ pub struct GeometryEdits {
     pub rotation: f32,
     /// Horizontal field of view in degrees for the pinhole model.
     pub field_of_view: f32,
-    /// x, y, width, height in the corrected canvas.
+    /// x, y, width, height in corrected coordinates, in units of the original frame.
     pub crop: [f32; 4],
     pub scale: f32,
     /// Translation in the corrected canvas, composed into the pinhole map.
@@ -416,13 +416,11 @@ impl Edits {
         );
         ensure!(g.scale > 0.0, "Geometry scale must be positive");
         ensure!(
-            g.crop[0] >= 0.0
-                && g.crop[1] >= 0.0
-                && g.crop[2] > 0.0
-                && g.crop[3] > 0.0
-                && g.crop[0] + g.crop[2] <= 1.000001
-                && g.crop[1] + g.crop[3] <= 1.000001,
-            "Crop must be a nonempty rectangle inside [0,1]"
+            (0..2).all(|axis| {
+                let end = g.crop[axis] + g.crop[axis + 2];
+                end.is_finite() && end > g.crop[axis]
+            }),
+            "Crop must be a finite, nonempty rectangle"
         );
         ensure!(
             self.raw.denoise >= 0.0 && self.raw.denoise <= 1.0,

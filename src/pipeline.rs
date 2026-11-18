@@ -52,17 +52,7 @@ impl<'a> Pipeline<'a> {
             source.reconstruction == edits.raw.reconstruction,
             "Joint reconstruction needs its prepared camera RGB source"
         );
-        let mut geometry = Geometry::compile(
-            &edits.geometry,
-            source.metadata.width,
-            source.metadata.height,
-        )?;
-        geometry.lens = crate::lens::Correction::compile(
-            source.metadata.lens_profile.as_ref(),
-            &edits.lens,
-            source.metadata.width,
-            source.metadata.height,
-        )?;
+        let geometry = Geometry::for_image(source, edits)?;
         let calibration = crate::calibration::matrix(&source.metadata, &edits.scene)?;
         let (s, c) = edits.scene.graduated.angle.to_radians().sin_cos();
         let mut retouch_index = vec![Vec::new(); 64 * 64];

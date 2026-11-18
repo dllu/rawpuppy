@@ -6,15 +6,16 @@ horizontal façade direction. Detection and fitting run on the photo worker.
 Correction and an optional automatic crop form one undoable geometry change.
 Insufficient evidence leaves the correction unchanged and exposes the detected
 lines for review and manual editing.
-Save the result normally; it is restored from the Rawpuppy XMP without rerunning
-segmentation. Existing scale is retained. **After perspective** can keep the
-current crop, choose the largest area without empty corners, or fit the selected
-aspect ratio. Corner gaps are also available for the existing neural fill tools.
+The Rawpuppy XMP stores the pose and crop. The **After perspective** setting
+is in **Crop**. It can keep the current framing, fit the largest gap-free area,
+or fit the selected aspect. Each fit writes the same crop rectangle and aspect
+lock as the corresponding Crop button. A full-frame crop follows the corrected
+footprint when applying perspective.
 
 ## On-image controls
 
-Select **Perspective** above the photograph or press `P`. Its sidebar section
-opens at the top. **Find guides** detects features without applying a correction;
+Select **Guides** above the photograph or press `P`. Its sidebar section
+opens automatically. **Find guides** detects features without applying a correction,
 the automatic correction buttons also expose the features used by their fit.
 Blue segments represent vertical features, amber represents horizontal features,
 and gray segments are excluded. Choose **Draw vertical** or **Draw horizontal**,
@@ -25,25 +26,23 @@ or use **Remove selected line** to remove it. **Apply vertical** and **Apply bot
 fit the enabled guides; two separated segments per requested axis suffice.
 Automatic detection keeps its stricter four-line consensus requirements.
 
-Select **Crop** or press `C` to reveal the full corrected canvas. Drag its eight
-corner/edge handles to resize the crop; drag inside to move it. The excluded area
-is shaded. Presets include Free, Original, 1:1, 3:2, 4:3, 5:4, 7:5, 16:9 and 2.39:1;
-**Swap width / height** switches orientation. Ratios refer to physical output
-pixels, including portrait images. Grid choices are None, Rule of thirds, Golden
-ratio, Diagonals, Center and Architecture. Grids use the crop frame and disappear
-when you leave the framing tools. **Done**, Enter or Escape returns to the cropped
-photo. Each handle or guide drag is one undo step; guide edits and aspect locks
-are saved in the sidecar.
+Select **Crop** or press `C` to see the full corrected image, including parts
+that project outside the original frame. Drag a handle to resize or drag inside
+to move the crop. Crop offers 5% of extra space on each side for framing with
+transparent pixels, which can later be filled with the AI tools. **Reset crop**
+returns to the corrected image bounds and clears the aspect lock.
 
-**Largest area** finds an unconstrained crop without empty corners. **Fit aspect**
-uses the selected ratio. Both run in the background and account for perspective,
-manual distortion and active camera lens/CA corrections. The search maximizes
-coverage over a conservative 384×384 grid, checking corners and centers of every
-candidate cell. Fixed ratios are retained exactly; crop-boundary precision is
-approximately one grid cell. The work and memory do not depend on RAW resolution.
-Results are discarded if the document or its history changed during the request.
-The crop excludes original-image gaps; generated corner fills are not used to
-enlarge it.
+Aspect presets include 2:1 and 65:24 XPan. **Swap width / height** switches
+orientation. The aspect refers to physical output pixels. Grid guides follow
+the crop, with an optional fine grid. **Done** or Escape returns to the cropped
+photo. Handle drags, guide edits and aspect changes are undoable and saved in
+the sidecar.
+
+**Fit largest area** and **Fit aspect** search the full corrected image for a
+gap-free crop. The search checks corners and centers on a conservative
+384×384 coverage grid, including active lens correction and chromatic
+aberration. Fixed ratios are retained exactly. The work and memory are
+independent of RAW resolution. Generated corner fills do not affect the search.
 
 The main camera inputs are focal length and physical sensor width/height.
 **Advanced geometry** keeps rotation, pitch/yaw, field of view, scale, shifts and

@@ -163,13 +163,16 @@ fn main() -> Result<()> {
             let mut edits = sidecar::load_for_default(&input, Edits::for_image(&image))?;
             let mut renderer = Renderer::new(cli.backend);
             renderer.set_document(input.clone());
-            let report = rawpuppy::perspective::Engine::default().run(
+            let mut report = rawpuppy::perspective::Engine::default().run(
                 &mut renderer,
                 image.clone(),
                 &edits,
                 mode,
                 mask_provider,
             )?;
+            if let Some(geometry) = &mut report.solution {
+                rawpuppy::crop::after_perspective(&image, &edits, geometry, None)?;
+            }
             println!("{}", serde_json::to_string_pretty(&report)?);
             let geometry = report.solution.ok_or_else(|| {
                 anyhow::anyhow!("Automatic perspective declined: {}", report.reason)

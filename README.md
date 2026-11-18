@@ -11,7 +11,7 @@ The CLI `save` command requires the `.rawpuppy.xmp` suffix for its output.
 
 The Standard, London — DSCF0027, Fujifilm GFX 100S. Both images are 1200-pixel-wide
 exports from the same RAW: a linear SDR preview before editing, and automatic
-two-axis perspective correction, exposure/color calibration and AgX tone mapping after.
+two-axis perspective correction, a gap-free crop, exposure, color calibration and AgX tone mapping after.
 The camera calibration and embedded lens corrections are applied in both.
 Color calibration supports an illuminant color picker, temperature controls,
 and estimation from the whole image or a drawn neutral box.
@@ -23,9 +23,9 @@ and estimation from the whole image or a drawn neutral box.
 <details>
 <summary>Crop and perspective tools</summary>
 
-![Line leveling with a residual-angle readout, fine rotation and an independent grid](docs/images/editor-straighten.jpg)
+![Straighten mode with a level line and composition guides](docs/images/editor-straighten.jpg)
 
-![Native crop handles, aspect presets and composition guides on a London hotel preview](docs/images/editor-crop.png)
+![Crop mode showing the projected image, crop handles, and composition guides](docs/images/editor-crop.png)
 
 </details>
 
@@ -88,9 +88,10 @@ Automatic display selection and platform policies are described in [display colo
 see [HDR presentation](docs/hdr-presentation.md) for signal and platform limits.
 New RAF documents use available camera distortion, vignetting and CA corrections; existing
 recipes retain their saved behavior. See [lens correction](docs/lens-correction.md).
-**Perspective & crop** offers automatic detection and editable guide segments (`P`),
-draggable crop edges (`C`), aspect presets, composition grids, and automatic crops
-that exclude empty corners. Draw a horizontal or vertical line with **Straighten** (`S`)
+**Crop & geometry** offers automatic perspective correction, editable guides (`P`),
+and draggable crop edges (`C`). Crop fits the corrected image and allows a small
+margin for later fills. The automatic crop can fit the largest gap-free area or
+the selected aspect ratio. Draw a horizontal or vertical line with **Straighten** (`S`)
 to level a photo, or adjust rotation in 0.1° steps. Toggle the grid independently with `G`.
 Draw a graduated filter directly on the image under **Light**. **Detail** provides subtle
 sharpening and local contrast. Detailed geometry controls live under **Advanced geometry**.

@@ -1,5 +1,9 @@
 //! Bounded coverage search for the largest gap-free corrected crop.
-use crate::{edits::Edits, geometry::Geometry, input::SensorImage};
+use crate::{
+    edits::{Edits, GeometryEdits},
+    geometry::{FULL_FRAME, Geometry, subrect},
+    input::SensorImage,
+};
 use anyhow::{Result, ensure};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -8,19 +12,47 @@ pub enum Constraint {
     Aspect(f32),
 }
 
+impl Constraint {
+    pub(crate) fn aspect(self) -> Option<f32> {
+        match self {
+            Self::LargestArea => None,
+            Self::Aspect(ratio) => Some(ratio),
+        }
+    }
+}
+
+/// Carry the crop into the new corrected coordinates. An uncropped document
+/// follows the footprint. A requested fit writes the ordinary crop fields.
+pub fn after_perspective(
+    image: &SensorImage,
+    previous: &Edits,
+    geometry: &mut GeometryEdits,
+    constraint: Option<Constraint>,
+) -> Result<()> {
+    let mut corrected = previous.clone();
+    corrected.geometry = geometry.clone();
+    if let Some(constraint) = constraint {
+        geometry.crop = largest(image, &corrected, constraint)?;
+        geometry.crop_aspect = constraint.aspect();
+    } else if previous.geometry.crop_aspect.is_none()
+        && (previous.geometry.crop == FULL_FRAME
+            || previous.geometry.crop
+                == Geometry::for_image(image, previous)?.corrected_bounds()?)
+    {
+        geometry.crop = Geometry::for_image(image, &corrected)?.corrected_bounds()?;
+    }
+    Ok(())
+}
+
 /// Search every position in a conservative coverage grid, including lens and
 /// chromatic-aberration mappings. Cost is independent of original megapixels.
 pub fn largest(image: &SensorImage, edits: &Edits, constraint: Constraint) -> Result<[f32; 4]> {
     edits.validate()?;
-    let mut e = edits.geometry.clone();
-    e.crop = [0., 0., 1., 1.];
-    let mut geometry = Geometry::compile(&e, image.metadata.width, image.metadata.height)?;
-    geometry.lens = crate::lens::Correction::compile(
-        image.metadata.lens_profile.as_ref(),
-        &edits.lens,
-        image.metadata.width,
-        image.metadata.height,
-    )?;
+    let mut geometry = Geometry::for_image(image, edits)?;
+    let bounds = geometry.corrected_bounds()?;
+    geometry.crop = bounds;
+    let canvas_aspect = (image.metadata.height as f64 * f64::from(bounds[3]))
+        / (image.metadata.width as f64 * f64::from(bounds[2]));
     let n = 384;
     let valid = |x: f32, y: f32| {
         (0..3).all(|c| {
@@ -83,7 +115,7 @@ pub fn largest(image: &SensorImage, edits: &Edits, constraint: Constraint) -> Re
                 aspect.is_finite() && aspect > 0.,
                 "Invalid crop aspect ratio"
             );
-            let ratio = aspect as f64 * image.metadata.height as f64 / image.metadata.width as f64;
+            let ratio = f64::from(aspect) * canvas_aspect;
             let stride = n + 1;
             let mut sums = vec![0u32; stride * stride];
             for y in 0..n {
@@ -137,7 +169,7 @@ pub fn largest(image: &SensorImage, edits: &Edits, constraint: Constraint) -> Re
     );
     let mut crop = best.map(|v| v as f32 / n as f32);
     if let Constraint::Aspect(aspect) = constraint {
-        let ratio = aspect as f64 * image.metadata.height as f64 / image.metadata.width as f64;
+        let ratio = f64::from(aspect) * canvas_aspect;
         if ratio >= 1. {
             let height = (crop[2] as f64 / ratio) as f32;
             crop[1] += (crop[3] - height) * 0.5;
@@ -148,7 +180,7 @@ pub fn largest(image: &SensorImage, edits: &Edits, constraint: Constraint) -> Re
             crop[2] = width;
         }
     }
-    Ok(crop)
+    Ok(subrect(bounds, crop))
 }
 
 fn better(a: [usize; 4], b: [usize; 4], n: usize) -> bool {

@@ -1,9 +1,10 @@
 //! Reproduce the README comparison from a local copy of DSCF0027 (The Standard, London).
-//! The manual recipe is specific to that photograph, checked against its cooked reference.
+//! The exposure and look are specific to this photograph.
 use anyhow::{Context, Result};
 use rawpuppy::{
     calibration::{self, Illuminant},
     color::OutputSpace,
+    crop::{self, Constraint},
     edits::{Edits, ToneMapper},
     export,
     input::SensorImage,
@@ -43,12 +44,14 @@ fn main() -> Result<()> {
         "Automatic perspective: {} · {}",
         report.mask_provider, report.reason
     );
-    after.geometry = report.solution.context("No reliable two-axis correction")?;
-    // Preserve this photograph's chosen composition. Pose is estimated by the
-    // same general detector as the editor; reference exports never enter it.
-    after.geometry.scale = 1.0821165;
-    after.geometry.shift = [0.01581575, -0.3030224];
-    after.geometry.crop = [0., 0., 1., 1.];
+    let mut geometry = report.solution.context("No reliable two-axis correction")?;
+    crop::after_perspective(
+        &source,
+        &before,
+        &mut geometry,
+        Some(Constraint::LargestArea),
+    )?;
+    after.geometry = geometry;
     let sample = calibration::estimate(&source, &after, [0., 0., 1., 1.])?;
     after.scene.illuminant = Illuminant::Custom { xy: sample.xy };
     for (name, edits) in [("before", &before), ("after", &after)] {

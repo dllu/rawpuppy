@@ -90,7 +90,8 @@ impl Editor {
                 self.canvas_toolbar(ui);
                 let image = self.image.as_ref().unwrap();
                 let crop = if self.tool.full_canvas() {
-                    [0., 0., 1., 1.]
+                    self.framing
+                        .editing_bounds(image, &self.edits, self.tool == Tool::Crop)
                 } else {
                     self.edits.geometry.crop
                 };
@@ -192,12 +193,7 @@ impl Editor {
                 }
                 // A pending preview covers its rendered region, not the new viewport.
                 // Reproject and clip it so zoom/pan never stretches stale pixels.
-                let canvas_region = [
-                    crop[0] + region[0] * crop[2],
-                    crop[1] + region[1] * crop[3],
-                    region[2] * crop[2],
-                    region[3] * crop[3],
-                ];
+                let canvas_region = crate::geometry::subrect(crop, region);
                 if let Some((photo_rect, uv)) =
                     preview_placement(rect, canvas_region, self.texture_region)
                 {

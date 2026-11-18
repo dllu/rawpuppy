@@ -1,6 +1,9 @@
 //! Direct manipulation of corrected crops and lens-corrected perspective evidence.
 use super::*;
-use crate::edits::{CameraIntrinsics, GuideAxis, PerspectiveGuide};
+use crate::{
+    edits::{CameraIntrinsics, GuideAxis, PerspectiveGuide},
+    geometry::{FULL_FRAME, Geometry, subrect},
+};
 
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub(super) enum Grid {
@@ -97,6 +100,7 @@ pub(super) struct Framing {
     pub show_grid: bool,
     pub fine_grid: bool,
     pub render_crop: [f32; 4],
+    bounds: Option<BoundsCache>,
     pub panel_open: bool,
     aspect: Aspect,
     portrait: bool,
@@ -112,7 +116,8 @@ impl Default for Framing {
             grid: Grid::Thirds,
             show_grid: false,
             fine_grid: false,
-            render_crop: [0., 0., 1., 1.],
+            render_crop: FULL_FRAME,
+            bounds: None,
             panel_open: false,
             aspect: Aspect::Free,
             portrait: false,
@@ -124,7 +129,68 @@ impl Default for Framing {
         }
     }
 }
+struct BoundsCache {
+    transform: [f32; 11],
+    lens: LensEdits,
+    bounds: [f32; 4],
+}
+
 impl Framing {
+    pub(super) fn corrected_bounds(&mut self, image: &SensorImage, edits: &Edits) -> [f32; 4] {
+        let g = &edits.geometry;
+        let transform = [
+            g.yaw,
+            g.pitch,
+            g.rotation,
+            g.field_of_view,
+            g.scale,
+            g.shift[0],
+            g.shift[1],
+            g.distortion[0],
+            g.distortion[1],
+            g.chromatic_aberration[0],
+            g.chromatic_aberration[1],
+        ];
+        if let Some(cache) = &self.bounds
+            && cache.transform == transform
+            && cache.lens == edits.lens
+        {
+            return cache.bounds;
+        }
+        let bounds = Geometry::for_image(image, edits)
+            .and_then(|geometry| geometry.corrected_bounds())
+            .unwrap_or(FULL_FRAME);
+        self.bounds = Some(BoundsCache {
+            transform,
+            lens: edits.lens.clone(),
+            bounds,
+        });
+        bounds
+    }
+
+    pub(super) fn editing_bounds(
+        &mut self,
+        image: &SensorImage,
+        edits: &Edits,
+        allow_padding: bool,
+    ) -> [f32; 4] {
+        let [x, y, width, height] = self.corrected_bounds(image, edits);
+        // Leave room to compose into transparent space for a later corner fill.
+        let padding = if allow_padding { 0.05 } else { 0. };
+        let [pad_x, pad_y] = [width * padding, height * padding];
+        let [cx, cy, cw, ch] = edits.geometry.crop;
+        // Include the existing crop so one can still resize its handles when
+        // a previously saved frame extends into a transparent area.
+        let left = (x - pad_x).min(cx);
+        let top = (y - pad_y).min(cy);
+        [
+            left,
+            top,
+            (x + width + pad_x).max(cx + cw) - left,
+            (y + height + pad_y).max(cy + ch) - top,
+        ]
+    }
+
     pub fn cancel_drag(&mut self) {
         self.crop_drag = None;
         self.guide_drag = None;
@@ -133,6 +199,9 @@ impl Framing {
         let Some(ratio) = ratio else {
             self.aspect = Aspect::Free;
             self.portrait = false;
+            if self.auto_crop == AutoCrop::Aspect {
+                self.auto_crop = AutoCrop::Off;
+            }
             return;
         };
         self.aspect = Aspect::Custom;
@@ -166,6 +235,7 @@ impl Framing {
 }
 struct CropDrag {
     handle: usize,
+    bounds: [f32; 4],
     start: [f32; 2],
     crop: [f32; 4],
 }
@@ -215,10 +285,9 @@ impl Editor {
                 self.toggle_tool(Tool::Crop);
             }
             if ui.small_button("Reset crop").clicked() {
-                self.edits.geometry.crop = [0., 0., 1., 1.];
+                self.edits.geometry.crop = self.framing.corrected_bounds(image, &self.edits);
                 self.edits.geometry.crop_aspect = None;
-                self.framing.aspect = Aspect::Free;
-                self.framing.portrait = false;
+                self.sync_framing_aspect();
             }
         });
         let old = (self.framing.aspect, self.framing.portrait);
@@ -277,6 +346,27 @@ impl Editor {
                 ));
             }
         });
+        egui::ComboBox::from_label("After perspective")
+            .selected_text(match self.framing.auto_crop {
+                AutoCrop::Off => "Keep crop",
+                AutoCrop::Area => "Fit largest area",
+                AutoCrop::Aspect => "Fit locked aspect",
+            })
+            .show_ui(ui, |ui| {
+                ui.selectable_value(&mut self.framing.auto_crop, AutoCrop::Off, "Keep crop");
+                ui.selectable_value(
+                    &mut self.framing.auto_crop,
+                    AutoCrop::Area,
+                    "Fit largest area",
+                );
+                ui.add_enabled_ui(self.edits.geometry.crop_aspect.is_some(), |ui| {
+                    ui.selectable_value(
+                        &mut self.framing.auto_crop,
+                        AutoCrop::Aspect,
+                        "Fit locked aspect",
+                    );
+                });
+            });
     }
 
     fn rotation_controls(&mut self, ui: &mut egui::Ui) {
@@ -393,27 +483,6 @@ impl Editor {
         if let Some(message) = &self.perspective_status {
             ui.label(egui::RichText::new(message).small().color(Color32::GRAY));
         }
-        egui::ComboBox::from_label("After perspective")
-            .selected_text(match self.framing.auto_crop {
-                AutoCrop::Off => "Keep crop",
-                AutoCrop::Area => "Crop largest area",
-                AutoCrop::Aspect => "Crop to aspect ratio",
-            })
-            .show_ui(ui, |ui| {
-                ui.selectable_value(&mut self.framing.auto_crop, AutoCrop::Off, "Keep crop");
-                ui.selectable_value(
-                    &mut self.framing.auto_crop,
-                    AutoCrop::Area,
-                    "Crop largest area",
-                );
-                ui.add_enabled_ui(self.edits.geometry.crop_aspect.is_some(), |ui| {
-                    ui.selectable_value(
-                        &mut self.framing.auto_crop,
-                        AutoCrop::Aspect,
-                        "Crop to aspect ratio",
-                    );
-                });
-            });
     }
 
     fn camera_controls(&mut self, ui: &mut egui::Ui, image: &SensorImage) {
@@ -496,7 +565,9 @@ impl Editor {
                     self.framing.fine_grid,
                 );
             }
-            if self.tool == Tool::Perspective && self.edits.geometry.crop != [0., 0., 1., 1.] {
+            if self.tool == Tool::Perspective
+                && self.edits.geometry.crop != self.framing.render_crop
+            {
                 ui.painter().with_clip_rect(rect).rect_stroke(
                     crop,
                     0.,
@@ -525,6 +596,7 @@ impl Editor {
                 self.history.begin_gesture(self.edits.clone());
                 self.framing.crop_drag = Some(CropDrag {
                     handle,
+                    bounds: self.framing.render_crop,
                     start: at(p),
                     crop: self.edits.geometry.crop,
                 });
@@ -538,11 +610,24 @@ impl Editor {
                 .geometry
                 .crop_aspect
                 .map(|r| r * m.height as f32 / m.width as f32);
-            let crop = resize_crop(
-                drag.crop,
-                [point[0] - drag.start[0], point[1] - drag.start[1]],
-                drag.handle,
-                ratio,
+            let [x, y, width, height] = drag.bounds;
+            let c = drag.crop;
+            let crop = subrect(
+                drag.bounds,
+                resize_crop(
+                    [
+                        (c[0] - x) / width,
+                        (c[1] - y) / height,
+                        (c[2] / width).min(1.),
+                        (c[3] / height).min(1.),
+                    ],
+                    [
+                        (point[0] - drag.start[0]) / width,
+                        (point[1] - drag.start[1]) / height,
+                    ],
+                    drag.handle,
+                    ratio.map(|r| r * height / width),
+                ),
             );
             if crop != self.edits.geometry.crop {
                 self.edits.geometry.crop = crop;
@@ -819,8 +904,8 @@ pub(super) fn resize_crop(
 ) -> [f32; 4] {
     if handle == 8 {
         return [
-            (c[0] + delta[0]).clamp(0., 1. - c[2]),
-            (c[1] + delta[1]).clamp(0., 1. - c[3]),
+            (c[0] + delta[0]).clamp(0., (1. - c[2]).max(0.)),
+            (c[1] + delta[1]).clamp(0., (1. - c[3]).max(0.)),
             c[2],
             c[3],
         ];

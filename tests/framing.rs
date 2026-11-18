@@ -196,3 +196,78 @@ fn editable_evidence_roundtrips_without_invalidating_generated_pixels() {
     rawpuppy::sidecar::save(&path, &edits).unwrap();
     assert_eq!(rawpuppy::sidecar::load(&path).unwrap(), edits);
 }
+
+#[test]
+fn applied_perspective_and_auto_fit_can_crop_outside_the_original_frame() {
+    let image = SensorImage::from_rgb(64, 48, vec![0.2; 64 * 48 * 3]).unwrap();
+    let edits = Edits::default();
+    let mut corrected = edits.geometry.clone();
+    corrected.scale = 1.5;
+    corrected.shift = [0.125, 0.25];
+    let expected = [-0.375, -0.5, 1.5, 1.5];
+    let compare = |actual: [f32; 4], expected: [f32; 4]| {
+        for (a, b) in actual.into_iter().zip(expected) {
+            assert!((a - b).abs() < 1e-6, "{actual:?} vs {expected:?}");
+        }
+    };
+    crop::after_perspective(&image, &edits, &mut corrected, None).unwrap();
+    compare(corrected.crop, expected);
+
+    let mut with_crop = edits.clone();
+    with_crop.geometry.crop = [0.2, 0.3, 0.7, 0.6];
+    let mut manual_crop = corrected.clone();
+    manual_crop.crop = with_crop.geometry.crop;
+    crop::after_perspective(&image, &with_crop, &mut manual_crop, None).unwrap();
+    assert_eq!(manual_crop.crop, with_crop.geometry.crop);
+
+    let mut current = edits.clone();
+    current.geometry = corrected.clone();
+    let constraint = Constraint::Aspect(2.);
+    let manual_fit = crop::largest(&image, &current, constraint).unwrap();
+    crop::after_perspective(&image, &edits, &mut corrected, Some(constraint)).unwrap();
+    assert_eq!(corrected.crop, manual_fit);
+    assert_eq!(corrected.crop_aspect, Some(2.));
+    assert!(corrected.crop[0] < 0. && corrected.crop[1] < 0.);
+    current.geometry = corrected;
+    current.validate().unwrap();
+    let rendered = rawpuppy::pipeline::Pipeline::compile(&image, &current)
+        .unwrap()
+        .render(None)
+        .unwrap();
+    assert!(rendered.width.abs_diff(rendered.height * 2) <= 1);
+    assert!(rendered.pixels.iter().all(|p| p[3] == 1.));
+}
+
+#[test]
+#[ignore = "uses the local DSCF0027 RAF, or RAWPUPPY_TEST_LONDON"]
+fn london_roof_is_reachable_above_the_original_frame() {
+    let path = std::env::var_os("RAWPUPPY_TEST_LONDON")
+        .unwrap_or_else(|| ".local-fixtures/DSCF0027.raf".into());
+    let image = SensorImage::open(path.as_ref()).unwrap();
+    let previous = Edits::for_image(&image);
+    // Preserve the reported pose so this test isolates the crop from detection.
+    let mut geometry = GeometryEdits {
+        pitch: -11.142_692,
+        yaw: -0.487_296_88,
+        rotation: -0.730_587_5,
+        field_of_view: 97.434_42,
+        shift: [0.004_907_664, -0.115_215_376],
+        ..previous.geometry.clone()
+    };
+    crop::after_perspective(&image, &previous, &mut geometry, None).unwrap();
+    let mut expanded = previous;
+    expanded.geometry = geometry;
+    let pipeline = rawpuppy::pipeline::Pipeline::compile(&image, &expanded).unwrap();
+    let forward = rawpuppy::color::inverse(pipeline.geometry.homography).unwrap();
+    // The top of the left rooftop pavilion in the lens-corrected source.
+    let corrected = rawpuppy::color::apply(forward, [0.29, 0.052, 1.]);
+    let roof = [corrected[0] / corrected[2], corrected[1] / corrected[2]];
+    assert!(
+        roof[1] < 0.,
+        "Roof was already inside the old canvas: {roof:?}"
+    );
+    let [x, y, w, h] = expanded.geometry.crop;
+    let uv = [(roof[0] - x) / w, (roof[1] - y) / h];
+    assert!(uv.into_iter().all(|v| (0. ..=1.).contains(&v)), "{uv:?}");
+    assert_eq!(pipeline.sample(uv)[3], 1.);
+}

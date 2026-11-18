@@ -24,14 +24,21 @@
     "yaw": 0.0,
     "pitch": 0.0,
     "rotation": 0.0,
-    "field_of_view": 96.74222,
+    "field_of_view": 97.43442,
     "crop": [
       0.0,
       0.0,
       1.0,
       1.0
     ],
-    "scale": 1.0
+    "scale": 1.0,
+    "camera": {
+      "focal_length_mm": 20.0,
+      "sensor_mm": [
+        43.8,
+        32.9
+      ]
+    }
   },
   "scene": {
     "exposure": 0.0,
@@ -99,5 +106,9 @@
     "split_strength": 0.0,
     "retouch": [],
     "synthesis": []
+  },
+  "detail": {
+    "sharpen": 0.2,
+    "local_contrast": 0.0
   }
 }

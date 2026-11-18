@@ -316,12 +316,7 @@ pub(super) fn worker(
                 };
                 Ok(Reply::Preview {
                     id,
-                    region: [
-                        edits.geometry.crop[0] + region[0] * edits.geometry.crop[2],
-                        edits.geometry.crop[1] + region[1] * edits.geometry.crop[3],
-                        region[2] * edits.geometry.crop[2],
-                        region[3] * edits.geometry.crop[3],
-                    ],
+                    region: crate::geometry::subrect(edits.geometry.crop, region),
                     size,
                     pixels,
                     histogram,
@@ -352,14 +347,8 @@ pub(super) fn worker(
                 } else {
                     perspective.run(&mut renderer, image.clone(), &edits, mode, provider)?
                 };
-                if apply && let (Some(geometry), Some(constraint)) = (&mut report.solution, crop) {
-                    let mut corrected = edits.clone();
-                    corrected.geometry = geometry.clone();
-                    geometry.crop = crate::crop::largest(&image, &corrected, constraint)?;
-                    geometry.crop_aspect = match constraint {
-                        crate::crop::Constraint::LargestArea => None,
-                        crate::crop::Constraint::Aspect(r) => Some(r),
-                    };
+                if apply && let Some(geometry) = &mut report.solution {
+                    crate::crop::after_perspective(&image, &edits, geometry, crop)?;
                 }
                 Ok(Reply::Perspective {
                     load_id,
@@ -382,10 +371,7 @@ pub(super) fn worker(
                     revision,
                     previous: edits,
                     crop,
-                    aspect: match constraint {
-                        crate::crop::Constraint::LargestArea => None,
-                        crate::crop::Constraint::Aspect(r) => Some(r),
-                    },
+                    aspect: constraint.aspect(),
                 })
             }
             Work::AgxLevels {
