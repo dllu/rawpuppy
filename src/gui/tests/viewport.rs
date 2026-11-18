@@ -147,6 +147,7 @@ fn zooming_out_keeps_a_rendered_subregion_at_its_image_position() {
             size: [16, 16],
             pixels: PreviewPixels::Sdr(vec![255; 16 * 16 * 4]),
             histogram: Histogram::from_pixels(&[]),
+            overview: None,
             elapsed: 0.,
             backend: "fixture".into(),
             managed_display: true,
@@ -169,4 +170,59 @@ fn zooming_out_keeps_a_rendered_subregion_at_its_image_position() {
     assert!((first.pos - (rect.min + rect.size() * 0.25)).length() < 1e-4);
     assert!((last.pos - (rect.min + rect.size() * 0.75)).length() < 1e-4);
     assert!((scale(&mesh).x / 240. - scale(&mesh).y / 160.).abs() < 1e-4);
+}
+
+#[test]
+fn off_center_wheel_zoom_anchors_the_corrected_pixel_in_every_view() {
+    for tool in [Tool::View, Tool::Crop, Tool::Perspective] {
+        let ctx = egui::Context::default();
+        let mut app = Editor::new(
+            &eframe::CreationContext::_new_kittest(ctx.clone()),
+            None,
+            None,
+            Backend::Cpu,
+            false,
+        );
+        let (requests, _receive) = mpsc::channel();
+        app.tx = requests;
+        app.image = Some(Arc::new(
+            SensorImage::from_rgb(480, 320, vec![0.2; 480 * 320 * 3]).unwrap(),
+        ));
+        app.edits.geometry.crop = [0.1, -0.05, 0.85, 0.9];
+        app.edits.geometry.shift[1] = 0.25;
+        app.texture_region = [-0.5, -0.5, 2., 2.];
+        app.texture = Some(ctx.load_texture(
+            "full-canvas-test",
+            egui::ColorImage::filled([48, 32], Color32::WHITE),
+            egui::TextureOptions::LINEAR,
+        ));
+        app.set_tool(tool);
+        app.zoom = 3.;
+        frame(&mut app, &ctx, 0., vec![]);
+        let rect = app.probe_photo_rect.unwrap();
+        let pointer = rect.min + rect.size() * Vec2::new(0.7, 0.34);
+        let at_pointer = |app: &Editor| {
+            let rect = app.probe_photo_rect.unwrap();
+            let t = (pointer - rect.min) / rect.size();
+            let world = crate::geometry::subrect(app.framing.render_crop, app.viewport);
+            Pos2::new(world[0] + t.x * world[2], world[1] + t.y * world[3])
+        };
+        let before = at_pointer(&app);
+        frame(
+            &mut app,
+            &ctx,
+            0.1,
+            vec![
+                egui::Event::PointerMoved(pointer),
+                egui::Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: Vec2::new(0., 170.),
+                    modifiers: egui::Modifiers::NONE,
+                    phase: egui::TouchPhase::Move,
+                },
+            ],
+        );
+        assert!(app.zoom > 3.);
+        assert!((at_pointer(&app) - before).length() < 1e-5, "{tool:?}");
+    }
 }

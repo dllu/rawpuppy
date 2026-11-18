@@ -89,6 +89,7 @@ fn malformed_raw_does_not_stop_the_editor_worker() {
         edits,
         region: [0., 0., 1., 1.],
         size: [2, 2],
+        overview: None,
         profile: None,
         hdr: false,
     })
@@ -602,6 +603,7 @@ fn failed_old_preview_is_scoped_and_the_worker_still_renders_the_new_request() {
         edits: invalid,
         region: [0., 0., 1., 1.],
         size: [2, 2],
+        overview: None,
         profile: None,
         hdr: false,
     })
@@ -624,6 +626,7 @@ fn failed_old_preview_is_scoped_and_the_worker_still_renders_the_new_request() {
         edits: valid,
         region: [0., 0., 1., 1.],
         size: [2, 2],
+        overview: None,
         profile: None,
         hdr: false,
     })
@@ -685,6 +688,48 @@ fn failed_old_load_is_identified_before_a_new_document_completes() {
     };
     assert_eq!(id, 2);
     assert_eq!(opened, path);
+    drop(send);
+    worker.join().unwrap();
+}
+
+#[test]
+fn navigator_thumbnail_is_reused_for_viewport_motion_and_refreshed_for_edits() {
+    let (send, requests) = mpsc::channel();
+    let (responses, receive) = mpsc::channel();
+    let worker = std::thread::spawn(move || {
+        super::worker(requests, responses, egui::Context::default(), Backend::Cpu)
+    });
+    let source = Arc::new(SensorImage::from_rgb(4, 3, vec![0.2; 36]).unwrap());
+    let thumbnail = |id, edited, region| {
+        let mut edits = Edits::default();
+        edits.scene.exposure = edited;
+        send.send(Work::Render {
+            id,
+            image: source.clone(),
+            edits,
+            region,
+            size: [4, 3],
+            overview: Some(navigator::Overview::new([-0.1, -0.1, 1.2, 1.2], [4., 3.])),
+            profile: None,
+            hdr: false,
+        })
+        .unwrap();
+        let Reply::Preview {
+            overview: Some(thumbnail),
+            ..
+        } = receive
+            .recv_timeout(std::time::Duration::from_secs(3))
+            .unwrap()
+        else {
+            panic!("Missing navigator thumbnail")
+        };
+        thumbnail
+    };
+    let full = thumbnail(1, 0., [0., 0., 1., 1.]);
+    let zoomed = thumbnail(2, 0., [0.2, 0.3, 0.4, 0.5]);
+    assert!(Arc::ptr_eq(&full, &zoomed));
+    let adjusted = thumbnail(3, 1., [0.2, 0.3, 0.4, 0.5]);
+    assert!(!Arc::ptr_eq(&full, &adjusted));
     drop(send);
     worker.join().unwrap();
 }

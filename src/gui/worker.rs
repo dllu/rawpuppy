@@ -14,6 +14,7 @@ pub(super) enum Work {
         edits: Edits,
         region: [f32; 4],
         size: [usize; 2],
+        overview: Option<navigator::Overview>,
         profile: Option<display::Icc>,
         hdr: bool,
     },
@@ -90,6 +91,7 @@ pub(super) enum Reply {
         size: [usize; 2],
         pixels: PreviewPixels,
         histogram: Histogram,
+        overview: Option<Arc<navigator::Thumbnail>>,
         elapsed: f64,
         backend: String,
         managed_display: bool,
@@ -233,6 +235,7 @@ pub(super) fn worker(
     let mut perspective = crate::perspective::Engine::default();
     let mut display_encoder = display::Encoder::default();
     let mut last_preview = None;
+    let mut overview_cache = None;
     loop {
         let mut work = if renderer.reconstruction_pending() {
             match rx.recv_timeout(std::time::Duration::from_millis(100)) {
@@ -271,6 +274,7 @@ pub(super) fn worker(
             Work::Open { id, path, defaults } => {
                 renderer.cancel_reconstruction();
                 last_preview = None;
+                overview_cache = None;
                 let image = Arc::new(SensorImage::open(&path)?);
                 let edits = sidecar::load_for_default(&path, defaults.for_image(&image))?;
                 renderer.set_document(path.clone());
@@ -287,6 +291,7 @@ pub(super) fn worker(
                 edits,
                 region,
                 size,
+                overview,
                 profile,
                 hdr,
             } => {
@@ -298,7 +303,7 @@ pub(super) fn worker(
                         && fill.source_color_revision == image.metadata.color_revision
                 });
                 let (rendered, reconstruction_progress) = renderer.render_preview_region(
-                    image,
+                    image.clone(),
                     &preview_edits,
                     region,
                     size[0],
@@ -314,14 +319,30 @@ pub(super) fn worker(
                 } else {
                     PreviewPixels::Sdr(display_encoder.encode(&rendered, profile.as_ref())?)
                 };
+                let backend = renderer.label().into();
+                let overview = overview.and_then(|view| {
+                    navigator::CachedThumbnail::request(
+                        &mut overview_cache,
+                        view,
+                        &mut renderer,
+                        &mut display_encoder,
+                        image,
+                        &preview_edits,
+                        hash,
+                        profile.as_ref(),
+                        reconstruction_progress.is_none(),
+                    )
+                    .ok()
+                });
                 Ok(Reply::Preview {
                     id,
                     region: crate::geometry::subrect(edits.geometry.crop, region),
                     size,
                     pixels,
                     histogram,
+                    overview,
                     elapsed: start.elapsed().as_secs_f64(),
-                    backend: renderer.label().into(),
+                    backend,
                     managed_display: profile.is_none(),
                     reconstruction_progress,
                 })

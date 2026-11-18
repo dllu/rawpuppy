@@ -54,8 +54,10 @@ impl Tool {
     fn instructions(self, source_set: bool) -> &'static str {
         match self {
             Self::View => "",
-            Self::Crop => "Drag an edge to resize or drag inside to move.",
-            Self::Perspective => "Drag to draw or edit a guide. Right-click to remove.",
+            Self::Crop => "Drag the crop or its handles. Middle-drag pans.",
+            Self::Perspective => {
+                "Drag to draw or edit guides. Middle-drag pans. Right-click removes."
+            }
             Self::Straighten => "Drag along a horizon or a vertical edge.",
             Self::Graduated => "Drag from the unchanged side toward the filtered side.",
             Self::Calibration => "Draw a rectangle over a neutral surface.",
@@ -157,7 +159,7 @@ impl Editor {
             self.changed();
         }
         if plain(egui::Key::Num1) {
-            self.actual_pixels(ui);
+            self.actual_pixels();
         }
         if plain(egui::Key::G) {
             self.framing.show_grid = !self.framing.show_grid;
@@ -218,7 +220,7 @@ impl Editor {
                 .on_hover_text("Actual pixels · 1")
                 .clicked()
             {
-                self.actual_pixels(ui);
+                self.actual_pixels();
             }
             if ui
                 .add_enabled(

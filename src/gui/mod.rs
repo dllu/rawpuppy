@@ -31,6 +31,7 @@ mod document;
 mod framing;
 mod histogram;
 mod history;
+mod navigator;
 mod preferences;
 mod sliders;
 #[cfg(test)]
@@ -142,6 +143,8 @@ struct Editor {
     brush_stroke: BrushStroke,
     brush_offset: [f32; 2],
     fit_scale: f32,
+    actual_pixels_pending: bool,
+    navigator: navigator::Navigator,
     mask: Vec<crate::synthesis::MaskDab>,
     ai_steps: usize,
     ai_seed: i64,
@@ -281,6 +284,8 @@ impl Editor {
             brush_stroke: BrushStroke::default(),
             brush_offset: [0.; 2],
             fit_scale: 1.,
+            actual_pixels_pending: false,
+            navigator: Default::default(),
             mask: vec![],
             ai_steps: 20,
             ai_seed: 0,

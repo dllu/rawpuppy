@@ -143,6 +143,9 @@ impl Editor {
                 if let Some(histogram) = &self.histogram {
                     histogram.show(ui);
                 }
+                if self.image.is_some() {
+                    self.navigator_controls(ui);
+                }
                 ui.separator();
                 let previous = self.edits.clone();
                 sidebar.plan(ui.available_height(), self.preferences.config.ui.font_size, self.preferences.config.ui.expand_sections, self.framing.panel_open);

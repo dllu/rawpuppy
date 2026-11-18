@@ -243,8 +243,11 @@ impl Editor {
                     self.texture = None;
                     self.hdr_texture = None;
                     self.histogram = None;
+                    self.navigator = Default::default();
+                    self.actual_pixels_pending = false;
                     self.zoom = 1.;
                     self.center = [0.5; 2];
+                    self.viewport = crate::geometry::FULL_FRAME;
                     self.clone_source = None;
                     self.brush_stroke = BrushStroke::default();
                     self.stroke_recorded = false;
@@ -267,6 +270,7 @@ impl Editor {
                     size,
                     pixels,
                     histogram,
+                    overview,
                     elapsed,
                     backend,
                     managed_display,
@@ -308,6 +312,7 @@ impl Editor {
                         }
                     }
                     self.histogram = Some(histogram);
+                    self.navigator.update(ctx, overview);
                     if self.busy.is_none() {
                         self.status = if let Some([done, total]) = reconstruction_progress {
                             if total == 0 {

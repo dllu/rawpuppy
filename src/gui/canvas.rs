@@ -100,7 +100,12 @@ impl Editor {
                 let available = ui.available_size().max(Vec2::splat(1.));
                 let fit = (available.x / w).min(available.y / h);
                 self.fit_scale = fit;
-                let full = Vec2::new(w, h) * fit * self.zoom;
+                let scale = ui.ctx().pixels_per_point();
+                if std::mem::take(&mut self.actual_pixels_pending) {
+                    self.zoom = (1. / (fit * scale)).max(1.);
+                }
+                let fitted = Vec2::new(w, h) * fit;
+                let full = fitted * self.zoom;
                 let visible = Vec2::new(full.x.min(available.x), full.y.min(available.y));
                 let center = ui.available_rect_before_wrap().center();
                 let rect = Rect::from_center_size(center, visible);
@@ -129,7 +134,13 @@ impl Editor {
                         if resize_brush {
                             self.radius = (self.radius * (scroll * 0.003).exp()).clamp(0.002, 0.15);
                         } else {
-                            self.zoom = (self.zoom * (scroll * 0.002).exp()).max(1.);
+                            let offset = (response.hover_pos().unwrap_or(center) - center) / full;
+                            let anchor = std::array::from_fn(|i| {
+                                let half = 0.5 * visible[i] / full[i];
+                                self.center[i] = self.center[i].clamp(half, 1. - half);
+                                self.center[i] + offset[i]
+                            });
+                            self.zoom_towards(anchor, scroll);
                         }
                     }
                 }
@@ -137,14 +148,15 @@ impl Editor {
                     self.zoom = 1.;
                     self.center = [0.5; 2];
                 }
-                if response.dragged()
-                    && (self.tool == Tool::View || ui.input(|i| i.pointer.middle_down()))
+                if response.dragged_by(egui::PointerButton::Middle)
+                    || (self.tool == Tool::View
+                        && response.dragged_by(egui::PointerButton::Primary))
                 {
                     let delta = ui.input(|i| i.pointer.delta());
                     self.center[0] -= delta.x / full.x;
                     self.center[1] -= delta.y / full.y;
                 }
-                let full = Vec2::new(w, h) * fit * self.zoom;
+                let full = fitted * self.zoom;
                 let visible = Vec2::new(full.x.min(available.x), full.y.min(available.y));
                 let rect = Rect::from_center_size(center, visible);
                 #[cfg(any(debug_assertions, test))]
@@ -161,7 +173,6 @@ impl Editor {
                     fraction[0],
                     fraction[1],
                 ];
-                let scale = ui.ctx().pixels_per_point();
                 let size = [
                     (visible.x * scale).round().clamp(1., 8192.) as usize,
                     (visible.y * scale).round().clamp(1., 8192.) as usize,
@@ -174,6 +185,9 @@ impl Editor {
                     self.preview_size = size;
                     self.framing.render_crop = crop;
                     self.changed();
+                    if self.navigator.open {
+                        ui.ctx().request_repaint();
+                    }
                 }
                 // Checkerboard makes out-of-image perspective corners visible.
                 let square = 16.;
@@ -353,13 +367,7 @@ impl Editor {
                     // Extend the cropped coordinates to show the whole canvas;
                     // retain the recipe so retouch and fills stay registered.
                     let render_region = if self.tool.full_canvas() {
-                        let c = edits.geometry.crop;
-                        [
-                            (canvas_region[0] - c[0]) / c[2],
-                            (canvas_region[1] - c[1]) / c[3],
-                            canvas_region[2] / c[2],
-                            canvas_region[3] / c[3],
-                        ]
+                        navigator::relative_region(edits.geometry.crop, canvas_region)
                     } else {
                         self.viewport
                     };
@@ -369,6 +377,10 @@ impl Editor {
                         edits,
                         region: render_region,
                         size: self.preview_size,
+                        overview: self
+                            .navigator
+                            .open
+                            .then(|| navigator::Overview::new(crop, [w, h])),
                         profile: self.display_resolved.icc.clone(),
                         hdr: self.hdr_white_scale.is_some(),
                     });
@@ -377,15 +389,27 @@ impl Editor {
             });
     }
 
-    pub(super) fn actual_pixels(&mut self, ui: &egui::Ui) {
-        if self.image.is_some() {
-            self.zoom = (1. / (self.fit_scale * ui.ctx().pixels_per_point())).max(1.);
-            self.changed();
+    pub(super) fn actual_pixels(&mut self) {
+        self.actual_pixels_pending = self.image.is_some();
+    }
+
+    pub(super) fn zoom_towards(&mut self, anchor: [f32; 2], scroll: f32) {
+        let next = (self.zoom * (scroll * 0.002).exp()).max(1.);
+        if next != self.zoom && next.is_finite() {
+            let change = 1. - self.zoom / next;
+            for (center, point) in self.center.iter_mut().zip(anchor) {
+                *center += (point - *center) * change;
+            }
+            self.zoom = next;
         }
     }
 }
 
-fn preview_placement(rect: Rect, region: [f32; 4], texture: [f32; 4]) -> Option<(Rect, Rect)> {
+pub(super) fn preview_placement(
+    rect: Rect,
+    region: [f32; 4],
+    texture: [f32; 4],
+) -> Option<(Rect, Rect)> {
     let view = Rect::from_min_size(
         Pos2::new(region[0], region[1]),
         Vec2::new(region[2], region[3]),
