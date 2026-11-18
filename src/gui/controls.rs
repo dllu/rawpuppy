@@ -212,16 +212,16 @@ impl Editor {
                         sidebar.show(Section::Color, ui, |ui| {
                                 self.calibration_controls(ui);
                                 egui::CollapsingHeader::new("Channel mixer").show(ui, |ui| {
-                                    for i in 0..3 {
+                                    for (label, row) in
+                                        ["R", "G", "B"].into_iter().zip(&mut self.edits.scene.mixer)
+                                    {
                                         ui.horizontal(|ui| {
-                                            ui.label(["R", "G", "B"][i]);
-                                            for j in 0..3 {
+                                            ui.label(label);
+                                            for coefficient in row {
                                                 ui.add(
-                                                    egui::DragValue::new(
-                                                        &mut self.edits.scene.mixer[i][j],
-                                                    )
-                                                    .speed(0.01)
-                                                    .range(-3.0..=3.0),
+                                                    egui::DragValue::new(coefficient)
+                                                        .speed(0.01)
+                                                        .range(-3.0..=3.0),
                                                 );
                                             }
                                         });

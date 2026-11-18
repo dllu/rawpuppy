@@ -41,7 +41,7 @@ const CROP_PRESETS: &[(&str, f32)] = &[
     ("A-series paper", std::f32::consts::SQRT_2),
     ("3:2", 3. / 2.),
     ("16:10", 16. / 10.),
-    ("Golden ratio", 1.618_034),
+    ("Golden ratio", std::f32::consts::GOLDEN_RATIO),
     ("16:9", 16. / 9.),
     ("1.85:1 · Widescreen", 1.85),
     ("1.91:1", 1080. / 566.),
